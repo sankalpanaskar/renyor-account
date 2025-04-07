@@ -17,6 +17,24 @@ export const MENU_ITEMS: NbMenuItem[] = [
     group: true,
   },
   {
+    title: 'Lead',
+    icon: 'layout-outline',
+    children: [
+      {
+        title: 'Add',
+        link: '/pages/add-lead',
+      },
+      {
+        title: 'Bulk Upload',
+        link: '/pages/upload-lead',
+      },
+      {
+        title: 'Manage',
+        link: '/pages/manage-lead',
+      }
+    ],
+  },
+  {
     title: 'Layout',
     icon: 'layout-outline',
     children: [

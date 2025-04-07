@@ -5,6 +5,10 @@ import { PagesComponent } from './pages.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ECommerceComponent } from './e-commerce/e-commerce.component';
 import { NotFoundComponent } from './miscellaneous/not-found/not-found.component';
+import { AddLeadComponent } from './add-lead/add-lead.component';
+import { UploadLeadComponent } from './upload-lead/upload-lead.component';
+import { ManageLeadComponent } from './manage-lead/manage-lead.component';
+import { LoginComponent } from './login/login.component';
 
 const routes: Routes = [{
   path: '',
@@ -15,8 +19,8 @@ const routes: Routes = [{
       component: ECommerceComponent,
     },
     {
-      path: 'iot-dashboard',
-      component: DashboardComponent,
+      path: 'login',
+      component: LoginComponent,
     },
     {
       path: 'layout',
@@ -72,6 +76,18 @@ const routes: Routes = [{
       path: '',
       redirectTo: 'dashboard',
       pathMatch: 'full',
+    },
+    {
+      path: 'add-lead',
+      component: AddLeadComponent,
+    },
+    {
+      path: 'upload-lead',
+      component: UploadLeadComponent,
+    },
+    {
+      path: 'manage-lead',
+      component: ManageLeadComponent,
     },
     {
       path: '**',

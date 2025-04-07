@@ -1,0 +1,11 @@
+<nb-card>
+    <nb-card-header>
+      Manage Lead
+    </nb-card-header>
+  
+    <nb-card-body>
+        <input type="text" nbInput fullWidth shape="semi-round" #search class="search mb-3"  placeholder="Search..." (keydown.enter)="onSearch(search.value)">
+      <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)">
+      </ng2-smart-table>
+    </nb-card-body>
+</nb-card>
