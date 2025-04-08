@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
-  selector: 'custom-edit-button',
+  selector: 'ngx-custom-edit-button',
   template: `
     <button (click)="onEdit()" class="btn btn-primary rounded-circle text-white">Edit</button>
   `
