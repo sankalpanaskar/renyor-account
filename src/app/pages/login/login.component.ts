@@ -3,11 +3,10 @@ import { NbAuthService } from '@nebular/auth';
 
 @Component({
   selector: 'ngx-login',
-  template: `<nb-auth-block>
-    <nb-login [strategy]="'email'"></nb-login>
-  </nb-auth-block>`,
+  templateUrl: './login.component.html',
+  styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
 
-  constructor(private authService: NbAuthService) {}
+  constructor() {}
 }
