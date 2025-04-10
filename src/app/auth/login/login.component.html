@@ -1,0 +1,16 @@
+<nb-card>
+    <nb-card-header>Login</nb-card-header>
+    <nb-card-body>
+        <div class="row" style="margin-bottom: 25px;">
+            <input nbInput placeholder="Email" [(ngModel)]="email" style="width: 80%;max-width: 90%;margin-left: 10%;">
+         </div> 
+         <div class="row" style="margin-bottom: 25px;">
+            <input nbInput type="password" placeholder="Password" [(ngModel)]="password" style="width: 80%;max-width: 90%;margin-left: 10%;">
+         </div> 
+         <div class="row">
+            <button nbButton status="primary" (click)="login()" style="margin: 0px auto;width: 80%;">Login</button>
+         </div>
+     
+    </nb-card-body>
+  </nb-card>
+  

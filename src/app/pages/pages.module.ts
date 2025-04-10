@@ -12,7 +12,6 @@ import { UploadLeadComponent } from './upload-lead/upload-lead.component';
 import { ManageLeadComponent } from './manage-lead/manage-lead.component';
 import { TablesRoutingModule } from './tables/tables-routing.module';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
-import { LoginComponent } from './login/login.component';
 
 @NgModule({
   imports: [
@@ -41,7 +40,6 @@ import { LoginComponent } from './login/login.component';
     AddLeadComponent,
     UploadLeadComponent,
     ManageLeadComponent,
-    LoginComponent
   ],
   exports: [
     

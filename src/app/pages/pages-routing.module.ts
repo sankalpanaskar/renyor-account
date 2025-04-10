@@ -8,7 +8,8 @@ import { NotFoundComponent } from './miscellaneous/not-found/not-found.component
 import { AddLeadComponent } from './add-lead/add-lead.component';
 import { UploadLeadComponent } from './upload-lead/upload-lead.component';
 import { ManageLeadComponent } from './manage-lead/manage-lead.component';
-import { LoginComponent } from './login/login.component';
+import { authGuard } from '../auth/auth.guard';
+
 
 const routes: Routes = [{
   path: '',
@@ -17,10 +18,7 @@ const routes: Routes = [{
     {
       path: 'dashboard',
       component: ECommerceComponent,
-    },
-    {
-      path: 'login',
-      component: LoginComponent,
+      canActivate: [authGuard],
     },
     {
       path: 'layout',

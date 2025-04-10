@@ -6,7 +6,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { CoreModule } from './@core/core.module';
 import { ThemeModule } from './@theme/theme.module';
 import { AppComponent } from './app.component';
@@ -20,6 +20,9 @@ import {
   NbToastrModule,
   NbWindowModule,
 } from '@nebular/theme';
+import { NbAuthJWTToken, NbAuthModule, NbAuthSimpleToken, NbPasswordAuthStrategy } from '@nebular/auth';
+import { authGuard } from './auth/auth.guard';
+import { TokenInterceptor } from './interceptors/token.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -39,8 +42,37 @@ import {
     }),
     CoreModule.forRoot(),
     ThemeModule.forRoot(),
+    NbAuthModule.forRoot({
+      strategies: [
+        NbPasswordAuthStrategy.setup({
+          name: 'email',
+          baseEndpoint: 'https://ticketapi.anudip.org/public/api',
+          login: {
+            endpoint: '/user-login',
+            method: 'post',
+          },
+          register: {
+            endpoint: '/register',
+            method: 'post',
+          },
+          token: {
+            class: NbAuthSimpleToken,
+            key: 'data.token', // <--- path to token in your response
+          },
+        }),
+      ],
+      forms: {},
+    }),
+    
   ],
   bootstrap: [AppComponent],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: TokenInterceptor,
+      multi: true
+    }
+  ]
 })
 export class AppModule {
 }
