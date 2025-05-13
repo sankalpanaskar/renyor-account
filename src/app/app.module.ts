@@ -15,6 +15,7 @@ import {
   NbChatModule,
   NbDatepickerModule,
   NbDialogModule,
+  NbLayoutModule,
   NbMenuModule,
   NbSidebarModule,
   NbToastrModule,
@@ -23,13 +24,16 @@ import {
 import { NbAuthJWTToken, NbAuthModule, NbAuthSimpleToken, NbPasswordAuthStrategy } from '@nebular/auth';
 import { authGuard } from './auth/auth.guard';
 import { TokenInterceptor } from './interceptors/token.interceptor';
+import { CustomEditButtonComponent } from './pages/manage-lead/custom-edit-btn.component';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent,  CustomEditButtonComponent
+  ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
+    NbLayoutModule,
     AppRoutingModule,
     NbSidebarModule.forRoot(),
     NbMenuModule.forRoot(),
@@ -37,6 +41,7 @@ import { TokenInterceptor } from './interceptors/token.interceptor';
     NbDialogModule.forRoot(),
     NbWindowModule.forRoot(),
     NbToastrModule.forRoot(),
+    NbDatepickerModule.forRoot(),  // only once at root level
     NbChatModule.forRoot({
       messageGoogleMapKey: 'AIzaSyA_wNuCzia92MAmdLRzmqitRGvCF7wCZPY',
     }),
@@ -46,9 +51,10 @@ import { TokenInterceptor } from './interceptors/token.interceptor';
       strategies: [
         NbPasswordAuthStrategy.setup({
           name: 'email',
-          baseEndpoint: 'https://ticketapi.anudip.org/public/api',
+          // baseEndpoint: 'https://ticketapi.anudip.org/public/api',
+          baseEndpoint: 'https://leadapi.anudip.org/public/api',
           login: {
-            endpoint: '/user-login',
+            endpoint: '/login',
             method: 'post',
           },
           register: {

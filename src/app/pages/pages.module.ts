@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { NbActionsModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbIconModule, NbInputModule, NbMenuModule, NbRadioModule, NbSelectModule, NbUserModule } from '@nebular/theme';
+import { NbActionsModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbIconModule, NbInputModule, NbMenuModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbUserModule } from '@nebular/theme';
 
 import { ThemeModule } from '../@theme/theme.module';
 import { PagesComponent } from './pages.component';
@@ -12,6 +12,7 @@ import { UploadLeadComponent } from './upload-lead/upload-lead.component';
 import { ManageLeadComponent } from './manage-lead/manage-lead.component';
 import { TablesRoutingModule } from './tables/tables-routing.module';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -34,6 +35,9 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     NbIconModule,
     TablesRoutingModule,
     Ng2SmartTableModule,
+    FormsModule,
+    NbSpinnerModule,
+
   ],
   declarations: [
     PagesComponent,
