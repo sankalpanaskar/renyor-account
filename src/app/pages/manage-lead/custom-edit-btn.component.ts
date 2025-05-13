@@ -1,15 +1,21 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 
 @Component({
   selector: 'ngx-custom-edit-button',
   template: `
-    <button (click)="onEdit()" class="btn btn-primary rounded-circle text-white">Edit</button>
+    <button (click)="onEdit()" class="btn btn-primary text-white py-0">Edit</button>
   `
 })
-export class CustomEditButtonComponent {
+export class CustomEditButtonComponent implements OnInit {
   @Input() rowData: any;
-  
+  @Output() editClicked = new EventEmitter<any>();
+
+  ngOnInit() {
+    console.log("rowData from CustomEditButtonComponent (ngOnInit):", this.rowData);
+  }
+
   onEdit() {
-    alert(`Edit button clicked for: ${this.rowData.leadName}`);
+    console.log("rowData from CustomEditButtonComponent (onEdit):", this.rowData);
+    this.editClicked.emit(this.rowData);
   }
 }

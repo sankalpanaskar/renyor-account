@@ -13,6 +13,7 @@ import { ManageLeadComponent } from './manage-lead/manage-lead.component';
 import { TablesRoutingModule } from './tables/tables-routing.module';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { FormsModule } from '@angular/forms';
+import { LeadEditDialogComponent } from './lead-edit-dialog/lead-edit-dialog.component';
 
 @NgModule({
   imports: [
@@ -44,6 +45,7 @@ import { FormsModule } from '@angular/forms';
     AddLeadComponent,
     UploadLeadComponent,
     ManageLeadComponent,
+    LeadEditDialogComponent,
   ],
   exports: [
     
