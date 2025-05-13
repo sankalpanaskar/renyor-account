@@ -1,0 +1,263 @@
+nb-card-body {
+    overflow: visible;
+    padding-top: 0;
+  
+    > * {
+      margin-top: 0.5rem;
+          margin-bottom: 10px;
+    }
+  }
+  
+  .full-name-inputs,
+  .validation-checkboxes {
+    display: flex;
+    margin: 0 -0.5rem;
+  
+    > * {
+      margin: 0 0.5rem;
+    }
+  }
+  
+  .checkbox-radio {
+    display: flex;
+  }
+  
+  .demo-items {
+    flex: 1 0 33%;
+  }
+  
+  nb-select {
+    max-width: 100% !important;
+    width: 100%;
+  }
+  
+  nb-card-body {
+    margin-top: 0;
+  }
+  
+  .shape-semi-round {
+    font-weight: normal;
+  }
+  
+  .error-message {
+    color: #d32f2f;
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .timeline {
+    list-style: none;
+    padding-left: 20px;
+    // border-left: 2px solid #d3d3d3;
+    margin: 0;
+  }
+  
+  .timeline li {
+    margin-bottom: 20px;
+    position: relative;
+    padding-left: 10px;
+  }
+  
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: -10px;
+    top: 0;
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    border: 2px solid #3366ff;
+    border-radius: 50%;
+  }
+  .small-label {
+    font-size: 14px;
+  }
+
+  /* 1. Target the Nebular wrapper element */
+::ng-deep nb-dialog-container {
+  /* set your desired width */
+  width: 1000px !important;
+  max-width: 1000px !important;
+  // margin-left: 5% !important;           /* never overflow viewport */
+}
+
+// /* 2. (Optional) If you need to hit the CDK overlay pane directly: */
+// ::ng-deep .cdk-overlay-pane {
+//   width: 100% !important;
+// }
+
+
+
+/*for tree design*/
+.tracking-detail {
+  padding: 3rem 0;
+}
+
+#tracking {
+  margin-bottom: 1rem;
+}
+
+[class*="tracking-status-"] p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #fff;
+  text-transform: uppercase;
+  text-align: center;
+}
+[class*="tracking-status-"] {
+  padding: 1.6rem 0;
+}
+.tracking-list {
+  max-height: 330px;
+  overflow-y: auto;
+  padding-right: 8px; /* optional for spacing with scrollbar */
+}
+.tracking-item {
+  border-left: 4px solid #3c6fff;;
+  position: relative;
+  // padding: 2rem 1.5rem 0.5rem 2.5rem;
+  padding: 5px 24px;
+  font-size: 0.9rem;
+  margin-left: 3rem;
+  min-height: 5rem;
+}
+.tracking-item:last-child {
+  padding-bottom: 0;
+}
+.tracking-item .tracking-date {
+  margin-bottom: 0.5rem;
+}
+.tracking-item .tracking-date span {
+  color: #888;
+  font-size: 85%;
+  padding-left: 0.4rem;
+}
+.tracking-item .tracking-content {
+  padding: 0.5rem 0.8rem;
+  background-color: #f4f4f4;
+  border-radius: 0.5rem;
+}
+.tracking-item .tracking-content span {
+  display: block;
+  color: #767676;
+  font-size: 13px;
+}
+.tracking-item .tracking-icon {
+  position: absolute;
+  left: -0.7rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  background-color: #fff;
+  color: #fff;
+}
+
+.tracking-item-pending {
+  border-left: 4px solid #d6d6d6;
+  position: relative;
+  padding: 15px 10px;
+  font-size: 0.9rem;
+  margin-left: 3rem;
+  min-height: 5rem;
+}
+.tracking-item-pending:last-child {
+  padding-bottom: 4rem;
+}
+.tracking-item-pending .tracking-date {
+  margin-bottom: 0.5rem;
+}
+.tracking-item-pending .tracking-date span {
+  color: #888;
+  font-size: 85%;
+  padding-left: 0.4rem;
+}
+.tracking-item-pending .tracking-content {
+  padding: 0.5rem 0.8rem;
+  background-color: #f4f4f4;
+  border-radius: 0.5rem;
+}
+.tracking-item-pending .tracking-content span {
+  display: block;
+  color: #767676;
+  font-size: 13px;
+}
+.tracking-item-pending .tracking-icon {
+  line-height: 2.6rem;
+  position: absolute;
+  left: -0.7rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: #d6d6d6;
+}
+.tracking-item-pending .tracking-content {
+  font-weight: 600;
+  font-size: 17px;
+}
+
+.tracking-item .tracking-icon.status-current {
+  width: 1.9rem;
+  height: 1.9rem;
+  left: -1.1rem;
+}
+.tracking-item .tracking-icon.status-intransit {
+  color: #3c6fff;
+  font-size: 0.6rem;
+}
+.tracking-item .tracking-icon.status-current {
+  color: #3c6fff;
+  font-size: 0.6rem;
+}
+@media (min-width: 992px) {
+  .tracking-item {
+    margin-left: 20px;
+  }
+  .tracking-item .tracking-date {
+    position: absolute;
+    left: -10rem;
+    width: 7.5rem;
+    text-align: right;
+  }
+  .tracking-item .tracking-date span {
+    display: block;
+  }
+  .tracking-item .tracking-content {
+    padding: 0;
+    background-color: transparent;
+  }
+
+  .tracking-item-pending {
+    margin-left: 10rem;
+  }
+  .tracking-item-pending .tracking-date {
+    position: absolute;
+    left: -10rem;
+    width: 7.5rem;
+    text-align: right;
+  }
+  .tracking-item-pending .tracking-date span {
+    display: block;
+  }
+  .tracking-item-pending .tracking-content {
+    padding: 0;
+    background-color: transparent;
+  }
+}
+
+.tracking-item .tracking-content {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.blinker {
+  border: 7px solid #e9f8ea;
+  animation: blink 1s;
+  animation-iteration-count: infinite;
+}
+@keyframes blink { 50% { border-color:#fff ; }  }
+
+
+
