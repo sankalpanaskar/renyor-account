@@ -14,6 +14,7 @@ import { TablesRoutingModule } from './tables/tables-routing.module';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { FormsModule } from '@angular/forms';
 import { LeadEditDialogComponent } from './lead-edit-dialog/lead-edit-dialog.component';
+import { ProfileComponent } from './profile/profile.component';
 
 @NgModule({
   imports: [
@@ -46,6 +47,7 @@ import { LeadEditDialogComponent } from './lead-edit-dialog/lead-edit-dialog.com
     UploadLeadComponent,
     ManageLeadComponent,
     LeadEditDialogComponent,
+    ProfileComponent,
   ],
   exports: [
     

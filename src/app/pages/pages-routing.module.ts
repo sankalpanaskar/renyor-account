@@ -9,12 +9,18 @@ import { AddLeadComponent } from './add-lead/add-lead.component';
 import { UploadLeadComponent } from './upload-lead/upload-lead.component';
 import { ManageLeadComponent } from './manage-lead/manage-lead.component';
 import { authGuard } from '../auth/auth.guard';
+import { ProfileComponent } from './profile/profile.component';
 
 
 const routes: Routes = [{
   path: '',
   component: PagesComponent,
   children: [
+      {
+      path: 'profile',
+      component: ProfileComponent,
+      canActivate: [authGuard],
+    },
     {
       path: 'dashboard',
       component: ECommerceComponent,

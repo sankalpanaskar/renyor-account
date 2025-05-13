@@ -51,7 +51,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
               private breakpointService: NbMediaBreakpointsService) {
   }
 
-  public user_image = environment.apiBaseUrl+'uploads/user_image/';
+  public user_image = 'https://cmis4api.anudip.org/public/'+'uploads/user_image/';
 
 
   ngOnInit() {
@@ -112,7 +112,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
   
   goToProfile() {
-    this.router.navigate(['/profile']); // optional, based on your route
+    this.router.navigate(['/pages/profile']); // optional, based on your route
   }
   
 
