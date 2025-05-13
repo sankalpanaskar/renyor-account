@@ -1,0 +1,23 @@
+.profile-container {
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+  }
+  
+  .profile-body {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  
+  .profile-image {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .profile-details {
+    font-size: 1rem;
+  }
