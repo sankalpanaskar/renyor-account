@@ -1,0 +1,312 @@
+      <!-- Loading Spinner -->
+      <!-- <div *ngIf="loading" class="loading-wrapper">
+        <nb-spinner size="giant"></nb-spinner>
+      </div> -->
+  
+      <!-- Student Details Form -->
+      <nb-card>
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+          <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate>
+  
+            <!-- Student Info Section -->
+            <div class="info-wrapper">
+              <div class="info-group"><strong>Name:</strong> {{ studentData.first_name }} {{ studentData.last_name }}</div>
+              <div class="info-group"><strong>Email:</strong> {{ studentData.email_id }}</div>
+              <div class="info-group"><strong>Mobile:</strong> {{ studentData.phone_number }}</div>
+              <div class="info-group"><strong>Center:</strong> {{ studentData.center_code }}</div>
+              <div class="info-group"><strong>Course:</strong> {{ studentData.course_alias }}</div>
+              <div class="info-group"><strong>Location:</strong> {{ studentData.district }}</div>
+            </div>
+  
+            <!-- Form Sections -->
+            <div *ngIf="questionAnsDetailsStatus == 0">
+  
+              <!-- Personal Information Section -->
+              <nb-card class="section-card">
+                <nb-card-header>Personal Information</nb-card-header>
+                <div class="form-section">
+  
+                  <!-- Highest Qualification -->
+                  <nb-card>
+                    <nb-card-header>What is your Highest Qualification? 
+                        <span class="required-star">*</span>
+                    </nb-card-header>
+                    <div class="form-field-wrapper">
+                      <nb-form-field fullWidth>
+                        <nb-select
+                          placeholder="Highest Qualification"
+                          [(ngModel)]="model.highest_qualification"
+                          name="highest_qualification"
+                          #highest_qualification="ngModel"
+                          required
+                          (ngModelChange)="questionChange($event, 'What is your Highest Qualification?')">
+                          <nb-option value="10th">10th</nb-option>
+                          <nb-option value="12th">12th</nb-option>
+                          <nb-option value="Graduation">Graduation</nb-option>
+                        </nb-select>
+                      </nb-form-field>
+                      <div *ngIf="fm.submitted && highest_qualification.invalid" class="error-text">
+                        Please select any option
+                      </div>
+                    </div>
+                  </nb-card>
+  
+                  <!-- Parent Occupation -->
+                  <nb-card>
+                    <nb-card-header>What is your father's occupation?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <div class="form-field-wrapper">
+                      <nb-form-field fullWidth>
+                        <input
+                          nbInput
+                          placeholder="Parent Occupation"
+                          [(ngModel)]="model.parents_occupation"
+                          name="parents_occupation"
+                          #parents_occupation="ngModel"
+                          required
+                          (ngModelChange)="questionChange($event, 'What is your father Occupation?')" />
+                      </nb-form-field>
+                      <div *ngIf="fm.submitted && parents_occupation.invalid" class="error-text">
+                        Please enter parent occupation
+                      </div>
+                    </div>
+                  </nb-card>
+  
+                  <!-- Alternative Phone Number -->
+                  <nb-card>
+                    <nb-card-header>What is your alternative contact number?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <div class="form-field-wrapper">
+                      <nb-form-field fullWidth>
+                        <input
+                          nbInput
+                          placeholder="Alternative Phone No"
+                          [(ngModel)]="model.alt_phone_no"
+                          name="alt_phone_no"
+                          #alt_phone_no="ngModel"
+                          maxLength="10" pattern="^\d{10}$"
+                          required
+                          (ngModelChange)="questionChange($event, 'What is your alternative contact number?')" />
+                      </nb-form-field>
+                      <div *ngIf="fm.submitted && alt_phone_no.invalid" class="error-text">
+                        Please enter alternative contact number
+                      </div>
+                    </div>
+                  </nb-card>
+
+                
+                </div>
+              </nb-card>
+  
+              <!-- General Section -->
+              <nb-card class="section-card">
+                <nb-card-header>General</nb-card-header>
+                <div class="form-section">
+  
+                  <!-- Currently Employed -->
+                  <nb-card>
+                    <nb-card-header>Are you currently employed?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <nb-radio-group
+                      name="g1"
+                      [(ngModel)]="model.g1"
+                      #g1="ngModel"
+                      required
+                      (ngModelChange)="questionChange($event, 'Are you currently Employed ?')">
+                      <nb-radio value="Yes">Yes</nb-radio>
+                      <nb-radio value="No">No</nb-radio>
+                    </nb-radio-group>
+                    <div *ngIf="fm.submitted && g1.invalid" class="error-text">
+                      Please select any option
+                    </div>
+                  </nb-card>
+  
+                  <!-- Primary Reason -->
+                  <nb-card>
+                    <nb-card-header>What is your primary reason for pursuing this course?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <nb-radio-group
+                      name="g2"
+                      [(ngModel)]="model.g2"
+                      #g2="ngModel"
+                      required
+                      (ngModelChange)="questionChange($event, 'What is your primary reason for pursuing this course?')">
+                      <nb-radio value="To gain new skills and knowledge">To gain new skills and knowledge</nb-radio>
+                      <nb-radio value="To advance my career">To advance my career</nb-radio>
+                      <nb-radio value="To change careers">To change careers</nb-radio>
+                      <nb-radio value="To obtain a job in a specific field">To obtain a job in a specific field</nb-radio>
+                    </nb-radio-group>
+                    <div *ngIf="fm.submitted && g2.invalid" class="error-text">
+                      Please select any option
+                    </div>
+                  </nb-card>
+
+                      <!-- Career Goals -->
+                      <nb-card>
+                        <nb-card-header>Do you have a suitable configuration system for attending training sessions, completing Mettl online assessments, etc.?
+                          <span class="required-star">*</span>
+                        </nb-card-header>
+                        <nb-radio-group
+                          name="g3"
+                          [(ngModel)]="model.g3"
+                          #g3="ngModel"
+                          required
+                          (ngModelChange)="questionChange($event, 'Do you have a suitable configuration system for attending training sessions, completing Mettl online assessments, etc.?')">
+                          <nb-radio value="Yes">Yes</nb-radio>
+                          <nb-radio value="No">No</nb-radio>
+                        </nb-radio-group>
+                        <div *ngIf="fm.submitted && g3.invalid" class="error-text">
+                          <nb-text status="danger">Please select any option</nb-text>
+                        </div>
+                      </nb-card>
+      
+                      <nb-card>
+                        <nb-card-header>What is your preferred job location?
+                          <span class="required-star">*</span>
+                        </nb-card-header>
+                      <div class="form-field-wrapper">
+                        <nb-form-field fullWidth>
+                          <input
+                            nbInput
+                            placeholder="Preferred Job Location"
+                            [(ngModel)]="model.prefered_job_location"
+                            name="prefered_job_location"
+                            #prefered_job_location="ngModel"
+                            required
+                            (ngModelChange)="questionChange($event, 'What is your preferred job location?')" />
+                        </nb-form-field>
+                        <div *ngIf="fm.submitted && prefered_job_location.invalid" class="error-text">
+                          Please enter Preferred Job Location
+                        </div>
+                      </div>
+                      </nb-card>
+  
+                </div>
+              </nb-card>
+  
+              <!-- Livelihood Section -->
+              <nb-card class="section-card">
+                <nb-card-header>Livelihood</nb-card-header>
+                <div class="form-section">
+  
+                  <!-- Relocation Willingness -->
+                  <nb-card>
+                    <nb-card-header>Are you willing to relocate for a job opportunity?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <nb-radio-group
+                      name="l1"
+                      [(ngModel)]="model.l1"
+                      #l1="ngModel"
+                      required
+                      (ngModelChange)="questionChange($event, 'Are you willing to relocate for a job opportunity?')">
+                      <nb-radio value="Yes">Yes</nb-radio>
+                      <nb-radio value="No">No</nb-radio>
+                    </nb-radio-group>
+                    <div *ngIf="fm.submitted && l1.invalid" class="error-text">
+                      <nb-text status="danger">Please select any option</nb-text>
+                    </div>
+                  </nb-card>
+  
+                  <!-- Relevant Skills -->
+                  <nb-card>
+                    <nb-card-header>Any relevant skills or experience do you have?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <nb-radio-group
+                      name="l2"
+                      [(ngModel)]="model.l2"
+                      #l2="ngModel"
+                      required
+                      (ngModelChange)="questionChange($event, 'Any relevant skills or experience do you have?')">
+                      <nb-radio value="Yes">Yes</nb-radio>
+                      <nb-radio value="No">No</nb-radio>
+                    </nb-radio-group>
+                    <div *ngIf="fm.submitted && l2.invalid" class="error-text">
+                      <nb-text status="danger">Please select any option</nb-text>
+                    </div>
+                  </nb-card>
+  
+                </div>
+              </nb-card>
+  
+              <!-- Career Goal Section -->
+              <nb-card class="section-card">
+                <nb-card-header>Career Goal</nb-card-header>
+                <div class="form-section">
+  
+                  <!-- Career Goals -->
+                  <nb-card>
+                    <nb-card-header>What are your career goals?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <nb-radio-group
+                      name="c1"
+                      [(ngModel)]="model.c1"
+                      #c1="ngModel"
+                      required
+                      (ngModelChange)="questionChange($event, 'What are your career goals?')">
+                      <nb-radio value="Long-Term Goal">Long-Term Goal</nb-radio>
+                      <nb-radio value="Short-Term Goal">Short-Term Goal</nb-radio>
+                    </nb-radio-group>
+                    <div *ngIf="fm.submitted && c1.invalid" class="error-text">
+                      <nb-text status="danger">Please select any option</nb-text>
+                    </div>
+                  </nb-card>
+  
+                  <!-- Career Aspirations -->
+                  <nb-card>
+                    <nb-card-header>What's your career aspiration?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <nb-radio-group
+                      name="c2"
+                      [(ngModel)]="model.c2"
+                      #c2="ngModel"
+                      required
+                      (ngModelChange)="questionChange($event, 'What is your career aspiration?')">
+                      <nb-radio value="Working in an industry that you are passionate about">Working in an industry that you are passionate about</nb-radio>
+                      <nb-radio value="Managing or leading successfully">Managing or leading successfully</nb-radio>
+                      <nb-radio value="Using your talents or skills in a role">Using your talents or skills in a role</nb-radio>
+                      <nb-radio value="Starting or owning a business">Starting or owning a business</nb-radio>
+                      <nb-radio value="Earning accolades for expertise">Earning accolades for expertise</nb-radio>
+                    </nb-radio-group>
+                    <div *ngIf="fm.submitted && c2.invalid" class="error-text">
+                      <nb-text status="danger">Please select any option</nb-text>
+                    </div>
+                  </nb-card>
+  
+                </div>
+              </nb-card>
+  
+              <!-- Submit Button -->
+              <div class="form-footer">
+                <button nbButton status="primary" type="submit" [disabled]="isSubmitting">Submit</button>
+              </div>
+  
+            </div>
+  
+          </form>
+        </nb-card-body>
+      </nb-card>
+  
+      <!-- Counseling Details -->
+      <nb-card *ngIf="questionAnsDetailsStatus == 1">
+        <nb-card-header><strong>Counseling Details</strong></nb-card-header>
+        <nb-card-body>
+          <div *ngIf="questionAnsDetails?.length; else noData">
+            <div *ngFor="let qa of questionAnsDetails" class="qa-block">
+              <p class="question"><strong>Question :</strong> {{ qa.question }}</p>
+              <p class="answer"><strong>Answer :</strong> {{ qa.student_answer }}</p>
+            </div>
+          </div>
+          <ng-template #noData>
+            <p>No counseling data found.</p>
+          </ng-template>
+        </nb-card-body>
+      </nb-card>
+  

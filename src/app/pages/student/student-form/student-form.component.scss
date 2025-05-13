@@ -1,0 +1,106 @@
+.header-title {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px;
+  }
+  
+  .logout-icon {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  
+  .section-card {
+    margin-bottom: 20px;
+    background-color: var(--background-basic-color-2); // theme-aware
+  }
+  
+  
+  .form-section nb-card {
+    margin-bottom: 15px;
+  }
+  
+  .error-text {
+    color: red;
+    font-size: 12px;
+    margin: 10px 25px;
+    }
+  
+  .form-footer {
+    text-align: right;
+    margin-top: 20px;
+  }
+  ::ng-deep nb-radio-group {
+    margin: 10px 22px !important;
+  }
+  .info-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    border: 1px solid #009688;
+    border-radius: 8px;
+    margin: 10px 0px;
+    padding: 10px;
+
+  }
+
+  .info-group {
+    flex: 1 1 100%;
+    // border: 1px solid #009688;
+    padding: 2px;
+    // border-radius: 8px;
+  }
+  
+  /* For larger screens: 2 items per row */
+  @media (min-width: 768px) {
+    .info-group {
+      flex: 1 1 calc(50% - 10px); /* two columns with gap */
+    }
+  }
+  .qa-block {
+    border-left: 4px solid teal;
+    border-bottom: 2px solid #d2f0f0;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    border-radius: 4px;
+  }
+  
+  .question {
+    color: teal;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .answer {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .nb-card-body {
+    padding: 0.75rem !important; /* reduce padding inside card */
+  }
+  .loading-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 300px; /* adjust based on screen */
+  }
+  .form-field-wrapper{
+    margin: 10px 22px;
+  }
+  ::ng-deep nb-card-header {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+  ::ng-deep nb-layout-column {
+    padding: 10px 15px !important;
+  }
+  .required-star {
+    color: red;
+    margin-left: 4px;
+  }
+  
+  

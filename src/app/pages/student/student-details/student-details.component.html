@@ -1,0 +1,83 @@
+<nb-card>
+  <nb-card-body>
+    <div *ngFor="let course of courseDetails" style="background: #f2f2f2; padding: 1.5rem; margin-bottom: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+
+      <!-- Course Title -->
+      <div style="font-size: 18px; font-weight: bold; color: #009688; margin-bottom: 2rem; text-align: center;">
+        {{ studentData.course_alias }}- <span style="font-weight: normal;"> {{studentData.course_name}} </span>
+      </div>
+
+      <!-- Step 1: Student Form Submit -->
+      <div style="display: flex; align-items: center; background: #dedede; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <div style="background: #009688; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;">
+          1
+        </div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <p style="margin: 0; font-weight: 600;">Student Form Submit</p>
+
+            <nb-badge *ngIf="studentData.student_counseling_status == 1" status="success" style="box-shadow: 0 2px 6px rgba(0, 150, 136, 0.5);">
+              Completed
+            </nb-badge>
+            <nb-badge *ngIf="studentData.student_counseling_status == 0" status="warning" style="box-shadow: 0 2px 6px rgba(255, 193, 7, 0.5);">
+              Pending
+            </nb-badge>
+          </div>
+
+          <p *ngIf="studentData.student_counseling_status == 0" style="margin-top: 8px; font-size: 13px; color: #555;">
+            Click on 'Click Here to View Form' and submit your basic details, then answer the basic questions.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 2: Placement Officer Interview -->
+      <div style="display: flex; align-items: center; background: #dedede; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <div style="background: #009688; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;">
+          2
+        </div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <p style="margin: 0; font-weight: 600;">Placement Officer Interview</p>
+
+            <nb-badge *ngIf="studentData.po_counseling_status == 1" status="success" style="box-shadow: 0 2px 6px rgba(0, 150, 136, 0.5);">
+              Completed
+            </nb-badge>
+            <nb-badge *ngIf="course.application_status == 4" status="danger" style="box-shadow: 0 2px 6px rgba(244, 67, 54, 0.5);">
+              Not Eligible
+            </nb-badge>
+            <nb-badge *ngIf="studentData.po_counseling_status == 0" status="warning" style="box-shadow: 0 2px 6px rgba(255, 193, 7, 0.5);">
+              Pending
+            </nb-badge>
+          </div>
+
+          <p *ngIf="course.application_status == 4" style="color: #ff4d4f; margin-top: 8px; font-size: 13px;">
+            You are not eligible for this course.
+          </p>
+          <p *ngIf="studentData.po_counseling_status == 0" style="margin-top: 8px; font-size: 13px; color: #555;">
+            Please wait for the Placement Officer Interview, they will contact you.
+          </p>
+        </div>
+      </div>
+
+      <!-- Step 3: Enguru and Pre-screening Test (optional) -->
+      <div *ngIf="course.application_status == 3" style="display: flex; align-items: center; background: #eeeeee; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+        <div style="background: #009688; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;">
+          3
+        </div>
+        <div style="flex: 1;">
+          <p style="font-weight: 600; margin-bottom: 0.5rem;">Enguru and Pre-screening Test</p>
+          <p style="font-size: 13px; color: #555;">
+            You have completed your interview. <br>Center Manager will contact you for Enguru Test & Pre-screening Test.
+          </p>
+        </div>
+      </div>
+
+      <!-- View Details Button -->
+      <button nbButton status="primary" size="medium" fullWidth style="margin-top: 1rem; border-radius: 8px;"
+        [routerLink]="['/pages/student/student-form']">
+        Click Here to View Form
+      </button>
+
+    </div>
+  </nb-card-body>
+</nb-card>
