@@ -99,6 +99,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (title === 'Log out') {
       this.logout();
     } else if (title === 'Profile') {
+      console.log("profile calling");
       this.goToProfile(); // optional
     }
   });
@@ -112,7 +113,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
   
   goToProfile() {
-    this.router.navigate(['/pages/profile']); // optional, based on your route
+    this.router.navigate(['/pages/profile']); // ✅ correct route
   }
   
 

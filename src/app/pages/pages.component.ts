@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
-
-import { MENU_ITEMS } from './pages-menu';
+// pages.component.ts
+import { Component, OnDestroy } from '@angular/core';
+import { getMenuItems } from './pages-menu';
+import { GlobalService } from '../services/global.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-pages',
@@ -12,7 +14,20 @@ import { MENU_ITEMS } from './pages-menu';
     </ngx-one-column-layout>
   `,
 })
-export class PagesComponent {
+export class PagesComponent implements OnDestroy {
+  menu = [];
+  private subscription: Subscription;
 
-  menu = MENU_ITEMS;
+  constructor(private globalService: GlobalService) {}
+
+  ngOnInit() {
+    this.subscription = this.globalService.roleId$.subscribe(roleId => {
+      this.menu = getMenuItems(roleId);
+      console.log("Updated menu for role:", roleId);
+    });
+  }
+
+  ngOnDestroy() {
+    this.subscription?.unsubscribe();
+  }
 }
