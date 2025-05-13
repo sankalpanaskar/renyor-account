@@ -10,5 +10,5 @@
 
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://cmis4api.anudip.org/public/',
+  apiBaseUrl: 'https://leadapi.anudip.org/public/',
 };
