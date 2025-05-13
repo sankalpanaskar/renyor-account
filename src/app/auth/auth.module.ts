@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { NgxAuthRoutingModule } from './auth-routing.module';
-import { NbCardModule, NbLayoutModule } from '@nebular/theme';
+import { NbCardModule, NbIconModule, NbLayoutModule, NbThemeModule, NbSpinnerModule, NbSelectModule, NbToastrModule } from '@nebular/theme'; // <-- Add NbSpinnerModule here
 import { FormsModule } from '@angular/forms';
 
 import { NbAuthModule } from '@nebular/auth';
@@ -18,8 +18,10 @@ import { NgxLoginComponent } from './login/login.component';
 @NgModule({
   declarations: [NgxLoginComponent],
   imports: [
+    NbThemeModule.forRoot(),
     CommonModule,
     FormsModule,
+    NbSelectModule,
     RouterModule,
     NbAlertModule,
     NbInputModule,
@@ -28,6 +30,9 @@ import { NgxLoginComponent } from './login/login.component';
     NgxAuthRoutingModule,
     NbCardModule,
     NbAuthModule,
+    NbIconModule,
+    NbSpinnerModule, // <-- Ensure this is imported
+    NbToastrModule.forRoot(), // ✅ Add this line
   ]
 })
 export class NgxAuthModule { }

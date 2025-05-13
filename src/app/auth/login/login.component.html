@@ -1,16 +1,32 @@
-<nb-card>
-    <nb-card-header>Login</nb-card-header>
-    <nb-card-body>
-        <div class="row" style="margin-bottom: 25px;">
-            <input nbInput placeholder="User-Id" [(ngModel)]="email" style="width: 80%;max-width: 90%;margin-left: 10%;">
-         </div> 
-         <div class="row" style="margin-bottom: 25px;">
-            <input nbInput type="password" placeholder="Password" [(ngModel)]="password" style="width: 80%;max-width: 90%;margin-left: 10%;">
-         </div> 
-         <div class="row">
-            <button nbButton status="primary" (click)="login()" style="margin: 0px auto;width: 80%;">Login</button>
-         </div>
-     
-    </nb-card-body>
-  </nb-card>
-  
+<nb-card class="login-card">
+  <nb-card-header class="login-header">
+    <!-- Company Logo -->
+    <div class="logo-wrapper">
+      <img src="assets/images/Logo.jpg" alt="Company Logo" class="company-logo" />
+    </div>
+    <div class="title">Welcome Back</div>
+    <div class="subtitle">Please log in to your account</div>
+  </nb-card-header>
+
+  <nb-card-body class="login-body" [nbSpinner]="isLoading" nbSpinnerStatus="primary">
+    <!-- Spinner shown when isLoading is true -->
+    <!-- <div *ngIf="isLoading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;">
+      <nb-spinner size="large"></nb-spinner>
+    </div> -->
+
+    <!-- Login Form -->
+    <div class="form-group">
+      <nb-icon icon="person-outline" pack="eva"></nb-icon>
+      <input nbInput fullWidth placeholder="User ID" [(ngModel)]="email" />
+    </div>
+
+    <div class="form-group">
+      <nb-icon icon="lock-outline" pack="eva"></nb-icon>
+      <input nbInput fullWidth type="password" placeholder="Password" [(ngModel)]="password" />
+    </div>
+
+    <button nbButton status="primary" size="large" fullWidth (click)="login()" [disabled]="isLoading">
+      Login
+    </button>
+  </nb-card-body>
+</nb-card>
