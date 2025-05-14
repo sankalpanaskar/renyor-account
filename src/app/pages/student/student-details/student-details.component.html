@@ -16,15 +16,15 @@
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <p style="margin: 0; font-weight: 600;">Student Form Submit</p>
 
-            <nb-badge *ngIf="studentData.student_counseling_status == 1" status="success" style="box-shadow: 0 2px 6px rgba(0, 150, 136, 0.5);">
+            <nb-badge *ngIf="studentData.student_counseling_status === 1" status="success" style="box-shadow: 0 2px 6px rgba(0, 150, 136, 0.5);">
               Completed
             </nb-badge>
-            <nb-badge *ngIf="studentData.student_counseling_status == 0" status="warning" style="box-shadow: 0 2px 6px rgba(255, 193, 7, 0.5);">
+            <nb-badge *ngIf="studentData.student_counseling_status === 0" status="warning" style="box-shadow: 0 2px 6px rgba(255, 193, 7, 0.5);">
               Pending
             </nb-badge>
           </div>
 
-          <p *ngIf="studentData.student_counseling_status == 0" style="margin-top: 8px; font-size: 13px; color: #555;">
+          <p *ngIf="studentData.student_counseling_status === 0" style="margin-top: 8px; font-size: 13px; color: #555;">
             Click on 'Click Here to View Form' and submit your basic details, then answer the basic questions.
           </p>
         </div>
@@ -39,28 +39,28 @@
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <p style="margin: 0; font-weight: 600;">Placement Officer Interview</p>
 
-            <nb-badge *ngIf="studentData.po_counseling_status == 1" status="success" style="box-shadow: 0 2px 6px rgba(0, 150, 136, 0.5);">
+            <nb-badge *ngIf="studentData.po_counseling_status === 1" status="success" style="box-shadow: 0 2px 6px rgba(0, 150, 136, 0.5);">
               Completed
             </nb-badge>
-            <nb-badge *ngIf="course.application_status == 4" status="danger" style="box-shadow: 0 2px 6px rgba(244, 67, 54, 0.5);">
+            <nb-badge *ngIf="course.application_status === 4" status="danger" style="box-shadow: 0 2px 6px rgba(244, 67, 54, 0.5);">
               Not Eligible
             </nb-badge>
-            <nb-badge *ngIf="studentData.po_counseling_status == 0" status="warning" style="box-shadow: 0 2px 6px rgba(255, 193, 7, 0.5);">
+            <nb-badge *ngIf="studentData.po_counseling_status === 0" status="warning" style="box-shadow: 0 2px 6px rgba(255, 193, 7, 0.5);">
               Pending
             </nb-badge>
           </div>
 
-          <p *ngIf="course.application_status == 4" style="color: #ff4d4f; margin-top: 8px; font-size: 13px;">
+          <p *ngIf="course.application_status === 4" style="color: #ff4d4f; margin-top: 8px; font-size: 13px;">
             You are not eligible for this course.
           </p>
-          <p *ngIf="studentData.po_counseling_status == 0" style="margin-top: 8px; font-size: 13px; color: #555;">
+          <p *ngIf="studentData.po_counseling_status === 0" style="margin-top: 8px; font-size: 13px; color: #555;">
             Please wait for the Placement Officer Interview, they will contact you.
           </p>
         </div>
       </div>
 
       <!-- Step 3: Enguru and Pre-screening Test (optional) -->
-      <div *ngIf="course.application_status == 3" style="display: flex; align-items: center; background: #eeeeee; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+      <div *ngIf="course.application_status === 3" style="display: flex; align-items: center; background: #eeeeee; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
         <div style="background: #009688; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;">
           3
         </div>
