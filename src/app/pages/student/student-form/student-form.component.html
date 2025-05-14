@@ -19,7 +19,7 @@
             </div>
   
             <!-- Form Sections -->
-            <div *ngIf="questionAnsDetailsStatus == 0">
+            <div *ngIf="questionAnsDetailsStatus === 0">
   
               <!-- Personal Information Section -->
               <nb-card class="section-card">
@@ -295,7 +295,7 @@
       </nb-card>
   
       <!-- Counseling Details -->
-      <nb-card *ngIf="questionAnsDetailsStatus == 1">
+      <nb-card *ngIf="questionAnsDetailsStatus === 1">
         <nb-card-header><strong>Counseling Details</strong></nb-card-header>
         <nb-card-body>
           <div *ngIf="questionAnsDetails?.length; else noData">
