@@ -8,8 +8,8 @@
   <nb-card>
 
     <nb-card-header class="dialog-header">
-      <div class="header-title" *ngIf="questionAnsDetailsStatus == 1">Student Answers</div>
-      <div class="header-title" *ngIf="questionAnsDetailsStatus == 0">Counsil Student</div>
+      <div class="header-title" *ngIf="questionAnsDetailsStatus === 1">Student Answers</div>
+      <div class="header-title" *ngIf="questionAnsDetailsStatus === 0">Counsil Student</div>
       <button nbButton size="tiny" status="danger" (click)="dialogRef.close()">Close</button>
     </nb-card-header>
 
@@ -44,7 +44,7 @@
         </nb-card>
 
         <!-- Form Sections -->
-        <div *ngIf="questionAnsDetailsStatus == 0">
+        <div *ngIf="questionAnsDetailsStatus === 0">
 
           <!-- General Section -->
           <nb-card class="section-card">
@@ -219,7 +219,7 @@
       </form>
 
       <!-- Counseling Details -->
-      <nb-card *ngIf="questionAnsDetailsStatus == 1">
+      <nb-card *ngIf="questionAnsDetailsStatus === 1">
         <nb-card-header (click)="toggleCounselingDetails()" style="cursor: pointer;" class="counseling-header">
           <strong>PO Counseling Answers</strong>
           <nb-icon [icon]="showCounselingDetails ? 'chevron-up-outline' : 'chevron-down-outline'" pack="eva"
