@@ -6,7 +6,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./custom-dashboard.component.scss']
 })
 export class CustomDashboardComponent {
-
+//M
   // Summary Cards
   stats = [
     { title: "Today's Leads", value: 45 },
