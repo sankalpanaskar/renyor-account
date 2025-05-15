@@ -15,6 +15,7 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { FormsModule } from '@angular/forms';
 import { LeadEditDialogComponent } from './lead-edit-dialog/lead-edit-dialog.component';
 import { ProfileComponent } from './profile/profile.component';
+import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 
 @NgModule({
   imports: [
@@ -48,6 +49,7 @@ import { ProfileComponent } from './profile/profile.component';
     ManageLeadComponent,
     LeadEditDialogComponent,
     ProfileComponent,
+    CustomDashboardComponent,
   ],
   exports: [
     

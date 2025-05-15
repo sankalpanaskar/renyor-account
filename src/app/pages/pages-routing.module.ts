@@ -10,6 +10,7 @@ import { UploadLeadComponent } from './upload-lead/upload-lead.component';
 import { ManageLeadComponent } from './manage-lead/manage-lead.component';
 import { authGuard } from '../auth/auth.guard';
 import { ProfileComponent } from './profile/profile.component';
+import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 
 
 const routes: Routes = [{
@@ -94,14 +95,22 @@ const routes: Routes = [{
     {
       path: 'add-lead',
       component: AddLeadComponent,
+      canActivate: [authGuard],
     },
     {
       path: 'upload-lead',
       component: UploadLeadComponent,
+      canActivate: [authGuard],
     },
     {
       path: 'manage-lead',
       component: ManageLeadComponent,
+      canActivate: [authGuard],
+    },
+    {
+      path: 'custom-dashboard',
+      component: CustomDashboardComponent,
+      canActivate: [authGuard],
     },
     {
       path: '**',

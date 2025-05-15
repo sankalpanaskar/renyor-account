@@ -1,0 +1,165 @@
+/* Base Dashboard Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  align-items: start;
+  background-color: var(--background-basic-color-2);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+/* Summary Cards Section */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+
+.summary-cards nb-card {
+  background-color: var(--background-basic-color-1);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  text-align: center;
+}
+
+.summary-cards nb-card:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.summary-cards nb-card-header {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-basic-color);
+  padding: 1rem 1rem 0.5rem 1rem;
+  border-bottom: none !important;
+}
+
+.summary-cards nb-card-body {
+  overflow: hidden !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+}
+
+/* Value Styling */
+.summary-value {
+  font-size: 2.0rem;
+  font-weight: 700;
+  color: var(--text-primary-color);
+  text-align: center;
+  margin: 0;
+}
+
+/* Followups Section */
+.followups-card {
+  display: block;
+}
+
+.followups-card nb-card {
+  background-color: var(--background-basic-color-1);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+/* Follow-up Table Styling */
+.followup-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: var(--background-basic-color-1);
+  border-radius: 12px;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.followup-table:hover {
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.followup-table th,
+.followup-table td {
+  padding: 0.4rem;
+  text-align: left;
+  border-bottom: 1px solid var(--divider-color);
+  font-size: 0.95rem;
+}
+
+.followup-table th {
+  background-color: var(--background-basic-color-2);
+  font-weight: 700;
+  color: var(--text-basic-color);
+}
+
+.followup-table td {
+  color: var(--text-basic-color);
+}
+
+.followup-table a {
+  color: var(--text-primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.followup-table a:hover {
+  color: var(--text-primary-focus-color);
+  text-decoration: underline;
+}
+
+.more-link {
+  text-align: right;
+  margin-top: 0.5rem;
+  padding-right: 0.25rem;
+  font-size: 0.9rem;
+  color: var(--text-hint-color);
+}
+
+/* Lower Section Grid */
+.lower-grid {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.lower-grid nb-card {
+  background-color: var(--background-basic-color-1);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.center-text {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  color: var(--text-hint-color);
+  padding: 2rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .summary-cards {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .followups-card {
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .summary-cards {
+    grid-template-columns: 1fr;
+  }
+}
