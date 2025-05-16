@@ -46,7 +46,7 @@ export class ManageLeadComponent implements OnInit {
       },
       leadName: {
         title: 'Name',
-        width: '120px',
+        width: '60px',
         type: 'string',
         filter: false,
         editable: false
@@ -59,7 +59,7 @@ export class ManageLeadComponent implements OnInit {
       },
       leadStatus: {
         title: 'Status',
-        width: '80px',
+        width: '50px',
         filter: false,
         editable: false,
         type: 'html',
@@ -120,7 +120,7 @@ export class ManageLeadComponent implements OnInit {
       },
       owner: {
         title: 'Owner',
-        width: '130px',
+        width: '60px',
         type: 'string',
         filter: false,
         editable: false
@@ -131,6 +131,12 @@ export class ManageLeadComponent implements OnInit {
         filter: false,
         editable: false
       },
+    //  oriId: {
+    //     title: 'Ori no',
+    //     type: 'number',
+    //     filter: false,
+    //     editable: false
+    //   },
       state: {
         title: 'State',
         width: '80px',
@@ -237,7 +243,9 @@ export class ManageLeadComponent implements OnInit {
           center: item.center_code,
           course: item.course_alias,
           callDate: item.follow_up_date,
-          leadStatusId: item.lead_status_id
+          leadStatusId: item.lead_status_id,
+          oriId: item.ori_no
+
         }));
         this.source.load(mappedData);
         this.updateFollowupCounts();
@@ -312,7 +320,9 @@ export class ManageLeadComponent implements OnInit {
       center: item.center_code,
       course: item.course_alias,
       callDate: item.follow_up_date,
-      leadStatusId: item.lead_status_id
+      leadStatusId: item.lead_status_id,
+      oriId: item.ori_no
+
     }));
 
     // Now update the smart table data source (if that's what you want)

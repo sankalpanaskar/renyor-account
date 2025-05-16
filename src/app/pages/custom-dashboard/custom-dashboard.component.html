@@ -1,40 +1,19 @@
 <!-- Dashboard Layout -->
 <div class="dashboard-grid">
+       <!-- Spinner overlay -->
+    <div *ngIf="isSubmitting" class="loading-overlay d-flex justify-content-center align-items-center">
+      <nb-spinner size="large" status="primary"></nb-spinner>
+    </div>
+
     <!-- Left Side: Summary Cards -->
     <div class="summary-cards">
-        <nb-card *ngFor="let stat of stats">
+        <nb-card *ngFor="let stat of statsData">
             <nb-card-header>{{ stat.title }}</nb-card-header>
             <nb-card-body class="summary-value">{{ stat.value }}</nb-card-body>
         </nb-card>
     </div>
 
-    <!-- Right Side: Follow-ups Panel -->
-    <div class="followups-card">
-        <nb-card>
-            <nb-card-header>Followups</nb-card-header>
-            <nb-card-body>
-                <table class="followup-table">
-                    <thead>
-                        <tr>
-                            <th>Sl</th>
-                            <th>Lead Name</th>
-                            <th>Phone</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr *ngFor="let item of followups; let i = index">
-                            <td>{{ i + 1 }}</td>
-                            <td>{{ item.name }}</td>
-                            <td>{{ item.phone }}</td>
-                            <!-- <td><a href="#">View</a></td> -->
-                        </tr>
-                    </tbody>
-                </table>
-                <div class="more-link"><a href="#">More...</a></div>
-            </nb-card-body>
-        </nb-card>
-    </div>
+   
 
     <!-- Lower Grid: Charts & Reports -->
     <div class="lower-grid">
@@ -43,22 +22,10 @@
             <nb-card-header>Leads Performance</nb-card-header>
             <nb-card-body>
                 <!-- Bar chart goes here -->
+    <ngx-chartjs-bar [chartData]="chartBarData"></ngx-chartjs-bar>
             </nb-card-body>
         </nb-card>
 
-        <!-- Placeholder -->
-        <nb-card>
-            <nb-card-body class="center-text">
-                Place left Blank for Report.TBD
-            </nb-card-body>
-        </nb-card>
 
-        <!-- Donut Chart -->
-        <nb-card>
-            <nb-card-header>Social Media</nb-card-header>
-            <nb-card-body>
-                <!-- Donut chart goes here -->
-            </nb-card-body>
-        </nb-card>
     </div>
 </div>

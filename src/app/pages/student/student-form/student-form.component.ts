@@ -16,6 +16,8 @@ export class StudentFormComponent implements OnInit {
   studentData: any = [];
   loading: boolean = false;
   isSubmitting: boolean = false;
+  studentStreams: any = [];
+  showStream: boolean = false;
 
     constructor(
       private globalService: GlobalService,
@@ -30,7 +32,7 @@ export class StudentFormComponent implements OnInit {
       lead_id : this.globalService.currentUser.lead_id
     }
     this.loadStudentBasicData(data);
-   
+    this.loadStreams();
   }
 
   loadStudentBasicData(lead_id): void {
@@ -57,6 +59,23 @@ export class StudentFormComponent implements OnInit {
       },
     });
   }
+
+   loadStreams(): void {
+    this.isSubmitting = true; // <-- start loader
+  
+    this.globalService.getStudentStreams().subscribe({
+      next: (res) => {
+        this.studentStreams = res.data.stream;
+        console.log("stream data",this.studentStreams);
+        this.isSubmitting = false; // <-- stop loader
+      },
+      error: (err) => {
+        console.error('Student error:', err);
+        this.toastrService.danger(err.message, 'Error');
+        this.isSubmitting = false; // <-- stop loader even on error
+      },
+    });
+  }
   
 
   async questionChange(event: any, q: any) {
@@ -71,6 +90,11 @@ export class StudentFormComponent implements OnInit {
       'question': q,
       'answer': ans
     });
+    if(this.model.highest_qualification == "Graduation"){
+      this.showStream = true;
+    }else{
+      this.showStream = false;
+    }
     console.log("qArray Model---", this.qArray);
   }
 

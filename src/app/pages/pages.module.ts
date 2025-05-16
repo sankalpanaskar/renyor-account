@@ -16,6 +16,7 @@ import { FormsModule } from '@angular/forms';
 import { LeadEditDialogComponent } from './lead-edit-dialog/lead-edit-dialog.component';
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
+import { ChartsModule } from './charts/charts.module';
 
 @NgModule({
   imports: [
@@ -40,6 +41,7 @@ import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.co
     Ng2SmartTableModule,
     FormsModule,
     NbSpinnerModule,
+    ChartsModule
 
   ],
   declarations: [

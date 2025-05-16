@@ -129,8 +129,13 @@ export class GlobalService {
     return this.http.post(`${this.leadUrl}/lead-data-by-id`,leadId);
   }
 
+    public getStudentStreams(): Observable<any> {
+    return this.http.get(`${this.leadUrl}/get-stream`);
+  }
+
   public saveStudentForm(leadId: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/insert-student-answer`,leadId);
+    // return this.http.post(`${this.leadUrl}/insert-student-answer`,leadId);
+        return this.http.post(`${this.leadUrl}/""`,leadId);
   }
 
   // PO Student List API
@@ -176,8 +181,14 @@ export class GlobalService {
     return this.http.post(`${this.apiUrl}/add-lead`,data);
   }
 
+  // Dashboard API
+    public getStatsData(): Observable<any> {
+    return this.http.get(`${this.leadUrl}/get-crm-dasboard-stats`);
+  }
 
-
+     public getChartData(): Observable<any> {
+    return this.http.get(`${this.leadUrl}/get-monthly-crm-summary`);
+  }
 
 
   getUserProfile(): Observable<any> {

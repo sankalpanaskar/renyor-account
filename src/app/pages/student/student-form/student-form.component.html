@@ -50,6 +50,25 @@
                       </div>
                     </div>
                   </nb-card>
+
+                     <!-- Stream -->
+                  <nb-card *ngIf="showStream">
+                    <nb-card-header>What is your graduation Stream? 
+                        <span class="required-star">*</span>
+                    </nb-card-header>
+                    <div class="form-field-wrapper">
+                      <nb-form-field fullWidth>
+                       <nb-select placeholder="Select Stream" [(ngModel)]="model.stream" name="stream" #stream="ngModel"
+                      required (ngModelChange)="questionChange($event, 'What is your graduation Stream? ')">
+                      <nb-option *ngFor="let stream of studentStreams"
+                        [value]="stream.stream_name">{{stream.stream_name}}</nb-option>
+                    </nb-select>
+                  </nb-form-field>
+                  <div *ngIf="fm.submitted && stream.invalid" class="error-text">
+                    Please select stream
+                  </div>
+                    </div>
+                  </nb-card>
   
                   <!-- Parent Occupation -->
                   <nb-card>

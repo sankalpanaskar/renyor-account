@@ -58,6 +58,7 @@ const components = [
     ChartModule,
     NbCardModule,
   ],
+ exports: [D3BarComponent,ChartjsBarComponent] , // 👈 Export it to use in other modules
   declarations: [...routedComponents, ...components],
 })
 export class ChartsModule {}

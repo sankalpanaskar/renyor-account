@@ -11,6 +11,7 @@ import { NbThemeService } from '@nebular/theme';
       [yAxis]="showYAxis"
       [legend]="showLegend"
       [xAxisLabel]="xAxisLabel"
+      [view]="[830, 200]"
       [yAxisLabel]="yAxisLabel">
     </ngx-charts-bar-vertical>
   `,

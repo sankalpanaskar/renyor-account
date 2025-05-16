@@ -19,6 +19,10 @@
             <nb-option *ngFor="let center of centerList" [value]="center">
               {{ center.short_code }}
             </nb-option>
+              <!-- Show fallback if no centers -->
+            <nb-option *ngIf="centerList.length === 0" [disabled]="false">
+              No new counselling for center available,wait for new student to counsil !
+            </nb-option>
           </nb-select>
         </div>
 

@@ -25,14 +25,14 @@
           </div>
 
           <p *ngIf="studentData.student_counseling_status === 0" style="margin-top: 8px; font-size: 13px; color: #555;">
-            Click on 'Click Here to View Form' and submit your basic details, then answer the basic questions.
+            Click on 'Click Here to Submit Your Form' and submit your basic details, then answer the basic questions.
           </p>
         </div>
       </div>
 
       <!-- Step 2: Placement Officer Interview -->
-      <div style="display: flex; align-items: center; background: #dedede; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
-        <div style="background: #009688; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;">
+      <div style="display: flex; align-items: center; background: #dedede; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;" *ngIf="studentData.student_counseling_status === 1">
+        <div style="background: #009688; color: white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 1rem;" >
           2
         </div>
         <div style="flex: 1;">
@@ -74,8 +74,12 @@
 
       <!-- View Details Button -->
       <button nbButton status="primary" size="medium" fullWidth style="margin-top: 1rem; border-radius: 8px;"
-        [routerLink]="['/pages/student/student-form']">
-        Click Here to View Form
+        [routerLink]="['/pages/student/student-form']" *ngIf="studentData.student_counseling_status === 0">
+        Click Here to Submit Your Form
+      </button>
+        <button nbButton status="success" size="medium" fullWidth style="margin-top: 1rem; border-radius: 8px;"
+        [routerLink]="['/pages/student/student-form']" *ngIf="studentData.student_counseling_status === 1">
+        Click See Your Answers
       </button>
 
     </div>

@@ -12,10 +12,12 @@
 
 /* Summary Cards Section */
 .summary-cards {
+  grid-column: 1 / -1; /* 👈 make it span the full width of the dashboard-grid */
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, 1fr); /* 4 per row */
   gap: 1rem;
 }
+
 
 .summary-cards nb-card {
   background-color: var(--background-basic-color-1);
@@ -56,69 +58,6 @@
   color: var(--text-primary-color);
   text-align: center;
   margin: 0;
-}
-
-/* Followups Section */
-.followups-card {
-  display: block;
-}
-
-.followups-card nb-card {
-  background-color: var(--background-basic-color-1);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
-}
-
-/* Follow-up Table Styling */
-.followup-table {
-  width: 100%;
-  border-collapse: collapse;
-  background-color: var(--background-basic-color-1);
-  border-radius: 12px;
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
-}
-
-.followup-table:hover {
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.followup-table th,
-.followup-table td {
-  padding: 0.4rem;
-  text-align: left;
-  border-bottom: 1px solid var(--divider-color);
-  font-size: 0.95rem;
-}
-
-.followup-table th {
-  background-color: var(--background-basic-color-2);
-  font-weight: 700;
-  color: var(--text-basic-color);
-}
-
-.followup-table td {
-  color: var(--text-basic-color);
-}
-
-.followup-table a {
-  color: var(--text-primary-color);
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s ease;
-}
-
-.followup-table a:hover {
-  color: var(--text-primary-focus-color);
-  text-decoration: underline;
-}
-
-.more-link {
-  text-align: right;
-  margin-top: 0.5rem;
-  padding-right: 0.25rem;
-  font-size: 0.9rem;
-  color: var(--text-hint-color);
 }
 
 /* Lower Section Grid */
@@ -162,4 +101,19 @@
   .summary-cards {
     grid-template-columns: 1fr;
   }
+}
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1050; // Make sure it's on top of everything
+  height: 100%;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.content-blur {
+  filter: blur(1px);
+  pointer-events: none;
+  user-select: none;
 }
