@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { RejectedCounselingButtonComponent } from './rejected-counseling-btn.component';
@@ -10,7 +10,7 @@ import { RejectedInterviewComponent } from '../rejected-interview/rejected-inter
   templateUrl: './rejected-counseling.component.html',
   styleUrls: ['./rejected-counseling.component.scss']
 })
-export class RejectedCounselingComponent {
+export class RejectedCounselingComponent implements OnInit{
  source: LocalDataSource = new LocalDataSource();
 
   settings = {
