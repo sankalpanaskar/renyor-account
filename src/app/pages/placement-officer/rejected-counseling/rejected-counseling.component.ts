@@ -81,18 +81,12 @@ export class RejectedCounselingComponent implements OnInit{
         type: 'html',
         valuePrepareFunction: (cell: any) => {
           console.log("cell value---", cell);
-          if (cell === 6) {
-            return `<h6><span class="badge rounded-pill bg-warning text-white pl-2 pr-2 custom-badge">Student Pending</span></h6>`;
+          if (cell === 9) {
+            return `<h6><span class="badge rounded-pill bg-danger text-white pl-2 pr-2 custom-badge">PO Rejected</span></h6>`;
           }
-          else if (cell === 7) {
-            return `<h6><span class="badge rounded-pill bg-danger text-white pl-2 pr-2 custom-badge">PO Pending</span></h6>`;
-          }
-          else if (cell === 9) {
-            return `<h6><span class="badge rounded-pill bg-success text-white pl-2 pr-2 custom-badge">PO Done</span></h6>`;
-          }
-          else if (cell === 8) {
-            return `<h6><span class="badge rounded-pill bg-success text-white pl-2 pr-2 custom-badge">PO Done</span></h6>`;
-          }
+          // else if (cell === 8) {
+          //   return `<h6><span class="badge rounded-pill bg-success text-white pl-2 pr-2 custom-badge">PO Done</span></h6>`;
+          // }
 
         }
       },
@@ -135,14 +129,16 @@ export class RejectedCounselingComponent implements OnInit{
   }
 
   loadCentersRejected() {
+    this.loading = true;
     this.globalService.getRejectedCenterFilter().subscribe({
       next: (res) => {
         this.centerList = res.data;
-
+        this.loading = false;
       },
       error: (err) => {
         console.error('State error:', err);
         this.toastrService.danger(err.message, 'Error');
+        this.loading = false;
       },
     });
   }

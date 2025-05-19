@@ -139,7 +139,7 @@ export class GlobalService {
   }
 
    public saveRejectedPOAnswers(leadId: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/""`,leadId);
+    return this.http.post(`${this.leadUrl}/accept-rejected-students`,leadId);
         // return this.http.post(`${this.leadUrl}/""`,leadId);
   }
 

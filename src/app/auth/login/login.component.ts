@@ -75,8 +75,8 @@ export class NgxLoginComponent {
               this.globalService.setUser(user);
               
               this.toastrService.success(response?.body?.message || 'Login successful', 'Success');
-              // this.router.navigate(['/pages/dashboard']);
-              this.router.navigate(['/pages/manage-lead']);
+              this.router.navigate(['/pages/custom-dashboard']);
+              // this.router.navigate(['/pages/manage-lead']);
               this.isLoading = false;
             } else {
               this.toastrService.danger('Invalid login response', 'Login Failed');

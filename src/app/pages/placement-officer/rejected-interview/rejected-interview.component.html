@@ -207,14 +207,14 @@
                 <nb-radio-group name="q9" [(ngModel)]="model.q9" #q9="ngModel" required
                   (ngModelChange)="recommendationChange($event)">
                   <nb-radio value="Accept"> Accept </nb-radio>
-                  <nb-radio value="Reject"> Reject </nb-radio>
+                  <!-- <nb-radio value="Reject"> Reject </nb-radio> -->
                 </nb-radio-group>
                 <div *ngIf="fm.submitted && q9.invalid" class="error-text">
                   <nb-text status="danger">Please select any option</nb-text>
                 </div>
               </nb-card>
 
-              <nb-card *ngIf="remarksShowHide">
+              <nb-card>
                 <nb-card-header> Give Remarks
                   <span style=" color: red;font-size: 12px;
                    ">(Remarks are required)</span>

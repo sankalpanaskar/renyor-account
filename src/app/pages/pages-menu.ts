@@ -13,6 +13,15 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
     //   icon: 'home-outline',
     //   link: '/pages/iot-dashboard',
     // },
+       ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
+      ? [
+     {
+      title: 'Dashboard',
+      icon: 'home-outline',
+      link: '/pages/custom-dashboard',
+    },
+      ]
+  : []),
     {
       title: 'FEATURES',
       group: true,
@@ -70,6 +79,10 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         {
           title: 'Manage Counseling',
           link: '/pages/placement-officer/manage-counseling',
+        },
+         {
+          title: 'Rejected Students',
+          link: '/pages/placement-officer/rejected-counseling',
         },
       ],
     },

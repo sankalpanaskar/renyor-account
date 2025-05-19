@@ -38,6 +38,7 @@ export class RejectedInterviewComponent implements OnInit{
       lead_id: this.data.lead_id
     }
     console.log("data ---- - ", this.data);
+    this.model.q9 = "Accept";
     this.loadStudentBasicData(data);
   }
 

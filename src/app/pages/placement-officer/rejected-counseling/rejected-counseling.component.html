@@ -13,7 +13,7 @@
     <!-- Content -->
     <div [class.content-blur]="loading">
       <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-12">
           <nb-select placeholder="Select Center" [selected]="selectedCenter" (selectedChange)="centerChange($event)"
             fullWidth>
             <nb-option *ngFor="let center of centerList" [value]="center">
@@ -26,7 +26,7 @@
           </nb-select>
         </div>
 
-        <div class="col-md-6">
+        <!-- <div class="col-md-6">
           <div class="filterDiv" >
             <nb-radio-group [(ngModel)]="selectedFilter" (ngModelChange)="onFilterChange($event)"
               class="d-flex flex-wrap gap-2">
@@ -38,7 +38,7 @@
               <nb-radio value="po_pending" class="custom-radio-space my-radio" style="color: red;">PO Pending</nb-radio>
             </nb-radio-group>
           </div>
-        </div>
+        </div> -->
       </div>
 
       <input type="text" nbInput fullWidth shape="semi-round" #search class="search mb-3" placeholder="Search..."
