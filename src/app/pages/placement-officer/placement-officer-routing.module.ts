@@ -5,6 +5,8 @@ import { InterviewQuestionsComponent } from './interview-questions/interview-que
 import { StudentAnswersComponent } from './student-answers/student-answers.component';
 import { ManageCounselingComponent } from './manage-counseling/manage-counseling.component';
 import { authGuard } from '../../auth/auth.guard';
+import { RejectedCounselingComponent } from './rejected-counseling/rejected-counseling.component';
+import { RejectedInterviewComponent } from './rejected-interview/rejected-interview.component';
 
 const routes: Routes = [{
   path: '',
@@ -21,6 +23,18 @@ const routes: Routes = [{
   {
     path: 'manage-counseling',
     component: ManageCounselingComponent,
+    canActivate: [authGuard],
+    
+  },
+    {
+    path: 'rejected-counseling',
+    component: RejectedCounselingComponent,
+    canActivate: [authGuard],
+    
+  },
+     {
+    path: 'rejected-interview',
+    component: RejectedInterviewComponent,
     canActivate: [authGuard],
     
   }

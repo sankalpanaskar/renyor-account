@@ -37,6 +37,7 @@ export class LeadEditDialogComponent implements OnInit {
   leadFlowData: any = [];
   hideForm: boolean = false;
   isSubmitting: boolean = false;
+  oriId: any;
 
 
   constructor(
@@ -56,13 +57,13 @@ export class LeadEditDialogComponent implements OnInit {
     this.model.phone_number = this.data.phone_number;
     this.model.email_id = this.data.email_id;
     this.model.pincode = this.data.pincode;
-
     this.model.state = this.data.state; // "Andaman and Nicobar Islands"
     this.model.distric = this.data.district; // "Nicobar"
     this.model.center_code = this.data.center_code;
     this.model.course = this.data.course_alias;
     this.model.category = this.data.category;
     this.model.source_type = this.data.source_type;
+    this.oriId = this.data.ori_no;
 
     this.preselectedStatus = this.data.lead_status;
     this.preselectedStage = this.data.lead_stage;

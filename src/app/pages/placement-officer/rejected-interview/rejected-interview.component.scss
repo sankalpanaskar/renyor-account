@@ -1,0 +1,187 @@
+.header-title {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px;
+  }
+  
+  .logout-icon {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  
+  .section-card {
+    margin-bottom: 20px;
+    background-color: var(--background-basic-color-2); // theme-aware
+  }
+  
+  .form-section nb-card {
+    margin-bottom: 15px;
+  }
+  
+  .error-text {
+    color: red;
+    font-size: 12px;
+    margin: 10px 25px;
+    }
+  
+  .form-footer {
+    text-align: right;
+    margin-top: 20px;
+  }
+  ::ng-deep nb-radio-group {
+    margin: 10px 22px !important;
+  }
+  .info-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    border: 1px solid #009688;
+    border-radius: 8px;
+    margin: 10px 0px;
+    padding: 10px;
+
+  }
+
+  .info-group {
+    flex: 1 1 100%;
+    // border: 1px solid #009688;
+    padding: 2px;
+    // border-radius: 8px;
+  }
+  
+  /* For larger screens: 2 items per row */
+  @media (min-width: 768px) {
+    .info-group {
+      flex: 1 1 calc(50% - 10px); /* two columns with gap */
+    }
+  }
+  .qa-block {
+    border-left: 4px solid teal;
+    border-bottom: 2px solid #d2f0f0;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background-color: #fff;
+    border-radius: 4px;
+  }
+  
+  .question {
+    color: teal;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .answer {
+    color: #333;
+    font-weight: 500;
+  }
+  
+  .nb-card-body {
+    padding: 0.75rem !important; /* reduce padding inside card */
+  }
+  // .loading-wrapper {
+  //   display: flex;
+  //   justify-content: center;
+  //   align-items: center;
+  //   height: 300px;
+  //   background: white; /* Or a contrasting color */
+  //   position: relative;
+  //   z-index: 10;        /* Ensure it's above other elements */
+  // }
+
+  .form-field-wrapper{
+    margin: 10px 22px;
+  }
+  ::ng-deep nb-card-header {
+    padding: 10px 15px;
+    font-size: 14px;
+  }
+  ::ng-deep nb-layout-column {
+    padding: 10px 15px !important;
+  }
+  ::ng-deep nb-dialog-container {
+  /* set your desired width */
+  width: 800px !important;
+  max-width: 1000px !important;
+  // margin-left: 5% !important;           /* never overflow viewport */
+}
+.scrollable-body {
+  max-height: 100vh;  /* Adjust based on your design */
+  overflow-y: auto;
+  padding-right: 1rem; /* Optional: space for scrollbar */
+}
+::ng-deep nb-spinner.custom-spinner .spin-circle {
+  border-top-color: #009688 !important; /* or any contrasting color */
+  border-width: 4px !important;
+}
+
+::ng-deep nb-spinner.custom-spinner {
+  width: 3rem;
+  height: 3rem;
+  display: block;
+}
+.loading-wrapper {
+  background-color: #f9f9f9; /* contrast with white spinner */
+}
+::ng-deep nb-form-field textarea {
+  width: 100% !important;
+}
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1050; // Make sure it's on top of everything
+  height: 100%;
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.6);
+}
+
+.content-blur {
+  filter: blur(1px);
+  pointer-events: none;
+  user-select: none;
+}
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* ✅ allow wrapping */
+  gap: 0.5rem;
+  padding: 10px 15px;
+}
+.scrollable-body {
+  max-height: calc(100vh - 60px); /* Adjust to account for header height */
+  overflow-y: auto;
+  padding: 1rem;
+  padding-bottom: 4rem; /* ✅ Extra space for buttons */
+}
+
+
+.dialog-header .header-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+:host ::ng-deep nb-card-header.counseling-header {
+  background-color: rgb(0 128 128);
+  color: white;   
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  // border-top-left-radius: 0.75rem;
+  // border-top-right-radius: 0.75rem;
+  transition: background-color 0.3s ease;
+}
+
+:host ::ng-deep nb-card-header.counseling-header:hover {
+  background-color:  #229b8fdc;
+}
+.required-star {
+  color: red;
+  margin-left: 4px;
+}
+

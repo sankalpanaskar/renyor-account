@@ -118,6 +118,11 @@
                       <label class="small-label"><strong>Follow Up Date:</strong> {{ preselectedFollowDate }}</label>
                     </div>
                   </div>
+                  <div class="row">
+                        <div class="col-lg-6" *ngIf="oriId != null">
+                      <label class="small-label"><strong>ORI Number:</strong> {{ oriId }}</label>
+                    </div>
+                  </div>
 
                   <div class="row" *ngIf="!hideForm">
                     <div class="col-lg-6">

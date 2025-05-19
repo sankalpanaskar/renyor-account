@@ -134,8 +134,13 @@ export class GlobalService {
   }
 
   public saveStudentForm(leadId: any): Observable<any> {
-    // return this.http.post(`${this.leadUrl}/insert-student-answer`,leadId);
-        return this.http.post(`${this.leadUrl}/""`,leadId);
+    return this.http.post(`${this.leadUrl}/insert-student-answer`,leadId);
+        // return this.http.post(`${this.leadUrl}/""`,leadId);
+  }
+
+   public saveRejectedPOAnswers(leadId: any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/""`,leadId);
+        // return this.http.post(`${this.leadUrl}/""`,leadId);
   }
 
   // PO Student List API
@@ -145,6 +150,11 @@ export class GlobalService {
 
   public getStudentList(centerId: any): Observable<any> {
     return this.http.get(`${this.leadUrl}/get-student-for-PO/${centerId}`);
+  }
+
+  // for getting rejected student
+   public getRejectedStudentList(centerId: any): Observable<any> {
+    return this.http.get(`${this.leadUrl}/get-rejected-students/${centerId}`);
   }
 
   public poIterviewSubmit(data: any): Observable<any> {
@@ -179,6 +189,10 @@ export class GlobalService {
 
   public leadSubmitReg(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/add-lead`,data);
+  }
+
+   public getRejectedCenterFilter(): Observable<any> {
+    return this.http.get(`${this.leadUrl}/get-rejected-centers`);
   }
 
   // Dashboard API

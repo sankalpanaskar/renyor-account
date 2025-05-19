@@ -1,0 +1,248 @@
+<div class="custom-background">
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
+    <nb-spinner size="large" status="primary"></nb-spinner>
+  </div>
+
+  <!-- Student Details Form -->
+  <nb-card>
+
+    <nb-card-header class="dialog-header">
+      <!-- <div class="header-title" *ngIf="questionAnsDetailsStatus === 1">Student Answers</div> -->
+      <div class="header-title">Counsil Rejected Student</div>
+      <button nbButton size="tiny" status="danger" (click)="dialogRef.close()">Close</button>
+    </nb-card-header>
+
+    <nb-card-body class="scrollable-body" [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+      <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate>
+
+        <!-- Student Info Section -->
+        <div class="info-wrapper">
+          <div class="info-group"><strong>Name:</strong> {{ studentData.first_name }} {{ studentData.last_name }}</div>
+          <div class="info-group"><strong>Email:</strong> {{ studentData.email_id }}</div>
+        </div>
+
+        <!-- Student Counseling Details -->
+        <nb-card>
+          <nb-card-header (click)="toggleCounselingStudent()" style="cursor: pointer;" class="counseling-header">
+            <strong>Student Counseling Answers</strong>
+            <nb-icon [icon]="showCounselingStudent ? 'chevron-up-outline' : 'chevron-down-outline'" pack="eva"
+              style="float: right;"></nb-icon>
+          </nb-card-header>
+
+          <nb-card-body *ngIf="showCounselingStudent">
+            <div *ngIf="studentAnswers?.length; else noData">
+              <div *ngFor="let qa of studentAnswers" class="qa-block">
+                <p class="question"><strong>Question :</strong> {{ qa.question }}</p>
+                <p class="answer"><strong>Answer :</strong> {{ qa.student_answer }}</p>
+              </div>
+            </div>
+            <ng-template #noData>
+              <p>No counseling data found.</p>
+            </ng-template>
+          </nb-card-body>
+        </nb-card>
+
+        <!-- Counseling Details -->
+      <nb-card >
+        <nb-card-header (click)="toggleCounselingDetails()" style="cursor: pointer;" class="counseling-header">
+          <strong>PO Previous Counseling Answers</strong>
+          <nb-icon [icon]="showCounselingDetails ? 'chevron-up-outline' : 'chevron-down-outline'" pack="eva"
+            style="float: right;"></nb-icon>
+        </nb-card-header>
+
+        <nb-card-body *ngIf="showCounselingDetails">
+          <div *ngIf="questionAnsDetails?.length; else noData">
+            <div *ngFor="let qa of questionAnsDetails" class="qa-block">
+              <p class="question"><strong>Question :</strong> {{ qa.question }}</p>
+              <p class="answer"><strong>Answer :</strong> {{ qa.student_answer }}</p>
+            </div>
+          </div>
+          <ng-template #noData>
+            <p>No counseling data found.</p>
+          </ng-template>
+        </nb-card-body>
+      </nb-card>
+
+
+        <!-- Form Sections -->
+        <div >
+
+          <!-- General Section -->
+          <nb-card class="section-card">
+            <nb-card-header>PO Counseling</nb-card-header>
+            <div class="form-section">
+
+              <!-- Currently Employed -->
+              <nb-card>
+                <nb-card-header>Have you done any other IT course before ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q1" [(ngModel)]="model.q1" #q1="ngModel" required
+                  (ngModelChange)="questionChange($event, 'Have you done any other IT course before ?')">
+                  <nb-radio value="Yes">Yes</nb-radio>
+                  <nb-radio value="No">No</nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q1.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+              <!-- Primary Reason -->
+              <nb-card>
+                <nb-card-header>Are you working ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q2" [(ngModel)]="model.q2" #q2="ngModel" required
+                  (ngModelChange)="questionChange($event, 'Are you working ?')">
+                  <nb-radio value="Yes">Yes</nb-radio>
+                  <nb-radio value="No">No</nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q2.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+              <nb-card>
+                <nb-card-header>How many hours per day can you devote for the course ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q3" [(ngModel)]="model.q3" #q3="ngModel" required
+                  (ngModelChange)="questionChange($event, 'How many hours per day can you devote for the course ?')">
+                  <nb-radio value="Less than 4 Hours"> Less than 4 Hours </nb-radio>
+                  <nb-radio value="4-6 Hours"> 4-6 Hours </nb-radio>
+                  <nb-radio value="Above 6 Hours"> Above 6 Hours </nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q3.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+              <nb-card>
+                <nb-card-header>Do you have a Linked In profile ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q4" [(ngModel)]="model.q4" #q4="ngModel" required
+                  (ngModelChange)="questionChange($event, 'Do you have a Linked In profile ?')">
+                  <nb-radio value="Yes">Yes</nb-radio>
+                  <nb-radio value="No">No</nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q4.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+              <nb-card>
+                <nb-card-header>What do you do to unwind ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q5" [(ngModel)]="model.q5" #q5="ngModel" required
+                  (ngModelChange)="questionChange($event, 'What do you do to unwind ?')">
+                  <nb-radio value="Any activity"> Any activity </nb-radio>
+                  <nb-radio value="Nothing"> Nothing </nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q5.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+              <nb-card>
+                <nb-card-header>What is the reason for joining this course ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q6" [(ngModel)]="model.q6" #q6="ngModel" required
+                  (ngModelChange)="questionChange($event, 'What is the reason for joining this course ?')">
+                  <nb-radio value="Placement"> Placement </nb-radio>
+                  <nb-radio value="Upskilling"> Upskilling </nb-radio>
+                  <nb-radio value="Both"> Both </nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q6.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+              <nb-card>
+                <nb-card-header>Are you willing to relocate ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q7" [(ngModel)]="model.q7" #q7="ngModel" required
+                  (ngModelChange)="questionChange($event, 'Are you willing to relocate ?')">
+                  <nb-radio value="Yes">Yes</nb-radio>
+                  <nb-radio value="No">No</nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q7.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+              <nb-card>
+                <nb-card-header>Have you given any interviews before ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q8" [(ngModel)]="model.q8" #q8="ngModel" required
+                  (ngModelChange)="questionChange($event, 'Have you given any interviews before ?')">
+                  <nb-radio value="Yes">Yes</nb-radio>
+                  <nb-radio value="No">No</nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q8.invalid" class="error-text">
+                  Please select any option
+                </div>
+              </nb-card>
+
+
+
+            </div>
+          </nb-card>
+
+          <!-- Career Goal Section -->
+          <nb-card class="section-card">
+            <nb-card-header>Recommendation Status</nb-card-header>
+            <div class="form-section">
+
+              <!-- Career Goals -->
+              <nb-card>
+                <nb-card-header>Choose Recommendation ?
+                  <span class="required-star">*</span>
+                </nb-card-header>
+                <nb-radio-group name="q9" [(ngModel)]="model.q9" #q9="ngModel" required
+                  (ngModelChange)="recommendationChange($event)">
+                  <nb-radio value="Accept"> Accept </nb-radio>
+                  <nb-radio value="Reject"> Reject </nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && q9.invalid" class="error-text">
+                  <nb-text status="danger">Please select any option</nb-text>
+                </div>
+              </nb-card>
+
+              <nb-card *ngIf="remarksShowHide">
+                <nb-card-header> Give Remarks
+                  <span style=" color: red;font-size: 12px;
+                   ">(Remarks are required)</span>
+                </nb-card-header>
+                <textarea nbInput placeholder="Enter remarks" [(ngModel)]="model.remarks" name="remarks"
+                  #remarks="ngModel" rows="2" required style="margin:10px 22px !important;"></textarea>
+                <div *ngIf="fm.submitted && remarks.invalid" class="error-text">
+                  <nb-text status="danger">Remarks are required</nb-text>
+                </div>
+              </nb-card>
+            </div>
+
+          </nb-card>
+
+          <!-- Submit Button -->
+          <div class="form-footer">
+            <button nbButton status="primary" type="submit" [disabled]="isSubmitting">Submit</button>
+            <button nbButton status="basic" shape="semi-round" class="ml-2" (click)="closeDialog()">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+      </form>
+
+      
+    </nb-card-body>
+  </nb-card>
+
+
+</div>

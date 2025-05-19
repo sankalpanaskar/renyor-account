@@ -10,6 +10,8 @@ import { InterviewQuestionsComponent } from './interview-questions/interview-que
 import { StudentAnswersComponent } from './student-answers/student-answers.component';
 import { ManageCounselingComponent } from './manage-counseling/manage-counseling.component';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
+import { RejectedCounselingComponent } from './rejected-counseling/rejected-counseling.component';
+import { RejectedInterviewComponent } from './rejected-interview/rejected-interview.component';
 
 
 @NgModule({
@@ -17,7 +19,9 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     PlacementOfficerComponent,
     InterviewQuestionsComponent,
     StudentAnswersComponent,
-    ManageCounselingComponent
+    ManageCounselingComponent,
+    RejectedCounselingComponent,
+    RejectedInterviewComponent
   ],
   imports: [
     CommonModule,
