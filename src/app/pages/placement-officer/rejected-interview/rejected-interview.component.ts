@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NB_DIALOG_CONFIG, NbDialogRef, NbToastrService } from '@nebular/theme';
 
@@ -7,7 +7,7 @@ import { NB_DIALOG_CONFIG, NbDialogRef, NbToastrService } from '@nebular/theme';
   templateUrl: './rejected-interview.component.html',
   styleUrls: ['./rejected-interview.component.scss']
 })
-export class RejectedInterviewComponent {
+export class RejectedInterviewComponent implements OnInit{
  model: any = [];
   qArray: any = [];
   questionAnsDetailsStatus: any;
