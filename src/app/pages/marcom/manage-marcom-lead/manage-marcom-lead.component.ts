@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { LocalDataSource } from 'ng2-smart-table';
@@ -10,7 +10,7 @@ import { CenterDialogComponent } from '../center-dialog/center-dialog.component'
   templateUrl: './manage-marcom-lead.component.html',
   styleUrls: ['./manage-marcom-lead.component.scss']
 })
-export class ManageMarcomLeadComponent {
+export class ManageMarcomLeadComponent implements OnInit{
 source: LocalDataSource = new LocalDataSource();
 
   settings = {
