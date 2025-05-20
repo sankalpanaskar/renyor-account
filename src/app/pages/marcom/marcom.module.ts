@@ -9,12 +9,18 @@ import { NbAccordionModule, NbButtonModule, NbCardModule, NbFormFieldModule, NbI
 import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { MarcomComponent } from './marcom.component';
+import { ManageMarcomLeadComponent } from './manage-marcom-lead/manage-marcom-lead.component';
+import { CustomCheckboxComponent } from './manage-marcom-lead/custom-checkbox.component';
+import { CenterDialogComponent } from './center-dialog/center-dialog.component';
 
 
 @NgModule({
   declarations: [
     StateBulkLeadComponent,
-    MarcomComponent
+    MarcomComponent,
+    ManageMarcomLeadComponent,
+    CustomCheckboxComponent,
+    CenterDialogComponent
   ],
   imports: [
     CommonModule,
