@@ -12,6 +12,7 @@ import { authGuard } from '../auth/auth.guard';
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 import { StatewiseBulkUploadComponent } from './statewise-bulk-upload/statewise-bulk-upload.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
 
 const routes: Routes = [{
@@ -121,6 +122,11 @@ const routes: Routes = [{
       {
       path: 'state-bulk-upload',
       component: StatewiseBulkUploadComponent,
+      canActivate: [authGuard],
+    },
+         {
+      path: 'admin-dashboard',
+      component: AdminDashboardComponent,
       canActivate: [authGuard],
     },
     {

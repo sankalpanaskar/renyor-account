@@ -18,6 +18,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 import { ChartsModule } from './charts/charts.module';
 import { StatewiseBulkUploadComponent } from './statewise-bulk-upload/statewise-bulk-upload.component';
+import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
 @NgModule({
   imports: [
@@ -54,6 +55,7 @@ import { StatewiseBulkUploadComponent } from './statewise-bulk-upload/statewise-
     ProfileComponent,
     CustomDashboardComponent,
     StatewiseBulkUploadComponent,
+    AdminDashboardComponent,
   ],
   exports: [
     
