@@ -4,7 +4,7 @@
   </nb-card-header>
 
   <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate>
-    <nb-card-body class="scroll-container">
+    <nb-card-body class="scroll-container custom-spinner-container"  [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
       <p class="lead-info">
         You have selected <strong>{{ rows.length }}</strong> lead(s):
       </p>
@@ -18,8 +18,8 @@
           required
           #center="ngModel"
           [(ngModel)]="model.center"
-          (selectedChange)="centerSelect($event)">
-          <nb-option *ngFor="let center of centerList" [value]="center.center_id">
+          >
+          <nb-option *ngFor="let center of centerList" [value]="{center_id:center.center_id,short_code:center.short_code,center_name:center.center_name}">
             {{ center.short_code }}
           </nb-option>
         </nb-select>

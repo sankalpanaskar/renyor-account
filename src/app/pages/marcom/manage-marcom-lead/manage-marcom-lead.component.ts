@@ -76,12 +76,6 @@ source: LocalDataSource = new LocalDataSource();
         filter: false,
         editable: false
       },
-      center: {
-        title: 'Center',
-        type: 'string',
-        filter: false,
-        editable: false
-      },
       course: {
         title: 'Course',
         type: 'string',
@@ -90,6 +84,7 @@ source: LocalDataSource = new LocalDataSource();
       },
       callDate: {
         title: 'Call Date',
+        hide: true, // ✅ Hide from view
         width: '120px',
         type: 'string',
         filter: false,
@@ -126,6 +121,7 @@ source: LocalDataSource = new LocalDataSource();
   loading: boolean = false; // <-- Add this to your class
   noDataFound: boolean =  false;
   selectedRows: any[] = [];
+  leadMarcom: any = []
 
 
   constructor(
@@ -141,7 +137,25 @@ source: LocalDataSource = new LocalDataSource();
 
     console.log("Extracted centerIds:", this.centerIds);
     this.getLeadData();
+    // this.loadMarcomLeads();
   }
+
+  // loadMarcomLeads(){
+  //      var data = {
+  //       role_id : this.globalService.role_id,
+  //       center : this.centerIds
+  //      }
+  //      this.globalService.getMarcomLeads(data).subscribe({
+  //     next: (res) => {
+  //       this.leadMarcom = res.data;
+  //       console.log('Center Data:', this.leadMarcom);
+  //     },
+  //     error: (err) => {
+  //       console.error('Center error:', err);
+  //       this.toastrService.danger(err.message, 'Error');
+  //     },
+  //   });
+  // }
 
 openEditDialog(): void {
   this.dialogService.open(CenterDialogComponent, {
@@ -149,6 +163,7 @@ openEditDialog(): void {
   dialogClass: 'center-dialog-no-shift'
 
   }).onClose.subscribe(updatedData => {
+    this.selectedRows = [];
     this.getLeadData();
     if (updatedData) {
       console.log('Updated lead:', updatedData);
@@ -177,29 +192,26 @@ openEditDialog(): void {
 
 
   getLeadData(): void {
-    var data = {
-      center_id: this.centerIds
-    }
+   var data = {
+        role_id : this.globalService.role_id,
+        center : this.centerIds
+       }
     this.loading = true;
-    this.globalService.getLeadData(data).subscribe({
+    this.globalService.getMarcomLeads(data).subscribe({
       next: (response) => {
-        this.apiData = response.data || [];
+        this.apiData = response.data.lead || [];
         const mappedData = this.apiData.map((item, index) => ({
           id: item.id,
           slNo: index + 1,
           leadName: `${item.first_name} ${item.last_name}`,
           leadSource: item.source_type || 'N/A',
-          // leadStatus: this.getStatusLabel(item.follow_up_status),
           leadStatus: item.lead_status,
           owner: item.created_by_name,
           phone: item.phone_number,
           state: item.state,
-          center: item.center_code,
           course: item.course_alias,
           callDate: item.follow_up_date,
           leadStatusId: item.lead_status_id,
-          oriId: item.ori_no
-
         }));
         this.source.load(mappedData);
         this.loading = false;
@@ -218,10 +230,11 @@ openEditDialog(): void {
     this.source.setFilter([
       { field: 'leadName', search: query },
       { field: 'leadSource', search: query },
-      { field: 'leadStatus', search: query },
-      { field: 'callDate', search: query },
-      { field: 'center', search: query },
-      { field: 'course', search: query }
+      { field: 'course', search: query },
+      { field: 'phone', search: query },
+      { field: 'state', search: query },
+      { field: 'owner', search: query }
+
 
     ], false);
 

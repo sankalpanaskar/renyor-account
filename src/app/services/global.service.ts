@@ -217,6 +217,19 @@ export class GlobalService {
     return this.http.get(`${this.leadUrl}/fetch-course`);
   }
 
+     public getMarcomLeads(data:any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/get-lead-marcom`,data);
+  }
+
+      public alignMarcomLeads(data:any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/move-lead-to-master`,data);
+  }
+
+       public getCenterMarcon(userId:any): Observable<any> {
+    return this.http.get(`${this.leadUrl}/get-center-user/${userId}`);
+  }
+ 
+
   getUserProfile(): Observable<any> {
     return this.http.get(`${this.apiUrl}/profile`);
   }

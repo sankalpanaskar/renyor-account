@@ -98,3 +98,11 @@
 .form-group{
   margin-bottom: 4rem;
 }
+::ng-deep nb-spinner.status-primary {
+  width: 308px !important;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+

@@ -1,6 +1,6 @@
 <nb-card>
   <nb-card-header>
-    Rejected Student Counseling
+    Align Marcom Leads
   </nb-card-header>
 
   <nb-card-body class="position-relative">
@@ -19,11 +19,22 @@
       <ng2-smart-table [settings]="settings" [source]="source">
       </ng2-smart-table>
     </div>
-    <div class="d-flex justify-content-end">
+    <!-- <div class="d-flex justify-content-end">
       <button nbButton status="primary" [disabled]="selectedRows.length === 0" (click)="openEditDialog()">
         Transfer
       </button>
-    </div>
+    </div> -->
   </nb-card-body>
+  
+    <nb-card-footer class="d-flex justify-content-end">
+    <button
+      nbButton
+      status="primary"
+      [disabled]="selectedRows.length === 0"
+      (click)="openEditDialog()">
+      Transfer
+    </button>
+  </nb-card-footer>
+
 
 </nb-card>

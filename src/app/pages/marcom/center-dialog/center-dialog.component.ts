@@ -11,6 +11,7 @@ export class CenterDialogComponent implements OnInit {
   rows: any[] = [];
   model:any = [];
   centerList: any = [];
+  isSubmitting: boolean = false;
 
   constructor(
     private globalService: GlobalService,
@@ -27,9 +28,10 @@ export class CenterDialogComponent implements OnInit {
   }
 
     loadCenters(): void {
-    this.globalService.getCenterBulk().subscribe({
-      next: (data) => {
-        this.centerList = data.data?.centers || [];
+      
+    this.globalService.getCenterMarcon(this.globalService.user_id).subscribe({
+      next: (res) => {
+        this.centerList = res.data.centers;
         // console.log('Center Data:', this.centerList);
       },
       error: (err) => {
@@ -39,9 +41,9 @@ export class CenterDialogComponent implements OnInit {
     });
   }
 
-    centerSelect(centerID: any) {
+  //   centerSelect(centerID: any) {
 
-  }
+  // }
 
   cancel() {
     // closes without returning anything
@@ -49,8 +51,28 @@ export class CenterDialogComponent implements OnInit {
   }
 
 onSubmit(fm:any){
+
   if(fm.valid){
-    console.log("data values",fm.value);
+       
+    fm.value.selected_leads = this.rows;
+      this.isSubmitting = true;
+      this.globalService.alignMarcomLeads(fm.value).subscribe({
+        next: (res) => {
+          this.model = '';
+          fm.resetForm();
+          this.toastrService.success(res.message, 'Added');
+              this.dialogRef.close();
+          this.isSubmitting = false;
+        },
+        error: (err) => {
+          console.error('distric error:', err);
+          this.toastrService.danger(err.message, 'Error');
+          this.isSubmitting = false;
+        },
+      });
+
+  
+    
   }
 }
 }
