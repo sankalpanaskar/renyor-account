@@ -53,7 +53,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         },
         {
           title: 'State Bulk Upload',
-          link: '/pages/state-bulk-upload',
+          link: '/pages/marcom/state-bulk-lead',
         },
       ],
     },

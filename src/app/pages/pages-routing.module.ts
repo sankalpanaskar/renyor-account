@@ -88,6 +88,11 @@ const routes: Routes = [{
       loadChildren: () => import('./placement-officer/placement-officer.module')
         .then(m => m.PlacementOfficerModule),
     },
+        {
+      path: 'marcom',
+      loadChildren: () => import('./marcom/marcom.module')
+        .then(m => m.MarcomModule),
+    },
     {
       path: '',
       redirectTo: 'dashboard',
