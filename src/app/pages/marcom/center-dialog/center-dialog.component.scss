@@ -1,79 +1,100 @@
-:host {
+/* Dialog container: 60% viewport width & height */
+::ng-deep nb-dialog-container {
+  width: 60vw !important;
+  height: 60vh !important;
+  max-width: 60vw !important;
+  max-height: 60vh !important;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden !important;
+}
+
+/* Card fills the dialog container */
+.transfer-dialog {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 1.5rem 1rem;
+  margin: 0 auto;
+  border-radius: 8px;
+}
+
+/* Header styles */
+.transfer-dialog nb-card-header {
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+  border-bottom: 1px solid #e6e6e6;
+  font-size: 1.4rem;
+  text-align: center;
+}
+
+/* Body styles */
+.transfer-dialog nb-card-body {
+  padding: 0 0.5rem;
+  flex: 1; /* Make body fill available space */
+  overflow-y: auto; /* Scroll if content too big */
+}
+
+/* Paragraph inside body */
+.transfer-dialog nb-card-body p {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+/* Select dropdown full width */
+.transfer-dialog nb-select {
+  width: 100%;
   display: block;
-
-  nb-card {
-    padding: 1.5rem 1rem;      // overall padding
-    max-width: 400px;         // cap width
-    margin: 0 auto;           // center on screen
-    border-radius: 8px;
-
-    nb-card-header {
-      padding-bottom: 0.5rem;
-      margin-bottom: 0.5rem;
-      border-bottom: 1px solid #e6e6e6;
-      font-size: 1.4rem;
-      text-align: center;
-    }
-
-    nb-card-body {
-      padding: 0 0.5rem;
-
-      p {
-        margin-bottom: 1rem;
-        font-size: 1rem;
-      }
-
-      .col-lg-6 {
-        width: 100%;          // ensure container is full‑width
-      }
-
-      nb-select {
-        width: 100%;          // stretch dropdown
-        display: block;
-      }
-
-      .error-message {
-        color: #e03f3f;
-        font-size: 0.85rem;
-        margin-top: 0.3rem;
-      }
-    }
-
-    nb-card-footer {
-      padding-top: 1rem;
-      border-top: 1px solid #e6e6e6;
-      display: flex;
-      justify-content: flex-end;
-      gap: 0.75rem;
-
-      button {
-        min-width: 90px;
-        padding: 0.5rem 1.25rem;
-        font-weight: 500;
-        border-radius: 4px;
-      }
-
-      button[type="button"] {
-        background: transparent;
-        border: 1px solid #ccc;
-        color: #333;
-      }
-
-      button[type="submit"] {
-        /* let Nebular style the primary button */
-      }
-    }
-  }
-}
-// target both CDK and Nebular overlay containers
-.cdk-overlay-container .center-select-overlay,
-nb-overlay-container .center-select-overlay {
-  z-index: 3000 !important;    // high enough to float above dialogs
 }
 
-// also ensure the pane that actually holds the panel inherits it
-.cdk-overlay-container .center-select-overlay.cdk-overlay-pane,
-nb-overlay-container .center-select-overlay.nb-overlay {
-  z-index: 3000 !important;
+/* Error message */
+.transfer-dialog .error-message {
+  color: #e03f3f;
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
 }
 
+/* Footer styles */
+.transfer-dialog nb-card-footer {
+  padding-top: 1rem;
+  border-top: 1px solid #e6e6e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Buttons in footer */
+.transfer-dialog nb-card-footer button {
+  min-width: 90px;
+  padding: 0.5rem 1.25rem;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.transfer-dialog nb-card-footer button[type="button"] {
+  background: transparent;
+  border: 1px solid #ccc;
+  color: #333;
+}
+
+/* Constrain dropdown overlay within dialog */
+::ng-deep nb-dialog-container {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+/* Force dropdown overlay to stay inside */
+::ng-deep .center-select-overlay {
+  z-index: 2000 !important;
+  position: absolute !important;
+  max-height: 250px;
+  overflow-y: auto;
+}
+.form-group{
+  margin-bottom: 4rem;
+}

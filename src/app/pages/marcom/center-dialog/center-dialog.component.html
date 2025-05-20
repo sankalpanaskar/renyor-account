@@ -1,15 +1,15 @@
-<nb-card size="small">
+<nb-card class="transfer-dialog">
   <nb-card-header>
     Transfer Selected Leads
   </nb-card-header>
 
-  <!-- Wrap the entire body + footer in the form -->
   <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate>
+    <nb-card-body class="scroll-container">
+      <p class="lead-info">
+        You have selected <strong>{{ rows.length }}</strong> lead(s):
+      </p>
 
-    <nb-card-body>
-      <p style="padding: 0px 15px 0px 15px;">You have selected <strong>{{ rows.length }}</strong> lead(s):</p>
-
-      <div class="col-lg-12">
+      <div class="form-group">
         <nb-select
           overlayClass="center-select-overlay"
           shape="semi-round"
@@ -19,8 +19,8 @@
           #center="ngModel"
           [(ngModel)]="model.center"
           (selectedChange)="centerSelect($event)">
-          <nb-option *ngFor="let center of centerList"
-            [value]="center.center_id">{{ center.short_code }}
+          <nb-option *ngFor="let center of centerList" [value]="center.center_id">
+            {{ center.short_code }}
           </nb-option>
         </nb-select>
         <div *ngIf="fm.submitted && center.invalid" class="error-message">
@@ -29,16 +29,9 @@
       </div>
     </nb-card-body>
 
-    <nb-card-footer class="d-flex justify-content-end">
-      <!-- Cancel does not submit the form -->
-      <button nbButton status="secondary" type="button" (click)="cancel()">
-        Cancel
-      </button>
-      <!-- Submit triggers ngSubmit -->
-      <button nbButton status="primary" type="submit">
-        Submit
-      </button>
+    <nb-card-footer class="actions">
+      <button nbButton status="secondary" type="button" (click)="cancel()">Cancel</button>
+      <button nbButton status="primary" type="submit">Submit</button>
     </nb-card-footer>
-
   </form>
 </nb-card>

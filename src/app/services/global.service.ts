@@ -203,7 +203,19 @@ export class GlobalService {
      public getChartData(): Observable<any> {
     return this.http.get(`${this.leadUrl}/get-monthly-crm-summary`);
   }
+ 
+  //Marcom API
+    public marcomLeadSubmit(data: any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/marcom-bulk-upload`,data);
+  }
 
+      public stateMarcomleadSubmit(data: any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/marcom-bulk-upload-state`,data);
+  }
+
+    public getCoursesMarcon(): Observable<any> {
+    return this.http.get(`${this.leadUrl}/fetch-course`);
+  }
 
   getUserProfile(): Observable<any> {
     return this.http.get(`${this.apiUrl}/profile`);

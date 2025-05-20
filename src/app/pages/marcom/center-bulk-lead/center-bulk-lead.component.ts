@@ -1,13 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 
 @Component({
-  selector: 'ngx-state-bulk-lead',
-  templateUrl: './state-bulk-lead.component.html',
-  styleUrls: ['./state-bulk-lead.component.scss']
+  selector: 'ngx-center-bulk-lead',
+  templateUrl: './center-bulk-lead.component.html',
+  styleUrls: ['./center-bulk-lead.component.scss']
 })
-export class StateBulkLeadComponent implements OnInit{
+export class CenterBulkLeadComponent {
  model: any = [];
   courseList: any = [];
   selectedCourse: any;
@@ -21,8 +21,6 @@ export class StateBulkLeadComponent implements OnInit{
   selectedSource: any;
   excelPath: any;
   isSubmitting: boolean = false;
-  stateList: any = [];
-  selectedState: any;
 
 
   constructor(
@@ -31,8 +29,7 @@ export class StateBulkLeadComponent implements OnInit{
   ) { }
 
   ngOnInit(): void {
-    this.loadStates();
-    this.loadCourses();
+    this.loadCenters();
     this.loadSource();
     this.getExcelPath();
     console.log("member is", this.globalService.member_id, this.globalService.role_id);
@@ -81,28 +78,11 @@ export class StateBulkLeadComponent implements OnInit{
     this.model.source_name = event.source_name;
     this.selectedSource = event.source_type;
   }
-   loadStates(): void {
-    this.globalService.getStates().subscribe({
+
+  loadCourses(centerId): void {
+    this.globalService.getCourses(centerId).subscribe({
       next: (data) => {
-        this.stateList = data.data?.state || [];
-        // console.log('State Data:', this.stateList);
-      },
-      error: (err) => {
-        console.error('State error:', err);
-        this.toastrService.danger(err.message, 'Error');
-      },
-    });
-  }
-
-  stateSelect(stateCode:any){
-    this.selectedState = this.stateList.find(state => state.state_code === stateCode);
-    console.log("Selected State Object:", this.selectedState); 
-  }
-
-  loadCourses(): void {
-    this.globalService.getCoursesMarcon().subscribe({
-      next: (res) => {
-        this.courseList = res.data.course;
+        this.courseList = data.data?.course || [];
         console.log('Course Data:', this.courseList);
       },
       error: (err) => {
@@ -117,7 +97,25 @@ export class StateBulkLeadComponent implements OnInit{
     console.log("Selected course Object:", this.selectedCourse);
   }
 
+  loadCenters(): void {
+    this.globalService.getCenterBulk().subscribe({
+      next: (data) => {
+        this.centerList = data.data?.centers || [];
+        // console.log('Center Data:', this.centerList);
+      },
+      error: (err) => {
+        console.error('Center error:', err);
+        this.toastrService.danger(err.message, 'Error');
+      },
+    });
+  }
 
+  centerSelect(centerID: any) {
+    this.selectedCenter = this.centerList.find(center => center.center_id === centerID);
+    this.loadCourses(this.selectedCenter.center_id);
+    this.model.course = '';
+    console.log("Selected center Object:", this.selectedCenter);
+  }
 
   onFileChange(event: any): void {
     const file = event.target.files[0];
@@ -139,32 +137,33 @@ export class StateBulkLeadComponent implements OnInit{
     if (fm.valid && this.selectedFile) {
       const formData = new FormData();
 
-      formData.append('form_category', "statewise_marcom");
+      formData.append('form_category', "centerwise_marcom");
       formData.append('member_id', this.globalService.member_id);
       formData.append('role_id', this.globalService.role_id);
 
       formData.append('category', fm.value.category);
       formData.append('source_type', this.selectedSource);
       formData.append('source_name', this.model.source_name);
-      // formData.append('center_id', this.model.center);  // assuming center_id
-      // formData.append('center_code', this.selectedCenter.short_code);
-      formData.append('state_name', this.selectedState.state_name);
+      formData.append('center_id', this.model.center);  // assuming center_id
+      formData.append('center_code', this.selectedCenter.short_code);
+      formData.append('center_name', this.selectedCenter.center_name);
       formData.append('course_id', this.model.course);  // assuming course_id
       formData.append('course_alias', this.selectedCourse.alias);
       formData.append('course_name', this.selectedCourse.name);
       formData.append('file', this.selectedFile);
       this.isSubmitting = true;
       // Example call
-      this.globalService.stateMarcomleadSubmit(formData).subscribe({
+      this.globalService.marcomLeadSubmit(formData).subscribe({
         next: (res) => {
           console.log('Upload success:', res);
           fm.resetForm();
           this.model = {}; // ✅ fixed
           this.selectedFile = null;
           this.selectedSource = null;
-          this.selectedState = null;
+          this.selectedCenter = null;
           this.selectedCourse = null;
-          this.fileError = '';          this.toastrService.success(res.message, 'Uploaded');
+          this.fileError = '';
+          this.toastrService.success(res.message, 'Uploaded');
           this.isSubmitting = false;
         },
      error: (err) => {
@@ -187,4 +186,5 @@ export class StateBulkLeadComponent implements OnInit{
       }
     }
   }
+
 }

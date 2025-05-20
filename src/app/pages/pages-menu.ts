@@ -49,7 +49,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
       children: [
         {
           title: 'Center Bulk Upload',
-          link: '/pages/upload-lead',
+          link: '/pages/marcom/center-bulk-lead',
         },
         {
           title: 'State Bulk Upload',

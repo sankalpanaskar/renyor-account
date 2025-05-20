@@ -143,17 +143,19 @@ source: LocalDataSource = new LocalDataSource();
     this.getLeadData();
   }
 
-  openEditDialog(): void {
-    this.dialogService.open(CenterDialogComponent, {
-      // context: rowData, // Make sure `rowData` is an object
-      context: { data:  this.selectedRows }
-    }).onClose.subscribe(updatedData => {
-      this.getLeadData();
-      if (updatedData) {
-        console.log('Updated lead:', updatedData);
-      }
-    });
-  }
+openEditDialog(): void {
+  this.dialogService.open(CenterDialogComponent, {
+    context: { data: this.selectedRows },
+  dialogClass: 'center-dialog-no-shift'
+
+  }).onClose.subscribe(updatedData => {
+    this.getLeadData();
+    if (updatedData) {
+      console.log('Updated lead:', updatedData);
+    }
+  });
+}
+
 
 //   onUserRowSelect(event: any): void {
 //   const selectedRow = event.data;
