@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'ngx-app-checkbox-cell',
@@ -10,7 +10,7 @@ import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
     />
   `,
 })
-export class CustomCheckboxComponent implements OnInit {
+export class CustomCheckboxComponent {
   @Input() value: any;
   @Input() rowData: any;
 
@@ -18,10 +18,6 @@ export class CustomCheckboxComponent implements OnInit {
   @Output() unchecked = new EventEmitter<any>();
 
   isChecked = false;
-
-  ngOnInit(): void {
-    // you could initialize isChecked based on some condition
-  }
 
   onChange(event: Event): void {
     const checked = (event.target as HTMLInputElement).checked;
