@@ -69,9 +69,10 @@ loadChartData(): void {
     const colorList = [
       colors.primaryLight,
       colors.infoLight,
-      colors.successLight,
-      colors.warningLight,
       colors.dangerLight,
+      colors.successLight,
+      // colors.warningLight,
+      // colors.dangerLight,
     ];
 
     this.globalService.getChartData().subscribe({

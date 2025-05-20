@@ -40,6 +40,26 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         ]
       : []),
 
+      
+    ...(roleId === 34
+      ? [
+    {
+      title: 'Marcom',
+      icon: 'edit-2-outline',
+      children: [
+        {
+          title: 'Center Bulk Upload',
+          link: '/pages/upload-lead',
+        },
+        {
+          title: 'State Bulk Upload',
+          link: '/pages/state-bulk-upload',
+        },
+      ],
+    },
+  ]
+  : []),
+
     ...(roleId === 777
       ? [
     {

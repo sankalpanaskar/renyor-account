@@ -17,6 +17,7 @@ import { LeadEditDialogComponent } from './lead-edit-dialog/lead-edit-dialog.com
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 import { ChartsModule } from './charts/charts.module';
+import { StatewiseBulkUploadComponent } from './statewise-bulk-upload/statewise-bulk-upload.component';
 
 @NgModule({
   imports: [
@@ -52,6 +53,7 @@ import { ChartsModule } from './charts/charts.module';
     LeadEditDialogComponent,
     ProfileComponent,
     CustomDashboardComponent,
+    StatewiseBulkUploadComponent,
   ],
   exports: [
     
