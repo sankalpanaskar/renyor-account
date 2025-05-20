@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-checkbox-cell',
+  selector: 'ngx-app-checkbox-cell',
   template: `
     <input
       type="checkbox"
