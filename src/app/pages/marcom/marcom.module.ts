@@ -13,6 +13,7 @@ import { ManageMarcomLeadComponent } from './manage-marcom-lead/manage-marcom-le
 import { CustomCheckboxComponent } from './manage-marcom-lead/custom-checkbox.component';
 import { CenterDialogComponent } from './center-dialog/center-dialog.component';
 import { CenterBulkLeadComponent } from './center-bulk-lead/center-bulk-lead.component';
+import { MarcomDashboardComponent } from './marcom-dashboard/marcom-dashboard.component';
 
 
 @NgModule({
@@ -22,7 +23,8 @@ import { CenterBulkLeadComponent } from './center-bulk-lead/center-bulk-lead.com
     ManageMarcomLeadComponent,
     CustomCheckboxComponent,
     CenterDialogComponent,
-    CenterBulkLeadComponent
+    CenterBulkLeadComponent,
+    MarcomDashboardComponent
   ],
   imports: [
     CommonModule,

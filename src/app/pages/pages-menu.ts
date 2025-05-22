@@ -31,6 +31,15 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         },
       ]
       : []),
+       ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId=== 51
+      ? [
+        {
+          title: 'Marcom Dashboard',
+          icon: 'layers-outline',
+          link: '/pages/marcom/marcom-dashboard',
+        },
+      ]
+      : []),
     {
       title: 'FEATURES',
       group: true,

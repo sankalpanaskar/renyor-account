@@ -194,7 +194,8 @@ openEditDialog(): void {
   getLeadData(): void {
    var data = {
         role_id : this.globalService.role_id,
-        center : this.centerIds
+        center : this.centerIds,
+        member_id : this.globalService.member_id
        }
     this.loading = true;
     this.globalService.getMarcomLeads(data).subscribe({
