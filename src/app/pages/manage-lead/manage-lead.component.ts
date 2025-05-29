@@ -188,6 +188,23 @@ export class ManageLeadComponent implements OnInit {
   centerIds: any = [];
   loading: boolean = false; // <-- Add this to your class
   noDataFound: boolean =  false;
+  newLeadCount: any;
+  studentPendingCount: any;
+  poPendingCount: any;
+  quizPendingCount: any;
+  oriPendingCount: any;
+  readyToEnrollCount: any;
+  connectCount: any;
+  notConnectCount: any;
+  doNotCallCount: any;
+  interestedCount: any;
+  poRejectedCount: any;
+  quizFailedCount: any;
+  oriGeneratedCount: any;
+  registrationDoneCount: any;
+  mneVerificationCount: any;
+  enrolledCount: any;
+  selectedFilter: string | null = null;
 
 
   constructor(
@@ -223,6 +240,7 @@ export class ManageLeadComponent implements OnInit {
   }
 
   getLeadData(): void {
+    this.selectedFilter = null; // Reset filter dropdown when "ALL" is clicked
     var data = {
       center_id: this.centerIds
     }
@@ -277,6 +295,25 @@ export class ManageLeadComponent implements OnInit {
     this.todayCount = this.apiData.filter(item => item.follow_up_date === todayStr).length;
     this.yesterdayCount = this.apiData.filter(item => item.follow_up_date === yesterdayStr).length;
     this.tomorrowCount = this.apiData.filter(item => item.follow_up_date === tomorrowStr).length;
+    // NEW LEAD COUNT
+    this.newLeadCount = this.apiData.filter(item => item.lead_status_id === 1).length;
+    //new
+    this.studentPendingCount = this.apiData.filter(item => item.lead_status_id === 6).length;
+    this.poPendingCount = this.apiData.filter(item => item.lead_status_id === 7).length;
+    this.quizPendingCount = this.apiData.filter(item => item.lead_status_id === 8).length;
+    this.oriPendingCount = this.apiData.filter(item => item.lead_status_id === 10).length;
+    this.connectCount = this.apiData.filter(item => item.lead_status_id === 3).length;
+    this.notConnectCount = this.apiData.filter(item => item.lead_status_id === 2).length;
+    this.doNotCallCount = this.apiData.filter(item => item.lead_status_id === 4).length;
+    this.interestedCount = this.apiData.filter(item => item.lead_status_id === 5).length;
+    this.poRejectedCount = this.apiData.filter(item => item.lead_status_id === 9).length;
+    this.quizFailedCount =  this.apiData.filter(item => item.lead_status_id === 11).length;
+    this.oriGeneratedCount = this.apiData.filter(item => item.lead_status_id === 12).length;
+    this.registrationDoneCount = this.apiData.filter(item => item.lead_status_id === 13).length;
+    this.mneVerificationCount = this.apiData.filter(item => item.lead_status_id === 14).length;
+    this.enrolledCount = this.apiData.filter(item => item.lead_status_id === 15).length;
+
+
   }
 
   formatDateToYYYYMMDD(date: Date): string {
@@ -286,48 +323,108 @@ export class ManageLeadComponent implements OnInit {
     return `${year}-${month}-${day}`;
   }
 
-  filterFollowups(filterType: string): void {
-    let dateToFilter: Date;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+ filterFollowups(filterType: string): void {
+   // Deselect dropdown when a Followup button is clicked
+  const dropdownFilters = [
+    'connected', 'not-connected', 'do-not-call', 'interested',
+    'studentPending', 'poPending', 'poRejected', 'quizPending',
+    'oriPending', 'quizFailed', 'oriGenerated', 'registrationDone',
+    'mneVerification', 'enrolled'
+  ];
 
-    if (filterType === 'today') {
-      dateToFilter = today;
-    } else if (filterType === 'yesterday') {
-      dateToFilter = new Date(today);
-      dateToFilter.setDate(today.getDate() - 1);
-    } else if (filterType === 'tomorrow') {
-      dateToFilter = new Date(today);
-      dateToFilter.setDate(today.getDate() + 1);
-    }
-
-    const formattedDate = this.formatDateToYYYYMMDD(dateToFilter);
-
-    // Filter the original data based on follow_up_date 
-    const filteredData = this.apiData.filter(item => item.follow_up_date === formattedDate);
-
-    console.log("date wise filtered data", filteredData);
-    const mappedData = filteredData.map((item, index) => ({
-      id: item.id,
-      slNo: index + 1,
-      leadName: `${item.first_name} ${item.last_name}`,
-      leadSource: item.source_type || 'N/A',
-      // leadStatus: this.getStatusLabel(item.follow_up_status),
-      leadStatus: item.lead_status,
-      owner: item.created_by_name,
-      phone: item.phone_number,
-      state: item.state,
-      center: item.center_code,
-      course: item.course_alias,
-      callDate: item.follow_up_date,
-      leadStatusId: item.lead_status_id,
-      oriId: item.ori_no
-
-    }));
-
-    // Now update the smart table data source (if that's what you want)
-    this.source.load(mappedData);
+  if (!dropdownFilters.includes(filterType)) {
+    this.selectedFilter = null; // Reset the dropdown
   }
+  console.log("filter type",filterType);
+  let filteredData = [];
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+   if (filterType === 'today') {
+     const dateStr = this.formatDateToYYYYMMDD(today);
+     filteredData = this.apiData.filter(item => item.follow_up_date === dateStr);
+   } else if (filterType === 'yesterday') {
+     const date = new Date(today);
+     date.setDate(today.getDate() - 1);
+     const dateStr = this.formatDateToYYYYMMDD(date);
+     filteredData = this.apiData.filter(item => item.follow_up_date === dateStr);
+   } else if (filterType === 'tomorrow') {
+     const date = new Date(today);
+     date.setDate(today.getDate() + 1);
+     const dateStr = this.formatDateToYYYYMMDD(date);
+     filteredData = this.apiData.filter(item => item.follow_up_date === dateStr);
+   } else if (filterType === 'newLead') {
+     // FILTER FOR NEW LEADS (lead_status_id === 1)
+     filteredData = this.apiData.filter(item => item.lead_status_id === 1);
+   }
+   // New
+   else if (filterType === 'studentPending') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 6);
+   }
+   else if (filterType === 'poPending') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 7);
+   }
+   else if (filterType === 'quizPending') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 8);
+   }
+   else if (filterType === 'oriPending') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 10);
+   }
+  //  else if (filterType === 'readyToEnroll') {
+  //    filteredData = this.apiData.filter(item => item.lead_status_id === 14);
+  //  }
+   else if (filterType === 'connected') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 3);
+   }
+   else if (filterType === 'not-connected') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 2);
+   }
+   else if (filterType === 'do-not-call') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 4);
+   }
+   else if (filterType === 'interested') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 5);
+   }
+   else if (filterType === 'poRejected') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 9);
+   }
+   else if (filterType === 'quizFailed') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 11);
+   }
+   else if (filterType === 'oriGenerated') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 12);
+   }
+   else if (filterType === 'registrationDone') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 13);
+   }
+   else if (filterType === 'mneVerification') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 14);
+   }
+   else if (filterType === 'enrolled') {
+     filteredData = this.apiData.filter(item => item.lead_status_id === 15);
+   }  
+  
+  
+
+  const mappedData = filteredData.map((item, index) => ({
+    id: item.id,
+    slNo: index + 1,
+    leadName: `${item.first_name} ${item.last_name}`,
+    leadSource: item.source_type || 'N/A',
+    leadStatus: item.lead_status,
+    owner: item.created_by_name,
+    phone: item.phone_number,
+    state: item.state,
+    center: item.center_code,
+    course: item.course_alias,
+    callDate: item.follow_up_date,
+    leadStatusId: item.lead_status_id,
+    oriId: item.ori_no
+  }));
+
+  this.source.load(mappedData);
+}
 
 
   // getStatusLabel(status: number | string): string {
@@ -351,6 +448,7 @@ export class ManageLeadComponent implements OnInit {
       { field: 'leadName', search: query },
       { field: 'leadSource', search: query },
       { field: 'leadStatus', search: query },
+      { field: 'phone', search: query },
       { field: 'callDate', search: query },
       { field: 'center', search: query },
       { field: 'course', search: query }

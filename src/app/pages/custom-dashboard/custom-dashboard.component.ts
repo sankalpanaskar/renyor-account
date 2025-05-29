@@ -35,7 +35,7 @@ export class CustomDashboardComponent implements OnInit {
   chartBarData: any = null;
 
   constructor(
-    private globalService: GlobalService,
+    public globalService: GlobalService,
     private toastrService: NbToastrService,
         private themeService: NbThemeService // ✅ FIX: Inject NbThemeService
   ) { }

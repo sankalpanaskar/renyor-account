@@ -1,31 +1,32 @@
-<!-- Dashboard Layout -->
-<div class="dashboard-grid">
-       <!-- Spinner overlay -->
-    <div *ngIf="isSubmitting" class="loading-overlay d-flex justify-content-center align-items-center">
-      <nb-spinner size="large" status="primary"></nb-spinner>
-    </div>
+<!-- Show this ONLY if role_id is 51 -->
+<div *ngIf="globalService.role_id === 51" class="welcome-banner">
+  <h1>Welcome to <span>Anudip Foundation</span></h1>
+</div>
 
-    <!-- Left Side: Summary Cards -->
-    <div class="summary-cards">
-        <nb-card *ngFor="let stat of statsData">
-            <nb-card-header>{{ stat.title }}</nb-card-header>
-            <nb-card-body class="summary-value">{{ stat.value }}</nb-card-body>
-        </nb-card>
-    </div>
+<!-- Show this for all roles EXCEPT 51 -->
+<div *ngIf="globalService.role_id !== 51" class="dashboard-grid">
+  
+  <!-- Spinner overlay -->
+  <div *ngIf="isSubmitting" class="loading-overlay d-flex justify-content-center align-items-center">
+    <nb-spinner size="large" status="primary"></nb-spinner>
+  </div>
 
-   
+  <!-- Left Side: Summary Cards -->
+  <div class="summary-cards">
+    <nb-card *ngFor="let stat of statsData">
+      <nb-card-header>{{ stat.title }}</nb-card-header>
+      <nb-card-body class="summary-value">{{ stat.value }}</nb-card-body>
+    </nb-card>
+  </div>
 
-    <!-- Lower Grid: Charts & Reports -->
-    <div class="lower-grid">
-        <!-- Bar Chart -->
-        <nb-card>
-            <nb-card-header>Leads Performance</nb-card-header>
-            <nb-card-body>
-                <!-- Bar chart goes here -->
-    <ngx-chartjs-bar [chartData]="chartBarData"></ngx-chartjs-bar>
-            </nb-card-body>
-        </nb-card>
+  <!-- Lower Grid: Charts & Reports -->
+  <div class="lower-grid">
+    <nb-card>
+      <nb-card-header>Leads Performance</nb-card-header>
+      <nb-card-body>
+        <ngx-chartjs-bar [chartData]="chartBarData"></ngx-chartjs-bar>
+      </nb-card-body>
+    </nb-card>
+  </div>
 
-
-    </div>
 </div>

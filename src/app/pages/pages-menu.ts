@@ -13,7 +13,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
     //   icon: 'home-outline',
     //   link: '/pages/iot-dashboard',
     // },
-    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
+    ...(roleId === 34 || roleId === 11 ||  roleId === 7 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
       ? [
         {
           title: 'Dashboard',
@@ -31,7 +31,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         },
       ]
       : []),
-       ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId=== 51
+       ...(roleId === 34 || roleId=== 51
       ? [
         {
           title: 'Marcom Dashboard',
@@ -44,13 +44,13 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
       title: 'FEATURES',
       group: true,
     },
-    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 23
+    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 7 || roleId === 23
       ? [
         {
           title: 'Lead',
           icon: 'layout-outline',
           children: [
-            ...(roleId === 15 || roleId === 23 || roleId === 34 ? [{ title: 'Add', link: '/pages/add-lead' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Add', link: '/pages/add-lead' }] : []),
             ...(roleId === 15 || roleId === 23 || roleId === 34 ? [{ title: 'Bulk Upload', link: '/pages/upload-lead' }] : []),
             { title: 'Manage', link: '/pages/manage-lead' },
           ],
@@ -59,7 +59,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
       : []),
 
 
-    ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 51
+    ...(roleId === 34 || roleId === 15 || roleId === 51
       ? [
         {
           title: 'Marcom',
@@ -67,7 +67,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
           children: [
             ...(roleId === 51 || roleId === 34 ? [{ title: 'Centerwise Bulk Upload', link: '/pages/marcom/center-bulk-lead' }] : []),
             ...(roleId === 51 || roleId === 34 ? [{ title: 'Statewise Bulk Upload', link: '/pages/marcom/state-bulk-lead' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 34 ? [{ title: 'Marcom Leads', link: '/pages/marcom/manage-marcom-lead' }] : []),
+            ...(roleId === 15 || roleId === 34 ? [{ title: 'Marcom Leads', link: '/pages/marcom/manage-marcom-lead' }] : []),
           ],
         },
       ]
