@@ -1,0 +1,19 @@
+.date-range {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-left: 40px;
+}
+
+.error-text {
+  color: #e53935;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
