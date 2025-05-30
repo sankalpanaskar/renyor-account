@@ -4,6 +4,7 @@ import { GlobalService } from '../../services/global.service'; // or correct rel
 import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { CustomEditButtonComponent } from './custom-edit-btn.component';
 import { LeadEditDialogComponent } from '../lead-edit-dialog/lead-edit-dialog.component';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'ngx-manage-lead',
@@ -210,15 +211,23 @@ export class ManageLeadComponent implements OnInit {
   constructor(
     public globalService: GlobalService,
     private toastrService: NbToastrService,
-    private dialogService: NbDialogService
+    private dialogService: NbDialogService,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
-    console.log("role id------- is ",this.globalService.role_id);
+    // console.log("role id------- is ",this.globalService.role_id);
     // ✅ Extract only the center_id values into an array
     this.centerIds = this.globalService.centerData.map((item: any) => item.center_id);
 
-    console.log("Extracted centerIds:", this.centerIds);
+    // console.log("Extracted centerIds:", this.centerIds);
+
+  this.route.queryParams.subscribe(params => {
+    const leadTitle = params['title'];
+    console.log('Clicked Title:', leadTitle);
+    // You can now filter or display data based on title
+  });
+
     this.getLeadData();
   }
 

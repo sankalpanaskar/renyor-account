@@ -19,7 +19,7 @@ const routes: Routes = [{
   path: '',
   component: PagesComponent,
   children: [
-      {
+    {
       path: 'profile',
       component: ProfileComponent,
       canActivate: [authGuard],
@@ -89,10 +89,15 @@ const routes: Routes = [{
       loadChildren: () => import('./placement-officer/placement-officer.module')
         .then(m => m.PlacementOfficerModule),
     },
-        {
+    {
       path: 'marcom',
       loadChildren: () => import('./marcom/marcom.module')
         .then(m => m.MarcomModule),
+    },
+    {
+      path: 'report',
+      loadChildren: () => import('./report/report.module')
+        .then(m => m.ReportModule),
     },
     {
       path: '',
@@ -119,12 +124,12 @@ const routes: Routes = [{
       component: CustomDashboardComponent,
       canActivate: [authGuard],
     },
-      {
+    {
       path: 'state-bulk-upload',
       component: StatewiseBulkUploadComponent,
       canActivate: [authGuard],
     },
-         {
+    {
       path: 'admin-dashboard',
       component: AdminDashboardComponent,
       canActivate: [authGuard],

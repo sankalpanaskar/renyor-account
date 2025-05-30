@@ -13,7 +13,7 @@
 
   <!-- Left Side: Summary Cards -->
   <div class="summary-cards">
-    <nb-card *ngFor="let stat of statsData">
+    <nb-card *ngFor="let stat of statsData" (click)="navigateToManageLead(stat.title)">
       <nb-card-header>{{ stat.title }}</nb-card-header>
       <nb-card-body class="summary-value">{{ stat.value }}</nb-card-body>
     </nb-card>

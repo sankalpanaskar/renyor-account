@@ -196,8 +196,8 @@ export class GlobalService {
   }
 
   // Dashboard API
-    public getStatsData(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-crm-dasboard-stats`);
+    public getStatsData(role_id:any,user_id:any,member_id:any): Observable<any> {
+    return this.http.get(`${this.leadUrl}/get-crm-dasboard-stats/${role_id}/${user_id}/${member_id}`);
   }
 
      public getChartData(): Observable<any> {

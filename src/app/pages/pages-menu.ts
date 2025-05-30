@@ -22,7 +22,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         },
       ]
       : []),
-    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
+    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
       ? [
         {
           title: 'Crm Admin Dashboard',
@@ -51,7 +51,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
           icon: 'layout-outline',
           children: [
             ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Add', link: '/pages/add-lead' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 34 ? [{ title: 'Bulk Upload', link: '/pages/upload-lead' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Bulk Upload', link: '/pages/upload-lead' }] : []),
             { title: 'Manage', link: '/pages/manage-lead' },
           ],
         },

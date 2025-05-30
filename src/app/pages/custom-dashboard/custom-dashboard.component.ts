@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../services/global.service';
 import { NbColorHelper, NbThemeService, NbToastrService } from '@nebular/theme';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'ngx-custom-dashboard',
@@ -37,7 +38,8 @@ export class CustomDashboardComponent implements OnInit {
   constructor(
     public globalService: GlobalService,
     private toastrService: NbToastrService,
-        private themeService: NbThemeService // ✅ FIX: Inject NbThemeService
+    private themeService: NbThemeService, // ✅ FIX: Inject NbThemeService
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -48,7 +50,7 @@ export class CustomDashboardComponent implements OnInit {
   loadStatsData(): void {
     this.isSubmitting = true; // <-- start loader
 
-    this.globalService.getStatsData().subscribe({
+    this.globalService.getStatsData(this.globalService.role_id,this.globalService.user_id,this.globalService.member_id).subscribe({
       next: (res) => {
         this.statsData = res.data;
         this.isSubmitting = false; // <-- stop loader
@@ -111,6 +113,11 @@ loadChartData(): void {
       },
     });
   });
+}
+
+navigateToManageLead(title: string): void {
+  const encodedTitle = encodeURIComponent(title);
+  this.router.navigate(['/pages/manage-lead'], { queryParams: { title: encodedTitle } });
 }
 
 
