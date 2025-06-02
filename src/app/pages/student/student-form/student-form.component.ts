@@ -113,6 +113,7 @@ export class StudentFormComponent implements OnInit {
       question_ans: this.qArray,
       lead_id: this.globalService.currentUser.lead_id,
       type: 1,
+      student_mobile: this.studentData.phone_number
     };
   
     this.isSubmitting = true;

@@ -9,7 +9,7 @@
 
     <nb-card-header class="dialog-header">
       <div class="header-title" *ngIf="questionAnsDetailsStatus === 1">Student Answers</div>
-      <div class="header-title" *ngIf="questionAnsDetailsStatus === 0">Counsil Student</div>
+      <div class="header-title" *ngIf="questionAnsDetailsStatus === 0">Student Interview</div>
       <button nbButton size="tiny" status="danger" (click)="dialogRef.close()">Close</button>
     </nb-card-header>
 
@@ -25,7 +25,7 @@
         <!-- Student Counseling Details -->
         <nb-card>
           <nb-card-header (click)="toggleCounselingStudent()" style="cursor: pointer;" class="counseling-header">
-            <strong>Student Counseling Answers</strong>
+            <strong>Student Form Answers</strong>
             <nb-icon [icon]="showCounselingStudent ? 'chevron-up-outline' : 'chevron-down-outline'" pack="eva"
               style="float: right;"></nb-icon>
           </nb-card-header>

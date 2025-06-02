@@ -196,13 +196,22 @@ export class GlobalService {
   }
 
   // Dashboard API
-    public getStatsData(role_id:any,user_id:any,member_id:any): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-crm-dasboard-stats/${role_id}/${user_id}/${member_id}`);
+    public getStatsData(data:any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/get-crm-dasboard-stats`,data);
   }
 
      public getChartData(): Observable<any> {
     return this.http.get(`${this.leadUrl}/get-monthly-crm-summary`);
   }
+
+  public getDashboardButtonData(data: any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/followup-data`, data);
+  }
+
+   public dashboardLeads(data: any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/get-filtered-leads`, data);
+  }
+ 
  
   //Marcom API
     public marcomLeadSubmit(data: any): Observable<any> {
@@ -227,6 +236,17 @@ export class GlobalService {
 
        public getCenterMarcon(userId:any): Observable<any> {
     return this.http.get(`${this.leadUrl}/get-center-user/${userId}`);
+  }
+
+  // Student Search
+       public searchStudents(data:any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/search-lead`,data);
+  }
+
+  // Report API's
+
+  public downloadReport(data:any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/get-rolewise-report`,data);
   }
  
 

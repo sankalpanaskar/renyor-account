@@ -1,8 +1,15 @@
 <nb-card
   *ngIf="globalService.role_id === 34 || globalService.role_id === 23 || globalService.role_id === 11 || globalService.role_id === 15 || globalService.role_id === 7">
-  <nb-card-header>
-    Manage Lead
-  </nb-card-header>
+<nb-card-header>
+  <div class="header-wrapper">
+    <span>
+      Manage Lead 
+      <span style="color: red; font-weight: 600;">({{title}}-{{apiData.length}})</span>
+    </span>
+    <button nbButton size="small" status="primary" (click)="goToDashboard()">Go To Dashboard</button>
+  </div>
+</nb-card-header>
+
 
   <nb-card-body class="position-relative">
     <!-- Spinner overlay -->
@@ -12,7 +19,7 @@
 
     <div [class.content-blur]="loading">
       <!-- Followups Buttons -->
-      <div class="row align-items-center mb-3">
+      <!-- <div class="row align-items-center mb-3">
         <div class="col-md-2">
           <label style="font-weight: 600;">Followups:</label>
         </div>
@@ -30,9 +37,9 @@
           <button class="tiny-button" style="margin-right: 4px;" nbButton size="small" status="info"
             (click)="getLeadData()">ALL <span class="count-span">{{apiData.length}}</span></button>
         </div>
-      </div>
+      </div> -->
 
-      <div class="row align-items-center mb-3">
+      <div class="row align-items-center mb-3" *ngIf="leadStatusId === null">
         <div class="col-md-2">
           <label style="font-weight: 600;">Filters:</label>
         </div>
@@ -41,6 +48,10 @@
           <div class="col-md-6" style="padding: 0px !important;">
             <nb-select placeholder="Select Filter"   [(selected)]="selectedFilter"
                (selectedChange)="filterFollowups($event)" fullWidth>
+                 <nb-option value="newLead">
+                New Lead
+                <span class="count-badge">{{ newLeadCount }}</span>
+              </nb-option>
               <nb-option value="connected">
                 Connected
                 <span class="count-badge">{{ connectCount }}</span>
@@ -54,7 +65,7 @@
                 <span class="count-badge">{{ doNotCallCount }}</span>
               </nb-option>
               <nb-option value="interested">
-                Intrested
+                Interested
                 <span class="count-badge">{{ interestedCount }}</span>
               </nb-option>
               <nb-option value="studentPending">

@@ -95,7 +95,7 @@
                   <!-- Alternative Phone Number -->
                   <nb-card>
                     <nb-card-header>What is your alternative contact number?
-                      <span class="required-star">*</span>
+                      <!-- <span class="required-star">*</span> -->
                     </nb-card-header>
                     <div class="form-field-wrapper">
                       <nb-form-field fullWidth>
@@ -106,11 +106,10 @@
                           name="alt_phone_no"
                           #alt_phone_no="ngModel"
                           maxLength="10" pattern="^\d{10}$"
-                          required
                           (ngModelChange)="questionChange($event, 'What is your alternative contact number?')" />
                       </nb-form-field>
                       <div *ngIf="fm.submitted && alt_phone_no.invalid" class="error-text">
-                        Please enter alternative contact number
+                        Please enter 10-digit contact number
                       </div>
                     </div>
                   </nb-card>
@@ -259,7 +258,7 @@
                 <div class="form-section">
   
                   <!-- Career Goals -->
-                  <nb-card>
+                  <!-- <nb-card>
                     <nb-card-header>What are your career goals?
                       <span class="required-star">*</span>
                     </nb-card-header>
@@ -274,6 +273,48 @@
                     </nb-radio-group>
                     <div *ngIf="fm.submitted && c1.invalid" class="error-text">
                       <nb-text status="danger">Please select any option</nb-text>
+                    </div>
+                  </nb-card> -->
+
+                  <nb-card>
+                    <nb-card-header>What is Your Short Term Goal?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <div class="form-field-wrapper">
+                      <nb-form-field fullWidth>
+                        <input
+                          nbInput
+                          placeholder="Short Term Goal"
+                          [(ngModel)]="model.short_time_goal"
+                          name="short_time_goal"
+                          #short_time_goal="ngModel"
+                          required
+                          (ngModelChange)="questionChange($event, 'What is Your Short Term Goal?')" />
+                      </nb-form-field>
+                      <div *ngIf="fm.submitted && short_time_goal.invalid" class="error-text">
+                        Please enter Short time goal
+                      </div>
+                    </div>
+                  </nb-card>
+
+                   <nb-card>
+                    <nb-card-header>What is Your Long Term Goal?
+                      <span class="required-star">*</span>
+                    </nb-card-header>
+                    <div class="form-field-wrapper">
+                      <nb-form-field fullWidth>
+                        <input
+                          nbInput
+                          placeholder="Long Term Goal"
+                          [(ngModel)]="model.long_time_goal"
+                          name="long_time_goal"
+                          #long_time_goal="ngModel"
+                          required
+                          (ngModelChange)="questionChange($event, 'What is Your Long Term Goal?')" />
+                      </nb-form-field>
+                      <div *ngIf="fm.submitted && long_time_goal.invalid" class="error-text">
+                        Please enter long time goal
+                      </div>
                     </div>
                   </nb-card>
   

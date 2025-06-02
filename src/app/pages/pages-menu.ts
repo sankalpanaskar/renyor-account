@@ -13,16 +13,16 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
     //   icon: 'home-outline',
     //   link: '/pages/iot-dashboard',
     // },
-    ...(roleId === 34 || roleId === 11 ||  roleId === 7 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
+    ...(roleId === 34 || roleId === 11 || roleId === 7 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
       ? [
         {
-          title: 'Dashboard',
+          title: 'Follow-Up Dashboard',
           icon: 'home-outline',
           link: '/pages/custom-dashboard',
         },
       ]
       : []),
-    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
+    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 23 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45
       ? [
         {
           title: 'Crm Admin Dashboard',
@@ -31,7 +31,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         },
       ]
       : []),
-       ...(roleId === 34 || roleId=== 51
+    ...(roleId === 34 || roleId === 51
       ? [
         {
           title: 'Marcom Dashboard',
@@ -58,6 +58,27 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
       ]
       : []),
 
+      //     ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17 ? [
+      //   {
+      //     title: 'My Reports',
+      //     icon: 'browser-outline',
+      //     children: [
+      //       ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17  ? [{ title: '', link: '/pages/marcom/center-bulk-lead' }] : []),
+      //     ],
+      //   },
+      // ]
+      // : []),
+
+          ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17
+      ? [
+        {
+          title: 'My Reports',
+          icon: 'clipboard-outline',
+          link: '/pages/report/lead-crm-report',
+        },
+      ]
+      : []),
+
 
     ...(roleId === 34 || roleId === 15 || roleId === 51
       ? [
@@ -73,20 +94,23 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
       ]
       : []),
 
-    ...(roleId === 777
+    ...(roleId === 777 || roleId === 23 || roleId === 11 || roleId === 15 || roleId === 7 || roleId === 34
       ? [
         {
           title: 'Students',
           icon: 'person-outline',
           children: [
-            {
-              title: 'Counseling Details',
-              link: '/pages/student/student-details',
-            },
-            {
-              title: 'Student Form',
-              link: '/pages/student/student-form',
-            },
+            ...(roleId === 777 ? [{ title: 'Counseling Details', link: '/pages/student/student-details' }] : []),
+            ...(roleId === 777 ? [{ title: 'Student Form', link: '/pages/student/student-form' }] : []),
+            ...(roleId === 23 || roleId === 15|| roleId === 11 || roleId === 7 || roleId === 34 ? [{ title: 'Search Student', link: '/pages/lead/student-flow-data' }] : []),
+            // {
+            //   title: 'Counseling Details',
+            //   link: '/pages/student/student-details',
+            // },
+            // {
+            //   title: 'Student Form',
+            //   link: '/pages/student/student-form',
+            // },
           ],
         },
       ]

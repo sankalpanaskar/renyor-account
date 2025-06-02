@@ -11,7 +11,24 @@ import { Router } from '@angular/router';
 export class CustomDashboardComponent implements OnInit {
   //M
   // Summary Cards
+  model:any = []
   stats = [
+    { title: "Today's Leads", value: 45 },
+    { title: 'Total Followups', value: 10 },
+    { title: 'Total Counseling', value: 200 },
+    { title: 'Student Pending', value: 24 },
+    { title: 'PO Pending', value: 30 },
+    { title: 'Quiz Pending', value: 140 },
+    { title: 'ORI Pending', value: 80 },
+    { title: 'Ready to Enroll', value: 27 },
+    { title: "Today's Leads", value: 45 },
+    { title: 'Total Followups', value: 10 },
+    { title: 'Total Counseling', value: 200 },
+    { title: 'Student Pending', value: 24 },
+    { title: 'PO Pending', value: 30 },
+    { title: 'Quiz Pending', value: 140 },
+    { title: 'ORI Pending', value: 80 },
+    { title: 'Ready to Enroll', value: 27 },
     { title: "Today's Leads", value: 45 },
     { title: 'Total Followups', value: 10 },
     { title: 'Total Counseling', value: 200 },
@@ -34,6 +51,11 @@ export class CustomDashboardComponent implements OnInit {
   isSubmitting: boolean = false;
   statsData: any = [];
   chartBarData: any = null;
+  fourButtonsData: any = [];
+  pastFollowupCount: number = 0;
+  todayFollowupCount: number = 0;
+  futureFollowupCount: number = 0;
+  totalFollowupCount: number = 0;
 
   constructor(
     public globalService: GlobalService,
@@ -44,13 +66,82 @@ export class CustomDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadStatsData();
-    this.loadChartData(); // ✅ ADD THIS
+    // this.loadChartData(); // ✅ ADD THIS
+    this.loadFourButtons();
   }
 
+
+loadFourButtons() {
+  const data = {
+    user_id: this.globalService.user_id,
+    member_id: this.globalService.member_id,
+    role_id: this.globalService.role_id
+  };
+
+  this.isSubmitting = true;
+
+  this.globalService.getDashboardButtonData(data).subscribe({
+    next: (res) => {
+      this.fourButtonsData = res.data || [];
+      this.isSubmitting = false;
+    },
+    error: (err) => {
+      console.error('Button error:', err);
+      this.toastrService.danger(err.message, 'Error');
+      this.isSubmitting = false;
+    },
+  });
+}
+
+getButtonStatus(title: string): string {
+  switch (title) {
+    case 'Today\'s Followups':
+      return 'info';
+    case 'Past Followups':
+      return 'warning';
+    case 'Future Followups':
+      return 'danger';
+    case 'Total Followups':
+      return 'success';
+    default:
+      return 'primary'; // fallback
+  }
+}
+
+redirectToManageLead(leadIds: number[], leadStatusId?: number, title?: string) {
+  const allowedRoles = [11, 23, 15, 34, 7];
+
+  if (!allowedRoles.includes(this.globalService.role_id)) {
+    console.log('Redirect blocked due to unauthorized role:', this.globalService.role_id);
+    return; // 🚫 Exit early if not allowed
+  }
+
+  const queryParams: any = {
+    lead_ids: leadIds.join(','),
+  };
+
+  if (leadStatusId !== undefined) {
+    queryParams.lead_status_id = leadStatusId;
+  }
+
+  if (title) {
+    queryParams.title = title;
+  }
+
+  this.router.navigate(['/pages/manage-lead'], { queryParams });
+}
+
+
+
   loadStatsData(): void {
+    var data = {
+      user_id : this.globalService.user_id,
+      member_id : this.globalService.member_id,
+      role_id : this.globalService.role_id
+    }
     this.isSubmitting = true; // <-- start loader
 
-    this.globalService.getStatsData(this.globalService.role_id,this.globalService.user_id,this.globalService.member_id).subscribe({
+    this.globalService.getStatsData(data).subscribe({
       next: (res) => {
         this.statsData = res.data;
         this.isSubmitting = false; // <-- stop loader
@@ -63,62 +154,86 @@ export class CustomDashboardComponent implements OnInit {
     });
   }
 
-loadChartData(): void {
-  this.isSubmitting = true;
 
-  this.themeService.getJsTheme().subscribe(theme => {
-    const colors = theme.variables;
-    const colorList = [
-      colors.primaryLight,
-      colors.infoLight,
-      colors.dangerLight,
-      colors.successLight,
-      // colors.warningLight,
-      // colors.dangerLight,
-    ];
 
-    this.globalService.getChartData().subscribe({
+// loadChartData(): void {
+//   this.isSubmitting = true;
+
+//   this.themeService.getJsTheme().subscribe(theme => {
+//     const colors = theme.variables;
+//     const colorList = [
+//       colors.primaryLight,
+//       colors.infoLight,
+//       colors.dangerLight,
+//       colors.successLight,
+//       // colors.warningLight,
+//       // colors.dangerLight,
+//     ];
+
+//     this.globalService.getChartData().subscribe({
+//       next: (res) => {
+//         this.chartBarData = {
+//           labels: res.labels,
+//           datasets: [
+//             {
+//               label: 'Total Leads',
+//               data: res.totalLeads,
+//               backgroundColor: NbColorHelper.hexToRgbA(colorList[0], 0.8),
+//             },
+//             {
+//               label: 'Total Connected',
+//               data: res.totalConnected,
+//               backgroundColor: NbColorHelper.hexToRgbA(colorList[1], 0.8),
+//             },
+//             {
+//               label: 'Rejected',
+//               data: res.rejected,
+//               backgroundColor: NbColorHelper.hexToRgbA(colorList[2], 0.8),
+//             },
+//             {
+//               label: 'Total Enroll',
+//               data: res.totalEnroll,
+//               backgroundColor: NbColorHelper.hexToRgbA(colorList[3], 0.8),
+//             }
+//           ],
+//         };
+
+//         this.isSubmitting = false;
+//       },
+//       error: (err) => {
+//         this.toastrService.danger(err.message, 'Chart Load Error');
+//         this.isSubmitting = false;
+//       },
+//     });
+//   });
+// }
+
+onFilterSubmit(fm:any ){
+  if(fm.valid){
+     var data = {
+      user_id : this.globalService.user_id,
+      member_id : this.globalService.member_id,
+      role_id : this.globalService.role_id,
+      start_date : fm.value.startDate,
+      end_date : fm.value.endDate,
+      
+    }
+    this.isSubmitting = true; // <-- start loader
+
+    this.globalService.getStatsData(data).subscribe({
       next: (res) => {
-        this.chartBarData = {
-          labels: res.labels,
-          datasets: [
-            {
-              label: 'Total Leads',
-              data: res.totalLeads,
-              backgroundColor: NbColorHelper.hexToRgbA(colorList[0], 0.8),
-            },
-            {
-              label: 'Total Connected',
-              data: res.totalConnected,
-              backgroundColor: NbColorHelper.hexToRgbA(colorList[1], 0.8),
-            },
-            {
-              label: 'Rejected',
-              data: res.rejected,
-              backgroundColor: NbColorHelper.hexToRgbA(colorList[2], 0.8),
-            },
-            {
-              label: 'Total Enroll',
-              data: res.totalEnroll,
-              backgroundColor: NbColorHelper.hexToRgbA(colorList[3], 0.8),
-            }
-          ],
-        };
-
-        this.isSubmitting = false;
+        this.statsData = res.data;
+        this.isSubmitting = false; // <-- stop loader
       },
       error: (err) => {
-        this.toastrService.danger(err.message, 'Chart Load Error');
-        this.isSubmitting = false;
+        console.error('Student error:', err);
+        this.toastrService.danger(err.message, 'Error');
+        this.isSubmitting = false; // <-- stop loader even on error
       },
     });
-  });
+  }
 }
 
-navigateToManageLead(title: string): void {
-  const encodedTitle = encodeURIComponent(title);
-  this.router.navigate(['/pages/manage-lead'], { queryParams: { title: encodedTitle } });
-}
 
 
 

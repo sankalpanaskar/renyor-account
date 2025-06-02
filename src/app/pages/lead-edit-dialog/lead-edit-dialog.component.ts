@@ -109,25 +109,24 @@ export class LeadEditDialogComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  loadStatusLists(): void {
-    this.globalService.getStatusList().subscribe({
-      next: (res) => {
-        // Full list
-        const fullStatusList = res.status;
+loadStatusLists(): void {
+  this.globalService.getStatusList().subscribe({
+    next: (res) => {
+      const fullStatusList = res.status;
 
-        // Filter based on this.data.lead_status_id
-        this.statusList = fullStatusList.filter(
-          (status: any) => status.id > this.data.lead_status_id
-        );
+      // Remove the current lead_status_id from the list
+      this.statusList = fullStatusList.filter(
+        (status: any) => status.id !== this.data.lead_status_id
+      );
 
-        console.log('Filtered statusList:', this.statusList);
-      },
-      error: (err) => {
-        console.error('status error:', err);
-        this.toastrService.danger(err.message, 'Error');
-      },
-    });
-  }
+      console.log('Filtered statusList:', this.statusList);
+    },
+    error: (err) => {
+      console.error('status error:', err);
+      this.toastrService.danger(err.message, 'Error');
+    },
+  });
+}
 
   onStatusChange(statusId) {
     this.selectedStatus = this.statusList.find(data => data.id === statusId);

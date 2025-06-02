@@ -4,7 +4,7 @@ import { GlobalService } from '../../services/global.service'; // or correct rel
 import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { CustomEditButtonComponent } from './custom-edit-btn.component';
 import { LeadEditDialogComponent } from '../lead-edit-dialog/lead-edit-dialog.component';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'ngx-manage-lead',
@@ -206,13 +206,18 @@ export class ManageLeadComponent implements OnInit {
   mneVerificationCount: any;
   enrolledCount: any;
   selectedFilter: string | null = null;
+  ids: any = [];
+  leadStatusId: number;
+  title: any;
 
 
   constructor(
     public globalService: GlobalService,
     private toastrService: NbToastrService,
     private dialogService: NbDialogService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
+    
   ) { }
 
   ngOnInit(): void {
@@ -223,46 +228,64 @@ export class ManageLeadComponent implements OnInit {
     // console.log("Extracted centerIds:", this.centerIds);
 
   this.route.queryParams.subscribe(params => {
-    const leadTitle = params['title'];
-    console.log('Clicked Title:', leadTitle);
-    // You can now filter or display data based on title
+    this.ids = params['lead_ids']?.split(',').map(id => +id) || [];
+    this.leadStatusId = params['lead_status_id'] ? +params['lead_status_id'] : null;
+    this.title = params['title'] || '';
+
+    console.log('Received Lead IDs:', this.ids);
+    console.log('Lead Status ID:', this.leadStatusId);
+    console.log('Title:', this.title);
+
+    // Use title if needed in UI or API calls
   });
+  if(this.ids.length==0 && this.leadStatusId === null){
+    this.title = "Today's Follow Up";
 
-    this.getLeadData();
+  }
+  // this.getLeadData('today'); // Load today's leads by default
+  this.loadManageLeadData();
   }
 
-  openEditDialog(rowData): void {
-    console.log('Opening dialog with rowData {{{{}}}}:', rowData); // <-- Add this
-    const originalData = this.apiData.find(
-      item => item.id === rowData.id // or another unique field
-    );
-    console.log("orignal data", originalData);
-    this.dialogService.open(LeadEditDialogComponent, {
-      // context: rowData, // Make sure `rowData` is an object
-      context: { data: rowData }
-    }).onClose.subscribe(updatedData => {
-      this.getLeadData();
-      if (updatedData) {
-        console.log('Updated lead:', updatedData);
-      }
-    });
-  }
 
-  getLeadData(): void {
-    this.selectedFilter = null; // Reset filter dropdown when "ALL" is clicked
-    var data = {
-      center_id: this.centerIds
+
+openEditDialog(rowData): void {
+  console.log('Opening dialog with rowData:', rowData);
+  
+  const originalData = this.apiData.find(item => item.id === rowData.id);
+
+  console.log("Original data:", originalData);
+
+  this.dialogService.open(LeadEditDialogComponent, {
+    context: { data: rowData }
+  }).onClose.subscribe(updatedData => {
+    // Re-fetch data using current filters
+    if (updatedData) {
+      console.log('Updated lead:', updatedData);
     }
+    this.loadManageLeadData();  // This already uses this.leadStatusId & this.title
+  });
+}
+
+  loadManageLeadData(){
+    var data = {
+      lead_id : this.ids,
+      lead_status_id : this.leadStatusId,
+      member_id : this.globalService.member_id,
+      role_id : this.globalService.role_id,
+      user_id : this.globalService.user_id
+    }
+
+     this.selectedFilter = null; // Reset filter dropdown when "ALL" is clicked
     this.loading = true;
-    this.globalService.getLeadData(data).subscribe({
-      next: (response) => {
-        this.apiData = response.data || [];
+    this.globalService.dashboardLeads(data).subscribe({
+    next: (response) => {
+      this.apiData = response.data || [];
+
         const mappedData = this.apiData.map((item, index) => ({
           id: item.id,
           slNo: index + 1,
           leadName: `${item.first_name} ${item.last_name}`,
           leadSource: item.source_type || 'N/A',
-          // leadStatus: this.getStatusLabel(item.follow_up_status),
           leadStatus: item.lead_status,
           owner: item.created_by_name,
           phone: item.phone_number,
@@ -272,20 +295,63 @@ export class ManageLeadComponent implements OnInit {
           callDate: item.follow_up_date,
           leadStatusId: item.lead_status_id,
           oriId: item.ori_no
-
         }));
         this.source.load(mappedData);
-        this.updateFollowupCounts();
-        this.loading = false;
-        // console.log("")
-      },
-      error: (err) => {
-        console.error('Lead data error:', err);
-        this.toastrService.danger(err.message, 'Error');
-        this.loading = false;
-      },
-    });
+      
+
+      this.updateFollowupCounts();
+      this.loading = false;
+    },
+    error: (err) => {
+      console.error('Lead data error:', err);
+      this.toastrService.danger(err.message, 'Error');
+      this.loading = false;
+    },
+  });
   }
+
+  // getLeadData(initialFilter: string = ''): void {
+  //   this.selectedFilter = null; // Reset filter dropdown when "ALL" is clicked
+  //   var data = {
+  //     center_id: this.centerIds
+  //   }
+  //   this.loading = true;
+  //   this.globalService.getLeadData(data).subscribe({
+  //   next: (response) => {
+  //     this.apiData = response.data || [];
+
+  //     // If initialFilter is provided (like 'today'), apply it immediately
+  //     if (initialFilter) {
+  //       this.filterFollowups(initialFilter);
+  //     } else {
+  //       const mappedData = this.apiData.map((item, index) => ({
+  //         id: item.id,
+  //         slNo: index + 1,
+  //         leadName: `${item.first_name} ${item.last_name}`,
+  //         leadSource: item.source_type || 'N/A',
+  //         leadStatus: item.lead_status,
+  //         owner: item.created_by_name,
+  //         phone: item.phone_number,
+  //         state: item.state,
+  //         center: item.center_code,
+  //         course: item.course_alias,
+  //         callDate: item.follow_up_date,
+  //         leadStatusId: item.lead_status_id,
+  //         oriId: item.ori_no
+  //       }));
+  //       this.source.load(mappedData);
+  //     }
+
+  //     this.updateFollowupCounts();
+  //     this.loading = false;
+  //   },
+  //   error: (err) => {
+  //     console.error('Lead data error:', err);
+  //     this.toastrService.danger(err.message, 'Error');
+  //     this.loading = false;
+  //   },
+  // });
+  // }
 
   updateFollowupCounts(): void {
     const today = new Date();
@@ -321,8 +387,7 @@ export class ManageLeadComponent implements OnInit {
     this.registrationDoneCount = this.apiData.filter(item => item.lead_status_id === 13).length;
     this.mneVerificationCount = this.apiData.filter(item => item.lead_status_id === 14).length;
     this.enrolledCount = this.apiData.filter(item => item.lead_status_id === 15).length;
-
-
+    this.newLeadCount = this.apiData.filter(item => item.lead_status_id === 1).length;
   }
 
   formatDateToYYYYMMDD(date: Date): string {
@@ -333,17 +398,7 @@ export class ManageLeadComponent implements OnInit {
   }
 
  filterFollowups(filterType: string): void {
-   // Deselect dropdown when a Followup button is clicked
-  const dropdownFilters = [
-    'connected', 'not-connected', 'do-not-call', 'interested',
-    'studentPending', 'poPending', 'poRejected', 'quizPending',
-    'oriPending', 'quizFailed', 'oriGenerated', 'registrationDone',
-    'mneVerification', 'enrolled'
-  ];
-
-  if (!dropdownFilters.includes(filterType)) {
-    this.selectedFilter = null; // Reset the dropdown
-  }
+  
   console.log("filter type",filterType);
   let filteredData = [];
 
@@ -451,6 +506,11 @@ export class ManageLeadComponent implements OnInit {
   //       return '3';
   //   }
   // }
+
+  goToDashboard() {
+  this.router.navigate(['/pages/custom-dashboard']);
+}
+
 
   onSearch(query: string = ''): void {
     this.source.setFilter([

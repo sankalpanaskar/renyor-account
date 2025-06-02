@@ -1,6 +1,6 @@
 <nb-card>
     <nb-card-header>Generate Report</nb-card-header>
-    <nb-card-body>
+    <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
         <nb-accordion multi>
             <!-- Module Completion Report with Form -->
             <nb-accordion-item>
@@ -17,7 +17,7 @@
                         <div class="date-range">
                             <!-- Start Date -->
                             <div class="form-field">
-                                <input nbInput placeholder="Start Date *" [nbDatepicker]="startPicker" name="startDate"
+                                <input nbInput placeholder="From Date *" [nbDatepicker]="startPicker" name="startDate"
                                     [(ngModel)]="startDate" required #startDateInput="ngModel" />
                                 <nb-datepicker #startPicker></nb-datepicker>
                                 <div *ngIf="fm.submitted && startDateInput.invalid" class="error-text">
@@ -27,9 +27,9 @@
 
                             <!-- End Date -->
                             <div class="form-field">
-                                <input nbInput placeholder="End Date *" [nbDatepicker]="endPicker" name="endDate"
+                                <input nbInput placeholder="To Date *" [nbDatepicker]="endPicker" name="endDate"
                                     [(ngModel)]="endDate" required #endDateInput="ngModel" />
-                                <nb-datepicker #endPicker></nb-datepicker>
+                                <nb-datepicker [max]="today" #endPicker></nb-datepicker>
                                 <div *ngIf="fm.submitted && endDateInput.invalid" class="error-text">
                                     End Date is required.
                                 </div>
@@ -37,7 +37,7 @@
                         </div>
 
                         <div style="text-align: right; margin-top: 1rem;margin-right: 60px;">
-                            <button nbButton status="success" type="submit">
+                            <button nbButton status="success" type="submit" [disabled]="isSubmitting">
                                 Download Report
                             </button>
                         </div>
