@@ -76,7 +76,12 @@ export class NgxLoginComponent {
               
               this.toastrService.success(response?.body?.message || 'Login successful', 'Success');
               this.router.navigate(['/pages/custom-dashboard']);
-              // this.router.navigate(['/pages/manage-lead']);
+              // // ✅ Redirect based on role_id
+              //   if (user.role_id === 17) {
+              //     this.router.navigate(['/pages/admin-dashboard']);
+              //   } else {
+              //     this.router.navigate(['/pages/custom-dashboard']);
+              //   }
               this.isLoading = false;
             } else {
               this.toastrService.danger('Invalid login response', 'Login Failed');

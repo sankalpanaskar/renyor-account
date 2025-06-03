@@ -109,7 +109,7 @@ getButtonStatus(title: string): string {
 }
 
 redirectToManageLead(leadIds: number[], leadStatusId?: number, title?: string) {
-  const allowedRoles = [11, 23, 15, 34, 7];
+  const allowedRoles = [23, 15, 34, 7];
 
   if (!allowedRoles.includes(this.globalService.role_id)) {
     console.log('Redirect blocked due to unauthorized role:', this.globalService.role_id);

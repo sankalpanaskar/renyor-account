@@ -33,7 +33,6 @@ export class LeadCrmReportComponent {
       next: (res:any) => {
        window.open(res.data.excelPath, '_blank');
       //   this.toastrService.danger(res.message, 'Error');
-        form.resetForm();
         this.isSubmitting = false;
       },
       error: (err) => {
