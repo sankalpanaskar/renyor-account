@@ -5,7 +5,7 @@
     <div class="form-field-wrapper autocomplete-wrapper">
       <nb-form-field>
         <nb-icon nbPrefix icon="person-outline" status="primary" style="margin-left: 20px;"></nb-icon>
-        <input nbInput placeholder="Search by Name or Student Code. *" [(ngModel)]="searchTerm" name="searchTerm"
+        <input nbInput placeholder="Search by Student Email,phone,ORI no and Student Code" [(ngModel)]="searchTerm" name="searchTerm"
           (keyup)="fetchStudents($event)" (focus)="showDropdown = true" (blur)="hideDropdownWithDelay()"
           autocomplete="off" required />
       </nb-form-field>

@@ -3,7 +3,7 @@ import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
 @Component({
   selector: 'ngx-custom-counseling-button',
   template: `
-    <button (click)="onEdit()" class="btn btn-primary text-white py-0" [disabled]="!rowData?.canEdit">Counsil</button>
+    <button (click)="onEdit()" class="btn btn-primary text-white py-0" [disabled]="!rowData?.canEdit">Council</button>
   `
 })
 export class CustomCounselingButtonComponent implements OnInit {
