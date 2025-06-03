@@ -126,22 +126,22 @@
 }
 .date-filter {
   display: flex;
+  flex-wrap: wrap; /* ensure proper wrapping */
+  align-items: center;
+  justify-content: flex-start; /* align to the left */
   gap: 1rem;
   margin-bottom: 1rem;
-  flex-wrap: wrap;
-  align-items: flex-start;
 }
-
 .date-field-wrapper {
-  display: flex;
-  flex-direction: column;
+  flex: 1 1 220px; /* Allow shrink/grow */
   min-width: 220px;
-  flex: 1;
 }
-
 .date-field {
   width: 100%;
+  display: flex;
+  align-items: center;
 }
+
 
 .error-message {
   color: #ff3d71;
