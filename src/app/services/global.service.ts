@@ -48,7 +48,7 @@ export class GlobalService {
   // private apiUrl = 'https://ticketapi.anudip.org/public/api/raiseticket';
   private apiUrl= environment.apiBaseUrl+ 'api';
   private leadUrl= environment.apiBaseUrl+ 'api'+ '/lead';
-
+  private accontUrl = environment.apiAccountBaseUrl+ 'api'+ '/account';
   // constructor(private http: HttpClient) {}
 
   // ADD LEAD FORM
@@ -252,6 +252,32 @@ export class GlobalService {
 
   getUserProfile(): Observable<any> {
     return this.http.get(`${this.apiUrl}/profile`);
+  }
+
+  //Accounts Api
+
+  public getBudgetCategory(): Observable<any> {
+    return this.http.get(`${this.accontUrl}/budget-categories`);
+  }
+
+  public getDonorList(): Observable<any> {
+    return this.http.get(`${this.accontUrl}/fetchAccountDonorList`);
+  }
+
+  public saveDonorAccount(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/insertAccountBudget`,data);
+  }
+
+  public getDonorAccount(): Observable<any> {
+    return this.http.get(`${this.accontUrl}/fetchAccountDonorBudget`);
+  }
+
+  public saveDonorBudgetDetails(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/insertAccountBudgetTr`,data);
+  }
+
+  public getBudgetDetailsByDonorAccount(id:any): Observable<any> {
+    return this.http.get(`${this.accontUrl}/fetch-budget-details-by-id/${id}`);
   }
 
 }

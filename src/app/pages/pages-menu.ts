@@ -13,15 +13,15 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
     //   icon: 'home-outline',
     //   link: '/pages/iot-dashboard',
     // },
-    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId === 44 || roleId === 46 || roleId === 10 || roleId === 26 || roleId === 37 || roleId === 42 || roleId === 7 || roleId === 23 || roleId === 23 || roleId === 44
-      ? [
-        {
-          title: 'Follow-up Dashboard',
-          icon: 'home-outline',
-          link: '/pages/custom-dashboard',
-        },
-      ]
-      : []),
+    // ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId === 44 || roleId === 46 || roleId === 10 || roleId === 26 || roleId === 37 || roleId === 42 || roleId === 7 || roleId === 23 || roleId === 23 || roleId === 44
+    //   ? [
+    //     {
+    //       title: 'Follow-up Dashboard',
+    //       icon: 'home-outline',
+    //       link: '/pages/custom-dashboard',
+    //     },
+    //   ]
+    //   : []),
     ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId === 44 || roleId === 46 || roleId === 10 || roleId === 26 || roleId === 37 || roleId === 42
       ? [
         {
@@ -31,100 +31,114 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         },
       ]
       : []),
-    ...(roleId === 34 || roleId === 51
-      ? [
-        {
-          title: 'Marcom Dashboard',
-          icon: 'layers-outline',
-          link: '/pages/marcom/marcom-dashboard',
-        },
-      ]
-      : []),
+    // ...(roleId === 34 || roleId === 51
+    //   ? [
+    //     {
+    //       title: 'Marcom Dashboard',
+    //       icon: 'layers-outline',
+    //       link: '/pages/marcom/marcom-dashboard',
+    //     },
+    //   ]
+    //   : []),
     {
       title: 'FEATURES',
       group: true,
     },
-    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23
+    ...(roleId === 34 || roleId === 14
       ? [
         {
-          title: 'Lead',
+          title: 'Donor',
           icon: 'layout-outline',
           children: [
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Add', link: '/pages/add-lead' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Bulk Upload', link: '/pages/upload-lead' }] : []),
-            { title: 'Manage', link: '/pages/manage-lead' },
+            ...(roleId === 14 || roleId === 34 ? [{ title: 'Add Donor Account', link: '/pages/accounts/add-donor-account' }] : []),
+            ...(roleId === 14 || roleId === 34 ? [{ title: 'Donor Account List', link: '/pages/accounts/donor-account-list' }] : []),
+            // { title: 'Manage', link: '/pages/manage-lead' },
+          ],
+        },
+      ]
+      : []),
+    ...(roleId === 34 || roleId === 14
+      ? [
+        {
+          title: 'Budget',
+          icon: 'layout-outline',
+          children: [
+            ...(roleId === 14 || roleId === 34 ? [{ title: 'Add Budget', link: '/pages/accounts/add-budget' }] : []),
+            ...(roleId === 14 || roleId === 34 ? [{ title: 'Budget List', link: '/pages/accounts/budget-list' }] : []),
+            ...(roleId === 14 || roleId === 34 ? [{ title: 'Upload Budget Allotment', link: '/pages/accounts/budget-allotment-upload' }] : []),
+            // { title: 'Manage', link: '/pages/manage-lead' },
           ],
         },
       ]
       : []),
 
-    ...(roleId === 34 || roleId === 15 || roleId === 51
-      ? [
-        {
-          title: 'Marcom',
-          icon: 'browser-outline',
-          children: [
-            ...(roleId === 51 || roleId === 34 ? [{ title: 'Centerwise Bulk Upload', link: '/pages/marcom/center-bulk-lead' }] : []),
-            ...(roleId === 51 || roleId === 34 ? [{ title: 'Statewise Bulk Upload', link: '/pages/marcom/state-bulk-lead' }] : []),
-            ...(roleId === 15 || roleId === 34 ? [{ title: 'Marcom Leads', link: '/pages/marcom/manage-marcom-lead' }] : []),
-          ],
-        },
-      ]
-      : []),
+    // ...(roleId === 34 || roleId === 15 || roleId === 51
+    //   ? [
+    //     {
+    //       title: 'Marcom',
+    //       icon: 'browser-outline',
+    //       children: [
+    //         ...(roleId === 51 || roleId === 34 ? [{ title: 'Centerwise Bulk Upload', link: '/pages/marcom/center-bulk-lead' }] : []),
+    //         ...(roleId === 51 || roleId === 34 ? [{ title: 'Statewise Bulk Upload', link: '/pages/marcom/state-bulk-lead' }] : []),
+    //         ...(roleId === 15 || roleId === 34 ? [{ title: 'Marcom Leads', link: '/pages/marcom/manage-marcom-lead' }] : []),
+    //       ],
+    //     },
+    //   ]
+    //   : []),
 
-    ...(roleId === 777 || roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17 || roleId === 10 || roleId === 14 || roleId === 18 || roleId === 26 || roleId === 43 || roleId === 37 || roleId === 42 || roleId === 45 || roleId === 44 || roleId === 46
-      ? [
-        {
-          title: 'Students',
-          icon: 'person-outline',
-          children: [
-            ...(roleId === 777 ? [{ title: 'Counseling Details', link: '/pages/student/student-details' }] : []),
-            ...(roleId === 777 ? [{ title: 'Student Form', link: '/pages/student/student-form' }] : []),
-            ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17 || roleId === 10 || roleId === 14 || roleId === 18 || roleId === 26 || roleId === 43 || roleId === 37 || roleId === 42 || roleId === 45 || roleId === 44 || roleId === 46 ? [{ title: 'Search Student', link: '/pages/lead/student-flow-data' }] : [])
-          ],
-        },
-      ]
-      : []),
-    ...(roleId === 34 || roleId === 11
-      ? [
-        {
-          title: 'Student Counseling',
-          icon: 'edit-2-outline',
-          children: [
-            // {
-            //   title: 'Students List',
-            //   link: '/pages/placement-officer/students-list',
-            // },
-            // {
-            //   title: 'Interview Form',
-            //   link: '/pages/placement-officer/interview-questions',
-            // },
-            // {
-            //   title: 'Student Answer',
-            //   link: '/pages/placement-officer/student-answers',
-            // },
-            {
-              title: 'Manage Counseling',
-              link: '/pages/placement-officer/manage-counseling',
-            },
-            {
-              title: 'Rejected Students',
-              link: '/pages/placement-officer/rejected-counseling',
-            },
-          ],
-        },
-      ]
-      : []),
+    // ...(roleId === 777 || roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17 || roleId === 10 || roleId === 14 || roleId === 18 || roleId === 26 || roleId === 43 || roleId === 37 || roleId === 42 || roleId === 45 || roleId === 44 || roleId === 46
+    //   ? [
+    //     {
+    //       title: 'Students',
+    //       icon: 'person-outline',
+    //       children: [
+    //         ...(roleId === 777 ? [{ title: 'Counseling Details', link: '/pages/student/student-details' }] : []),
+    //         ...(roleId === 777 ? [{ title: 'Student Form', link: '/pages/student/student-form' }] : []),
+    //         ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17 || roleId === 10 || roleId === 14 || roleId === 18 || roleId === 26 || roleId === 43 || roleId === 37 || roleId === 42 || roleId === 45 || roleId === 44 || roleId === 46 ? [{ title: 'Search Student', link: '/pages/lead/student-flow-data' }] : [])
+    //       ],
+    //     },
+    //   ]
+    //   : []),
+    // ...(roleId === 34 || roleId === 11
+    //   ? [
+    //     {
+    //       title: 'Student Counseling',
+    //       icon: 'edit-2-outline',
+    //       children: [
+    //         // {
+    //         //   title: 'Students List',
+    //         //   link: '/pages/placement-officer/students-list',
+    //         // },
+    //         // {
+    //         //   title: 'Interview Form',
+    //         //   link: '/pages/placement-officer/interview-questions',
+    //         // },
+    //         // {
+    //         //   title: 'Student Answer',
+    //         //   link: '/pages/placement-officer/student-answers',
+    //         // },
+    //         {
+    //           title: 'Manage Counseling',
+    //           link: '/pages/placement-officer/manage-counseling',
+    //         },
+    //         {
+    //           title: 'Rejected Students',
+    //           link: '/pages/placement-officer/rejected-counseling',
+    //         },
+    //       ],
+    //     },
+    //   ]
+    //   : []),
 
-       ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17 || roleId === 10 || roleId === 14 || roleId === 18 || roleId === 26 || roleId === 43 || roleId === 37 || roleId === 42 || roleId === 45 || roleId === 44 || roleId === 46
-      ? [
-        {
-          title: 'My Reports',
-          icon: 'clipboard-outline',
-          link: '/pages/report/lead-crm-report',
-        },
-      ]
-      : []),
+    //    ...(roleId === 34 || roleId === 15 || roleId === 23 || roleId === 34 || roleId === 7 || roleId === 11 || roleId === 17 || roleId === 10 || roleId === 14 || roleId === 18 || roleId === 26 || roleId === 43 || roleId === 37 || roleId === 42 || roleId === 45 || roleId === 44 || roleId === 46
+    //   ? [
+    //     {
+    //       title: 'My Reports',
+    //       icon: 'clipboard-outline',
+    //       link: '/pages/report/lead-crm-report',
+    //     },
+    //   ]
+    //   : []),
 
     // {
     //   title: 'Layout',

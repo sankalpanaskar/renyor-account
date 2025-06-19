@@ -1,0 +1,105 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 90%;
+max-width: 90%;margin: 0 auto;">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        <nb-card-header>Add Budget</nb-card-header>
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+          
+          <div class="row">
+            <div class="col-lg-12">
+              <nb-select shape="semi-round" placeholder="Select Donor Account" name="donor_account_id" required #donor_account_id="ngModel"
+                [(ngModel)]="model.donor_account_id" (selectedChange)="donorSelect($event)">
+                <nb-option *ngFor="let donor of donorList" [value]="{id:donor.id,name:donor.budget_name,type:donor.budget_type}">
+                  {{ donor.budget_name }}
+                </nb-option>
+              </nb-select>
+              <div *ngIf="fm.submitted && donor_account_id.invalid" class="error-message">Donor Account is required</div>
+            </div>
+            
+          </div>
+
+          <div class="row" *ngIf="isShowHide > 0">
+            <div class="col-md-12" *ngIf="isShowHide == 1">
+                <nb-select shape="semi-round" placeholder="Select Vertices" (selectedChange)="verticesSelect($event)">
+                    <nb-option *ngFor="let vertices of verticesList" [value]="{id:vertices.id,name:vertices.name}">
+                    {{ vertices.name }}
+                    </nb-option>
+                </nb-select>
+              <div *ngIf="fm.submitted && common_particular.invalid" class="error-message">Common Particular is required</div>
+            </div>
+            <div class="col-md-12" *ngIf="isShowHide == 2">
+                <nb-select shape="semi-round" placeholder="Select Center" (selectedChange)="centerSelect($event)">
+                    <nb-option *ngFor="let center of allCenter" [value]="{id:center.id,name:center.name,code:center.short_code}">
+                    {{ center.short_code }} - {{ center.name }}
+                    </nb-option>
+                </nb-select>
+              <div *ngIf="fm.submitted && common_particular.invalid" class="error-message">Common Particular is required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6">
+              <nb-select shape="semi-round" placeholder="Select Category" name="category_name" required #category_name="ngModel"
+                [(ngModel)]="model.category_name" (selectedChange)="categorySelect($event)">
+                <nb-option *ngFor="let category of budgetCategory" [value]="category">
+                  {{ category }}
+                </nb-option>
+              </nb-select>
+              <div *ngIf="fm.submitted && category_name.invalid" class="error-message">Category is required</div>
+            </div>
+            <div class="col-lg-6">
+              <nb-select shape="semi-round" placeholder="Select Common Particular" name="common_particular" required #common_particular="ngModel"
+                [(ngModel)]="model.common_particular" (selectedChange)="particularSelect($event)">
+                <nb-option *ngFor="let particular of commonParticularList" [value]="{particular_id:particular.id,particular:particular.common_particular}">{{particular.common_particular}}</nb-option>
+              </nb-select>
+              <div *ngIf="fm.submitted && common_particular.invalid" class="error-message">Common Particular is required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6">
+              <input type="text" nbInput fullWidth shape="semi-round" placeholder="Particulars (As per approved budget)" name="particular_as_per_budget"
+                required #particular_as_per_budget="ngModel" [(ngModel)]="model.particular_as_per_budget">
+              <div *ngIf="fm.submitted && particular_as_per_budget.invalid" class="error-message">Particulars name is required</div>
+            </div>
+            <div class="col-lg-6">
+              <input type="number" nbInput fullWidth shape="semi-round" placeholder="Unit No" name="unit_no"
+                required #unit_no="ngModel" [(ngModel)]="model.unit_no">
+              <div *ngIf="fm.submitted && unit_no.invalid" class="error-message">Unit No is required</div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <input type="number" nbInput fullWidth shape="semi-round" placeholder="Unit Cost" name="unit_cost"
+                required #unit_cost="ngModel" [(ngModel)]="model.unit_cost">
+              <div *ngIf="fm.submitted && unit_cost.invalid" class="error-message">Unit Cost is required</div>
+            </div>
+            <div class="col-lg-6">
+              <input type="number" nbInput fullWidth shape="semi-round" placeholder="Gross Budget" name="gross_budget"
+                required #gross_budget="ngModel" [(ngModel)]="model.gross_budget" (ngModelChange)="onGrossBudgetInput($event)">
+              <div *ngIf="fm.submitted && gross_budget.invalid" class="error-message">Gross Budget is required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6">
+              <input type="number" nbInput fullWidth shape="semi-round" placeholder="AF/LC Contribution" name="af_lc_contribution"
+                required #af_lc_contribution="ngModel" [(ngModel)]="model.af_lc_contribution" (ngModelChange)="onAFLCInput($event)" >
+              <div *ngIf="fm.submitted && af_lc_contribution.invalid" class="error-message">AF/LC Contribution is required</div>
+            </div>
+            <div class="col-lg-6">
+              <input type="number" nbInput fullWidth shape="semi-round" placeholder="Net Budget(Total)" name="net_budget"
+                required #net_budget="ngModel" [(ngModel)]="model.net_budget" readonly>
+              <div *ngIf="fm.submitted && net_budget.invalid" class="error-message">Net Budget(Total) is required</div>
+            </div>
+          </div>
+
+          <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+            Save
+          </button>
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</form>

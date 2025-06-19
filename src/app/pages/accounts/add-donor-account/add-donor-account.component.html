@@ -1,0 +1,105 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 90%;
+max-width: 90%;margin: 0 auto;">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        <nb-card-header>Add Donor Account</nb-card-header>
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+          
+          <div class="row">
+            <div class="col-lg-6">
+              <nb-select shape="semi-round" placeholder="Select Donor" name="donor" required #donor="ngModel"
+                [(ngModel)]="model.donor" (selectedChange)="donorSelect($event)">
+                <nb-option *ngFor="let donor of donorList" [value]="{id:donor.id,name:donor.name}">
+                  {{ donor.name }}
+                </nb-option>
+              </nb-select>
+              <div *ngIf="fm.submitted && donor.invalid" class="error-message">Donor is required</div>
+            </div>
+            <div class="col-lg-6">
+              <nb-select shape="semi-round" placeholder="Select Vertices/Center" name="budget_type" required #budget_type="ngModel"
+                [(ngModel)]="model.budget_type">
+                <nb-option value="Vertices">Vertices</nb-option>
+                <nb-option value="Center">Center</nb-option>
+              </nb-select>
+              <div *ngIf="fm.submitted && budget_type.invalid" class="error-message">Budget type is required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6">
+              <nb-select shape="semi-round" placeholder="Select SPOC Person" name="finance_spoc" required #finance_spoc="ngModel"
+                [(ngModel)]="model.finance_spoc" (selectedChange)="spocSelect($event)">
+                <nb-option *ngFor="let member of memberList" [value]="{member_id:member.member_id,first_name:member.first_name,last_name:member.last_name,member_code:member.member_code,}">{{member.member_code}} - {{member.first_name}} {{member.last_name}}</nb-option>
+              </nb-select>
+              <div *ngIf="fm.submitted && finance_spoc.invalid" class="error-message">Finance SPOC is required</div>
+            </div>
+            <div class="col-lg-6">
+                <nb-radio-group class="radio-horizontal" name="fc_nfc_status"
+                required #fc_nfc_status="ngModel" [(ngModel)]="model.fc_nfc_status">
+                    <nb-radio [value]="'FC'">FC</nb-radio>
+                    <nb-radio [value]="'NFC'">NFC</nb-radio>
+                </nb-radio-group>
+                <div *ngIf="fm.submitted && fc_nfc_status.invalid" class="error-message">FC/NFC is required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+                <input
+                nbInput
+                shape="semi-round"
+                placeholder="Pick a start date"
+                [nbDatepicker]="startPicker"
+                name="start_date"
+                #start_date="ngModel"
+                [(ngModel)]="model.start_date"
+                fullWidth (ngModelChange)="startDateChange($event)">
+                <nb-datepicker #startPicker></nb-datepicker>
+                <div *ngIf="fm.submitted && start_date.invalid" class="error-message">Start Date is required</div>
+            </div>
+            <div class="col-md-6">
+                <input
+                nbInput
+                shape="semi-round"
+                placeholder="Pick a end date"
+                [nbDatepicker]="endPicker"
+                name="end_date"
+                #end_date="ngModel"
+                [(ngModel)]="model.end_date"
+                fullWidth (ngModelChange)="endDateChange($event)">
+                <nb-datepicker #endPicker></nb-datepicker>
+                <div *ngIf="fm.submitted && end_date.invalid" class="error-message">End Date is required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6">
+              <input
+                nbInput
+                shape="semi-round"
+                placeholder="Pick a actual end date"
+                [nbDatepicker]="actualEndDate"
+                name="actual_end_date"
+                #actual_end_date="ngModel"
+                [(ngModel)]="model.actual_end_date"
+                fullWidth>
+                <nb-datepicker #actualEndDate></nb-datepicker>
+              <div *ngIf="fm.submitted && actual_end_date.invalid" class="error-message">Actual End Date is required</div>
+            </div>
+            <div class="col-lg-6">
+              <input type="text" nbInput fullWidth shape="semi-round" placeholder="Budget Name" name="budget_name"
+                required #budget_name="ngModel" [(ngModel)]="model.budget_name" readonly>
+              <div *ngIf="fm.submitted && budget_name.invalid" class="error-message">Budget name is required</div>
+            </div>
+            
+          </div>
+
+          <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+            Save
+          </button>
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</form>
