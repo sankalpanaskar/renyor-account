@@ -13,27 +13,25 @@
     <!-- Content -->
     <div [class.content-blur]="loading">
       <div class="row mb-3">
-        <div class="col-md-12">
+        <div class="col-md-6">
           <nb-select placeholder="Select Donor Account" (selectedChange)="donorAccountChange($event)" fullWidth shape="semi-round">
             <nb-option *ngFor="let donor of donoAccountList" [value]="donor.id">
               {{ donor.budget_name }}
             </nb-option>
           </nb-select>
         </div>
+        
 
-        <!-- <div class="col-md-6">
+        <div class="col-md-6">
           <div class="filterDiv" >
             <nb-radio-group [(ngModel)]="selectedFilter" (ngModelChange)="onFilterChange($event)"
               class="d-flex flex-wrap gap-2">
               <nb-radio value="all" class="custom-radio-space my-radio"
                 style="color:#030303; font-weight: bold;">All</nb-radio>
-              <nb-radio value="student_pending" class="custom-radio-space my-radio" style="color: #636469;">Student
-                Pending</nb-radio>
-              <nb-radio value="po_done" class="custom-radio-space my-radio" style="color: #0163aa;">PO Done</nb-radio>
-              <nb-radio value="po_pending" class="custom-radio-space my-radio" style="color: red;">PO Pending</nb-radio>
+              <nb-radio *ngFor="let category of categoryNames" [value]="category" class="custom-radio-space my-radio" style="color: #636469;">{{category}}</nb-radio>
             </nb-radio-group>
           </div>
-        </div> -->
+        </div>
       </div>
 
       <input type="text" nbInput fullWidth shape="semi-round" #search class="search mb-3" placeholder="Enter keyword and then enter for search..."

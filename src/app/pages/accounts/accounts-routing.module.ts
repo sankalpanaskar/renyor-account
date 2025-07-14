@@ -6,14 +6,23 @@ import { AddDonorAccountComponent } from './add-donor-account/add-donor-account.
 import { BudgetListComponent } from './budget-list/budget-list.component';
 import { DonorAccountListComponent } from './donor-account-list/donor-account-list.component';
 import { BudgetAllotmentUploadComponent } from './budget-allotment-upload/budget-allotment-upload.component';
+import { AddDonorComponent } from './add-donor/add-donor.component';
+import { DonorListComponent } from './donor-list/donor-list.component';
+import { AddBudgetCategoryComponent } from './add-budget-category/add-budget-category.component';
+import { AmountRecievedFromDonorComponent } from './amount-recieved-from-donor/amount-recieved-from-donor.component';
+import { BudgetExpensesUploadComponent } from './budget-expenses-upload/budget-expenses-upload.component';
 
 const routes: Routes = [{
   path: '',
     component: AccountsComponent,
     children: [
       {
-      path: 'add-budget',
-      component: AddBudgetComponent,
+      path: 'add-donor',
+      component: AddDonorComponent,
+      },
+      {
+      path: 'donor-list',
+      component: DonorListComponent,
       },
       {
       path: 'add-donor-account',
@@ -24,6 +33,18 @@ const routes: Routes = [{
       component: DonorAccountListComponent,
       },
       {
+      path: 'received-amount',
+      component: AmountRecievedFromDonorComponent,
+      },
+      {
+      path: 'add-budget-category',
+      component: AddBudgetCategoryComponent,
+      },
+      {
+      path: 'add-budget',
+      component: AddBudgetComponent,
+      },
+      {
       path: 'budget-list',
       component: BudgetListComponent,
       },
@@ -31,7 +52,14 @@ const routes: Routes = [{
       path: 'budget-allotment-upload',
       component: BudgetAllotmentUploadComponent,
       },
-    
+      {
+      path: 'received-amount-from-donor',
+      component: AmountRecievedFromDonorComponent,
+      },
+      {
+      path: 'budget-expenses-upload',
+      component: BudgetExpensesUploadComponent,
+      },
   ],
 }];
 

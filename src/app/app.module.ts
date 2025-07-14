@@ -24,12 +24,8 @@ import {
 import { NbAuthJWTToken, NbAuthModule, NbAuthSimpleToken, NbPasswordAuthStrategy } from '@nebular/auth';
 import { authGuard } from './auth/auth.guard';
 import { TokenInterceptor } from './interceptors/token.interceptor';
-import { CustomEditButtonComponent } from './pages/manage-lead/custom-edit-btn.component';
-import { RejectedCounselingButtonComponent } from './pages/placement-officer/rejected-counseling/rejected-counseling-btn.component';
-
 @NgModule({
-  declarations: [AppComponent,  CustomEditButtonComponent,RejectedCounselingButtonComponent
-  ],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,

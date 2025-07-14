@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { LocalDataSource } from 'ng2-smart-table';
+import { BudgetBreakupParticularDialougeComponent } from '../budget-breakup-particular-dialouge/budget-breakup-particular-dialouge.component';
+import { CustomEditButtonComponent } from './custom-edit-btn.component';
 
 @Component({
   selector: 'ngx-budget-list',
@@ -32,14 +34,26 @@ export class BudgetListComponent implements OnInit {
         filter: false,
         editable: false
       },
-      particularName: {
-        title: 'Particular Name',
+      type: {
+        title: 'Vertices/Center',
         type: 'string',
         filter: false,
         editable: false
       },
-      fcNfc: {
-        title: 'FC/NFC',
+      category: {
+        title: 'Category',
+        type: 'string',
+        filter: false,
+        editable: false
+      },
+      commonParticular: {
+        title: 'Common Particular',
+        type: 'string',
+        filter: false,
+        editable: false
+      },
+      particularAsPerBudget: {
+        title: 'Particular As Per Budget',
         type: 'string',
         filter: false,
         editable: false
@@ -63,7 +77,7 @@ export class BudgetListComponent implements OnInit {
         editable: false
       },
       afLc: {
-        title: 'Af/LC COntribution',
+        title: 'AF/LC Contri.',
         type: 'number',
         filter: false,
         editable: false
@@ -74,6 +88,21 @@ export class BudgetListComponent implements OnInit {
         filter: false,
         editable: false
       },
+      action: {
+        title: 'Action',
+        type: 'custom',
+        renderComponent: CustomEditButtonComponent,
+        filter: false,
+        onComponentInitFunction: (instance) => {
+          instance.editClicked.subscribe((row) => {
+            console.log('Row passed from CustomEditButtonComponent:', row);
+            const fullRowData = this.apiData.find(item => item.id === row.id); // ✅ Match by ID
+            console.log('Full API object for selected row:', fullRowData);
+
+            this.openEditDialog(fullRowData); // 👈 Send full original object
+          });
+        }
+      }
     },
   };
 
@@ -89,6 +118,7 @@ export class BudgetListComponent implements OnInit {
   expandedStudent: any = null;
   selectedFilter = 'all';
   loading: boolean = false; // <-- Add this to your class
+  categoryNames : any = [];
 
 
   constructor(
@@ -123,18 +153,46 @@ export class BudgetListComponent implements OnInit {
     this.loading = true;
     this.globalService.getBudgetDetailsByDonorAccount(centerId).subscribe({
       next: (res) => {
-        this.apiData = res.record; // ✅ Store API data here first
-        console.log(this.apiData);
+        this.apiData = res.record;
+        this.categoryNames = [...new Set(this.apiData.map(record => record.category))];
         const mappedData = this.apiData.map((item, index) => ({
-          slNo           : index + 1,
-          particularName : item.particular_as_per_budget,
-          fcNfc          : item.fc_nfc_status,
-          unitNo         : item.unit, // ✅ Corrected based on your data
-          unitCost       : item.cosst,
-          grossBudget    : item.gross_budget,
-          afLc           : item.af_lc,
-          netBudget      : item.net_budget, // ✅ Corrected based on your data
+          slNo                  : index + 1,
+          type: item.budget_type === 'Vertices' 
+          ? item.vertices_name 
+          : item.budget_type === 'Center' 
+          ? item.center_code + ' ' + item.center_name 
+          : null,
+          category              : item.category,
+          commonParticular      : item.common_particular,
+          particularAsPerBudget : item.particular_as_per_budget,
+          unitNo                : item.unit,
+          unitCost              : item.cost,
+          grossBudget           : item.gross_budget,
+          afLc                  : item.af_lc,
+          netBudget             : item.net_budget,
+
         }));
+        // Calculate the sum of netBudget
+        const netBudgetSum = mappedData.reduce((acc, item) => acc + parseFloat(item.netBudget), 0);
+        const grossBudgetSum = mappedData.reduce((acc, item) => acc + parseFloat(item.grossBudget), 0);
+        const aflcBudgetSum = mappedData.reduce((acc, item) => acc + parseFloat(item.afLc), 0);
+
+        // Add a summary row with the sum of netBudget
+        const summaryRow = {
+          slNo: null,  // Display "Total" for the last row
+          type: null,
+          category: null,
+          commonParticular: null,
+          particularAsPerBudget: "Total",
+          unitNo: null,
+          unitCost: null,
+          grossBudget: grossBudgetSum.toFixed(2),
+          afLc: aflcBudgetSum.toFixed(2),
+          netBudget: (grossBudgetSum - aflcBudgetSum).toFixed(2),  
+        };
+
+        // Push the summary row to the mappedData
+        mappedData.push(summaryRow);
         this.source.load(mappedData);
         this.loading = false;
       },
@@ -146,69 +204,99 @@ export class BudgetListComponent implements OnInit {
     });
   }
  
-  // onFilterChange(status: string) {
-  //   this.selectedFilter = status;
-  //   this.applyFilter(status);
-  // }
+  onFilterChange(status: string) {
+    this.selectedFilter = status;
+    console.log(status);
+    this.applyFilter(status);
+  }
 
-  // applyFilter(status: string) {
-  //   let filteredData = [];
+  applyFilter(status: string) {
+    let filteredData = [];
 
-  //   if (status === 'all') {
-  //     filteredData = this.apiData;
-  //   }
-  //   else if (status === 'student_pending') {
-  //     filteredData = this.apiData.filter(student => student.lead_status_id === 6);
-  //   } else if (status === 'po_done') {
-  //     filteredData = this.apiData.filter(student => student.lead_status_id === 8);
-  //   } else if (status === 'po_pending') { // ✅ fixed this line
-  //     filteredData = this.apiData.filter(student => student.lead_status_id === 7);
-  //   }
+    if (status === 'all') {
+      filteredData = this.apiData;
+    }
+    else if (status === 'Personnel') {
+      filteredData = this.apiData.filter(record => record.category === 'Personnel');
+    } else if (status === 'Capex') {
+      filteredData = this.apiData.filter(record => record.category === 'Capex');
+    } else if (status === 'Opex') { // ✅ fixed this line
+      filteredData = this.apiData.filter(record => record.category === 'Opex');
+    } else if (status === 'SG&A') { // ✅ fixed this line
+      filteredData = this.apiData.filter(record => record.category === 'SG&A');
+    }
 
-  //   const mappedData = filteredData.map((item, index) => ({
-  //     lead_id: item.lead_id,
-  //     slNo: index + 1,
-  //     leadName: `${item.first_name} ${item.last_name}`,
-  //     leadEmail: item.email_id || 'N/A',
-  //     counselingStatus: item.student_counseling_status,
-  //     phone: item.phone_number,
-  //     center: item.center_code,
-  //     course: item.course_alias,
-  //     POStatus: item.po_counseling_status,
-  //     POApproval: item.lead_status_id,
-  //     id: item.lead_id,
-  //     canEdit: item.student_counseling_status === 1
-  //   }));
+    const mappedData = filteredData.map((item, index) => ({
+          slNo                  : index + 1,
+          type: item.budget_type === 'Vertices' 
+          ? item.vertices_name 
+          : item.budget_type === 'Center' 
+          ? item.center_code + ' ' + item.center_name 
+          : null,
+          category              : item.category,
+          commonParticular      : item.common_particular,
+          particularAsPerBudget : item.particular_as_per_budget,
+          unitNo                : item.unit,
+          unitCost              : item.cost,
+          grossBudget           : item.gross_budget,
+          afLc                  : item.af_lc,
+          netBudget             : item.net_budget,
+        }));
 
-  //   this.source.load(mappedData);
-  // }
+        // Calculate the sum of netBudget
+        const netBudgetSum = mappedData.reduce((acc, item) => acc + parseFloat(item.netBudget), 0);
+        const grossBudgetSum = mappedData.reduce((acc, item) => acc + parseFloat(item.grossBudget), 0);
+        const aflcBudgetSum = mappedData.reduce((acc, item) => acc + parseFloat(item.afLc), 0);
+
+        // Add a summary row with the sum of netBudget
+        const summaryRow = {
+          slNo: null,  // Display "Total" for the last row
+          type: null,
+          category: null,
+          commonParticular: null,
+          particularAsPerBudget: "Total",
+          unitNo: null,
+          unitCost: null,
+          grossBudget: grossBudgetSum.toFixed(2),
+          afLc: aflcBudgetSum.toFixed(2),
+          netBudget: (grossBudgetSum - aflcBudgetSum).toFixed(2), 
+        };
+
+        // Push the summary row to the mappedData
+        mappedData.push(summaryRow);
+
+    this.source.load(mappedData);
+  }
 
 
 
-  // openEditDialog(rowData): void {
-  //   console.log('Opening dialog with rowData {{{{}}}}:', rowData); // <-- Add this
-  //   this.dialogService.open(InterviewQuestionsComponent, {
-  //     context: { data: rowData }
-  //   }).onClose.subscribe(updatedData => {
-  //     if (updatedData?.updated) {
-  //       console.log('Updated lead:', updatedData);
-  //       if (this.selectedCenter?.center_id) {
-  //         this.loadStudentList(this.selectedCenter.center_id);
-  //       }
-  //     }else{
-  //       this.loadStudentList(this.selectedCenter.center_id);
-  //     }
-  //   });
-  // }
+  openEditDialog(rowData): void {
+    console.log('Opening dialog with rowData {{{{}}}}:', rowData); // <-- Add this
+    this.dialogService.open(BudgetBreakupParticularDialougeComponent, {
+      context: { data: rowData }
+    }).onClose.subscribe(updatedData => {
+      // if (updatedData?.updated) {
+      //   console.log('Updated lead:', updatedData);
+      //   if (this.selectedCenter?.center_id) {
+      //     this.loadStudentList(this.selectedCenter.center_id);
+      //   }
+      // }else{
+      //   this.loadStudentList(this.selectedCenter.center_id);
+      // }
+    });
+  }
+
+
 
 
 
   onSearch(query: string = ''): void {
   if (query.trim()) {
-    this.source.setFilter(
-      [{ field: 'particularName', search: query }],
-      false // false = OR logic (change to true for AND)
-    );
+    this.source.setFilter([
+      { field: 'category', search: query },
+      { field: 'commonParticular', search: query },
+      { field: 'particularAsPerBudget', search: query }
+    ], false);
   } else {
     this.source.reset(); // ✅ clear filters if empty query
   }

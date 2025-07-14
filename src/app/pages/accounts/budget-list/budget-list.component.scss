@@ -52,6 +52,7 @@
 :host ::ng-deep .filterDiv nb-radio.my-radio label {
   padding-right: 0.5rem !important;
   margin: 0px !important;
+  cursor: pointer !important;
 }
 :host ::ng-deep nb-radio-group {
   margin: 0 !important;
@@ -87,3 +88,13 @@
   align-items: center;
 }
 
+::ng-deep table tr.ng2-smart-titles th ,
+::ng-deep table tr td {
+  text-align: center;
+}
+
+
+tr.isSummaryRow {
+  background-color: #f4f4f4;  /* Light grey background for the summary row */
+  font-weight: bold;          /* Optional: Make the text bold */
+}

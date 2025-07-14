@@ -21,6 +21,7 @@ max-width: 90%;margin: 0 auto;">
                 [(ngModel)]="model.budget_type">
                 <nb-option value="Vertices">Vertices</nb-option>
                 <nb-option value="Center">Center</nb-option>
+                <nb-option value="Both">Both</nb-option>
               </nb-select>
               <div *ngIf="fm.submitted && budget_type.invalid" class="error-message">Budget type is required</div>
             </div>

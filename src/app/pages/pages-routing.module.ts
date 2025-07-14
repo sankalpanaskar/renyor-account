@@ -5,13 +5,9 @@ import { PagesComponent } from './pages.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ECommerceComponent } from './e-commerce/e-commerce.component';
 import { NotFoundComponent } from './miscellaneous/not-found/not-found.component';
-import { AddLeadComponent } from './add-lead/add-lead.component';
-import { UploadLeadComponent } from './upload-lead/upload-lead.component';
-import { ManageLeadComponent } from './manage-lead/manage-lead.component';
 import { authGuard } from '../auth/auth.guard';
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
-import { StatewiseBulkUploadComponent } from './statewise-bulk-upload/statewise-bulk-upload.component';
 import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
 
 
@@ -80,29 +76,9 @@ const routes: Routes = [{
         .then(m => m.MiscellaneousModule),
     },
     {
-      path: 'student',
-      loadChildren: () => import('./student/student.module')
-        .then(m => m.StudentModule),
-    },
-    {
-      path: 'placement-officer',
-      loadChildren: () => import('./placement-officer/placement-officer.module')
-        .then(m => m.PlacementOfficerModule),
-    },
-    {
-      path: 'marcom',
-      loadChildren: () => import('./marcom/marcom.module')
-        .then(m => m.MarcomModule),
-    },
-    {
       path: 'report',
       loadChildren: () => import('./report/report.module')
         .then(m => m.ReportModule),
-    },
-    {
-      path: 'lead',
-      loadChildren: () => import('./lead/lead.module')
-        .then(m => m.LeadModule),
     },
     {
       path: 'accounts',
@@ -115,28 +91,8 @@ const routes: Routes = [{
       pathMatch: 'full',
     },
     {
-      path: 'add-lead',
-      component: AddLeadComponent,
-      canActivate: [authGuard],
-    },
-    {
-      path: 'upload-lead',
-      component: UploadLeadComponent,
-      canActivate: [authGuard],
-    },
-    {
-      path: 'manage-lead',
-      component: ManageLeadComponent,
-      canActivate: [authGuard],
-    },
-    {
       path: 'custom-dashboard',
       component: CustomDashboardComponent,
-      canActivate: [authGuard],
-    },
-    {
-      path: 'state-bulk-upload',
-      component: StatewiseBulkUploadComponent,
       canActivate: [authGuard],
     },
     {

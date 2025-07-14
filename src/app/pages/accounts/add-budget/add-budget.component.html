@@ -19,23 +19,25 @@ max-width: 90%;margin: 0 auto;">
             
           </div>
 
-          <div class="row" *ngIf="isShowHide > 0">
-            <div class="col-md-12" *ngIf="isShowHide == 1">
-                <nb-select shape="semi-round" placeholder="Select Vertices" (selectedChange)="verticesSelect($event)">
+          <div class="row" *ngIf="verticesShowHide > 0 || centerShowHide > 0">
+            <div class="col-md-12" *ngIf="verticesShowHide == 1">
+                <nb-select shape="semi-round" placeholder="Select Vertices" name="vertices" (selectedChange)="verticesSelect($event)" [searchable]="true">
                     <nb-option *ngFor="let vertices of verticesList" [value]="{id:vertices.id,name:vertices.name}">
                     {{ vertices.name }}
                     </nb-option>
                 </nb-select>
               <div *ngIf="fm.submitted && common_particular.invalid" class="error-message">Common Particular is required</div>
             </div>
-            <div class="col-md-12" *ngIf="isShowHide == 2">
-                <nb-select shape="semi-round" placeholder="Select Center" (selectedChange)="centerSelect($event)">
+            <div class="col-md-12 mt-3" *ngIf="centerShowHide == 1">
+                <nb-select shape="semi-round" placeholder="Select Center" name="center" (selectedChange)="centerSelect($event)">
                     <nb-option *ngFor="let center of allCenter" [value]="{id:center.id,name:center.name,code:center.short_code}">
                     {{ center.short_code }} - {{ center.name }}
                     </nb-option>
                 </nb-select>
               <div *ngIf="fm.submitted && common_particular.invalid" class="error-message">Common Particular is required</div>
             </div>
+
+           
           </div>
 
           <div class="row">

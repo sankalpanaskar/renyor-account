@@ -280,4 +280,36 @@ export class GlobalService {
     return this.http.get(`${this.accontUrl}/fetch-budget-details-by-id/${id}`);
   }
 
+  public downloadBudgetAllotmentFormat(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/budgetAllotmentSheet`,data);
+  }
+
+  public uploadBudgetAllotmentFormat(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/uploadExcel`,data);
+  }
+
+  public insertDonor(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/insertDonor`,data);
+  }
+
+  public insertBudgetCategory(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/insertBudgetCategory`,data);
+  }
+
+  public getBudgetVerticesCenterByDonorAccount(id:any): Observable<any> {
+    return this.http.get(`${this.accontUrl}/fetchVerticsCenter/${id}`);
+  }
+
+  public insertReceivedAmountFromDonor(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/insertReceivedAmountFromDonor`,data);
+  }
+
+  public getReceivedAmountFromDonor(id:any): Observable<any> {
+    return this.http.get(`${this.accontUrl}/fetchReceivedAmount/${id}`);
+  }
+
+  public uploadBudgetExpenses(data:any): Observable<any> {
+    return this.http.post(`${this.accontUrl}/uploadExpensesExcel`,data);
+  }
+
 }

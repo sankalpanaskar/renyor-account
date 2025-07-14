@@ -49,3 +49,94 @@ nb-card-body {
   align-items: center;
 }
 
+
+/* Dropdown trigger (closed select box) */
+.custom-select {
+background: #f8f9fc;
+border: 1px solid #dce1ea;
+border-radius: 0.7rem;
+padding: 0.75rem 1.25rem;
+display: flex;
+align-items: center;
+justify-content: space-between;
+font-weight: 500;
+color: #363a3e;
+width: 100%;
+cursor: pointer;
+box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+/* Selected value text inside the box */
+.truncate-text {
+flex: 1;
+min-width: 0;
+white-space: nowrap;
+overflow: hidden;
+text-overflow: ellipsis;
+display: inline-block;
+font-weight: 600px;
+}
+
+/* Placeholder style for empty selection */
+.truncate-text.placeholder {
+color: #959eb3;
+/* font-style: italic; */ /* optional */
+}
+
+/* Dropdown container */
+.custom-dropdown {
+position: absolute;
+z-index: 1000;
+width: 93%;
+max-height: 250px;
+overflow-y: auto;
+overflow-x: hidden; /* fix horizontal scroll issue */
+border: 1px solid #ccc;
+background: #fff;
+box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+padding: 0.5rem;
+box-sizing: border-box;
+}
+
+/* Dropdown position: below */
+.custom-dropdown.open-down {
+top: 100%;
+margin-top: 4px;
+}
+
+/* Dropdown position: above */
+.custom-dropdown.open-up {
+bottom: 100%;
+margin-bottom: 4px;
+}
+
+/* Individual dropdown option */
+.dropdown-item {
+padding: 0.5rem 1rem;
+cursor: pointer;
+border-radius: 0.5rem;
+transition: background-color 0.2s;
+white-space: normal; /* allow wrapping */
+word-break: break-word; /* break long words */
+overflow-wrap: anywhere; /* wrap mid-word if needed */
+width: 100%;
+box-sizing: border-box;
+}
+
+/* Hover state for dropdown item */
+.dropdown-item:hover {
+background-color: #f1f3f5;
+}
+
+/* Disabled state for empty dropdown */
+.dropdown-item.disabled {
+color: #999;
+cursor: not-allowed;
+}
+
+/* Validation error message */
+.error-message {
+color: #e53935;
+font-size: 0.875rem;
+margin-top: 0.25rem;
+}

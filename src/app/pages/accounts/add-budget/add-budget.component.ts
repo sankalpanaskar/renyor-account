@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
-import { NbToastrService } from '@nebular/theme';
+import { NbDialogService, NbToastrService } from '@nebular/theme';
+import { SearchListComponent } from '../components/search-list/search-list.component';
 
 @Component({
   selector: 'ngx-add-budget',
@@ -16,7 +17,8 @@ export class AddBudgetComponent implements OnInit{
   commonParticularList : any = [];
   particular_id : any;
   particular : any;
-  isShowHide = 0;
+  verticesShowHide = 0;
+  centerShowHide = 0;
   donorList: any = [];
   verticesList : any = [];
   vertices_id : any;
@@ -32,13 +34,59 @@ export class AddBudgetComponent implements OnInit{
   AFLCBudget : any;
   donorType : any = [];
 
+  searchText = '';
+  selectedOption = null;
+  dropdownOpen = false;
+  filteredCourses: any = [];
+  openAbove = false;
+
+  selectedCenter : any;
+
+  @ViewChild('dropdownTrigger') dropdownTrigger: ElementRef;
+
   constructor(
     private globalService: GlobalService,
-    private toastrService: NbToastrService
+    private toastrService: NbToastrService,
+    private dialogService: NbDialogService
   ) {}
 
   ngOnInit(): void {
     this.getBudgetCategory();
+  }
+
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+
+    if (this.dropdownOpen) {
+      setTimeout(() => {
+        const rect = this.dropdownTrigger.nativeElement.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const spaceBelow = viewportHeight - rect.bottom;
+        const spaceAbove = rect.top;
+
+        this.openAbove = spaceBelow < 300 && spaceAbove> 300;
+      });
+    }
+  }
+
+   openDialog(itemType: string) {
+    let allItems = [];
+    allItems = this.allCenter;
+
+    this.dialogService.open(SearchListComponent, {
+      context: {
+        itemType: itemType,  // 'center' or 'student'
+        allItems: allItems    // List of items to display in the dialog
+      }
+    }).onClose.subscribe(item => {
+      if (item) {
+        if (itemType === 'center') {
+          this.selectedCenter = item;
+        } else if (itemType === 'student') {
+          //this.selectedStudent = item;
+        }
+      }
+    });
   }
 
   getBudgetCategory(): void {
@@ -59,24 +107,23 @@ export class AddBudgetComponent implements OnInit{
     });
   }
 
+  
+
   donorSelect(value:any){
     this.donor = value.name;
     this.donor_account_id = value.id;
     this.donorType = value.type;
     if(this.donorType == 'Vertices'){
-      this.isShowHide = 1;
-    }else{
-      this.isShowHide = 2;
+      this.verticesShowHide = 1;
+      this.centerShowHide = 0;
+    }else if(this.donorType == 'Center'){
+      this.centerShowHide = 1;
+      this.verticesShowHide = 0;
+    } else if(this.donorType == 'Both'){
+      this.verticesShowHide = 1;
+      this.centerShowHide = 1;
     }
     console.log('type'+this.donorType);
-  }
-
-  vertCenterSelect(value:any){
-    if(value==1){
-      this.isShowHide = 1;
-    }else{
-      this.isShowHide = 2;
-    }
   }
 
   verticesSelect(value:any){
