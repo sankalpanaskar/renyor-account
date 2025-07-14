@@ -1,0 +1,23 @@
+
+<nb-card>
+  <nb-card-header>
+    Donor List
+  </nb-card-header>
+
+  <nb-card-body class="position-relative">
+
+    <!-- Spinner overlay -->
+    <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
+      <nb-spinner size="large" status="primary"></nb-spinner>
+    </div>
+
+    <!-- Content -->
+    <div [class.content-blur]="loading">
+      <input type="text" nbInput fullWidth shape="semi-round" #search class="search mb-3" placeholder="Enter keyword and then enter for search..."
+        (keydown.enter)="onSearch(search.value)">
+
+      <ng2-smart-table [settings]="settings" [source]="source" (deleteConfirm)="onDeleteConfirm($event)">
+      </ng2-smart-table>
+    </div>
+  </nb-card-body>
+</nb-card>

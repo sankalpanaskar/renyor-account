@@ -1,0 +1,32 @@
+<form #fm="ngForm" (ngSubmit)="onUpload(fm)" novalidate id="leadForm" style="width: 80%;
+max-width: 80%;margin: 0 auto;">
+    <div class="row">
+        <div class="col-lg-12">
+            <nb-card>
+                <nb-card-header>Upload Budget Expenses</nb-card-header>
+                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+                <div class="row">
+                    <div class="col-lg-7">
+                      <nb-select shape="semi-round" placeholder="Select Donor" name="donor" required #donor="ngModel"
+                          [(ngModel)]="model.donor">
+                          <nb-option *ngFor="let donor of donoAccountList" [value]="donor.id">
+                          {{ donor.budget_name }}
+                          </nb-option>
+                      </nb-select>
+                      <div *ngIf="fm.submitted && donor.invalid" class="error-message">Donor is required</div>
+                    </div>
+                    <div class="col-lg-5">
+                        <input type="file" nbInput fullWidth shape="semi-round" name="file" required #file="ngModel"
+                            [(ngModel)]="model.file" (change)="onFileChange($event)" accept=".xls,.xlsx" />
+                        <div *ngIf="fileError" class="error-message">{{ fileError }}</div>
+                        <div *ngIf="fm.submitted && file.invalid" class="error-message">File is required</div>
+                    </div>
+                </div>
+                <button nbButton status="primary" shape="semi-round" hero type="submit">
+                    Upload
+                </button>
+                </nb-card-body>
+            </nb-card>
+        </div>
+    </div>
+</form>

@@ -1,0 +1,56 @@
+nb-card-body {
+  overflow: visible;
+  padding-top: 0;
+
+  > * {
+    margin-top: 1rem;
+  }
+}
+
+.full-name-inputs,
+.validation-checkboxes {
+  display: flex;
+  margin: 0 -0.5rem;
+
+  > * {
+    margin: 0 0.5rem;
+  }
+}
+
+.checkbox-radio {
+  display: flex;
+}
+
+.demo-items {
+  flex: 1 0 33%;
+}
+
+nb-select {
+  max-width: 100% !important;
+  width: 100%;
+}
+
+nb-card-body {
+  margin-top: 0;
+}
+
+.shape-semi-round {
+  font-weight: normal;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.radio-horizontal {
+  display: flex;
+  gap: 1rem; /* spacing between radios */
+  align-items: center;
+}
+
+::ng-deep table tr.ng2-smart-titles th ,
+::ng-deep table tr td {
+  text-align: center;
+}
+

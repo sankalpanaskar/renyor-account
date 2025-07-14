@@ -1,0 +1,9 @@
+<nb-card class="list-card" size="small">
+      <nb-card-header>Users</nb-card-header>
+      <nb-list>
+        <nb-list-item *ngFor="let user of users">
+          <nb-user [name]="user.name" [title]="user.title">{{user.name}} - {{user.title}}
+          </nb-user>
+        </nb-list-item>
+      </nb-list>
+    </nb-card>
