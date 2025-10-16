@@ -1,0 +1,259 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;
+max-width: 950px;margin: 0 auto;">
+    <div class="row">
+        <div class="col-lg-12">
+            <nb-card>
+                <nb-card-header>Add Asset</nb-card-header>
+                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Anudip Identification No <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round"
+                                placeholder="Ex. AF-PA-LAP-21-22-3456" name="id_no" required #id_no="ngModel"
+                                [(ngModel)]="model.id_no">
+                            <div *ngIf="fm.submitted && id_no.invalid" class="error-message">
+                                Identification no is required
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Brand Name<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Brand" name="brand" required
+                                #brand="ngModel" [(ngModel)]="model.brand">
+                                <nb-option value="Brand1">Brand1</nb-option>
+                                <nb-option value="Brand2">Brand2</nb-option>
+                                <nb-option value="Brand3">Brand3</nb-option>
+
+                            </nb-select>
+                            <div *ngIf="fm.submitted && brand.invalid" class="error-message">Brand is required</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Model No <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Model No"
+                                name="model_no" required #model_no="ngModel" [(ngModel)]="model.model_no">
+                            <div *ngIf="fm.submitted && model_no.invalid" class="error-message">
+                                Model No is required
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Serial No of Manufacturer <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Serial No"
+                                name="serial_no" required #serial_no="ngModel" [(ngModel)]="model.serial_no">
+                            <div *ngIf="fm.submitted && serial_no.invalid" class="error-message">
+                                Serial No is required
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Invoice No <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Invoice No"
+                                name="invoice_no" required #invoice_no="ngModel" [(ngModel)]="model.invoice_no">
+                            <div *ngIf="fm.submitted && invoice_no.invalid" class="error-message">
+                                Invoice No is required
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Asset Class<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Asset Class" name="asset_class" required
+                                #asset_class="ngModel" [(ngModel)]="model.asset_class">
+                                <nb-option value="Class1">Class1</nb-option>
+                                <nb-option value="Class2">Class2</nb-option>
+                                <nb-option value="Class3">Class3</nb-option>
+
+                            </nb-select>
+                            <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is required</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Assets Sub Class<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Assets Sub Class" name="asset_sub_class" required
+                                #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class">
+                                <nb-option value="Class1">Class1</nb-option>
+                                <nb-option value="Class2">Class2</nb-option>
+                                <nb-option value="Class3">Class3</nb-option>
+
+                            </nb-select>
+                            <div *ngIf="fm.submitted && asset_sub_class.invalid" class="error-message">Assets Sub Class is required</div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Nature of Assets: <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Nature of Assets"
+                                name="nature_of_asset" required #nature_of_asset="ngModel" [(ngModel)]="model.nature_of_asset">
+                            <div *ngIf="fm.submitted && nature_of_asset.invalid" class="error-message">
+                                Nature of Assets is required
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Owner of Assets<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Owner of Assets" name="owner_of_asset" required
+                                #owner_of_asset="ngModel" [(ngModel)]="model.owner_of_asset">
+                                <nb-option value="Anudip">Anudip</nb-option>
+                                <nb-option value="Project">Project</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && owner_of_asset.invalid" class="error-message">Owner of Assets is required</div>
+                        </div>
+
+                         <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Supplier Name<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Supplier Name"
+                                name="supplier_name" required #supplier_name="ngModel" [(ngModel)]="model.supplier_name">
+                            <div *ngIf="fm.submitted && supplier_name.invalid" class="error-message">
+                                Supplier Name is required
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Value of Assets (Amount)<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Value of Assets"
+                                name="value_of_asset" required #value_of_asset="ngModel" [(ngModel)]="model.value_of_asset">
+                            <div *ngIf="fm.submitted && value_of_asset.invalid" class="error-message">
+                                Value of Assets (Amount) is required
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                             <label class="small-label" id="label-category">Purchase date<span style="color:#d32f2f">*</span></label>
+                            <input nbInput fullWidth placeholder="Select Purchase date" [readonly]="true"
+                                [nbDatepicker]="datePicker" [(ngModel)]="model.purchase_date" name="purchase_date" required
+                                #purchase_date="ngModel" />
+                            <nb-datepicker #datePicker ></nb-datepicker>
+                            <div *ngIf="fm.submitted && purchase_date.invalid" class="error-message">Purchase date is required</div>
+
+                        </div>
+
+                    </div>
+                    
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Status of Assets<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Status of Assets" name="status_of_asset" required
+                                #status_of_asset="ngModel" [(ngModel)]="model.status_of_asset">
+                                <nb-option value="WORKING">WORKING</nb-option>
+                                <nb-option value="NOT WORKING">NOT WORKING</nb-option>
+                                <nb-option value="MISSING">MISSING</nb-option>
+                                <nb-option value="SCRAP">SCRAP</nb-option>
+                                <nb-option value="DISPOSED">DISPOSED</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && status_of_asset.invalid" class="error-message">Status of Assets is required</div>
+                        </div>
+
+                         <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Funded by<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="SelectFunded by" name="funded_by" required
+                                #funded_by="ngModel" [(ngModel)]="model.funded_by">
+                                <nb-option value="Anudip">Anudip</nb-option>
+                                <nb-option value="Project">Project</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && funded_by.invalid" class="error-message">Funded by is required</div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                         <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Assets Type<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Assets Type" name="asset_type" required
+                                #asset_type="ngModel" [(ngModel)]="model.asset_type">
+                                <nb-option value="Consumable">Consumable</nb-option>
+                                <nb-option value="Other Than Consumable">Other Than Consumable</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && asset_type.invalid" class="error-message">Assets Type is required</div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">
+                                Assets under FCRA / NFC <span style="color:#d32f2f">*</span>
+                            </label>
+
+                            <nb-radio-group
+                                name="asset_under_fcra"
+                                [(ngModel)]="model.asset_under_fcra"
+                                #asset_under_fcra="ngModel"
+                                required
+                                class="d-flex flex-row"
+                            >
+                                <nb-radio value="FC">FC</nb-radio>
+                                <nb-radio value="NON-FC">NON-FC</nb-radio>
+                            </nb-radio-group>
+
+                            <!-- Validation message -->
+                            <div *ngIf="fm.submitted && asset_under_fcra.invalid" class="error-message">
+                                Assets Type is required
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                    <div class="col-lg-12">
+                       <label class="small-label" id="label-category">
+                               Remarks <span style="color:#d32f2f">*</span>
+                        </label>
+                        <!-- <label class="small-label"><strong>Remarks</strong></label> -->
+                        <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="remarks" [(ngModel)]="model.remarks"
+                        #remarks="ngModel" rows="1" [maxlength]="500">
+                        </textarea>
+                    
+                        <!-- character counter -->
+                        <div style="font-size: 12px; color:#6c757d; margin-top: 4px;">
+                            {{ (model.remarks?.length || 0) }}/500
+                        </div>
+                    
+                        <!-- If you want Remarks to be required, add 'required' above and use this error -->
+                        <div *ngIf="fm.submitted && remarks.invalid" class="error-message">Remarks are required</div>
+                    </div>
+
+                    </div>
+
+
+                    <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
+                        <button nbButton status="primary" shape="semi-round" hero type="submit"
+                            [disabled]="isSubmitting">
+                            Save
+                        </button>
+                    </div>
+                </nb-card-body>
+            </nb-card>
+        </div>
+    </div>
+</form>

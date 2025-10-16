@@ -1,0 +1,49 @@
+<div style="width: 100%;
+max-width: 1000px;margin: 0 auto;">
+    <div class="row">
+        <div class="col-lg-12">
+            <nb-card>
+                <nb-card-header>Asset List</nb-card-header>
+                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+                    <form #fm="ngForm" class="date-filter">
+                        <div class="row">
+                            <div class="col-lg-5">
+                                <!-- <label class="small-label" id="label-category">Brand Name<span
+                                        style="color:#d32f2f">*</span></label> -->
+                                <nb-select shape="semi-round" placeholder="Select Brand" name="brand" fullWidth required
+                                    #brand="ngModel" [(ngModel)]="model.brand">
+                                    <nb-option value="Brand1">Brand1</nb-option>
+                                    <nb-option value="Brand2">Brand2</nb-option>
+                                    <nb-option value="Brand3">Brand3</nb-option>
+
+                                </nb-select>
+                                <div *ngIf="fm.submitted && brand.invalid" class="error-message">Brand is required</div>
+                            </div>
+
+                            <div class="col-lg-5">
+                                <!-- <label class="small-label" id="label-category">Model No <span
+                                        style="color:#d32f2f">*</span></label> -->
+                                <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Model No"
+                                    name="model_no" required #model_no="ngModel" [(ngModel)]="model.model_no">
+                                <div *ngIf="fm.submitted && model_no.invalid" class="error-message">
+                                    Model No is required
+                                </div>
+                            </div>
+
+                           <div class="col-lg-2">
+                                    <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">Search</button>
+                            </div>
+
+                        </div>
+                    </form>
+
+                    <!-- <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+                        Save
+                    </button> -->
+
+                </nb-card-body>
+            </nb-card>
+        </div>
+    </div>
+</div>

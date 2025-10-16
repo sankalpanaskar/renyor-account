@@ -1,0 +1,153 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%;
+max-width: 900px;margin: 0 auto;">
+    <div class="row">
+        <div class="col-lg-12">
+            <nb-card>
+                <nb-card-header>Asset Transfer</nb-card-header>
+                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+                    <div class="row">
+                        
+                        <div class="col-lg-12">
+                            <label class="small-label" id="label-category">From Center<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Center" name="from_center" required
+                                #from_center="ngModel" [(ngModel)]="model.from_center">
+                                <nb-option value="Center1">Center1</nb-option>
+                                <nb-option value="Center2">Center2</nb-option>
+                                <nb-option value="Center3">Center3</nb-option>
+
+                            </nb-select>
+                            <div *ngIf="fm.submitted && from_center.invalid" class="error-message">Center is required</div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Asset Class<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Asset Class" name="asset_class" required
+                                #asset_class="ngModel" [(ngModel)]="model.asset_class">
+                                <nb-option value="Class1">Class1</nb-option>
+                                <nb-option value="Class2">Class2</nb-option>
+                                <nb-option value="Class3">Class3</nb-option>
+
+                            </nb-select>
+                            <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is required</div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Assets Sub Class<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Assets Sub Class" name="asset_sub_class" required
+                                #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class">
+                                <nb-option value="Class1">Class1</nb-option>
+                                <nb-option value="Class2">Class2</nb-option>
+                                <nb-option value="Class3">Class3</nb-option>
+
+                            </nb-select>
+                            <div *ngIf="fm.submitted && asset_sub_class.invalid" class="error-message">Assets Sub Class is required</div>
+                        </div>
+
+                    </div>
+
+                 <div class="row">
+                        
+                        <div class="col-lg-12">
+                            <label class="small-label" id="label-category">Transfer Center<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Center" name="transfer_center" required
+                                #transfer_center="ngModel" [(ngModel)]="model.transfer_center">
+                                <nb-option value="Center1">Center1</nb-option>
+                                <nb-option value="Center2">Center2</nb-option>
+                                <nb-option value="Center3">Center3</nb-option>
+
+                            </nb-select>
+                            <div *ngIf="fm.submitted && transfer_center.invalid" class="error-message">Center is required</div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">State<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" 
+                                name="state" required #state="ngModel" [(ngModel)]="model.state">
+                            <div *ngIf="fm.submitted && state.invalid" class="error-message">
+                                State is required
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">District<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" 
+                                name="district" required #district="ngModel" [(ngModel)]="model.district">
+                            <div *ngIf="fm.submitted && district.invalid" class="error-message">
+                                District is required
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-12">
+                            <label class="small-label" id="label-category">
+                                    Remarks <span style="color:#d32f2f">*</span>
+                                </label>
+                                <!-- <label class="small-label"><strong>Remarks</strong></label> -->
+                                <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="remarks" [(ngModel)]="model.remarks"
+                                #remarks="ngModel" rows="2" [maxlength]="500">
+                                </textarea>
+                            
+                                <!-- character counter -->
+                                <div style="font-size: 12px; color:#6c757d; margin-top: 4px;">
+                                    {{ (model.remarks?.length || 0) }}/500
+                                </div>
+                            
+                                <!-- If you want Remarks to be required, add 'required' above and use this error -->
+                                <div *ngIf="fm.submitted && remarks.invalid" class="error-message">Remarks are required</div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                       <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Assign To Member<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" name="assign_to" required
+                                #assign_to="ngModel" [(ngModel)]="model.assign_to">
+                                <nb-option value="Anudip">Anudip</nb-option>
+                                <nb-option value="Project">Project</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && assign_to.invalid" class="error-message">Member by is required</div>
+                        </div>
+
+                        <div class="col-lg-6">
+                             <label class="small-label" id="label-category">Assign date<span style="color:#d32f2f">*</span></label>
+                            <input nbInput fullWidth placeholder="Select Assign date" [readonly]="true"
+                                [nbDatepicker]="datePicker" [(ngModel)]="model.assign_date" name="assign_date" required
+                                #assign_date="ngModel" />
+                            <nb-datepicker #datePicker ></nb-datepicker>
+                            <div *ngIf="fm.submitted && assign_date.invalid" class="error-message">Assign date is required</div>
+
+                        </div>
+
+                    </div>
+
+                    <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+                        Save
+                    </button>
+
+                </nb-card-body>
+            </nb-card>
+        </div>
+    </div>
+</form>
