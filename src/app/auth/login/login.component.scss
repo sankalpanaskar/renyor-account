@@ -1,83 +1,175 @@
+/* ================================
+   REMOVE ALL NEBULAR LAYOUT PADDING/MARGIN
+==================================*/
+
+:host nb-layout,
+:host nb-layout-column,
+:host nb-layout-header,
+:host nb-layout-footer {
+  height: 100vh !important;
+  width: 100vw !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  min-height: 100vh !important;
+  max-height: 100vh !important;
+  background: none !important;
+}
+
+/* ================================
+   PAGE CONTAINER
+==================================*/
+:host {
+  position: fixed; /* ✅ this forces the component to stay full screen */
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: url('/assets/images/anudip_background.png') center center / cover no-repeat fixed;
+  background-color: #f5f6fa;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* ================================
+   OPTIONAL LIGHT OVERLAY (for clarity)
+==================================*/
+:host::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.25);
+  z-index: 0;
+}
+
+/* ================================
+   LOGIN CARD (Glass Effect)
+==================================*/
 .login-card {
-    width: 100%;
-    max-width: 400px;
-    margin: 50px auto;
-    border-radius: 12px;
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0;
+}
+
+/* ================================
+   HEADER & LOGO
+==================================*/
+.login-header {
+  text-align: center;
+  padding-top: 30px;
+  padding-bottom: 10px;
+}
+
+.login-header .title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #222;
+}
+
+.login-header .subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.logo-wrapper {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.company-logo {
+  height: 60px;
+  object-fit: contain;
+}
+
+/* ================================
+   FORM STYLING
+==================================*/
+.login-body {
+  padding: 30px 25px;
+}
+
+.form-group {
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.form-group nb-icon {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #999;
+  z-index: 1;
+}
+
+.form-group input[nbInput] {
+  padding-left: 40px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 8px;
+}
+
+button[nbButton] {
+  border-radius: 8px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* ================================
+   PASSWORD FIELD (if toggle used)
+==================================*/
+.password-group {
+  position: relative;
+}
+
+.password-group input[nbInput] {
+  width: 100%;
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+}
+
+.password-group .prefix-icon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  pointer-events: none;
+}
+
+.password-group .suffix-icon {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #999;
+  cursor: pointer;
+}
+
+/* ================================
+   RESPONSIVE
+==================================*/
+@media (max-width: 600px) {
+  .login-card {
+    margin: 0 15px;
+    max-width: 90%;
   }
-  
-  .login-header {
-    text-align: center;
-    padding-top: 30px;
-    padding-bottom: 10px;
-  
-    .title {
-      font-size: 24px;
-      font-weight: 600;
-    }
-  
-    .subtitle {
-      font-size: 14px;
-      color: #888;
-    }
-  }
-  
-  .login-body {
-    padding: 30px 25px;
-  
-    .form-group {
-      position: relative;
-      margin-bottom: 25px;
-  
-      nb-icon {
-        position: absolute;
-        top: 50%;
-        left: 12px;
-        transform: translateY(-50%);
-        color: #999;
-        z-index: 1;
-      }
-  
-      input[nbInput] {
-        padding-left: 40px;
-      }
-    }
-  }
-  .logo-wrapper {
-    text-align: center;
-    margin-bottom: 15px;
-  }
-  
+
   .company-logo {
-    height: 60px;
-    object-fit: contain;
+    height: 50px;
   }
-  .password-group {
-    position: relative;
-  
-    input[nbInput] {
-      width: 100%;
-      padding-left: 2.5rem;  // space for lock icon
-      padding-right: 2.5rem; // space for eye icon
-    }
-  
-    .prefix-icon {
-      position: absolute;
-      left: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #999;
-      pointer-events: none;
-    }
-  
-    .suffix-icon {
-      position: absolute;
-      right: 0.75rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #999;
-      cursor: pointer;
-    }
-    
-  }
-  
+}

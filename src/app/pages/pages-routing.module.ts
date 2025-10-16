@@ -80,6 +80,11 @@ const routes: Routes = [{
       loadChildren: () => import('./report/report.module')
         .then(m => m.ReportModule),
     },
+        {
+      path: 'assets',
+      loadChildren: () => import('./assets/assets.module')
+        .then(m => m.AssetsModule),
+    },
     {
       path: '',
       redirectTo: 'dashboard',

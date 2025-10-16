@@ -40,46 +40,30 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
     //     },
     //   ]
     //   : []),
+    {
+      title: 'FEATURES',
+      group: true,
+    },
+    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 
+      ? [
+        {
+          title: 'Assets',
+          icon: 'layout-outline',
+          children: [
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Bulk Upload', link: '/pages/assets/bulk-upload' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Add Asset', link: '/pages/assets/add-asset' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Asset List', link: '/pages/assets/asset-list' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Asset Transfer', link: '/pages/assets/asset-transfer' }] : []),
+            // { title: 'Manage', link: '/pages/manage-lead' },
 
+            // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 17 ||  roleId === 34 ? [{ title: 'Transfer Leads', link: '/pages/lead/lead-center-transfer' }] : []),
+            // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Not Interested Lead', link: '/pages/lead/not-interested-lead' }] : []),
+          ],
+        },
+      ]
+      : []),
 
-    // {
-    //   title: 'FEATURES',
-    //   group: true,
-    // },
-    // ...(roleId === 34 || roleId === 14
-    //   ? [
-    //     {
-    //       title: 'Donor',
-    //       icon: 'layout-outline',
-    //       children: [
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Add Donor', link: '/pages/accounts/add-donor' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Donor List', link: '/pages/accounts/donor-list' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Add Donor Account', link: '/pages/accounts/add-donor-account' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Donor Account List', link: '/pages/accounts/donor-account-list' }] : []),
-    //         // { title: 'Manage', link: '/pages/manage-lead' },
-    //       ],
-    //     },
-    //   ]
-    //   : []),
-    // ...(roleId === 34 || roleId === 14
-    //   ? [
-    //     {
-    //       title: 'Budget',
-    //       icon: 'layout-outline',
-    //       children: [
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Add Category', link: '/pages/accounts/add-budget-category' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Add Budget', link: '/pages/accounts/add-budget' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Budget List', link: '/pages/accounts/budget-list' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Upload Budget Allotment', link: '/pages/accounts/budget-allotment-upload' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Add Received Amount', link: '/pages/accounts/received-amount-from-donor' }] : []),
-    //         ...(roleId === 14 || roleId === 34 ? [{ title: 'Upload Budget Expenses', link: '/pages/accounts/budget-expenses-upload' }] : []),
-            
-
-    //         // { title: 'Manage', link: '/pages/manage-lead' },
-    //       ],
-    //     },
-    //   ]
-    //   : []),
+    
 
    
   ];
