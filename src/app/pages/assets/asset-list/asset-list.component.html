@@ -1,49 +1,94 @@
-<div style="width: 100%;
-max-width: 1000px;margin: 0 auto;">
-    <div class="row">
-        <div class="col-lg-12">
-            <nb-card>
-                <nb-card-header>Asset List</nb-card-header>
-                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+<div class="asset-list-container">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        <nb-card-header class="section-header">Asset List</nb-card-header>
 
-                    <form #fm="ngForm" class="date-filter">
-                        <div class="row">
-                            <div class="col-lg-5">
-                                <!-- <label class="small-label" id="label-category">Brand Name<span
-                                        style="color:#d32f2f">*</span></label> -->
-                                <nb-select shape="semi-round" placeholder="Select Brand" name="brand" fullWidth required
-                                    #brand="ngModel" [(ngModel)]="model.brand">
-                                    <nb-option value="Brand1">Brand1</nb-option>
-                                    <nb-option value="Brand2">Brand2</nb-option>
-                                    <nb-option value="Brand3">Brand3</nb-option>
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary" class="asset-list-body">
+          
+          <!-- 🔹 Top Filter Form -->
+          <form #fm="ngForm" class="filter-form" (ngSubmit)="onSubmit(fm)">
+            <div class="row align-items-center">
+              
+              <div class="col-lg-5">
+                <nb-select
+                  shape="semi-round"
+                  placeholder="Select Type"
+                  name="search_type"
+                  fullWidth
+                  required
+                  #search_type="ngModel"
+                  [(ngModel)]="model.search_type">
+                  <nb-option value="Anudip ID No">Anudip ID No</nb-option>
+                  <nb-option value="Serial No">Serial No</nb-option>
+                  <nb-option value="Voucher No">Voucher No</nb-option>
+                  <nb-option value="Invoice No">Invoice No</nb-option>
+                </nb-select>
+                <div *ngIf="fm.submitted && search_type.invalid" class="error-message">
+                  Search type is required
+                </div>
+              </div>
 
-                                </nb-select>
-                                <div *ngIf="fm.submitted && brand.invalid" class="error-message">Brand is required</div>
-                            </div>
+              <div class="col-lg-5">
+                <input
+                  type="text"
+                  nbInput
+                  fullWidth
+                  shape="semi-round"
+                  placeholder="Search By Id No"
+                  name="keyword"
+                  required
+                  #keyword="ngModel"
+                  [(ngModel)]="model.keyword" />
+                <div *ngIf="fm.submitted && keyword.invalid" class="error-message">
+                  ID No is required
+                </div>
+              </div>
 
-                            <div class="col-lg-5">
-                                <!-- <label class="small-label" id="label-category">Model No <span
-                                        style="color:#d32f2f">*</span></label> -->
-                                <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Model No"
-                                    name="model_no" required #model_no="ngModel" [(ngModel)]="model.model_no">
-                                <div *ngIf="fm.submitted && model_no.invalid" class="error-message">
-                                    Model No is required
-                                </div>
-                            </div>
+              <div class="col-lg-2 text-end">
+                <button
+                  nbButton
+                  status="primary"
+                  shape="semi-round"
+                  hero
+                  type="submit"
+                  [disabled]="isSubmitting">
+                  SEARCH
+                </button>
+              </div>
+            </div>
+          </form>
 
-                           <div class="col-lg-2">
-                                    <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">Search</button>
-                            </div>
+          <!-- 🔹 Loading Spinner Overlay -->
+          <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
+            <nb-spinner size="large" status="primary"></nb-spinner>
+          </div>
 
-                        </div>
-                    </form>
+          <!-- 🔹 Table Section -->
+          <div [class.content-blur]="loading">
+            <div class="row mt-3">
+              <div class="col-12">
+                <input
+                  type="text"
+                  nbInput
+                  fullWidth
+                  shape="semi-round"
+                  #search
+                  class="search"
+                  placeholder="Search..." />
+              </div>
 
-                    <!-- <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
-                        Save
-                    </button> -->
+              <div class="col-12 mt-2">
+                <ng2-smart-table
+                  [settings]="settings"
+                  [source]="source">
+                </ng2-smart-table>
+              </div>
+            </div>
+          </div>
 
-                </nb-card-body>
-            </nb-card>
-        </div>
+        </nb-card-body>
+      </nb-card>
     </div>
+  </div>
 </div>

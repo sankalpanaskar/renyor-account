@@ -1,5 +1,44 @@
-<!-- Show this ONLY if role_id is 51 -->
-<div  class="welcome-banner">
-  <h1>Welcome to <span>Anudip Foundation</span></h1>
-</div>
+<nb-card>
+  <nb-card-header class="section-header">IT ASSETS</nb-card-header>
+  <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+    <div class="assets-grid">
+      <div class="asset-item" *ngFor="let item of assets">
+        <nb-icon [icon]="item.icon" pack="eva"></nb-icon>
+        <div class="asset-label">{{ item.label }}</div>
+        <div
+          class="asset-count"
+          [ngClass]="{
+            'low': item.count <= 5,
+            'medium': item.count > 5 && item.count <= 50,
+            'high': item.count > 50
+          }"
+        >
+          {{ item.count }}
+        </div>
+      </div>
+    </div>
+  </nb-card-body>
+</nb-card>
 
+<!-- Assigned Center Section -->
+<nb-card>
+  <nb-card-header class="section-header">ASSIGNED CENTER</nb-card-header>
+  <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>CENTER NAME</th>
+          <th>CENTER CODE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let center of centers">
+          <td>{{ center.id }}</td>
+          <td>{{ center.name }}</td>
+          <td>{{ center.code }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </nb-card-body>
+</nb-card>

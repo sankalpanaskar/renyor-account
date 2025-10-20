@@ -17,6 +17,7 @@ export class GlobalService {
     public mobile = '';
     public user_id = '';
     public centerData:any=[];
+    public user_code: '';
 
   
     constructor(private http: HttpClient) {
@@ -41,275 +42,76 @@ export class GlobalService {
       this.mobile = user.mobile || '';
       this.role_id = user.role_id;
       this.user_id = user.id;
+      this.user_code = user.user_id;
       this.centerData = user.assgin_centers;
     }
   
 
   // private apiUrl = 'https://ticketapi.anudip.org/public/api/raiseticket';
   private apiUrl= environment.apiBaseUrl+ 'api';
-  private leadUrl= environment.apiBaseUrl+ 'api'+ '/lead';
+  private assetUrl= environment.apiBaseUrl+ 'api'+ '/asset';
+  private leadUrl= environment.apiBaseUrl+ 'api'+ '/asset';
   private accontUrl = environment.apiAccountBaseUrl+ 'api'+ '/account';
   // constructor(private http: HttpClient) {}
-
-  // ADD LEAD FORM
-
-  public getDashboardData(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/get-degree`);
-  }
-
-  public getCenter(data): Observable<any> {
-    return this.http.post(`${this.leadUrl}/get-center`,data);
-  }
-
-  public getStates(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-state`);
-  }
-
-  public getDistric(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/get-district`,data);
-  }
   
-  public getCourses(centerId): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-course/${centerId}`);
+  //old
+    public getSourcesReg(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/fetch-lead-source`);
   }
-
-  public getSources(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/fetch-lead-source`);
+    public getCenterReg(data): Observable<any> {
+    return this.http.post(`${this.apiUrl}/get-center`, data);
   }
-
-  public leadSubmit(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/add-lead`,data);
-  }
-
-  // Upload Bulk Lead Apis
-
-  public getCenterBulk(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-center-bulk-upload`);
-  }
-
-  public uploadLeads(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/''`,data);
-  }
-
-  public getExcelPath(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/download-excel`);
-  }
-
-  // Manage Leads Apis
-
-  public getLeadData(centerId:any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/active-leads`,centerId);
-  }
-
-  // Update Leads Apis
-
-  public getStatusList(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-lead-status`);
-  }
-
-  public getStageList(statusId: any): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-lead-stage/${statusId}`);
-  }
-
-  public leadUpdate(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/update-lead`,data);
-  }
-
-  public counselingLeadUpdate(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/counselling-link-send`,data);
-  }
-
-  public getLeadsFlow(leadId: any): Observable<any> {
-    return this.http.get(`${this.leadUrl}/fetch-lead-all-stages/${leadId}`);
-  }
-
-  // Student Form API
-
-  public getStudentData(leadId: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/lead-data-by-id`,leadId);
-  }
-
-    public getStudentStreams(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-stream`);
-  }
-
-  public saveStudentForm(leadId: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/insert-student-answer`,leadId);
-        // return this.http.post(`${this.leadUrl}/""`,leadId);
-  }
-
-   public saveRejectedPOAnswers(leadId: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/accept-rejected-students`,leadId);
-        // return this.http.post(`${this.leadUrl}/""`,leadId);
-  }
-
-  // PO Student List API
-  public getCenterFilter(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/get-center-filter`,data);
-  }
-
-  public getStudentList(centerId: any): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-student-for-PO/${centerId}`);
-  }
-
-  // for getting rejected student
-   public getRejectedStudentList(centerId: any): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-rejected-students/${centerId}`);
-  }
-
-  public poIterviewSubmit(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/""`,data);
-  }
-
-  // PO Apis
-  public getStudentDataPO(leadId: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/lead-data-po`,leadId);
-  }
-
-  //student registration
-  public getCenterReg(data): Observable<any> {
-    return this.http.post(`${this.apiUrl}/get-center`,data);
-  }
-
   public getStatesReg(): Observable<any> {
     return this.http.get(`${this.apiUrl}/get-state`);
   }
-
-  public getDistricReg(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/get-district`,data);
+   public getDistricReg(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/get-district`, data);
   }
-  
-  public getCoursesReg(centerId): Observable<any> {
+   public getCoursesReg(centerId): Observable<any> {
     return this.http.get(`${this.apiUrl}/get-course/${centerId}`);
   }
-
-  public getSourcesReg(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/fetch-lead-source`);
+   public leadSubmitReg(data: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/add-lead`, data);
+  }
+    public getExcelPath(): Observable<any> {
+    return this.http.get(`${this.leadUrl}/download-excel`);
+  }
+    public leadSubmit(data: any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/add-lead`, data);
+    // return this.http.post(`${this.leadUrl}/''`,data);
+  }
+    public downloadReport(data: any): Observable<any> {
+    return this.http.post(`${this.leadUrl}/get-rolewise-report`, data);
   }
 
-  public leadSubmitReg(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/add-lead`,data);
-  }
-
-   public getRejectedCenterFilter(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-rejected-centers`);
-  }
-
-  // Dashboard API
-    public getStatsData(data:any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/get-crm-dasboard-stats`,data);
-  }
-
-     public getChartData(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-monthly-crm-summary`);
-  }
 
   public getDashboardButtonData(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/followup-data`, data);
+    return this.http.post(`${this.assetUrl}/get-dashboard`, data);
   }
 
-   public dashboardLeads(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/get-filtered-leads`, data);
+  public getBrands(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/brand-list`);
   }
- 
- 
-  //Marcom API
-    public marcomLeadSubmit(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/marcom-bulk-upload`,data);
+  
+  public getClass(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/class-list`);
   }
 
-      public stateMarcomleadSubmit(data: any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/marcom-bulk-upload-state`,data);
+    public getSubClass(classId:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/subclass-list/${classId}`);
   }
 
-    public getCoursesMarcon(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/fetch-course`);
+  public getFunders(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/funder-list`);
   }
 
-     public getMarcomLeads(data:any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/get-lead-marcom`,data);
+  public submitAssetData(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/insert-asset-details`, data);
   }
 
-      public alignMarcomLeads(data:any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/move-lead-to-master`,data);
+  public SearchAsset(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/asset-list`, data);
   }
 
-       public getCenterMarcon(userId:any): Observable<any> {
-    return this.http.get(`${this.leadUrl}/get-center-user/${userId}`);
-  }
-
-  // Student Search
-       public searchStudents(data:any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/search-lead`,data);
-  }
-
-  // Report API's
-
-  public downloadReport(data:any): Observable<any> {
-    return this.http.post(`${this.leadUrl}/get-rolewise-report`,data);
-  }
- 
-
-  getUserProfile(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/profile`);
-  }
-
-  //Accounts Api
-
-  public getBudgetCategory(): Observable<any> {
-    return this.http.get(`${this.accontUrl}/budget-categories`);
-  }
-
-  public getDonorList(): Observable<any> {
-    return this.http.get(`${this.accontUrl}/fetchAccountDonorList`);
-  }
-
-  public saveDonorAccount(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/insertAccountBudget`,data);
-  }
-
-  public getDonorAccount(): Observable<any> {
-    return this.http.get(`${this.accontUrl}/fetchAccountDonorBudget`);
-  }
-
-  public saveDonorBudgetDetails(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/insertAccountBudgetTr`,data);
-  }
-
-  public getBudgetDetailsByDonorAccount(id:any): Observable<any> {
-    return this.http.get(`${this.accontUrl}/fetch-budget-details-by-id/${id}`);
-  }
-
-  public downloadBudgetAllotmentFormat(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/budgetAllotmentSheet`,data);
-  }
-
-  public uploadBudgetAllotmentFormat(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/uploadExcel`,data);
-  }
-
-  public insertDonor(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/insertDonor`,data);
-  }
-
-  public insertBudgetCategory(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/insertBudgetCategory`,data);
-  }
-
-  public getBudgetVerticesCenterByDonorAccount(id:any): Observable<any> {
-    return this.http.get(`${this.accontUrl}/fetchVerticsCenter/${id}`);
-  }
-
-  public insertReceivedAmountFromDonor(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/insertReceivedAmountFromDonor`,data);
-  }
-
-  public getReceivedAmountFromDonor(id:any): Observable<any> {
-    return this.http.get(`${this.accontUrl}/fetchReceivedAmount/${id}`);
-  }
-
-  public uploadBudgetExpenses(data:any): Observable<any> {
-    return this.http.post(`${this.accontUrl}/uploadExpensesExcel`,data);
-  }
 
 }

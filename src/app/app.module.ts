@@ -48,8 +48,7 @@ import { TokenInterceptor } from './interceptors/token.interceptor';
       strategies: [
         NbPasswordAuthStrategy.setup({
           name: 'email',
-          // baseEndpoint: 'https://ticketapi.anudip.org/public/api',
-          baseEndpoint: 'https://leadapi.anudip.org/public/api',
+          baseEndpoint: 'https://assetapi.anudip.org/api',
           login: {
             endpoint: '/login',
             method: 'post',
@@ -58,10 +57,32 @@ import { TokenInterceptor } from './interceptors/token.interceptor';
             endpoint: '/register',
             method: 'post',
           },
-          token: {
-            class: NbAuthSimpleToken,
-            key: 'data.token', // <--- path to token in your response
-          },
+ token: {
+  class: NbAuthSimpleToken,
+  key: 'data.token',
+  getter: (module, res) => {
+    try {
+      // Get the raw response body
+      const body = res?.body;
+
+      if (!body) return null;
+
+      // If backend sends base64 message
+      if (body.message && typeof body.message === 'string') {
+        const decodedStr = atob(body.message);
+        const decoded = JSON.parse(decodedStr);
+        return decoded?.data?.token ?? null; // ✅ Return the real token
+      }
+
+      // Otherwise, fallback for normal JSON
+      return body?.data?.token ?? null;
+    } catch (e) {
+      console.error('❌ Token getter error:', e);
+      return null;
+    }
+  },
+},
+
         }),
       ],
       forms: {},

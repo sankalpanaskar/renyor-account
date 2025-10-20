@@ -8,8 +8,13 @@
 // `ng build --env=prod` then `environment.prod.ts` will be used instead.
 // The list of which env maps to which file can be found in `.angular-cli.json`.
 
+// export const environment = {
+//   production: true,
+//   apiBaseUrl: 'https://leadapi.anudip.org/public/',
+//   apiAccountBaseUrl: 'https://cmis4api.anudip.org/public/',
+// };
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://leadapi.anudip.org/public/',
+  apiBaseUrl: 'https://assetapi.anudip.org/',
   apiAccountBaseUrl: 'https://cmis4api.anudip.org/public/',
 };

@@ -24,81 +24,143 @@ export class NgxLoginComponent {
     private toastrService: NbToastrService,
   ) {}
 
-  login() {
-    const isMobileLogin = /^[0-9]/.test(this.email);
+login() {
+  try {
+    console.log('🔹 Login button clicked');
+
+    const isMobileLogin = /^[0-9]+$/.test(this.email.trim());
+    console.log('Login type:', isMobileLogin ? 'Mobile' : 'Email');
+
     this.isLoading = true;
-  
+
+    // helper to decode Base64 API message
+    const decodeApiMessage = (base64: string) => {
+      try {
+        const jsonStr = atob(base64);
+        return JSON.parse(jsonStr);
+      } catch (e) {
+        console.error('❌ Failed to decode API message:', e);
+        return null;
+      }
+    };
+
+    // -------------------------------------------------------------------
+    // MOBILE LOGIN FLOW
+    // -------------------------------------------------------------------
     if (isMobileLogin) {
+      console.log('📡 Sending mobile login request...');
       this.http.post('https://leadapi.anudip.org/public/api/student-login', {
         user_id: this.email.trim(),
         password: this.password.trim(),
       }).subscribe({
         next: (res: any) => {
-          const token = res?.data?.token;
-          const user = res?.data?.userDetails;
-  
+          console.log('✅ Raw mobile login response:', res);
+
+          // Decode if Base64 encoded
+          let payload = res;
+          if (res?.message && typeof res.message === 'string') {
+            const decoded = decodeApiMessage(res.message);
+            if (decoded) payload = decoded;
+          }
+
+          console.log('📦 Decoded mobile payload:', payload);
+
+          const token = payload?.data?.token;
+          const user = payload?.data?.userDetails;
+
           if (token && user) {
+            console.log('✅ Token and user extracted successfully');
             localStorage.setItem('auth_token', token);
             localStorage.setItem('user', JSON.stringify(user));
             this.tokenService.set(new NbAuthSimpleToken(token, 'mobile'));
             this.globalService.setUser(user);
-            
-            this.toastrService.success(res?.message || 'Login successful', 'Success');
+
+            this.toastrService.success(payload?.message || 'Login successful', 'Success');
             this.router.navigate(['/pages/student/student-details']);
-            this.isLoading = false;
           } else {
+            console.error('⚠️ Invalid response structure:', payload);
             this.toastrService.danger('Invalid response from server', 'Login Failed');
-            this.isLoading = false;
           }
+          this.isLoading = false;
         },
         error: (err) => {
-          console.log('Mobile login failed', err);
+          console.error('❌ Mobile login failed:', err);
           this.toastrService.danger(err?.error?.message || 'Login failed', 'Error');
           this.isLoading = false;
-        }
+        },
       });
+
+    // -------------------------------------------------------------------
+    // EMAIL LOGIN FLOW (Nebular Auth)
+    // -------------------------------------------------------------------
     } else {
+      console.log('📡 Sending email login request via Nebular...');
       this.authService.authenticate('email', {
         user_id: this.email.trim(),
         password: this.password.trim(),
       }).subscribe({
         next: (result) => {
-          if (result.isSuccess()) {
-            const response: any = result.getResponse();
-            const token = response?.body?.data?.token;
-            const user = response?.body?.data?.userDetails;
-  
-            if (token && user) {
-              localStorage.setItem('auth_token', token);
-              localStorage.setItem('user', JSON.stringify(user));
-              this.tokenService.set(new NbAuthSimpleToken(token, 'email'));
-              this.globalService.setUser(user);
-              
-              this.toastrService.success(response?.body?.message || 'Login successful', 'Success');
-              this.router.navigate(['/pages/custom-dashboard']);
-              // // ✅ Redirect based on role_id
-              //   if (user.role_id === 17) {
-              //     this.router.navigate(['/pages/admin-dashboard']);
-              //   } else {
-              //     this.router.navigate(['/pages/custom-dashboard']);
-              //   }
-              this.isLoading = false;
-            } else {
-              this.toastrService.danger('Invalid login response', 'Login Failed');
-            }
-          } else {
+          console.log('✅ Raw Nebular Auth result:', result);
+
+          if (!result.isSuccess()) {
             this.toastrService.danger('Invalid credentials', 'Login Failed');
             this.isLoading = false;
+            return;
           }
+
+          const raw = result.getResponse();
+          const body = raw?.body;
+          console.log('📦 Raw HTTP response body:', body);
+
+          // Decode base64 message if needed
+          let payload = body;
+          if (body?.message && typeof body.message === 'string') {
+            const decoded = decodeApiMessage(body.message);
+            if (decoded) payload = decoded;
+          }
+
+          console.log('📦 Decoded email payload:', payload);
+
+          const token = payload?.data?.token;
+          const user = payload?.data?.userDetails;
+
+          if (token && user) {
+            console.log('✅ Token and user extracted successfully');
+            localStorage.setItem('auth_token', token);
+            localStorage.setItem('user', JSON.stringify(user));
+            this.tokenService.set(new NbAuthSimpleToken(token, 'email'));
+            this.globalService.setUser(user);
+
+            this.toastrService.success(payload?.message || 'Login successful', 'Success');
+
+            // ✅ Redirect by role
+            if (user.role_id === 17) {
+              this.router.navigate(['/pages/admin-dashboard']);
+            } else {
+              this.router.navigate(['/pages/custom-dashboard']);
+            }
+          } else {
+            console.error('⚠️ Invalid login response format:', payload);
+            this.toastrService.danger('Invalid login response', 'Login Failed');
+          }
+
+          this.isLoading = false;
         },
         error: (err) => {
-          console.log('Email login failed', err);
+          console.error('❌ Email login failed:', err);
           this.toastrService.danger(err?.error?.message || 'Login failed', 'Error');
           this.isLoading = false;
-        }
+        },
       });
     }
+  } catch (err) {
+    console.error('💥 Unexpected login error:', err);
+    this.toastrService.danger('Unexpected error occurred', 'Login Failed');
+    this.isLoading = false;
   }
+}
+
+
   
 }
 

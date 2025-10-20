@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../services/global.service';
-import { NbColorHelper, NbThemeService, NbToastrService } from '@nebular/theme';
+import { NbThemeService, NbToastrService } from '@nebular/theme';
 import { Router } from '@angular/router';
 
 @Component({
@@ -9,233 +9,100 @@ import { Router } from '@angular/router';
   styleUrls: ['./custom-dashboard.component.scss']
 })
 export class CustomDashboardComponent implements OnInit {
-  //M
-  // Summary Cards
-  model:any = []
-  stats = [
-    { title: "Today's Leads", value: 45 },
-    { title: 'Total Followups', value: 10 },
-    { title: 'Total Counseling', value: 200 },
-    { title: 'Student Pending', value: 24 },
-    { title: 'PO Pending', value: 30 },
-    { title: 'Quiz Pending', value: 140 },
-    { title: 'ORI Pending', value: 80 },
-    { title: 'Ready to Enroll', value: 27 },
-    { title: "Today's Leads", value: 45 },
-    { title: 'Total Followups', value: 10 },
-    { title: 'Total Counseling', value: 200 },
-    { title: 'Student Pending', value: 24 },
-    { title: 'PO Pending', value: 30 },
-    { title: 'Quiz Pending', value: 140 },
-    { title: 'ORI Pending', value: 80 },
-    { title: 'Ready to Enroll', value: 27 },
-    { title: "Today's Leads", value: 45 },
-    { title: 'Total Followups', value: 10 },
-    { title: 'Total Counseling', value: 200 },
-    { title: 'Student Pending', value: 24 },
-    { title: 'PO Pending', value: 30 },
-    { title: 'Quiz Pending', value: 140 },
-    { title: 'ORI Pending', value: 80 },
-    { title: 'Ready to Enroll', value: 27 },
-  ];
 
-  // Follow-up Table
-  followups = [
-    { name: 'Rani Dutta', phone: '9089898876' },
-    { name: 'Sankalpa Naskar', phone: '9089898876' },
-    { name: 'Pritam Basu', phone: '9089898876' },
-    { name: 'Rani Dutta', phone: '9089898876' },
-    { name: 'Sankalpa Naskar', phone: '9089898876' },
-  ];
-
-  isSubmitting: boolean = false;
-  statsData: any = [];
-  chartBarData: any = null;
-  fourButtonsData: any = [];
-  pastFollowupCount: number = 0;
-  todayFollowupCount: number = 0;
-  futureFollowupCount: number = 0;
-  totalFollowupCount: number = 0;
+  model: any = [];
+  assets: any[] = [];
+  centers: any[] = [];
+  isSubmitting = false;
 
   constructor(
     public globalService: GlobalService,
     private toastrService: NbToastrService,
-    private themeService: NbThemeService, // ✅ FIX: Inject NbThemeService
+    private themeService: NbThemeService,
     private router: Router
-  ) { }
+  ) {}
 
   ngOnInit(): void {
-    this.loadStatsData();
-    // this.loadChartData(); // ✅ ADD THIS
-    this.loadFourButtons();
+    console.log('member is', this.globalService.member_id, this.globalService.role_id, this.globalService.user_code);
+    this.loadDashboardData();
   }
 
+  // ✅ Fetch Dashboard data dynamically
+  loadDashboardData() {
+    const payload = {
+      user_id: this.globalService.user_id,
+      member_id: this.globalService.member_id,
+    };
 
-loadFourButtons() {
-  const data = {
-    user_id: this.globalService.user_id,
-    member_id: this.globalService.member_id,
-    role_id: this.globalService.role_id
-  };
+    this.isSubmitting = true;
 
-  this.isSubmitting = true;
+    this.globalService.getDashboardButtonData(payload).subscribe({
+      next: (res: any) => {
+        console.log('📦 Raw dashboard API response:', res);
+        this.isSubmitting = false;
 
-  this.globalService.getDashboardButtonData(data).subscribe({
-    next: (res) => {
-      this.fourButtonsData = res.data || [];
-      this.isSubmitting = false;
-    },
-    error: (err) => {
-      console.error('Button error:', err);
-      this.toastrService.danger(err.message, 'Error');
-      this.isSubmitting = false;
-    },
-  });
-}
+        if (res?.status && res?.data) {
+          const apiAssets = res.data.asset_details || [];
+          const apiCenters = res.data.centers || [];
 
-getButtonStatus(title: string): string {
-  switch (title) {
-    case 'Today\'s Followups':
-      return 'info';
-    case 'Past Followups':
-      return 'warning';
-    case 'Future Followups':
-      return 'danger';
-    case 'Total Followups':
-      return 'success';
-    default:
-      return 'primary'; // fallback
-  }
-}
+          // ✅ Map API asset data into your display structure
+          this.assets = apiAssets.map((item: any) => ({
+            label: item.assets_sub_class,
+            count: item.subclass_count,
+            icon: this.getIconForAsset(item.assets_sub_class),
+          }));
 
-redirectToManageLead(leadIds: number[], leadStatusId?: number, title?: string) {
-  const allowedRoles = [23, 15, 34, 7];
+          // ✅ Centers (if any)
+          this.centers = apiCenters.map((center: any, index: number) => ({
+            id: index + 1,
+            name: center.name || 'N/A',
+            code: center.short_code || 'N/A',
+          }));
 
-  if (!allowedRoles.includes(this.globalService.role_id)) {
-    console.log('Redirect blocked due to unauthorized role:', this.globalService.role_id);
-    return; // 🚫 Exit early if not allowed
-  }
-
-  const queryParams: any = {
-    lead_ids: leadIds.join(','),
-  };
-
-  if (leadStatusId !== undefined) {
-    queryParams.lead_status_id = leadStatusId;
-  }
-
-  if (title) {
-    queryParams.title = title;
-  }
-
-  this.router.navigate(['/pages/manage-lead'], { queryParams });
-}
-
-
-
-  loadStatsData(): void {
-    var data = {
-      user_id : this.globalService.user_id,
-      member_id : this.globalService.member_id,
-      role_id : this.globalService.role_id
-    }
-    this.isSubmitting = true; // <-- start loader
-
-    this.globalService.getStatsData(data).subscribe({
-      next: (res) => {
-        this.statsData = res.data;
-        this.isSubmitting = false; // <-- stop loader
+          this.toastrService.success(res?.message || 'Dashboard loaded successfully', 'Success');
+        } else {
+          this.toastrService.warning('No data found', 'Warning');
+        }
       },
       error: (err) => {
-        console.error('Student error:', err);
-        this.toastrService.danger(err.message, 'Error');
-        this.isSubmitting = false; // <-- stop loader even on error
+        console.error('❌ Dashboard API error:', err);
+        this.toastrService.danger(err?.error?.message || 'Failed to load dashboard data', 'Error');
+        this.isSubmitting = false;
       },
     });
   }
 
+  // ✅ Helper function to assign icons dynamically
+  getIconForAsset(assetName: string): string {
+    const name = assetName.toLowerCase();
 
+    if (name.includes('cpu')) return 'hard-drive-outline';
+    if (name.includes('monitor')) return 'monitor-outline';
+    if (name.includes('switch')) return 'shuffle-outline';
+    if (name.includes('web') || name.includes('camera')) return 'video-outline';
+    if (name.includes('battery')) return 'battery-outline';
+    if (name.includes('projector')) return 'tv-outline';
+    if (name.includes('biometric')) return 'person-done-outline';
+    if (name.includes('router') || name.includes('wifi')) return 'wifi-outline';
+    if (name.includes('printer')) return 'printer-outline';
+    if (name.includes('speaker')) return 'volume-up-outline';
+    if (name.includes('ups')) return 'flash-outline';
+    if (name.includes('laptop')) return 'monitor-outline';
+    if (name.includes('tablet')) return 'smartphone-outline';
+    if (name.includes('scanner')) return 'copy-outline';
+    if (name.includes('server')) return 'hard-drive-outline';
+    if (name.includes('chair')) return 'cube-outline';
+    if (name.includes('table')) return 'grid-outline';
+    if (name.includes('fire')) return 'alert-triangle-outline';
+    if (name.includes('water')) return 'droplet-outline';
+    if (name.includes('rack')) return 'layers-outline';
+    if (name.includes('air')) return 'thermometer-minus-outline';
+    if (name.includes('mobile')) return 'smartphone-outline';
+    if (name.includes('almirah')) return 'archive-outline';
+    if (name.includes('shred')) return 'scissors-outline';
+    if (name.includes('nvr')) return 'film-outline';
 
-// loadChartData(): void {
-//   this.isSubmitting = true;
-
-//   this.themeService.getJsTheme().subscribe(theme => {
-//     const colors = theme.variables;
-//     const colorList = [
-//       colors.primaryLight,
-//       colors.infoLight,
-//       colors.dangerLight,
-//       colors.successLight,
-//       // colors.warningLight,
-//       // colors.dangerLight,
-//     ];
-
-//     this.globalService.getChartData().subscribe({
-//       next: (res) => {
-//         this.chartBarData = {
-//           labels: res.labels,
-//           datasets: [
-//             {
-//               label: 'Total Leads',
-//               data: res.totalLeads,
-//               backgroundColor: NbColorHelper.hexToRgbA(colorList[0], 0.8),
-//             },
-//             {
-//               label: 'Total Connected',
-//               data: res.totalConnected,
-//               backgroundColor: NbColorHelper.hexToRgbA(colorList[1], 0.8),
-//             },
-//             {
-//               label: 'Rejected',
-//               data: res.rejected,
-//               backgroundColor: NbColorHelper.hexToRgbA(colorList[2], 0.8),
-//             },
-//             {
-//               label: 'Total Enroll',
-//               data: res.totalEnroll,
-//               backgroundColor: NbColorHelper.hexToRgbA(colorList[3], 0.8),
-//             }
-//           ],
-//         };
-
-//         this.isSubmitting = false;
-//       },
-//       error: (err) => {
-//         this.toastrService.danger(err.message, 'Chart Load Error');
-//         this.isSubmitting = false;
-//       },
-//     });
-//   });
-// }
-
-onFilterSubmit(fm:any ){
-  if(fm.valid){
-     var data = {
-      user_id : this.globalService.user_id,
-      member_id : this.globalService.member_id,
-      role_id : this.globalService.role_id,
-      start_date : fm.value.startDate,
-      end_date : fm.value.endDate,
-      
-    }
-    this.isSubmitting = true; // <-- start loader
-
-    this.globalService.getStatsData(data).subscribe({
-      next: (res) => {
-        this.statsData = res.data;
-        this.isSubmitting = false; // <-- stop loader
-      },
-      error: (err) => {
-        console.error('Student error:', err);
-        this.toastrService.danger(err.message, 'Error');
-        this.isSubmitting = false; // <-- stop loader even on error
-      },
-    });
+    // default icon
+    return 'cube-outline';
   }
-}
-
-
-
-
-
 }
