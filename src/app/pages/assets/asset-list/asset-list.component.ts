@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
-import { NbToastrService } from '@nebular/theme';
+import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { LocalDataSource } from 'ng2-smart-table';
+import { AssetActionComponent } from './asset-action.component';
+import { ViewAssetDialogComponent } from '../view-asset-dialog/view-asset-dialog.component';
 
 @Component({
   selector: 'ngx-asset-list',
@@ -16,12 +18,7 @@ export class AssetListComponent implements OnInit {
       display: true,
       perPage: 10
     },
-    actions: {
-      edit: false,
-      delete: false,
-      add: false,
-      position: 'right'
-    },
+    actions: false, // disable default actions
     columns: {
       // Id: {
       //   title: 'ID',
@@ -31,14 +28,14 @@ export class AssetListComponent implements OnInit {
       // },
       AnudipIdNo: {
         title: 'Anudip ID No',
-        width: '120px',
+        width: '150px',
         type: 'string',
         filter: false,
         editable: false
       },
       Center: {
         title: 'Center',
-        width: '180px',
+        width: '120px',
         type: 'html',
         filter: false,
         editable: false,
@@ -55,6 +52,7 @@ export class AssetListComponent implements OnInit {
 
       SerialNo: {
         title: 'Serial No',
+        width: '150px',
         type: 'string',
         filter: false,
         editable: false
@@ -67,7 +65,7 @@ export class AssetListComponent implements OnInit {
       },
       AssetStatus: {
         title: 'Status',
-        width: '160px',
+        width: '130px',
         filter: false,
         editable: false,
         type: 'html',
@@ -78,6 +76,20 @@ export class AssetListComponent implements OnInit {
           }
         }
       },
+      Action: {
+      title: 'Action',
+      type: 'custom',
+      filter: false,
+      renderComponent: AssetActionComponent, // ✅ custom component for buttons
+      onComponentInitFunction: (instance: any) => {
+        instance.view.subscribe((rowData: any) => {
+          this.onView(rowData);
+        });
+        instance.edit.subscribe((rowData: any) => {
+          this.onEdit(rowData);
+        });
+      },
+    },
     },
   };
   model: any = [];
@@ -90,13 +102,29 @@ export class AssetListComponent implements OnInit {
 
   constructor(
     private globalService: GlobalService,
-    private toastrService: NbToastrService
+    private toastrService: NbToastrService,
+    private dialogService: NbDialogService
   ) { }
 
 
   ngOnInit(): void {
     console.log("member is", this.globalService.member_id, this.globalService.role_id);
   }
+
+onView(rowData: any) {
+  const assetData = rowData.fullData; // ✅ full object from API
+  console.log("asset data",assetData);
+  this.dialogService.open(ViewAssetDialogComponent, {
+    context: { assetData: assetData },
+    closeOnBackdropClick: true,
+    hasScroll: true,
+  });
+}
+
+onEdit(rowData: any) {
+  console.log('Editing Row:', rowData);
+}
+
 
   onSubmit(fm: any) {
     if (fm.valid) {
@@ -106,6 +134,7 @@ export class AssetListComponent implements OnInit {
         'search_type': fm.value.search_type,
         'keyword': fm.value.keyword,
       }
+      this.loading = true;
       this.globalService.SearchAsset(data).subscribe({
         next: (res) => {
           this.apiData = res.data.assets; // ✅ Store API data here first
@@ -117,6 +146,7 @@ export class AssetListComponent implements OnInit {
             AssetName: item.assets_sub_class,
             SerialNo: item.serial_no,
             InvoiceNo: item.invoice_no,
+            fullData: item, // ✅ include full object
             // leadEmail: item.email_id || 'N/A',
             AssetStatus: item.status, // ✅ Corrected based on your data
           }));
@@ -131,9 +161,24 @@ export class AssetListComponent implements OnInit {
             'Add Lead Failed. Please try again.';
 
           this.toastrService.danger(errorMessage, 'Add Lead Failed');
+          this.loading = false;
           this.isSubmitting = false;
         },
       });
+    }
+  }
+    onSearch(query: string = ''): void {
+    this.source.setFilter([
+      { field: 'AnudipIdNo', search: query },
+      { field: 'Center', search: query },
+      { field: 'AssetName', search: query },
+      { field: 'SerialNo', search: query },
+      { field: 'InvoiceNo', search: query },
+
+    ], false);
+
+    if (this.source.count() === 0) {
+      this.source.reset();
     }
   }
 }

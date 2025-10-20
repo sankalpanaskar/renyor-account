@@ -1,0 +1,79 @@
+<nb-card class="assetData-details-dialog">
+  <nb-card-header>
+    <div class="d-flex justify-content-between align-items-center">
+      <span>Asset Data Details</span>
+      <button nbButton ghost size="tiny" (click)="closeDialog()">✖</button>
+    </div>
+  </nb-card-header>
+
+  <nb-card-body>
+    <table class="table table-bordered table-striped">
+      <tbody>
+        <tr>
+          <th>Anudip ID No:</th>
+          <td>{{ assetData.anudip_identification_no }}</td>
+          <th>Asset Name:</th>
+          <td>{{ assetData.assets_sub_class }}</td>
+        </tr>
+
+        <tr>
+          <th>Brand:</th>
+          <td>{{ assetData.brand_name }}</td>
+          <th>Serial No:</th>
+          <td>{{ assetData.serial_no }}</td>
+        </tr>
+
+        <tr>
+          <th>Purchase Date:</th>
+          <td>{{ assetData.purchase_date | date:'yyyy-MM-dd' }}</td>
+          <th>Model No:</th>
+          <td>{{ assetData.model_no }}</td>
+        </tr>
+
+        <tr>
+          <th>Voucher No:</th>
+          <td>{{ assetData.voucher_no }}</td>
+          <th>Voucher Date:</th>
+          <td>{{ assetData.voucher_date | date:'yyyy-MM-dd' }}</td>
+        </tr>
+
+        <tr>
+          <th>Center:</th>
+          <td>{{ assetData.center_code }}</td>
+          <th>Nature Of Asset:</th>
+          <td>{{ assetData.nature_of_assets }}</td>
+        </tr>
+
+        <tr>
+          <th>Owner Of Asset:</th>
+          <td>{{ assetData.funded_by }}</td>
+          <th>Supplier Name:</th>
+          <td>{{ assetData.supplier_name }}</td>
+        </tr>
+
+        <tr>
+          <th>Value:</th>
+          <td>{{ assetData.value_of_assets }}</td>
+          <th>Status Of Asset:</th>
+          <td *ngIf="assetData.status ==1">Working</td>
+        </tr>
+
+        <tr>
+          <th>Invoice No:</th>
+          <td>{{ assetData.invoice_no }}</td>
+          <th>Funded By:</th>
+          <td>{{ assetData.funded_by }}</td>
+        </tr>
+
+        <tr>
+          <th>Asset Type:</th>
+          <td>{{ assetData.asset_type }}</td>
+          <th>Remarks:</th>
+          <td>{{ assetData.remarks }}</td>
+        </tr>
+
+        <tr><th>Asset Under:</th><td>{{ assetData.assets_under }}</td><th>Actual Asset:</th><td>{{ assetData.actual_assets_project }}</td></tr>
+      </tbody>
+    </table>
+  </nb-card-body>
+</nb-card>

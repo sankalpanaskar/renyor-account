@@ -12,6 +12,8 @@ import { AddAssetFormComponent } from './add-asset-form/add-asset-form.component
 import { AssetListComponent } from './asset-list/asset-list.component';
 import { AssetTransferComponent } from './asset-transfer/asset-transfer.component';
 import { AssetStatusChangeComponent } from './asset-status-change/asset-status-change.component';
+import { AssetActionComponent } from './asset-list/asset-action.component';
+import { ViewAssetDialogComponent } from './view-asset-dialog/view-asset-dialog.component';
 
 
 @NgModule({
@@ -21,7 +23,10 @@ import { AssetStatusChangeComponent } from './asset-status-change/asset-status-c
     AddAssetFormComponent,
     AssetListComponent,
     AssetTransferComponent,
-    AssetStatusChangeComponent
+    AssetStatusChangeComponent,
+    AssetActionComponent,
+    ViewAssetDialogComponent,
+
   ],
   imports: [
     CommonModule,
