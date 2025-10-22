@@ -117,5 +117,9 @@ export class GlobalService {
     return this.http.post(`${this.assetUrl}/asset-list`, data);
   }
 
+  public getPendingAsset(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/pending-asset-list`, data);
+  }
+
 
 }

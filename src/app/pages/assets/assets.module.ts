@@ -15,6 +15,7 @@ import { AssetStatusChangeComponent } from './asset-status-change/asset-status-c
 import { AssetActionComponent } from './asset-list/asset-action.component';
 import { ViewAssetDialogComponent } from './view-asset-dialog/view-asset-dialog.component';
 import { EditAssetDialogComponent } from './edit-asset-dialog/edit-asset-dialog.component';
+import { PendingAssetListComponent } from './pending-asset-list/pending-asset-list.component';
 
 
 @NgModule({
@@ -28,6 +29,7 @@ import { EditAssetDialogComponent } from './edit-asset-dialog/edit-asset-dialog.
     AssetActionComponent,
     ViewAssetDialogComponent,
     EditAssetDialogComponent,
+    PendingAssetListComponent,
 
   ],
   imports: [

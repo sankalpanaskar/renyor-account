@@ -53,7 +53,9 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
             ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Bulk Upload', link: '/pages/assets/bulk-upload' }] : []),
             ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Add Asset', link: '/pages/assets/add-asset' }] : []),
             ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Asset List', link: '/pages/assets/asset-list' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Pending Asset List', link: '/pages/assets/pending-asset-list' }] : []),            
             ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Asset Transfer', link: '/pages/assets/asset-transfer' }] : []),
+
             // { title: 'Manage', link: '/pages/manage-lead' },
 
             // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 17 ||  roleId === 34 ? [{ title: 'Transfer Leads', link: '/pages/lead/lead-center-transfer' }] : []),

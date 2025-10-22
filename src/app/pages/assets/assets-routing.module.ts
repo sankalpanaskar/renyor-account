@@ -6,6 +6,7 @@ import { AddAssetFormComponent } from './add-asset-form/add-asset-form.component
 import { AssetListComponent } from './asset-list/asset-list.component';
 import { AssetTransferComponent } from './asset-transfer/asset-transfer.component';
 import { AssetStatusChangeComponent } from './asset-status-change/asset-status-change.component';
+import { PendingAssetListComponent } from './pending-asset-list/pending-asset-list.component';
 
 const routes: Routes = [{
   path:'',
@@ -30,6 +31,10 @@ const routes: Routes = [{
     {
       path:'asset-status-change',
       component:AssetStatusChangeComponent
+    },
+    {
+      path:'pending-asset-list',
+      component:PendingAssetListComponent
     },
 
   ]
