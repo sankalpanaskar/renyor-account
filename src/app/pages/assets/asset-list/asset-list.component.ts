@@ -4,6 +4,7 @@ import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { LocalDataSource } from 'ng2-smart-table';
 import { AssetActionComponent } from './asset-action.component';
 import { ViewAssetDialogComponent } from '../view-asset-dialog/view-asset-dialog.component';
+import { EditAssetDialogComponent } from '../edit-asset-dialog/edit-asset-dialog.component';
 
 @Component({
   selector: 'ngx-asset-list',
@@ -96,6 +97,8 @@ export class AssetListComponent implements OnInit {
   isSubmitting: boolean = false;
   loading: boolean = false; // <-- Add this to your class
   apiData: any = [];
+  lastSearchForm: any; // add this variable on top of your component
+
 
 
 
@@ -103,7 +106,7 @@ export class AssetListComponent implements OnInit {
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private dialogService: NbDialogService
+    private dialogService: NbDialogService,
   ) { }
 
 
@@ -122,12 +125,48 @@ onView(rowData: any) {
 }
 
 onEdit(rowData: any) {
-  console.log('Editing Row:', rowData);
+  const assetData = rowData.fullData;
+
+  const dialogRef = this.dialogService.open(EditAssetDialogComponent, {
+    context: { assetData: assetData },
+    closeOnBackdropClick: true,
+    hasScroll: true,
+  });
+
+  // ✅ When dialog closes
+  dialogRef.onClose.subscribe((updatedData) => {
+    if (updatedData) {
+      this.toastrService.success('Asset updated successfully', 'Success');
+
+      // ✅ Re-run your search API automatically using the same filter form data
+      // grab your last submitted form values (store them globally or from template ref)
+      if (this.lastSearchForm) {
+        this.onSubmit(this.lastSearchForm); // call your existing function again
+      } else {
+        // or if you have access to a template reference variable (fm)
+        const fmEl = document.querySelector('#leadForm');
+        if (fmEl && fmEl['ngForm']) {
+          this.onSubmit(fmEl['ngForm']);
+        } else {
+          // fallback: call a general reload if no form available
+          this.reloadAssetList();
+        }
+      }
+    }
+  });
 }
 
+reloadAssetList() {
+  if (this.lastSearchForm) {
+    this.onSubmit(this.lastSearchForm);
+  } else {
+    console.warn('No previous search form found for reload');
+  }
+}
 
   onSubmit(fm: any) {
     if (fm.valid) {
+      this.lastSearchForm = fm; // ✅ store the last used form
       var data = {
         'role_id': this.globalService.role_id,
         'member_id': this.globalService.member_id,
@@ -162,7 +201,6 @@ onEdit(rowData: any) {
 
           this.toastrService.danger(errorMessage, 'Add Lead Failed');
           this.loading = false;
-          this.isSubmitting = false;
         },
       });
     }

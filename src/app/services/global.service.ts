@@ -109,6 +109,10 @@ export class GlobalService {
     return this.http.post(`${this.assetUrl}/insert-asset-details`, data);
   }
 
+  public submitAssetDataUpdate(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/update-asset-details`, data);
+  }  
+
   public SearchAsset(data: any): Observable<any> {
     return this.http.post(`${this.assetUrl}/asset-list`, data);
   }

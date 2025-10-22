@@ -67,7 +67,7 @@
           <!-- 🔹 Table Section -->
           <div [class.content-blur]="loading">
             <div class="row mt-3">
-              <div class="col-12">
+              <div class="col-12" style="padding-left: 30px;padding-right: 30px;">
                 <input
                   type="text"
                   nbInput
@@ -78,7 +78,7 @@
                   placeholder="Search..." (keydown.enter)="onSearch(search.value)"/>
               </div>
 
-              <div class="col-12 mt-2">
+              <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
                 <ng2-smart-table
                   [settings]="settings"
                   [source]="source">

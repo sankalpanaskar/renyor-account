@@ -14,6 +14,7 @@ import { AssetTransferComponent } from './asset-transfer/asset-transfer.componen
 import { AssetStatusChangeComponent } from './asset-status-change/asset-status-change.component';
 import { AssetActionComponent } from './asset-list/asset-action.component';
 import { ViewAssetDialogComponent } from './view-asset-dialog/view-asset-dialog.component';
+import { EditAssetDialogComponent } from './edit-asset-dialog/edit-asset-dialog.component';
 
 
 @NgModule({
@@ -26,6 +27,7 @@ import { ViewAssetDialogComponent } from './view-asset-dialog/view-asset-dialog.
     AssetStatusChangeComponent,
     AssetActionComponent,
     ViewAssetDialogComponent,
+    EditAssetDialogComponent,
 
   ],
   imports: [

@@ -2,7 +2,7 @@
 max-width: 950px;margin: 0 auto;">
     <div class="row">
         <div class="col-lg-12">
-            <nb-card>
+            <nb-card class="asset-details-dialog">
                 <nb-card-header>Add Asset</nb-card-header>
                 <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
 
@@ -21,7 +21,7 @@ max-width: 950px;margin: 0 auto;">
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Brand" name="brand" required
                                 #brand="ngModel" [(ngModel)]="model.brand">
-                                <nb-option *ngFor="let data of brandList" [value]="{id:data.id,brand_name:data.brand_name}">{{data.brand_name}}</nb-option>
+                                <nb-option *ngFor="let data of brandList" [value]="data.brand_name">{{data.brand_name}}</nb-option>
                             </nb-select>
                             <div *ngIf="fm.submitted && brand.invalid" class="error-message">Brand is required</div>
                         </div>
@@ -67,7 +67,7 @@ max-width: 950px;margin: 0 auto;">
                             <label class="small-label" id="label-category">Asset Class<span
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Asset Class" name="asset_class" required
-                                #asset_class="ngModel" [(ngModel)]="model.asset_class" (selectedChange)="selectClass($event)">
+                                #asset_class="ngModel" [(ngModel)]="model.asset_class" (selectedChange)="selectClass($event)" [disabled]="true">
                                 <nb-option *ngFor="let data of classList" [value]="data.class_id">{{data.asset_class_name}}</nb-option>
                             </nb-select>
                             <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is required</div>
@@ -80,7 +80,7 @@ max-width: 950px;margin: 0 auto;">
                             <label class="small-label" id="label-category">Assets Sub Class<span
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Assets Sub Class" name="asset_sub_class"
-                                required #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class" (selectedChange)="selectSubClass($event)">
+                                required #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class" (selectedChange)="selectSubClass($event)" [disabled]="true">
                             <nb-option *ngFor="let data of subClassList" [value]="data.sub_class_id">{{data.sub_class_name}}</nb-option>
 
                             </nb-select>
@@ -93,7 +93,7 @@ max-width: 950px;margin: 0 auto;">
                                     style="color:#d32f2f">*</span></label>
                             <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Nature of Assets"
                                 name="nature_of_asset" required #nature_of_asset="ngModel"
-                                [(ngModel)]="model.nature_of_asset">
+                                [(ngModel)]="model.nature_of_asset" [disabled]="true">
                             <div *ngIf="fm.submitted && nature_of_asset.invalid" class="error-message">
                                 Nature of Assets is required
                             </div>

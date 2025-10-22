@@ -1,0 +1,212 @@
+/* ✅ Make the Nebular dialog vertically scrollable */
+::ng-deep nb-dialog-container {
+  max-height: 90vh !important;     /* limit to viewport height */
+//   overflow-y: auto !important;     /* enable vertical scroll */
+//   overflow-x: hidden !important;   /* prevent horizontal scroll */
+}
+
+/* ✅ Keep your original width and allow internal scroll if needed */
+.asset-details-dialog {
+  width: 800px;                    /* your original width */
+  max-width: 95vw;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;                /* keeps header fixed, body scrolls */
+}
+
+/* ✅ Make body scrollable */
+nb-card-body {
+  flex: 1;
+  overflow-y: auto;                /* vertical scroll inside card */
+  overflow-x: hidden;              /* no horizontal scroll */
+  max-height: 80vh;                /* ensures vertical scroll appears */
+  padding: 1.5rem;
+}
+
+/* ✅ Keep header sticky so it doesn’t move while scrolling */
+.sticky-header,
+nb-card-header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  z-index: 10;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 1rem 1.5rem;
+}
+
+/* ✅ Smooth scrolling behavior */
+nb-card-body::-webkit-scrollbar {
+  width: 8px;
+}
+nb-card-body::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+nb-card-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+
+.full-name-inputs,
+.validation-checkboxes {
+  display: flex;
+  margin: 0 -0.5rem;
+
+  > * {
+    margin: 0 0.5rem;
+  }
+}
+
+.checkbox-radio {
+  display: flex;
+}
+
+.demo-items {
+  flex: 1 0 33%;
+}
+
+nb-select {
+  max-width: 100% !important;
+  width: 100%;
+}
+
+nb-card-body {
+  margin-top: 0;
+}
+
+.shape-semi-round {
+  font-weight: normal;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 4px;
+}
+.row{
+    padding-bottom: 7px;
+}
+.small-label{
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+//custom dropdown css
+
+/* Dropdown trigger (closed select box) */
+.custom-select {
+  background: #f8f9fc;
+  border: 1px solid #dce1ea;
+  border-radius: 0.7rem;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 500;
+  color: #363a3e;
+  width: 100%;
+  cursor: pointer;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+/* Selected value text inside the box */
+.truncate-text {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: inline-block;
+  font-weight: 100;
+}
+
+/* Placeholder style for empty selection */
+.truncate-text.placeholder {
+  color: #959eb3;
+  font-weight: 500;
+
+  /* font-style: italic; */ /* optional */
+}
+
+/* Dropdown container */
+.custom-dropdown {
+  position: absolute;
+  z-index: 1000;
+  width: 93%;
+  max-height: 250px;
+  overflow-y: auto;
+  overflow-x: hidden; /* fix horizontal scroll issue */
+  border: 1px solid #ccc;
+  background: #fff;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+/* Dropdown position: below */
+.custom-dropdown.open-down {
+  top: 100%;
+  margin-top: 4px;
+}
+
+/* Dropdown position: above */
+.custom-dropdown.open-up {
+  bottom: 100%;
+  margin-bottom: 4px;
+}
+
+/* Individual dropdown option */
+.dropdown-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+  white-space: normal;         /* allow wrapping */
+  word-break: break-word;      /* break long words */
+  overflow-wrap: anywhere;     /* wrap mid-word if needed */
+  width: 100%;
+  box-sizing: border-box;
+  font-weight: bold;
+}
+
+/* Hover state for dropdown item */
+.dropdown-item:hover {
+  background-color: #f1f3f5;
+}
+
+/* Disabled state for empty dropdown */
+.dropdown-item.disabled {
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Validation error message */
+.error-message {
+  color: #e53935;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+:host ::ng-deep nb-select.appearance-outline.status-basic .select-button[disabled],
+:host ::ng-deep nb-select[disabled].appearance-outline.status-basic .select-button {
+  color: rgba(43, 45, 48, 0.48) !important;
+  background-color: var(--select-outline-basic-disabled-background-color, #f4f4f4) !important;
+  border-color: var(--select-outline-basic-disabled-border-color, #dcdcdc) !important;
+  cursor: not-allowed;
+  opacity: 1;
+}
+/* ✅ Custom style for disabled nbInput fields (component-scoped) */
+:host ::ng-deep input[nbInput][disabled],
+:host ::ng-deep textarea[nbInput][disabled] {
+  color: rgba(43, 45, 48, 0.48) !important;
+  background-color: var(--input-basic-disabled-background-color, #f4f4f4) !important;
+  border-color: var(--input-basic-disabled-border-color, #dcdcdc) !important;
+  cursor: not-allowed !important;
+  opacity: 1 !important;
+}
+
+/* Optional: hover consistency */
+:host ::ng-deep input[nbInput][disabled]:hover,
+:host ::ng-deep textarea[nbInput][disabled]:hover {
+  background-color: #f0f0f0 !important;
+}

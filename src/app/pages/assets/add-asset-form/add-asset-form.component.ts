@@ -10,9 +10,7 @@ import { NbToastrService } from '@nebular/theme';
 export class AddAssetFormComponent implements OnInit{
   model: any = [];
   isSubmitting: boolean = false;
-
-
-    centerList: any[] = [];
+  centerList: any[] = [];
   stateList: any[] = [];
   filteredCenterList: any[] = [];
   courseList: any[] = [];
@@ -53,6 +51,7 @@ export class AddAssetFormComponent implements OnInit{
     this.loadBrand();
     this.loadClass();
     this.loadFunders();
+    this.model.nature_of_asset = "IT";
   }
   loadBrand(){
     this.isSubmitting = true;
