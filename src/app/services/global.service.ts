@@ -97,7 +97,7 @@ export class GlobalService {
     return this.http.get(`${this.assetUrl}/class-list`);
   }
 
-    public getSubClass(classId:any): Observable<any> {
+  public getSubClass(classId:any): Observable<any> {
     return this.http.get(`${this.assetUrl}/subclass-list/${classId}`);
   }
 
@@ -120,6 +120,47 @@ export class GlobalService {
   public getPendingAsset(data: any): Observable<any> {
     return this.http.post(`${this.assetUrl}/pending-asset-list`, data);
   }
+
+  public submitApproveAsset(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/approve-asset`, data);
+  }
+
+  public getCenterUser(userId:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/user-centers/${userId}`);
+  }
+
+  public getAllCenter(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-all-centers`);
+  }
+
+  public getEmployeeCenter(centerId:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-employee-by-center/${centerId}`);
+  }
+
+  public submitAssetTransfer(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/transfer-asset`, data);
+  }  
+
+  public classByUser(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-transfer-class`, data);
+  } 
+
+  public subcClassByUser(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-transfer-subclass`, data);
+  } 
+
+  public assetListByUser(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-transfer-asset`, data);
+  } 
+
+  public assetSubListByUser(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-transfer-subclass`, data);
+  } 
+
+  public assetListTrans(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-transfer-asset`, data);
+  }
+
 
 
 }

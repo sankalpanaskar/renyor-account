@@ -1,0 +1,60 @@
+<nb-card class="approve-dialog-card">
+  <nb-card-header class="d-flex justify-content-between align-items-center">
+    <span>Approve Asset</span>
+    <button nbButton ghost size="tiny" (click)="closeDialog()">
+      ✖
+    </button>
+  </nb-card-header>
+
+  <nb-card-body  [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+    <form #fm="ngForm" (ngSubmit)="onSubmit(fm)">
+      <!-- Voucher No -->
+      <div class="form-group mb-3">
+        <label class="small-label">Voucher No</label>
+        <input
+          type="text"
+          nbInput
+          fullWidth
+          placeholder="Enter Voucher No"
+          name="voucher_no"
+          required
+          #voucher_no="ngModel"
+          [(ngModel)]="model.voucher_no"
+        />
+        <div *ngIf="fm.submitted && voucher_no.invalid" class="error-message">
+          Voucher No is required
+        </div>
+      </div>
+
+      <!-- Voucher Date -->
+      <div class="form-group mb-3">
+        <label class="small-label">Voucher Date</label>
+        <input
+          nbInput
+          fullWidth
+          placeholder="Select Voucher Date"
+          [nbDatepicker]="datePicker"
+          name="voucher_date"
+          required
+          #voucher_date="ngModel"
+          [(ngModel)]="model.voucher_date"
+        />
+        <nb-datepicker #datePicker></nb-datepicker>
+        <div *ngIf="fm.submitted && voucher_date.invalid" class="error-message">
+          Voucher Date is required
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="d-flex justify-content-end mt-4 gap-2">
+        <button nbButton status="basic" shape="semi-round" type="button" (click)="closeDialog()">
+          Close
+        </button>
+
+        <button nbButton status="success" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+          Approve
+        </button>
+      </div>
+    </form>
+  </nb-card-body>
+</nb-card>

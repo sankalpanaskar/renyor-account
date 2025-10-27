@@ -320,7 +320,7 @@ loadSubClass() {
             err?.message ||
             'Add Lead Failed. Please try again.';
 
-          this.toastrService.danger(errorMessage, 'Add Asset Failed');
+          this.toastrService.danger(errorMessage, 'Edit Asset Failed');
           this.isSubmitting = false;
         },
       });

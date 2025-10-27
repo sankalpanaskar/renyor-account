@@ -6,6 +6,7 @@ import { DatePipe } from '@angular/common';
 import { EditAssetDialogComponent } from '../edit-asset-dialog/edit-asset-dialog.component';
 import { PendingEditBtnComponent } from './pending-edit-btn.component';
 import { ViewAssetDialogComponent } from '../view-asset-dialog/view-asset-dialog.component';
+import { ApproveAssetDialogComponent } from '../approve-asset-dialog/approve-asset-dialog.component';
 
 @Component({
   selector: 'ngx-pending-asset-list',
@@ -162,11 +163,23 @@ Action: {
   
     // ✅ When dialog closes
     dialogRef.onClose.subscribe((updatedData) => {
+      this.loadPendingList();
     });
   }
 
   onApprove(rowData:any){
+    const assetData = rowData.fullData;
+    const dialogRef = this.dialogService.open(ApproveAssetDialogComponent, {
+      context: { assetData: assetData },
+      closeOnBackdropClick: true,
+      hasScroll: true,
+    });
+  
+    // ✅ When dialog closes
+    dialogRef.onClose.subscribe((updatedData) => {
+      this.loadPendingList();
 
+    });
   }
 
 

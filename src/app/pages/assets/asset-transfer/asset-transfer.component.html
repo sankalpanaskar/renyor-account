@@ -7,66 +7,151 @@ max-width: 900px;margin: 0 auto;">
                 <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
 
                     <div class="row">
-                        
+
                         <div class="col-lg-12">
                             <label class="small-label" id="label-category">From Center<span
                                     style="color:#d32f2f">*</span></label>
-                            <nb-select shape="semi-round" placeholder="Select Center" name="from_center" required
-                                #from_center="ngModel" [(ngModel)]="model.from_center">
-                                <nb-option value="Center1">Center1</nb-option>
-                                <nb-option value="Center2">Center2</nb-option>
-                                <nb-option value="Center3">Center3</nb-option>
-
+                            <nb-select shape="semi-round" placeholder="Select Center" name="from_center"
+                                (selectedChange)="selectFromCenter($event)" required #from_center="ngModel"
+                                [(ngModel)]="model.from_center">
+                                <nb-option *ngFor="let data of centerList"
+                                    [value]="data.center_id">{{data.center}}</nb-option>
                             </nb-select>
-                            <div *ngIf="fm.submitted && from_center.invalid" class="error-message">Center is required</div>
+                            <div *ngIf="fm.submitted && from_center.invalid" class="error-message">Center is required
+                            </div>
                         </div>
 
                     </div>
 
                     <div class="row">
 
-                        
+
                         <div class="col-lg-6">
                             <label class="small-label" id="label-category">Asset Class<span
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Asset Class" name="asset_class" required
-                                #asset_class="ngModel" [(ngModel)]="model.asset_class">
-                                <nb-option value="Class1">Class1</nb-option>
-                                <nb-option value="Class2">Class2</nb-option>
-                                <nb-option value="Class3">Class3</nb-option>
-
+                                #asset_class="ngModel" [(ngModel)]="model.asset_class"
+                                (selectedChange)="selectClass($event)">
+                                <nb-option *ngFor="let data of classList"
+                                    [value]="data.category">{{data.category}}</nb-option>
                             </nb-select>
-                            <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is required</div>
+                            <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is
+                                required</div>
                         </div>
 
                         <div class="col-lg-6">
                             <label class="small-label" id="label-category">Assets Sub Class<span
                                     style="color:#d32f2f">*</span></label>
-                            <nb-select shape="semi-round" placeholder="Select Assets Sub Class" name="asset_sub_class" required
-                                #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class">
-                                <nb-option value="Class1">Class1</nb-option>
-                                <nb-option value="Class2">Class2</nb-option>
-                                <nb-option value="Class3">Class3</nb-option>
+                            <nb-select shape="semi-round" placeholder="Select Assets Sub Class" name="asset_sub_class"
+                                required #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class"
+                                (selectedChange)="selectSubClass($event)">
+                                <nb-option *ngFor="let data of subClassList"
+                                    [value]="data.item">{{data.item}}</nb-option>
 
                             </nb-select>
-                            <div *ngIf="fm.submitted && asset_sub_class.invalid" class="error-message">Assets Sub Class is required</div>
+                            <div *ngIf="fm.submitted && asset_sub_class.invalid" class="error-message">Assets Sub Class
+                                is required</div>
                         </div>
 
                     </div>
 
-                 <div class="row">
-                        
-                        <div class="col-lg-12">
-                            <label class="small-label" id="label-category">Transfer Center<span
-                                    style="color:#d32f2f">*</span></label>
-                            <nb-select shape="semi-round" placeholder="Select Center" name="transfer_center" required
-                                #transfer_center="ngModel" [(ngModel)]="model.transfer_center">
-                                <nb-option value="Center1">Center1</nb-option>
-                                <nb-option value="Center2">Center2</nb-option>
-                                <nb-option value="Center3">Center3</nb-option>
+                    <div class="row mt-3" style="margin: 0px 4px 0px 4px;" *ngIf="showAssetList">
+                        <div class="col-lg-12" style="border: 1px solid #dee2e6; padding: 0px; border-radius: 6px;">
+                            <!-- Search Input -->
+                            <div class="p-2 border-bottom" style="background-color: #f7f9fc;">
+                                <input style="height: 30%;" status="primary" nbInput fullWidth placeholder="Search Asset..."
+                                    [(ngModel)]="searchTextStudent" (ngModelChange)="filterAsset()" />
+                            </div>
+                            <div style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th style="width: 15%;">
+                                                <input type="checkbox" class="custom-checkbox"
+                                                    [(ngModel)]="masterSelected" (change)="selectAll()"
+                                                    [ngModelOptions]="{standalone: true}">
+                                                Select ({{ selectedCount }})
+                                            </th>
+                                            <th style="width: 10%;">Brand </th>
+                                            <th style="width: 20%;">Model</th>
+                                            <th style="width: 20%;">Serial No</th>
+                                            <th style="width: 12%;">Purchase Date</th>
+                                            <th style="width: 23%;">Anudip ID</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- ✅ Show data rows when list is not empty -->
+                                        <tr *ngFor="let asset of filteredAssetList; let i = index">
+                                            <td style="width: 15%;">
+                                                <input type="checkbox" class="custom-checkbox-td"
+                                                    [(ngModel)]="asset.isSelected" (change)="checkIfAllSelected()"
+                                                    name="leadSelect{{i}}" [ngModelOptions]="{standalone: true}">
+                                            </td>
+                                            <td style="width: 10%;">{{ asset.brand_name }}</td>
+                                            <td style="width: 20%;">{{ asset.model_no }}</td>
+                                            <td style="width: 20%;">{{ asset.serial_no }}</td>
+                                            <td style="width: 12%;">{{ asset.purchase_date }}</td>
+                                            <td style="width: 23%;">{{ asset.anudip_identification_no }}</td>
+                                        </tr>
 
-                            </nb-select>
-                            <div *ngIf="fm.submitted && transfer_center.invalid" class="error-message">Center is required</div>
+                                        <!-- ✅ Show this single row when list is empty -->
+                                        <tr *ngIf="assetList.length === 0">
+                                            <td colspan="6" class="text-center text-muted">
+                                                No Asset Found
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <div class="row">
+
+                        <div class="col-lg-12">
+                            <label class="small-label" id="label-category"> Transfer Center <span
+                                    style="color:#d32f2f">*</span></label>
+                            <!-- Custom Dropdown Wrapper -->
+                            <div class="custom-select" #dropdownTrigger
+                                [class.invalid]="fm.submitted && transfer_center.invalid" (click)="toggleDropdown()">
+                                <span class="truncate-text" [ngClass]="{ 'placeholder': !model.transfer_center }">
+                                    <ng-container *ngIf="model.transfer_center; else placeholderText">
+                                        {{ model.transfer_center }}
+                                    </ng-container>
+                                    <ng-template #placeholderText>
+                                        Select Transfer Center
+                                    </ng-template>
+                                </span>
+
+                                <nb-icon [icon]="dropdownOpen ? 'chevron-up-outline' : 'chevron-down-outline'"
+                                    pack="eva"></nb-icon>
+                            </div>
+
+                            <!-- Form Binding for Validation -->
+                            <input type="text" name="transfer_center" [(ngModel)]="model.transfer_center"
+                                #transfer_center="ngModel" required hidden />
+
+                            <!-- Dropdown with dynamic direction -->
+                            <div class="custom-dropdown" [ngClass]="{ 'open-up': openAbove, 'open-down': !openAbove }"
+                                *ngIf="dropdownOpen">
+                                <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText"
+                                    (ngModelChange)="filterOptions()" />
+
+                                <div *ngFor="let center of filterCenterListTransfer"
+                                    (click)="selectTransCenter(center.center_code)" class="dropdown-item">
+                                    {{ center.center_code }}
+                                </div>
+
+                                <div *ngIf="filterCenterListTransfer.length === 0" class="dropdown-item disabled">
+                                    No Center found
+                                </div>
+                            </div>
+
+                            <!-- Error Message -->
+                            <div *ngIf="fm.submitted && transfer_center.invalid" class="error-message">
+                                Center is required
+                            </div>
                         </div>
 
                     </div>
@@ -76,8 +161,8 @@ max-width: 900px;margin: 0 auto;">
                         <div class="col-lg-6">
                             <label class="small-label" id="label-category">State<span
                                     style="color:#d32f2f">*</span></label>
-                            <input type="text" nbInput fullWidth shape="semi-round" 
-                                name="state" required #state="ngModel" [(ngModel)]="model.state">
+                            <input type="text" nbInput fullWidth shape="semi-round" name="state" required
+                                #state="ngModel" [(ngModel)]="model.state">
                             <div *ngIf="fm.submitted && state.invalid" class="error-message">
                                 State is required
                             </div>
@@ -86,8 +171,8 @@ max-width: 900px;margin: 0 auto;">
                         <div class="col-lg-6">
                             <label class="small-label" id="label-category">District<span
                                     style="color:#d32f2f">*</span></label>
-                            <input type="text" nbInput fullWidth shape="semi-round" 
-                                name="district" required #district="ngModel" [(ngModel)]="model.district">
+                            <input type="text" nbInput fullWidth shape="semi-round" name="district" required
+                                #district="ngModel" [(ngModel)]="model.district">
                             <div *ngIf="fm.submitted && district.invalid" class="error-message">
                                 District is required
                             </div>
@@ -99,27 +184,28 @@ max-width: 900px;margin: 0 auto;">
 
                         <div class="col-lg-12">
                             <label class="small-label" id="label-category">
-                                    Remarks <span style="color:#d32f2f">*</span>
-                                </label>
-                                <!-- <label class="small-label"><strong>Remarks</strong></label> -->
-                                <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="remarks" [(ngModel)]="model.remarks"
-                                #remarks="ngModel" rows="2" [maxlength]="500">
+                                Address <span style="color:#d32f2f">*</span>
+                            </label>
+                            <!-- <label class="small-label"><strong>Remarks</strong></label> -->
+                            <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="address"
+                                [(ngModel)]="model.address" #address="ngModel" rows="2" [maxlength]="500">
                                 </textarea>
-                            
-                                <!-- character counter -->
-                                <div style="font-size: 12px; color:#6c757d; margin-top: 4px;">
-                                    {{ (model.remarks?.length || 0) }}/500
-                                </div>
-                            
-                                <!-- If you want Remarks to be required, add 'required' above and use this error -->
-                                <div *ngIf="fm.submitted && remarks.invalid" class="error-message">Remarks are required</div>
+
+                            <!-- character counter -->
+                            <div style="font-size: 12px; color:#6c757d; margin-top: 4px;">
+                                {{ (model.remarks?.length || 0) }}/500
+                            </div>
+
+                            <!-- If you want Remarks to be required, add 'required' above and use this error -->
+                            <div *ngIf="fm.submitted && address.invalid" class="error-message">Address are required
+                            </div>
                         </div>
 
                     </div>
 
                     <div class="row">
 
-                       <div class="col-lg-6">
+                        <!-- <div class="col-lg-6">
                             <label class="small-label" id="label-category">Assign To Member<span
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" name="assign_to" required
@@ -128,15 +214,63 @@ max-width: 900px;margin: 0 auto;">
                                 <nb-option value="Project">Project</nb-option>
                             </nb-select>
                             <div *ngIf="fm.submitted && assign_to.invalid" class="error-message">Member by is required</div>
+                        </div> -->
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Assign To Member<span
+                                    style="color:#d32f2f">*</span></label>
+
+                            <!-- Custom Dropdown Wrapper -->
+                            <div class="custom-select" #dropdownTriggerMember
+                                [class.invalid]="fm.submitted && assign_to.invalid" (click)="toggleDropdownMember()">
+                                <span class="truncate-text" [ngClass]="{ 'placeholder': !model.assign_to }">
+                                    <ng-container *ngIf="model.assign_to; else placeholderTextMember">
+                                        {{ model.assign_to }}
+                                    </ng-container>
+                                    <ng-template #placeholderTextMember>
+                                        Select Employee
+                                    </ng-template>
+                                </span>
+
+                                <nb-icon [icon]="dropdownOpenMember ? 'chevron-up-outline' : 'chevron-down-outline'"
+                                    pack="eva"></nb-icon>
+                            </div>
+
+                            <!-- Form Binding for Validation -->
+                            <input type="text" name="assign_to" [(ngModel)]="model.assign_to" #assign_to="ngModel"
+                                required hidden />
+
+                            <!-- Dropdown with dynamic direction -->
+                            <div class="custom-dropdown" [ngClass]="{ 'open-up': openAbove, 'open-down': !openAbove }"
+                                *ngIf="dropdownOpenMember">
+                                <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchTextMember"
+                                    (ngModelChange)="filterMember()" />
+
+                                <div *ngFor="let employee of filterEmpList" (click)="selectMember(employee.member_code)"
+                                    class="dropdown-item">
+                                    {{ employee.member_code }} - {{ employee.name }}
+                                </div>
+
+                                <div *ngIf="filterEmpList.length === 0" class="dropdown-item disabled">
+                                    No Member found
+                                </div>
+                            </div>
+
+                            <!-- Error Message -->
+                            <div *ngIf="fm.submitted && assign_to.invalid" class="error-message">
+                                Member is required
+                            </div>
                         </div>
 
+
                         <div class="col-lg-6">
-                             <label class="small-label" id="label-category">Assign date<span style="color:#d32f2f">*</span></label>
+                            <label class="small-label" id="label-category">Assign date<span
+                                    style="color:#d32f2f">*</span></label>
                             <input nbInput fullWidth placeholder="Select Assign date" [readonly]="true"
                                 [nbDatepicker]="datePicker" [(ngModel)]="model.assign_date" name="assign_date" required
                                 #assign_date="ngModel" />
-                            <nb-datepicker #datePicker ></nb-datepicker>
-                            <div *ngIf="fm.submitted && assign_date.invalid" class="error-message">Assign date is required</div>
+                            <nb-datepicker #datePicker></nb-datepicker>
+                            <div *ngIf="fm.submitted && assign_date.invalid" class="error-message">Assign date is
+                                required</div>
 
                         </div>
 

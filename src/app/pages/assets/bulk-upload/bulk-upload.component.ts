@@ -30,22 +30,22 @@ export class BulkUploadComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.getExcelPath();
+    // this.getExcelPath();
     console.log("member is", this.globalService.member_id, this.globalService.role_id);
   }
 
-  getExcelPath() {
-    this.globalService.getExcelPath().subscribe({
-      next: (res) => {
-        this.excelPath = res.file_path;
-        console.log('Excel path:', this.excelPath);
-      },
-      error: (err) => {
-        console.error('Course error:', err);
-        this.toastrService.danger(err.message, 'Error');
-      },
-    });
-  }
+  // getExcelPath() {
+  //   this.globalService.getExcelPath().subscribe({
+  //     next: (res) => {
+  //       this.excelPath = res.file_path;
+  //       console.log('Excel path:', this.excelPath);
+  //     },
+  //     error: (err) => {
+  //       console.error('Course error:', err);
+  //       this.toastrService.danger(err.message, 'Error');
+  //     },
+  //   });
+  // }
 
   onFileChange(event: any): void {
     const file = event.target.files[0];
