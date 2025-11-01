@@ -13,7 +13,7 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
     //   icon: 'home-outline',
     //   link: '/pages/iot-dashboard',
     // },
-    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId === 44 || roleId === 46 || roleId === 10 || roleId === 26 || roleId === 37 || roleId === 42 || roleId === 7 || roleId === 23 || roleId === 23 || roleId === 44 ||  roleId === 39
+    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId === 44 || roleId === 46 || roleId === 10 || roleId === 26 || roleId === 37 || roleId === 42 || roleId === 7 || roleId === 23 || roleId === 23 || roleId === 44 || roleId === 39
       ? [
         {
           title: 'Dashboard',
@@ -44,17 +44,18 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
       title: 'FEATURES',
       group: true,
     },
-    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 ||  roleId === 39
+    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 || roleId === 39 || roleId === 44
       ? [
         {
           title: 'Assets',
           icon: 'layout-outline',
           children: [
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Bulk Upload', link: '/pages/assets/bulk-upload' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Add Asset', link: '/pages/assets/add-asset' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Asset List', link: '/pages/assets/asset-list' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Pending Asset List', link: '/pages/assets/pending-asset-list' }] : []),            
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Asset Transfer', link: '/pages/assets/asset-transfer' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Bulk Upload', link: '/pages/assets/bulk-upload' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Add Asset', link: '/pages/assets/add-asset' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Asset List', link: '/pages/assets/asset-list' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Pending Asset List', link: '/pages/assets/pending-asset-list' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Asset Transfer', link: '/pages/assets/asset-transfer' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Asset History', link: '/pages/assets/asset-history' }] : []),        
 
             // { title: 'Manage', link: '/pages/manage-lead' },
 
@@ -64,14 +65,26 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
         },
       ]
       : []),
+    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 || roleId === 39 || roleId === 44
+      ? [
+        {
+          title: 'Approve',
+          icon: 'checkmark-square-outline',
+          children: [
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Center To Center', link: '/pages/assets/center-to-center' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Center To HO', link: '/pages/assets/center-to-ho' }] : []),
+          ],
+        },
+      ]
+      : []),
 
-          ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17||  roleId === 39 
+    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 || roleId === 39 || roleId === 44
       ? [
         {
           title: 'Brand',
           icon: 'keypad-outline',
           children: [
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ||  roleId === 39 ? [{ title: 'Add Brand', link: '/pages/brand/add-brand' }] : []),
+            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Add Brand', link: '/pages/brand/add-brand' }] : []),
             // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Add Asset', link: '/pages/assets/add-asset' }] : []),
             // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Asset List', link: '/pages/assets/asset-list' }] : []),
             // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Asset Transfer', link: '/pages/assets/asset-transfer' }] : []),
@@ -80,9 +93,9 @@ export function getMenuItems(roleId: any): NbMenuItem[] {
       ]
       : []),
 
-    
 
-   
+
+
   ];
 
   return menu;

@@ -346,13 +346,13 @@ onSubmit(fm: any) {
       this.isSubmitting = false;
 
       if (res.status) {
-        this.toastrService.success('Asset transfer submitted successfully!', 'Success');
+        this.toastrService.success('Transfer Request submitted successfully!', 'Success');
         this.showAssetList = false;
         fm.resetForm(); // ✅ reset form
         this.model = {}; // clear model
         this.assetList = []; // clear selected assets
       } else {
-        this.toastrService.warning(res.message || 'Transfer submission failed.', 'Warning');
+        this.toastrService.warning(res.message || 'Transfer Request submission failed.', 'Warning');
       }
     },
     error: (err) => {

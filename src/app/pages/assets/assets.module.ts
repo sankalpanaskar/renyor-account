@@ -18,6 +18,9 @@ import { EditAssetDialogComponent } from './edit-asset-dialog/edit-asset-dialog.
 import { PendingAssetListComponent } from './pending-asset-list/pending-asset-list.component';
 import { PendingEditBtnComponent } from './pending-asset-list/pending-edit-btn.component';
 import { ApproveAssetDialogComponent } from './approve-asset-dialog/approve-asset-dialog.component';
+import { ApproveCenterToCenterComponent } from './approve-center-to-center/approve-center-to-center.component';
+import { ApproveCenterToHoComponent } from './approve-center-to-ho/approve-center-to-ho.component';
+import { AssetHistoryComponent } from './asset-history/asset-history.component';
 
 
 @NgModule({
@@ -33,7 +36,10 @@ import { ApproveAssetDialogComponent } from './approve-asset-dialog/approve-asse
     EditAssetDialogComponent,
     PendingAssetListComponent,
     PendingEditBtnComponent,
-    ApproveAssetDialogComponent
+    ApproveAssetDialogComponent,
+    ApproveCenterToCenterComponent,
+    ApproveCenterToHoComponent,
+    AssetHistoryComponent
 
   ],
   imports: [

@@ -7,6 +7,9 @@ import { AssetListComponent } from './asset-list/asset-list.component';
 import { AssetTransferComponent } from './asset-transfer/asset-transfer.component';
 import { AssetStatusChangeComponent } from './asset-status-change/asset-status-change.component';
 import { PendingAssetListComponent } from './pending-asset-list/pending-asset-list.component';
+import { ApproveCenterToCenterComponent } from './approve-center-to-center/approve-center-to-center.component';
+import { ApproveCenterToHoComponent } from './approve-center-to-ho/approve-center-to-ho.component';
+import { AssetHistoryComponent } from './asset-history/asset-history.component';
 
 const routes: Routes = [{
   path:'',
@@ -36,6 +39,19 @@ const routes: Routes = [{
       path:'pending-asset-list',
       component:PendingAssetListComponent
     },
+    {
+      path:'center-to-center',
+      component:ApproveCenterToCenterComponent
+    },
+    {
+      path:'center-to-ho',
+      component:ApproveCenterToHoComponent
+    },
+    {
+      path:'asset-history',
+      component:AssetHistoryComponent
+    },
+
 
   ]
 }];

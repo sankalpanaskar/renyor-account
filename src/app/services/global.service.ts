@@ -73,9 +73,6 @@ export class GlobalService {
    public leadSubmitReg(data: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/add-lead`, data);
   }
-    public getExcelPath(): Observable<any> {
-    return this.http.get(`${this.leadUrl}/download-excel`);
-  }
     public leadSubmit(data: any): Observable<any> {
     return this.http.post(`${this.leadUrl}/add-lead`, data);
     // return this.http.post(`${this.leadUrl}/''`,data);
@@ -161,6 +158,41 @@ export class GlobalService {
     return this.http.post(`${this.assetUrl}/fetch-transfer-asset`, data);
   }
 
+  public getExcelPath(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/upload-excel-format`);
+  }
 
+  public uploadBulkAsset(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-transfer-asset`, data);
+  }
+
+  public getCenterApproveHO(memID:any,roleId): Observable<any> {
+    return this.http.get(`${this.assetUrl}/fetch-center-to-ho/${memID}/${roleId}`);
+  }
+
+  public assetListHO(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-asset-centertoho`, data);
+  }
+
+  public submitHOApproval(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/save-ho-to-center
+`, data);
+  } 
+
+  public getCenterApproveCenter(memID:any,roleId:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/fetch-center-to-center/${memID}/${roleId}`);
+  }  
+
+  public assetListCenter(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-asset-centertocenter`, data);
+  }
+
+  public submitCenterApproval(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/save-center-to-center`, data);
+  } 
+  
+  public getAssetHistory(keyWord:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/fetch-asset-history/${keyWord}`);
+  }  
 
 }

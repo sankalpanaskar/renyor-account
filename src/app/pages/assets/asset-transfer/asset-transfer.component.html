@@ -187,8 +187,8 @@ max-width: 900px;margin: 0 auto;">
                                 Address <span style="color:#d32f2f">*</span>
                             </label>
                             <!-- <label class="small-label"><strong>Remarks</strong></label> -->
-                            <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="address"
-                                [(ngModel)]="model.address" #address="ngModel" rows="2" [maxlength]="500">
+                            <textarea nbInput fullWidth placeholder="Add Address" name="address"
+                                [(ngModel)]="model.address" #address="ngModel" rows="2" [maxlength]="500" required>
                                 </textarea>
 
                             <!-- character counter -->
@@ -196,7 +196,7 @@ max-width: 900px;margin: 0 auto;">
                                 {{ (model.remarks?.length || 0) }}/500
                             </div>
 
-                            <!-- If you want Remarks to be required, add 'required' above and use this error -->
+                            <!-- If you want Address to be required, add 'required' above and use this error -->
                             <div *ngIf="fm.submitted && address.invalid" class="error-message">Address are required
                             </div>
                         </div>

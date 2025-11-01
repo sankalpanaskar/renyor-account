@@ -1,0 +1,75 @@
+<nb-card>
+    <nb-card-header class="section-header">ASSET HISTORY</nb-card-header>
+
+    <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+        <!-- 🔹 Search Section -->
+        <div class="row align-items-center mb-3">
+            <div class="col-lg-10 col-md-9 col-sm-8">
+                <input nbInput fullWidth shape="semi-round" placeholder="Search Asset" [(ngModel)]="assetSearch"
+                    (keydown.enter)="onSearch()" />
+            </div>
+
+            <div class="col-lg-2 col-md-3 col-sm-4 text-end">
+                <button nbButton status="primary" shape="semi-round" (click)="onSearch()"
+                    [disabled]="isSubmitting || !assetSearch?.trim()">
+                    SEARCH
+                </button>
+            </div>
+        </div>
+
+
+        <!-- 🔹 Asset Details Section -->
+        <div *ngIf="showDetails" class="asset-details">
+            <div class="row">
+                <div class="col-md-4 col-sm-6"><strong>Anudip ID :</strong> {{ assetData.anudip_id }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Brand Name :</strong> {{ assetData.brand_name }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Model No :</strong> {{ assetData.model_no }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Serial No :</strong> {{ assetData.serial_no }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Invoice No :</strong> {{ assetData.invoice_no }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Voucher No :</strong> {{ assetData.voucher_no }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Asset Class :</strong> {{ assetData.asset_class }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Asset Sub Class :</strong> {{ assetData.asset_sub_class }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Nature Of Asset :</strong> {{ assetData.nature_of_asset }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Purchase Date :</strong> {{ assetData.purchase_date }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Funded By :</strong> {{ assetData.funded_by }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Supplier :</strong> {{ assetData.supplier }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Asset Under :</strong> {{ assetData.asset_under }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Owner Of Asset :</strong> {{ assetData.owner_of_asset }}</div>
+                <div class="col-md-4 col-sm-6"><strong>Status :</strong> {{ assetData.status }}</div>
+                <div class="col-md-12"><strong>Remarks :</strong> {{ assetData.remarks }}</div>
+            </div>
+        </div>
+
+        <!-- 🔹 Asset Transfer Timeline -->
+        <div *ngIf="showDetails" class="history-section mt-4">
+            <h6 class="timeline-title">Asset Transfer Activity</h6>
+
+            <div class="timeline">
+                <div *ngFor="let record of assetHistory; let i = index" class="timeline-item">
+                    <div class="timeline-line"></div>
+
+                    <!-- Numbered Marker -->
+                    <div class="timeline-marker">
+                        <span>{{ i + 1 }}</span>
+                    </div>
+
+                    <div class="timeline-content">
+                        <h6 class="timeline-heading">{{ record.center_name }}</h6>
+                        <p class="timeline-sub">{{ record.assigned_to }}</p>
+                        <p class="timeline-date">{{ record.assigned_date }}</p>
+
+                        <div class="timeline-details">
+                            <p><strong>Email:</strong> {{ record.email }}</p>
+                            <p><strong>Mobile:</strong> {{ record.mobile }}</p>
+                            <p><strong>State:</strong> {{ record.state }}</p>
+                            <p><strong>District:</strong> {{ record.district }}</p>
+                            <p><strong>Address:</strong> {{ record.address }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </nb-card-body>
+</nb-card>

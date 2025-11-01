@@ -162,11 +162,11 @@ max-width: 950px;margin: 0 auto;">
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Status of Assets" name="status_of_asset"
                                 required #status_of_asset="ngModel" [(ngModel)]="model.status_of_asset">
-                                <nb-option value="Working">WORKING</nb-option>
-                                <nb-option value="Not Working">NOT WORKING</nb-option>
-                                <nb-option value="Missing">MISSING</nb-option>
-                                <nb-option value="Scrap">SCRAP</nb-option>
-                                <nb-option value="Disposed">DISPOSED</nb-option>
+                                <nb-option value="WORKING">WORKING</nb-option>
+                                <nb-option value="NOT WORKING">NOT WORKING</nb-option>
+                                <nb-option value="MISSING">MISSING</nb-option>
+                                <nb-option value="SCRAP">SCRAP</nb-option>
+                                <nb-option value="DISPOSED">DISPOSED</nb-option>
                             </nb-select>
                             <div *ngIf="fm.submitted && status_of_asset.invalid" class="error-message">Status of Assets
                                 is required</div>
@@ -251,7 +251,7 @@ max-width: 950px;margin: 0 auto;">
                             <nb-radio-group name="asset_under_fcra" [(ngModel)]="model.asset_under_fcra"
                                 #asset_under_fcra="ngModel" required class="d-flex flex-row">
                                 <nb-radio value="FC">FC</nb-radio>
-                                <nb-radio value="NON-FC">NON-FC</nb-radio>
+                                <nb-radio value="Non-FC">NON-FC</nb-radio>
                             </nb-radio-group>
 
                             <!-- Validation message -->
