@@ -66,87 +66,55 @@ nb-card-body {
   font-size: 13px;
   margin-top: 4px;
 }
-/* Base Table */
-.table {
-  width: 100%;
-  margin-bottom: 0.5rem;
-  border-collapse: collapse;
-  font-size: 0.85rem; /* smaller text */
-}
-
-/* Table cells */
+/* ======================= TABLE CELLS ======================= */
 .table th,
 .table td {
-  padding: 4px 8px; /* compact cell padding */
+  padding: 6px 8px;
   vertical-align: middle;
   text-align: left;
-  line-height: 1.1; /* tighter spacing */
+  line-height: 1.1;
+  border-bottom: 1px solid var(--border-basic-color-3);
+  border-right: 1px solid var(--border-basic-color-3);
 }
 
-/* Header */
-.table thead th {
-  background-color: #f1f3f6;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-transform: capitalize;
+.table td:last-child,
+.table th:last-child {
+  border-right: none;
 }
 
-/* Row hover */
+/* ======================= TABLE ROWS ======================= */
 .table tbody tr:hover {
-  background-color: #f9f9f9;
+  background-color: var(--background-basic-color-2);
 }
 
-/* Border and radius */
-.table-bordered {
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
+/* Optional: alternating rows */
+.table tbody tr:nth-child(even) {
+  background-color: var(--background-basic-color-1);
 }
 
-/* Make checkboxes align nicely */
+/* Empty state */
+.table .text-muted {
+  color: var(--text-hint-color) !important;
+}
+
+/* ======================= CHECKBOXES ======================= */
 .custom-checkbox,
 .custom-checkbox-td {
-  transform: scale(0.9);
+  accent-color: var(--color-primary-default);
+  width: 18px;
+  height: 13px;
+  cursor: pointer;
+  transform: scale(1.1);
   margin: 0;
-  padding-top: 2px;
 }
 
-/* Theme Adaptations */
-
-/* Dark Theme */
-.nb-theme-dark .table {
-  color: #e6f2ff;
-  background-color: #1a1a1a;
-  border-color: #444;
-}
-.nb-theme-dark .table th,
-.nb-theme-dark .table td {
-  border-color: #444;
+/* ======================= SEARCH BAR ABOVE TABLE ======================= */
+.table-search-bar {
+  background: var(--background-basic-color-2);
+  border-bottom: 1px solid var(--border-basic-color-3);
+  padding: 0.5rem;
 }
 
-/* Light Theme */
-.nb-theme-light .table {
-  color: #212529;
-  background-color: #ffffff;
-  border-color: #dee2e6;
-}
-.nb-theme-light .table th,
-.nb-theme-light .table td {
-  border-color: #dee2e6;
-}
-
-/* Cosmic Theme */
-.nb-theme-cosmic .table {
-  color: #f6f6ff;
-  background-color: #322a47;
-  border-color: #574b90;
-}
-
-/* Corporate Theme */
-.nb-theme-corporate .table {
-  color: #283593;
-  background-color: #e8eaf6;
-  border-color: #c5cae9;
-}
 
 
 //Center search custom css
@@ -199,95 +167,125 @@ nb-card-body {
 ////
 /// 
 /* Dropdown trigger (closed select box) */
+/* wrapper for absolute dropdown positioning */
+.select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Trigger (closed select) uses Nebular theme variables */
 .custom-select {
-  background: #f8f9fc;
-  border: 1px solid #dce1ea;
-  border-radius: 0.7rem;
+  background: var(--background-basic-color-2);
+  border: 1px solid var(--border-basic-color-3);
+  border-radius: var(--input-semi-round-border-radius, 0.7rem);
   padding: 0.75rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-weight: 500;
-  color: #363a3e;
+  color: var(--text-basic-color);
   width: 100%;
   cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.02);
+  transition: box-shadow .2s ease, border-color .2s ease, background-color .2s ease;
 }
 
-/* Selected value text inside the box */
+.custom-select:hover {
+  border-color: var(--border-basic-color-4);
+  background: var(--background-basic-color-3);
+}
+
+.custom-select.invalid {
+  border-color: var(--status-danger-default);
+  box-shadow: 0 0 0 1px var(--status-danger-default) inset;
+}
+
+/* focus style when you programmatically add .is-focused (optional) */
+.custom-select.is-focused {
+  border-color: var(--color-primary-default);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--color-primary-500) 35%, transparent);
+}
+
+/* Selected text / placeholder */
 .truncate-text {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: inline-block;
   font-weight: 400;
+  color: var(--text-basic-color);
 }
-
-/* Placeholder style for empty selection */
 .truncate-text.placeholder {
-  color: #959eb3;
-  /* font-style: italic; */ /* optional */
+  color: var(--text-hint-color, var(--text-disabled-color));
 }
 
-/* Dropdown container */
+/* Icon inherits theme color */
+.custom-select nb-icon {
+  color: var(--text-hint-color, var(--text-disabled-color));
+}
+
+/* Dropdown panel */
 .custom-dropdown {
   position: absolute;
   z-index: 1000;
-  width: 93%;
-  max-height: 250px;
-  overflow-y: auto;
-  overflow-x: hidden; /* fix horizontal scroll issue */
-  border: 1px solid #ccc;
-  background: #fff;
-  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 0.5rem;
-  box-sizing: border-box;
-}
-
-/* Dropdown position: below */
-.custom-dropdown.open-down {
-  top: 100%;
-  margin-top: 4px;
-}
-
-/* Dropdown position: above */
-.custom-dropdown.open-up {
-  bottom: 100%;
-  margin-bottom: 4px;
-}
-
-/* Individual dropdown option */
-.dropdown-item {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s;
-  white-space: normal;         /* allow wrapping */
-  word-break: break-word;      /* break long words */
-  overflow-wrap: anywhere;     /* wrap mid-word if needed */
   width: 100%;
+  max-height: 260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid var(--border-basic-color-3);
+  background: var(--background-basic-color-1);
+  box-shadow: var(--shadow, 0 8px 24px rgba(0,0,0,.12));
+  border-radius: .6rem;
+  padding: .5rem;
   box-sizing: border-box;
-  font-weight: 300;
 }
 
-/* Hover state for dropdown item */
+/* positioning */
+.custom-dropdown.open-down { top: calc(100% + 4px); }
+.custom-dropdown.open-up   { bottom: calc(100% + 4px); }
+
+/* Embedded search input (Nebular nbInput already theme-aware) */
+.custom-dropdown input[nbinput] {
+  margin-bottom: .5rem;
+}
+
+/* Items */
+.dropdown-item {
+  padding: .5rem .75rem;
+  border-radius: .5rem;
+  cursor: pointer;
+  color: var(--text-basic-color);
+  background: transparent;
+  transition: background-color .15s ease;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
 .dropdown-item:hover {
-  background-color: #f1f3f5;
+  background: var(--background-basic-color-3);
 }
-
-/* Disabled state for empty dropdown */
 .dropdown-item.disabled {
-  color: #999;
+  color: var(--text-disabled-color);
   cursor: not-allowed;
+  background: transparent;
 }
 
-/* Validation error message */
+/* Validation message */
 .error-message {
-  color: #e53935;
-  font-size: 0.875rem;
-  margin-top: 0.25rem;
+  color: var(--status-danger-default);
+  font-size: .875rem;
+  margin-top: .25rem;
+}
+
+/* Optional: checkbox styles elsewhere */
+.custom-checkbox,
+.custom-checkbox-td {
+  accent-color: var(--color-primary-default);
+}
+
+/* Optional: narrow card body spacing to match Nebular theme */
+:host ::ng-deep nb-card-body {
+  overflow: visible;
+  padding-top: 0;
 }
 
 // Theme  CSS

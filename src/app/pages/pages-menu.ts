@@ -1,101 +1,133 @@
 import { NbMenuItem } from '@nebular/theme';
 
-export function getMenuItems(roleId: any): NbMenuItem[] {
+/** ---------- Role Sets (edit in one place) ---------- */
+const DASHBOARD_ROLES = new Set([
+  7,10,11,15,17,18,23,24,26,27,28,29,30,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,
+]);
+
+// These big “common” sets look identical in your code;
+// keep one source of truth and reuse it.
+const COMMON_ROLES = DASHBOARD_ROLES;
+  
+//Asset Menu
+
+// Feature-specific role sets
+const BULK_UPLOAD_ROLES = new Set([15, 23, 7, 34, 39, 44]);
+const ADD_ASSET_ROLES   = BULK_UPLOAD_ROLES;
+const ASSET_LIST_ROLES = COMMON_ROLES;
+const PENDING_ASSET_ROLES = BULK_UPLOAD_ROLES;
+const ASSET_TRANSFER_ROLES = COMMON_ROLES;
+const STATUS_CHANGE_ROLES = BULK_UPLOAD_ROLES;
+const ASSET_HISTORY_ROLES = BULK_UPLOAD_ROLES;
+const TRANSFER_TO_SCRAP_ROLES = BULK_UPLOAD_ROLES;
+const APPROVE_SCRAP_REQUEST_ROLES = new Set([14, 18]);
+
+//Approve Menu
+
+const APPROVE_CENTER_TO_CENTER_ROLES = COMMON_ROLES;
+const APPROVE_CENTER_TO_HO_ROLES = COMMON_ROLES;
+
+//Brand Menu
+const ADD_BRAND_ROLES = BULK_UPLOAD_ROLES;
+
+/** ---------- Small Helpers ---------- */
+const has = (roleId: number, allowed: ReadonlySet<number>) => allowed.has(roleId);
+
+// Conditionally include a single menu item
+const show = (condition: boolean, item: NbMenuItem): NbMenuItem[] => (condition ? [item] : []);
+
+// Conditionally include a list (children)
+const showMany = (condition: boolean, items: NbMenuItem[]): NbMenuItem[] => (condition ? items : []);
+
+/** ---------- Menu Factory ---------- */
+export function getMenuItems(roleId: number): NbMenuItem[] {
   const menu: NbMenuItem[] = [
-    // {
-    //   title: 'E-commerce',
-    //   icon: 'shopping-cart-outline',
-    //   link: '/pages/dashboard',
-    //   home: true,
-    // },
-    // {
-    //   title: 'IoT Dashboard',
-    //   icon: 'home-outline',
-    //   link: '/pages/iot-dashboard',
-    // },
-    ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId === 44 || roleId === 46 || roleId === 10 || roleId === 26 || roleId === 37 || roleId === 42 || roleId === 7 || roleId === 23 || roleId === 23 || roleId === 44 || roleId === 39
-      ? [
-        {
-          title: 'Dashboard',
-          icon: 'home-outline',
-          link: '/pages/custom-dashboard',
-        },
-      ]
-      : []),
-    // ...(roleId === 34 || roleId === 11 || roleId === 15 || roleId === 17 || roleId === 18 || roleId === 43 || roleId === 45 || roleId === 44 || roleId === 46 || roleId === 10 || roleId === 26 || roleId === 37 || roleId === 42
-    //   ? [
-    //     {
-    //       title: 'Dashboard',
-    //       icon: 'keypad-outline',
-    //       link: '/pages/admin-dashboard',
-    //     },
-    //   ]
-    //   : []),
-    // ...(roleId === 34 || roleId === 51
-    //   ? [
-    //     {
-    //       title: 'Marcom Dashboard',
-    //       icon: 'layers-outline',
-    //       link: '/pages/marcom/marcom-dashboard',
-    //     },
-    //   ]
-    //   : []),
-    {
-      title: 'FEATURES',
-      group: true,
-    },
-    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 || roleId === 39 || roleId === 44
-      ? [
-        {
-          title: 'Assets',
-          icon: 'layout-outline',
-          children: [
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Bulk Upload', link: '/pages/assets/bulk-upload' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Add Asset', link: '/pages/assets/add-asset' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Asset List', link: '/pages/assets/asset-list' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Pending Asset List', link: '/pages/assets/pending-asset-list' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Asset Transfer', link: '/pages/assets/asset-transfer' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Asset History', link: '/pages/assets/asset-history' }] : []),        
+    // Dashboard
+    ...show(has(roleId, DASHBOARD_ROLES), {
+      title: 'Dashboard',
+      icon: 'home-outline',
+      link: '/pages/custom-dashboard',
+    }),
 
-            // { title: 'Manage', link: '/pages/manage-lead' },
+    { title: 'FEATURES', group: true },
 
-            // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 17 ||  roleId === 34 ? [{ title: 'Transfer Leads', link: '/pages/lead/lead-center-transfer' }] : []),
-            // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Not Interested Lead', link: '/pages/lead/not-interested-lead' }] : []),
-          ],
-        },
-      ]
-      : []),
-    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 || roleId === 39 || roleId === 44
-      ? [
-        {
-          title: 'Approve',
-          icon: 'checkmark-square-outline',
-          children: [
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Center To Center', link: '/pages/assets/center-to-center' }] : []),
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Center To HO', link: '/pages/assets/center-to-ho' }] : []),
-          ],
-        },
-      ]
-      : []),
+    // Assets
+    ...showMany(has(roleId, COMMON_ROLES), [
+      {
+        title: 'Assets',
+        icon: 'layout-outline',
+        children: [
+          ...show(has(roleId, BULK_UPLOAD_ROLES), {
+            title: 'Bulk Upload',
+            link: '/pages/assets/bulk-upload',
+          }),
+          ...show(has(roleId, ADD_ASSET_ROLES), {
+            title: 'Add Asset',
+            link: '/pages/assets/add-asset',
+          }),
+          ...show(has(roleId, ASSET_LIST_ROLES), {
+            title: 'Asset List',
+            link: '/pages/assets/asset-list',
+          }),
+          ...show(has(roleId, PENDING_ASSET_ROLES), {
+            title: 'Pending Asset List',
+            link: '/pages/assets/pending-asset-list',
+          }),
+          ...show(has(roleId, ASSET_TRANSFER_ROLES), {
+            title: 'Asset Transfer',
+            link: '/pages/assets/asset-transfer',
+          }),
+          ...show(has(roleId, STATUS_CHANGE_ROLES), {
+            title: 'Asset Status Change',
+            link: '/pages/assets/asset-status-change',
+          }),
+          ...show(has(roleId, ASSET_HISTORY_ROLES), {
+            title: 'Asset History',
+            link: '/pages/assets/asset-history',
+          }),
+          ...show(has(roleId, TRANSFER_TO_SCRAP_ROLES), {
+            title: 'Transfer To Scrap',
+            link: '/pages/assets/transfer-to-scrap',
+          }),
+          ...show(has(roleId, APPROVE_SCRAP_REQUEST_ROLES), {
+            title: 'Approve Scrap Request',
+            link: '/pages/assets/approve-scrap-request',
+          }),
+        ],
+      },
+    ]),
 
-    ...(roleId === 34 || roleId === 15 || roleId === 7 || roleId === 23 || roleId === 17 || roleId === 39 || roleId === 44
-      ? [
-        {
-          title: 'Brand',
-          icon: 'keypad-outline',
-          children: [
-            ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 || roleId === 39 || roleId === 44 ? [{ title: 'Add Brand', link: '/pages/brand/add-brand' }] : []),
-            // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Add Asset', link: '/pages/assets/add-asset' }] : []),
-            // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Asset List', link: '/pages/assets/asset-list' }] : []),
-            // ...(roleId === 15 || roleId === 23 || roleId === 7 || roleId === 34 ? [{ title: 'Asset Transfer', link: '/pages/assets/asset-transfer' }] : []),
-          ],
-        },
-      ]
-      : []),
+    // Approve
+    ...showMany(has(roleId, COMMON_ROLES), [
+      {
+        title: 'Approve',
+        icon: 'checkmark-square-outline',
+        children: [
+          ...show(has(roleId, APPROVE_CENTER_TO_CENTER_ROLES), {
+            title: 'Center To Center',
+            link: '/pages/assets/center-to-center',
+          }),
+          ...show(has(roleId, APPROVE_CENTER_TO_HO_ROLES), {
+            title: 'Center To HO',
+            link: '/pages/assets/center-to-ho',
+          }),
+        ],
+      },
+    ]),
 
-
-
-
+    // Brand
+    ...showMany(has(roleId, COMMON_ROLES), [
+      {
+        title: 'Brand',
+        icon: 'keypad-outline',
+        children: [
+          ...show(has(roleId, ADD_BRAND_ROLES), {
+            title: 'Add Brand',
+            link: '/pages/brand/add-brand',
+          }),
+        ],
+      },
+    ]),
   ];
 
   return menu;

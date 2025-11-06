@@ -193,6 +193,35 @@ export class GlobalService {
   
   public getAssetHistory(keyWord:any): Observable<any> {
     return this.http.get(`${this.assetUrl}/fetch-asset-history/${keyWord}`);
-  }  
+  } 
+  
+  public getAssetForStatus(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-asset-for-status-change`, data);
+  } 
+
+  public submitStatusChange(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/asset-status-change`, data);
+  } 
+
+  public getScrapAsset(roleId:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/fetch-transfer-to-scrap/${roleId}`);
+  } 
+
+  public submitScrapRequest(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/submit-transfer-to-scrap`, data);
+  } 
+
+  public getScrapId(memId: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-active-scrap-id`, memId);
+  }
+  
+  public getScrapAssetApprove(memId: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/fetch-active-scrap-requests`, memId);
+  }
+
+  public submitScrapApprove(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/submit-transfer-to-scrapApprove`, data);
+  } 
+
 
 }

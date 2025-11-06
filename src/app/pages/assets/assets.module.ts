@@ -21,6 +21,8 @@ import { ApproveAssetDialogComponent } from './approve-asset-dialog/approve-asse
 import { ApproveCenterToCenterComponent } from './approve-center-to-center/approve-center-to-center.component';
 import { ApproveCenterToHoComponent } from './approve-center-to-ho/approve-center-to-ho.component';
 import { AssetHistoryComponent } from './asset-history/asset-history.component';
+import { TransferToScrapComponent } from './transfer-to-scrap/transfer-to-scrap.component';
+import { ApproveScrapRequestComponent } from './approve-scrap-request/approve-scrap-request.component';
 
 
 @NgModule({
@@ -39,7 +41,9 @@ import { AssetHistoryComponent } from './asset-history/asset-history.component';
     ApproveAssetDialogComponent,
     ApproveCenterToCenterComponent,
     ApproveCenterToHoComponent,
-    AssetHistoryComponent
+    AssetHistoryComponent,
+    TransferToScrapComponent,
+    ApproveScrapRequestComponent
 
   ],
   imports: [

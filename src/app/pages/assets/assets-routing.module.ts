@@ -10,6 +10,8 @@ import { PendingAssetListComponent } from './pending-asset-list/pending-asset-li
 import { ApproveCenterToCenterComponent } from './approve-center-to-center/approve-center-to-center.component';
 import { ApproveCenterToHoComponent } from './approve-center-to-ho/approve-center-to-ho.component';
 import { AssetHistoryComponent } from './asset-history/asset-history.component';
+import { TransferToScrapComponent } from './transfer-to-scrap/transfer-to-scrap.component';
+import { ApproveScrapRequestComponent } from './approve-scrap-request/approve-scrap-request.component';
 
 const routes: Routes = [{
   path:'',
@@ -51,7 +53,14 @@ const routes: Routes = [{
       path:'asset-history',
       component:AssetHistoryComponent
     },
-
+    {
+      path:'transfer-to-scrap',
+      component:TransferToScrapComponent
+    },
+    {
+      path:'approve-scrap-request',
+      component:ApproveScrapRequestComponent
+    },
 
   ]
 }];
