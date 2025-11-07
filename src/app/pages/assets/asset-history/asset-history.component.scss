@@ -5,7 +5,7 @@
   font-size: 16px;
 }
 
-/* 🔹 Asset Details */
+/* Asset Details */
 .asset-details {
   background-color: var(--background-basic-color-2);
   padding: 1rem;
@@ -18,89 +18,76 @@
   margin-bottom: 8px;
 }
 
-/* 🔹 Timeline Title */
+/* Title */
 .timeline-title {
   font-weight: 600;
   color: #71747e;
   margin-bottom: 12px;
 }
 
-/* 🔹 Timeline Container */
+/* Timeline container */
 .timeline {
   position: relative;
-  margin-left: 0px;
-  padding-left: 20px;
+  padding-left: 2px;     /* space for line + markers */
+  padding-top: 6px;       /* small buffer at top */
+  padding-bottom: 6px;    /* small buffer at bottom */
 }
 
-/* 🔹 Vertical Connecting Line */
+/* Single continuous line */
 .timeline-line {
   position: absolute;
-  left: 8px;
+  left: 18px;             /* centered under a 26px marker */
   top: 0;
-  bottom: 0;
+  bottom: 0;              /* <- makes it continuous */
   width: 3px;
   background-color: var(--color-primary-default);
-  z-index: 1;
   opacity: 0.9;
+  z-index: 1;
 }
 
-/* 🔹 Timeline Item */
+/* Item wrapper */
 .timeline-item {
   position: relative;
-  margin-bottom: 25px;
+  margin-bottom: 24px;
 }
 
-/* 🔹 Numbered Markers */
+/* Numbered marker */
 .timeline-marker {
   position: absolute;
-  left: -3px;
-  top: 12px;
+  left: 5px;
+  top: 0;
   width: 26px;
   height: 26px;
   border-radius: 50%;
   background-color: var(--background-basic-color-1);
   border: 3px solid var(--color-primary-default);
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   font-weight: 600;
   color: var(--text-basic-color);
-  z-index: 2;
   font-size: 13px;
+  z-index: 2;            /* above the line */
   box-shadow: 0 0 0 2px var(--background-basic-color-1);
 }
 
-/* 🔹 Content Box */
+/* Card content */
 .timeline-content {
   background-color: var(--background-basic-color-2);
   border-radius: 8px;
   padding: 15px 20px;
-  margin-left: 40px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin-left: 40px;      /* clears the marker/line */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
   color: var(--text-basic-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color .3s ease, color .3s ease;
 }
 
-/* 🔹 Headings and Text */
-.timeline-heading {
-  font-weight: 600;
-  color: var(--color-primary-hover);
-  margin-bottom: 4px;
-}
+/* Headings & text */
+.timeline-heading { font-weight: 600; color: var(--color-primary-hover); margin-bottom: 4px; }
+.timeline-sub     { color: var(--color-primary-400); font-size: 14px; margin-bottom: 3px; }
+.timeline-date    { font-size: 13px; color: var(--color-basic-600); margin-bottom: 10px; }
 
-.timeline-sub {
-  color: var(--color-primary-400);
-  font-size: 14px;
-  margin-bottom: 3px;
-}
-
-.timeline-date {
-  font-size: 13px;
-  color: var(--color-basic-600);
-  margin-bottom: 10px;
-}
-
-/* 🔹 Inner Detail Box */
+/* Inner details box */
 .timeline-details {
   background-color: var(--background-basic-color-3);
   border-radius: 6px;
@@ -109,19 +96,10 @@
   color: var(--text-basic-color);
   border-left: 3px solid var(--color-primary-default);
 }
+.timeline-details p { margin: 3px 0; }
 
-.timeline-details p {
-  margin: 3px 0;
-}
-
-/* Responsive Adjustments */
+/* Responsive */
 @media (max-width: 768px) {
-  .timeline-content {
-    margin-left: 35px;
-    padding: 12px;
-  }
-
-  .timeline-marker {
-    left: -3px;
-  }
+  .timeline { padding-left: 34px; }
+  .timeline-content { margin-left: 36px; padding: 12px; }
 }

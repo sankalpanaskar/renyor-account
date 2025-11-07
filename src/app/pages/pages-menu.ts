@@ -12,13 +12,14 @@ const COMMON_ROLES = DASHBOARD_ROLES;
 //Asset Menu
 
 // Feature-specific role sets
-const BULK_UPLOAD_ROLES = new Set([15, 23, 7, 34, 39, 44]);
+const BULK_UPLOAD_ROLES = new Set([34, 39, 35]);
 const ADD_ASSET_ROLES   = BULK_UPLOAD_ROLES;
-const ASSET_LIST_ROLES = COMMON_ROLES;
-const PENDING_ASSET_ROLES = BULK_UPLOAD_ROLES;
-const ASSET_TRANSFER_ROLES = COMMON_ROLES;
+const ASSET_LIST_ROLES =  new Set([35,39,14]);
+const PENDING_ASSET_ROLES = new Set([35,39,14]);
+const ASSET_TRANSFER_ROLES = new Set([35,39,14]);
 const STATUS_CHANGE_ROLES = BULK_UPLOAD_ROLES;
-const ASSET_HISTORY_ROLES = BULK_UPLOAD_ROLES;
+const ASSET_HISTORY_ROLES = new Set([35,39,14]);
+const ASSET_OWNER_CHANGE = BULK_UPLOAD_ROLES;
 const TRANSFER_TO_SCRAP_ROLES = BULK_UPLOAD_ROLES;
 const APPROVE_SCRAP_REQUEST_ROLES = new Set([14, 18]);
 
@@ -84,6 +85,10 @@ export function getMenuItems(roleId: number): NbMenuItem[] {
           ...show(has(roleId, ASSET_HISTORY_ROLES), {
             title: 'Asset History',
             link: '/pages/assets/asset-history',
+          }),
+          ...show(has(roleId, ASSET_OWNER_CHANGE), {
+            title: 'Asset Owner Change',
+            link: '/pages/assets/asset-owner-change',
           }),
           ...show(has(roleId, TRANSFER_TO_SCRAP_ROLES), {
             title: 'Transfer To Scrap',

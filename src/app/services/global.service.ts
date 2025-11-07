@@ -175,8 +175,7 @@ export class GlobalService {
   }
 
   public submitHOApproval(data: any): Observable<any> {
-    return this.http.post(`${this.assetUrl}/save-ho-to-center
-`, data);
+    return this.http.post(`${this.assetUrl}/save-ho-to-center`, data);
   } 
 
   public getCenterApproveCenter(memID:any,roleId:any): Observable<any> {
@@ -223,5 +222,24 @@ export class GlobalService {
     return this.http.post(`${this.assetUrl}/submit-transfer-to-scrapApprove`, data);
   } 
 
+  public getFundersOwner(roleId): Observable<any> {
+    return this.http.get(`${this.assetUrl}/funder-scrap-owner-change/${roleId}`);
+  }
+
+  public getOwnerAssetApprove(memId: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/get-details-by-funder`, memId);
+  }
+
+  public submitOwnerChange(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/submit-change-funder`, data);
+  }
+
+  public submitAddBrand(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/add-brand`, data);
+  }
+
+  public getBrandsList(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-brand-list`);
+  }
 
 }

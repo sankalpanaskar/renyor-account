@@ -23,6 +23,7 @@ import { ApproveCenterToHoComponent } from './approve-center-to-ho/approve-cente
 import { AssetHistoryComponent } from './asset-history/asset-history.component';
 import { TransferToScrapComponent } from './transfer-to-scrap/transfer-to-scrap.component';
 import { ApproveScrapRequestComponent } from './approve-scrap-request/approve-scrap-request.component';
+import { AssetOwnerChangeComponent } from './asset-owner-change/asset-owner-change.component';
 
 
 @NgModule({
@@ -43,7 +44,8 @@ import { ApproveScrapRequestComponent } from './approve-scrap-request/approve-sc
     ApproveCenterToHoComponent,
     AssetHistoryComponent,
     TransferToScrapComponent,
-    ApproveScrapRequestComponent
+    ApproveScrapRequestComponent,
+    AssetOwnerChangeComponent
 
   ],
   imports: [

@@ -12,6 +12,7 @@ import { ApproveCenterToHoComponent } from './approve-center-to-ho/approve-cente
 import { AssetHistoryComponent } from './asset-history/asset-history.component';
 import { TransferToScrapComponent } from './transfer-to-scrap/transfer-to-scrap.component';
 import { ApproveScrapRequestComponent } from './approve-scrap-request/approve-scrap-request.component';
+import { AssetOwnerChangeComponent } from './asset-owner-change/asset-owner-change.component';
 
 const routes: Routes = [{
   path:'',
@@ -60,6 +61,10 @@ const routes: Routes = [{
     {
       path:'approve-scrap-request',
       component:ApproveScrapRequestComponent
+    },
+    {
+      path:'asset-owner-change',
+      component:AssetOwnerChangeComponent
     },
 
   ]

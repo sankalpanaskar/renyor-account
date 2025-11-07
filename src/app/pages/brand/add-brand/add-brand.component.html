@@ -1,19 +1,19 @@
-<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 80%;
-max-width: 900px;margin: 0 auto;">
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%;
+max-width: 1000px;margin: 0 auto;">
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <nb-card>
                 <nb-card-header>Add Brand</nb-card-header>
                 <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
 
                     <div class="row">
-                        <div class="col-lg-6">
+                        <div class="col-lg-12">
                             <label class="small-label" id="label-category">Brand Name<span
                                     style="color:#d32f2f">*</span></label>
                             <input type="text" nbInput fullWidth shape="semi-round"
-                                placeholder="Brand Name" name="brand" required #brand="ngModel"
-                                [(ngModel)]="model.brand">
-                            <div *ngIf="fm.submitted && brand.invalid" class="error-message">
+                                placeholder="Brand Name" name="brand_name" required #brand_name="ngModel"
+                                [(ngModel)]="model.brand_name">
+                            <div *ngIf="fm.submitted && brand_name.invalid" class="error-message">
                                 Brand Name is required
                             </div>
                         </div>
