@@ -10,6 +10,11 @@ export class GlobalService {
   
     private roleIdSubject = new BehaviorSubject<any>(0);
     public roleId$ = this.roleIdSubject.asObservable();
+
+    /** ---------- userCode (NEW) ---------- */
+    private userCodeSubject = new BehaviorSubject<string>('');
+    public  userCode$       = this.userCodeSubject.asObservable();
+    
   
     public currentUser: any;
     public member_id = '';
@@ -17,7 +22,7 @@ export class GlobalService {
     public mobile = '';
     public user_id = '';
     public centerData:any=[];
-    public user_code: '';
+    public user_code: string = '';   // keep a plain field too for easy reads
 
   
     constructor(private http: HttpClient) {
@@ -34,6 +39,16 @@ export class GlobalService {
     get role_id(): any {
       return this.roleIdSubject.value;
     }
+
+      /** user_code proxy if you ever want a setter/getter */
+      set userCode(value: string) {
+        const code = (value || '').toUpperCase();
+        this.user_code = code;
+        this.userCodeSubject.next(code);
+      }
+      get userCode(): string {
+        return this.userCodeSubject.value;
+      }
   
     setUser(user: any) {
       this.currentUser = user;

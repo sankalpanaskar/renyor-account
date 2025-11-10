@@ -1,13 +1,13 @@
-<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 80%;
-max-width: 900px;margin: 0 auto;">
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%;
+max-width: 1000px;margin: 0 auto;">
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <nb-card>
                 <nb-card-header>Bulk Upload</nb-card-header>
                 <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
 
                     <div class="row">
-                        <div class="col-lg-7" style="padding: 8px 0px 8px 18px;">
+                        <div class="col-lg-12" style="padding: 8px 0px 8px 18px;">
                             <input type="file" nbInput fullWidth shape="semi-round" name="file" required #file="ngModel"
                                 #fileInput [(ngModel)]="model.file" (click)="clearFileInput()"
                                 (change)="onFileChange($event)" accept=".xls,.xlsx" />
