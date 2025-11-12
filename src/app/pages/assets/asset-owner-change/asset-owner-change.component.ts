@@ -182,6 +182,7 @@ toggleDropdown() {
           fm.resetForm(); // ✅ reset form
           this.model = {}; // clear model
           this.assetList = []; // clear selected assets
+          this.loadFunders();
           this.showAssetList = false;
         } else {
           this.toastrService.warning(res.message || 'Owner Change submission failed.', 'Warning');

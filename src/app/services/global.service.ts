@@ -235,6 +235,8 @@ export class GlobalService {
 
   public submitScrapApprove(data: any): Observable<any> {
     return this.http.post(`${this.assetUrl}/submit-transfer-to-scrapApprove`, data);
+        // return this.http.post(`${this.assetUrl}/''`, data);
+
   } 
 
   public getFundersOwner(roleId): Observable<any> {

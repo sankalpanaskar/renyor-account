@@ -90,7 +90,7 @@ export class ApproveScrapRequestComponent implements OnInit{
       next: (res) => {
         this.assetList = res.data.map(asset => ({
           ...asset,
-          // isSelected: false
+          isSelected: false
         }));
         this.filteredAssetList = [...this.assetList];
         this.masterSelected = false;
@@ -121,19 +121,19 @@ export class ApproveScrapRequestComponent implements OnInit{
     }
   }
 
-  // selectAll() {
-  //   this.assetList.forEach(asset => {
-  //     asset.isSelected = this.masterSelected;
-  //   });
-  // }
+  selectAll() {
+    this.assetList.forEach(asset => {
+      asset.isSelected = this.masterSelected;
+    });
+  }
 
-  // checkIfAllSelected() {
-  //   this.masterSelected = this.assetList.every(asset => asset.isSelected);
-  // }
+  checkIfAllSelected() {
+    this.masterSelected = this.assetList.every(asset => asset.isSelected);
+  }
 
-  // get selectedCount(): number {
-  //   return this.assetList.filter(asset => asset.isSelected).length;
-  // }
+  get selectedCount(): number {
+    return this.assetList.filter(asset => asset.isSelected).length;
+  }
 
 
 
@@ -145,21 +145,27 @@ export class ApproveScrapRequestComponent implements OnInit{
     }
 
     // // 🔸 Step 2: Get selected assets
-    // const selectedAssets = this.assetList.filter(asset => asset.isSelected);
+    const selectedAssets = this.assetList.filter(asset => asset.isSelected);
 
     // // ❌ If no assets selected, show error and stop submission
-    // if (selectedAssets.length === 0) {
-    //   this.toastrService.danger('Please select at least one asset before submitting.', 'No Asset Selected');
-    //   return;
-    // }
+    if (selectedAssets.length === 0) {
+      this.toastrService.danger('Please select at least one asset before submitting.', 'No Asset Selected');
+      return;
+    }
 
-    // 🔸 Step 3: Construct the payload including selected assets
-    const payload = {
-      role_id: this.globalService.role_id,
-      member_id: this.globalService.member_id,
-      user_id: this.globalService.user_id,
-      scrap_assets : this.assetList
-    };
+  // normalize remarks: null when empty/whitespace
+  const rawRemarks = (this.model.remarks ?? '').toString().trim();
+  const remarks = rawRemarks.length ? rawRemarks : null;
+
+  const payload = {
+    role_id: this.globalService.role_id,
+    member_id: this.globalService.member_id,
+    user_id: this.globalService.user_id,
+    approval_request: this.model.approval_status,
+    remarks,                              // ✅ null if user didn't type anything
+    scrap_assets: selectedAssets,
+  };
+
 
     console.log('🔹 Payload to submit:', payload);
 
@@ -174,6 +180,7 @@ export class ApproveScrapRequestComponent implements OnInit{
           fm.resetForm(); // ✅ reset form
           this.model = {}; // clear model
           this.assetList = []; // clear selected assets
+          this.loadScrapId();
           this.showAssetList = false;
         } else {
           this.toastrService.warning(res.message || 'Status Change submission failed.', 'Warning');

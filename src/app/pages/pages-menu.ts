@@ -2,7 +2,7 @@ import { NbMenuItem } from '@nebular/theme';
 
 /** ---------- Role Sets ---------- */
 const DASHBOARD_ROLES = new Set([
-  7,10,11,15,17,18,23,24,26,27,28,29,30,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,
+  7,10,11,14,15,17,18,23,24,26,27,28,29,30,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,
 ]);
 const COMMON_ROLES = DASHBOARD_ROLES;
 
@@ -16,14 +16,14 @@ const STATUS_CHANGE_ROLES         = BULK_UPLOAD_ROLES;
 const ASSET_HISTORY_ROLES         = new Set([35, 39, 14]);
 const ASSET_OWNER_CHANGE          = BULK_UPLOAD_ROLES;
 const TRANSFER_TO_SCRAP_ROLES     = BULK_UPLOAD_ROLES;
-const APPROVE_SCRAP_REQUEST_ROLES = new Set([39, 18]);
+const APPROVE_SCRAP_REQUEST_ROLES = new Set([39, 18,14]);
 
 // Approve
 const APPROVE_CENTER_TO_CENTER_ROLES = COMMON_ROLES;
 const APPROVE_CENTER_TO_HO_ROLES     = COMMON_ROLES;
 
 /** ---------- Allow-lists by user code ---------- */
-const APPROVE_SCRAP_USERS = new Set(['ANP-0011', 'ANP-0049']);
+const APPROVE_SCRAP_USERS = new Set(['ANP-0011', 'ANP-0049','ADI-0001']);
 const BRAND_MENU_USERS    = new Set(['ANP-0011', 'ANP-0049']);   // ✅ only these can see “Brand”
 
 /** ---------- Helpers ---------- */

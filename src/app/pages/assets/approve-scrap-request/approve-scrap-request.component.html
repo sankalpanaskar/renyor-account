@@ -67,12 +67,12 @@ max-width: 1000px;margin: 0 auto;">
                                 <table class="table table-bordered">
                                     <thead>
                                         <tr>
-                                            <!-- <th style="width: 15%;">
+                                            <th style="width: 15%;">
                                                 <input type="checkbox" class="custom-checkbox"
                                                     [(ngModel)]="masterSelected" (change)="selectAll()"
                                                     [ngModelOptions]="{standalone: true}">
                                                 Select ({{ selectedCount }})
-                                            </th> -->
+                                            </th>
                                             <th style="width: 10%;">Brand </th>
                                             <th style="width: 20%;">Model</th>
                                             <th style="width: 20%;">Serial No</th>
@@ -83,11 +83,11 @@ max-width: 1000px;margin: 0 auto;">
                                     <tbody>
                                         <!-- ✅ Show data rows when list is not empty -->
                                         <tr *ngFor="let asset of filteredAssetList; let i = index">
-                                            <!-- <td style="width: 15%;">
+                                            <td style="width: 15%;">
                                                 <input type="checkbox" class="custom-checkbox-td"
                                                     [(ngModel)]="asset.isSelected" (change)="checkIfAllSelected()"
                                                     name="leadSelect{{i}}" [ngModelOptions]="{standalone: true}">
-                                            </td> -->
+                                            </td>
                                             <td style="width: 10%;">{{ asset.brand_name }}</td>
                                             <td style="width: 20%;">{{ asset.model_no }}</td>
                                             <td style="width: 20%;">{{ asset.serial_no }}</td>
@@ -107,10 +107,50 @@ max-width: 1000px;margin: 0 auto;">
                         </div>
                     </div>
 
+                          <!-- 🔹 Approval Status (Radio Buttons) -->
+                        <div class="row mt-3" *ngIf="showAssetList">
+                            <div class="col-lg-12">
+                                <label class="small-label" id="label-category">Approval Status
+                                    <span style="color:#d32f2f">*</span>
+                                </label>
+
+                                <nb-radio-group [(ngModel)]="model.approval_status" name="approval_status"
+                                    class="d-flex flex-row" #approval_status="ngModel" required>
+                                    <nb-radio value="Accept">Accept</nb-radio>
+                                    <nb-radio value="Reject">Reject</nb-radio>
+                                    <!-- <nb-radio value="Revoke">Revoke</nb-radio> -->
+                                </nb-radio-group>
+
+                                <div *ngIf="fm.submitted && approval_status.invalid" class="error-message">
+                                    Please select an approval status
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 🔹 Remarks Section -->
+                        <div class="row" *ngIf="showAssetList">
+                            <div class="col-lg-12">
+                                <label class="small-label" id="label-category">
+                                    Remarks <span style="color:#d32f2f" *ngIf="model.approval_status == 'Reject'">*</span>
+                                </label>
+                                <textarea nbInput fullWidth placeholder="Add remarks" name="remarks"
+                                    [(ngModel)]="model.remarks" #remarks="ngModel" rows="2"
+                                    [maxlength]="500" [required]="model.approval_status == 'Reject'"></textarea>
+
+                                <div style="font-size: 12px; color:#6c757d; margin-top: 4px;">
+                                    {{ (model.remarks?.length || 0) }}/500
+                                </div>
+
+                                <div *ngIf="fm.submitted && remarks.invalid" class="error-message">
+                                    Remarks are required
+                                </div>
+                            </div>
+                        </div>
 
 
-                    <button nbButton status="success" shape="semi-round" hero type="submit" [disabled]="isSubmitting" *ngIf="showAssetList">
-                        Approve
+
+                    <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting" *ngIf="showAssetList">
+                        Submit
                     </button>
 
                 </nb-card-body>
