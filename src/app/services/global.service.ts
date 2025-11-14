@@ -259,4 +259,20 @@ export class GlobalService {
     return this.http.get(`${this.assetUrl}/get-brand-list`);
   }
 
+  public addBuyer(data: any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/save-buyer`, data);
+  }
+
+  public getState(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-state`);
+  }
+
+  public getBuyerList(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-active-buyer`);
+  } 
+  
+  public getScrapAssetForSale(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/scrap-asset-list`,data);
+  }  
+
 }

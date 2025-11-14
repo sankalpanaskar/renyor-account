@@ -1,0 +1,133 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%;
+max-width: 900px;margin: 0 auto;">
+    <div class="row">
+        <div class="col-lg-12">
+            <nb-card>
+                <nb-card-header>Asset Transfer</nb-card-header>
+                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Buyer's Name<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" placeholder="Enter Buyer's name" nbInput fullWidth shape="semi-round"
+                                name="buyer_name" required #buyer_name="ngModel" [(ngModel)]="model.buyer_name">
+                            <div *ngIf="fm.submitted && buyer_name.invalid" class="error-message">
+                                Buyer Name is required
+                            </div>
+                        </div>
+
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Buyer's State<span
+                                    style="color:#d32f2f">*</span></label>
+                            <nb-select shape="semi-round" placeholder="Select Buyer's state" name="state" required
+                                #state="ngModel" [(ngModel)]="model.state">
+                                <nb-option *ngFor="let data of stateList"
+                                    [value]="data.state_name">{{data.state_name}}</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && state.invalid" class="error-message">Asset Class is
+                                required</div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Buyer's City<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" placeholder="Enter Buyer's city" nbInput fullWidth shape="semi-round"
+                                name="city" required #city="ngModel" [(ngModel)]="model.city">
+                            <div *ngIf="fm.submitted && city.invalid" class="error-message">
+                                Buyer City is required
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Buyer's Pin Code<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" placeholder="Enter Buyer's Pin Code" nbInput fullWidth
+                                shape="semi-round" name="pin_code" maxLength="6" pattern="^\d{6}$" required #pin_code="ngModel"
+                                [(ngModel)]="model.pin_code">
+                            <div *ngIf="fm.submitted && pin_code.invalid" class="error-message">
+                                Buyer's Pin Code is required
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <label class="small-label" id="label-category">
+                                Buyer's Address <span style="color:#d32f2f">*</span>
+                            </label>
+                            <!-- <label class="small-label"><strong>Remarks</strong></label> -->
+                            <textarea nbInput fullWidth placeholder="Add Address" name="address"
+                                [(ngModel)]="model.address" #address="ngModel" rows="2" [maxlength]="500" required>
+                                </textarea>
+
+                            <!-- character counter -->
+                            <div style="font-size: 12px; color:#6c757d; margin-top: 4px;">
+                                {{ (model.remarks?.length || 0) }}/500
+                            </div>
+
+                            <!-- If you want Address to be required, add 'required' above and use this error -->
+                            <div *ngIf="fm.submitted && address.invalid" class="error-message">Address are required
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Buyer's Status
+                                <span style="color:#d32f2f">*</span>
+                            </label>
+
+                            <nb-radio-group [(ngModel)]="model.buyer_status" name="buyer_status" class="d-flex flex-row"
+                                #buyer_status="ngModel" required>
+                                <nb-radio value="Registered">Registered</nb-radio>
+                                <nb-radio value="Not Registered">Not Registered</nb-radio>
+                            </nb-radio-group>
+
+                            <div *ngIf="fm.submitted && buyer_status.invalid" class="error-message">
+                                Please select an Buyer's status
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                         <div class="col-lg-6" *ngIf="model.buyer_status === 'Registered' ">
+                            <label class="small-label" id="label-category">Buyer's GST No<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="number" placeholder="Enter Buyer's GST No" nbInput fullWidth
+                                shape="semi-round" name="gst_no" required #gst_no="ngModel"
+                                [(ngModel)]="model.gst_no">
+                            <div *ngIf="fm.submitted && gst_no.invalid" class="error-message">
+                                Buyer's GST No is required
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Buyer's PAN No<span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" placeholder="Enter Buyer's PAN No" nbInput fullWidth
+                                shape="semi-round" name="pan_no" maxLength="10" pattern="^\d{10}$" required #pan_no="ngModel"
+                                [(ngModel)]="model.pan_no">
+                            <div *ngIf="fm.submitted && pan_no.invalid" class="error-message">
+                                Buyer's PAN No is required
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                    <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+                        Save
+                    </button>
+
+                </nb-card-body>
+            </nb-card>
+        </div>
+    </div>
+</form>

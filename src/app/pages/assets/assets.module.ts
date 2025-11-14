@@ -24,6 +24,9 @@ import { AssetHistoryComponent } from './asset-history/asset-history.component';
 import { TransferToScrapComponent } from './transfer-to-scrap/transfer-to-scrap.component';
 import { ApproveScrapRequestComponent } from './approve-scrap-request/approve-scrap-request.component';
 import { AssetOwnerChangeComponent } from './asset-owner-change/asset-owner-change.component';
+import { AddBuyerFormComponent } from './add-buyer-form/add-buyer-form.component';
+import { BuyerListComponent } from './buyer-list/buyer-list.component';
+import { ScrapSaleFormComponent } from './scrap-sale-form/scrap-sale-form.component';
 
 
 @NgModule({
@@ -45,7 +48,10 @@ import { AssetOwnerChangeComponent } from './asset-owner-change/asset-owner-chan
     AssetHistoryComponent,
     TransferToScrapComponent,
     ApproveScrapRequestComponent,
-    AssetOwnerChangeComponent
+    AssetOwnerChangeComponent,
+    AddBuyerFormComponent,
+    BuyerListComponent,
+    ScrapSaleFormComponent
 
   ],
   imports: [

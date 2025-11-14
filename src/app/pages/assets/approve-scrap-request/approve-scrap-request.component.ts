@@ -83,7 +83,7 @@ export class ApproveScrapRequestComponent implements OnInit{
   loadAsset() {
     var data = {
       'scrap_request_id': this.model.scrap_id,
-
+      'member_id' : this.globalService.member_id
     }
     this.isSubmitting = true;
     this.globalService.getScrapAssetApprove(data).subscribe({
@@ -137,23 +137,23 @@ export class ApproveScrapRequestComponent implements OnInit{
 
 
 
-  onSubmit(fm: any) {
-    // 🔸 Step 1: Validate form fields
-    if (!fm.valid) {
-      this.toastrService.warning('Please fill all required fields correctly.', 'Validation');
-      return;
-    }
+onSubmit(fm: any) {
+  if (!fm.valid) {
+    this.toastrService.warning('Please fill all required fields correctly.', 'Validation');
+    return;
+  }
 
-    // // 🔸 Step 2: Get selected assets
-    const selectedAssets = this.assetList.filter(asset => asset.isSelected);
+  const selectedAssets = this.assetList.filter(asset => asset.isSelected);
 
-    // // ❌ If no assets selected, show error and stop submission
-    if (selectedAssets.length === 0) {
-      this.toastrService.danger('Please select at least one asset before submitting.', 'No Asset Selected');
-      return;
-    }
+  if (selectedAssets.length === 0) {
+    this.toastrService.danger('Please select at least one asset before submitting.', 'No Asset Selected');
+    return;
+  }
 
-  // normalize remarks: null when empty/whitespace
+  // ✅ 1 if all assets are selected, else 2
+  const partial_status = selectedAssets.length === this.assetList.length ? 1 : 2;
+
+  // normalize remarks to null when empty
   const rawRemarks = (this.model.remarks ?? '').toString().trim();
   const remarks = rawRemarks.length ? rawRemarks : null;
 
@@ -162,35 +162,34 @@ export class ApproveScrapRequestComponent implements OnInit{
     member_id: this.globalService.member_id,
     user_id: this.globalService.user_id,
     approval_request: this.model.approval_status,
-    remarks,                              // ✅ null if user didn't type anything
+    remarks,
     scrap_assets: selectedAssets,
+    partial_status,                         // 👈 send it to API
   };
 
+  console.log('🔹 Payload to submit:', payload);
 
-    console.log('🔹 Payload to submit:', payload);
+  this.isSubmitting = true;
+  this.globalService.submitScrapApprove(payload).subscribe({
+    next: (res: any) => {
+      this.isSubmitting = false;
+      if (res.status) {
+        this.toastrService.success('Status Change successfully!', 'Success');
+        fm.resetForm();
+        this.model = {};
+        this.assetList = [];
+        this.loadScrapId();
+        this.showAssetList = false;
+      } else {
+        this.toastrService.warning(res.message || 'Status Change submission failed.', 'Warning');
+      }
+    },
+    error: (err) => {
+      this.isSubmitting = false;
+      console.error('Submit error:', err);
+      this.toastrService.danger(err?.error?.message || 'Something went wrong. Please try again.', 'Error');
+    },
+  });
+}
 
-    // 🔸 Step 4: Call API
-    this.isSubmitting = true;
-    this.globalService.submitScrapApprove(payload).subscribe({
-      next: (res: any) => {
-        this.isSubmitting = false;
-
-        if (res.status) {
-          this.toastrService.success('Status Change successfully!', 'Success');
-          fm.resetForm(); // ✅ reset form
-          this.model = {}; // clear model
-          this.assetList = []; // clear selected assets
-          this.loadScrapId();
-          this.showAssetList = false;
-        } else {
-          this.toastrService.warning(res.message || 'Status Change submission failed.', 'Warning');
-        }
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        console.error('Submit error:', err);
-        this.toastrService.danger(err?.error?.message || 'Something went wrong. Please try again.', 'Error');
-      },
-    });
-  }
 }

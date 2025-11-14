@@ -65,6 +65,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           ...show(hasRole(roleId, ASSET_OWNER_CHANGE),          { title: 'Asset Owner Change',     link: '/pages/assets/asset-owner-change' }),
           ...show(hasRole(roleId, TRANSFER_TO_SCRAP_ROLES),     { title: 'Transfer To Scrap',      link: '/pages/assets/transfer-to-scrap' }),
           ...show(canSeeApproveScrap,                            { title: 'Approve Scrap Request',  link: '/pages/assets/approve-scrap-request' }),
+          ...show(canSeeApproveScrap,                            { title: 'Add Buyer Form',  link: '/pages/assets/add-buyer-form' }),
         ],
       },
     ]),

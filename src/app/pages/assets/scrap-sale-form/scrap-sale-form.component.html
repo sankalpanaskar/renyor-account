@@ -1,0 +1,135 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%; max-width: 1000px; margin: 0 auto;">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        <nb-card-header>Asset Transfer To Scrap</nb-card-header>
+
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+          <!-- 🔎 Search -->
+          <div class="p-2 border-bottom table-search-bar">
+            <input
+              nbInput
+              fullWidth
+              placeholder="Search Asset..."
+              [(ngModel)]="searchTextStudent"
+              name="searchTextStudent"
+              (ngModelChange)="filterAsset()"
+            />
+          </div>
+
+          <!-- 📋 Asset Table -->
+          <div class="row mt-3" style="margin: 0 4px;">
+            <div class="col-lg-12 table-shell">
+              <div style="max-height: 320px; overflow-y: auto;">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th style="width: 17%;">
+                        <input
+                          type="checkbox"
+                          class="custom-checkbox"
+                          [(ngModel)]="masterSelected"
+                          (change)="selectAll()"
+                          [ngModelOptions]="{ standalone: true }"
+                        />
+                        Select ({{ selectedCount }})
+                      </th>
+                      <th style="width: 18%;">Sub Class</th>
+                      <th style="width: 14%;">Brand</th>
+                      <th style="width: 15%;">Model</th>
+                      <th style="width: 15%;">Serial No</th>
+                      <th style="width: 12%;">Purchase Date</th>
+                      <th style="width: 19%;">Anudip ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let asset of filteredAssetList; let i = index">
+                      <td>
+                        <input
+                          type="checkbox"
+                          class="custom-checkbox-td"
+                          [(ngModel)]="asset.isSelected"
+                          name="leadSelect{{ i }}"
+                          [ngModelOptions]="{ standalone: true }"
+                          (change)="checkIfAllSelected()"
+                        />
+                      </td>
+                      <td>{{ asset.assets_sub_class }}</td>
+                      <td>{{ asset.brand_name }}</td>
+                      <td>{{ asset.model_no }}</td>
+                      <td>{{ asset.serial_no }}</td>
+                      <td>{{ asset.purchase_date | date:'yyyy-MM-dd' }}</td>
+                      <td>{{ asset.anudip_identification_no }}</td>
+                    </tr>
+
+                    <tr *ngIf="assetList.length === 0">
+                      <td colspan="7" class="text-center text-muted">No Asset Found</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 🧮 Pricing Summary by Sub Class -->
+          <div class="row mt-3" *ngIf="priceRows.length > 0">
+            <div class="col-lg-12">
+              <div class="pricing-box">
+                <div class="pricing-header">
+                  <strong>Pricing Summary</strong>
+                  <small class="text-hint">Set unit price per Sub Class; totals auto-calc</small>
+                </div>
+
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th style="width: 35%;">Sub Class</th>
+                      <th style="width: 15%;">Selected Qty</th>
+                      <th style="width: 25%;">Unit Price</th>
+                      <th style="width: 25%;">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let row of priceRows; let i = index">
+                      <td class="subclass-cell">
+                        <nb-badge text="{{ row.count }}" status="primary" position="left"></nb-badge>
+                        <span>{{ row.subClass }}</span>
+                      </td>
+                      <td>{{ row.count }}</td>
+                      <td>
+                        <input
+                          nbInput
+                          fullWidth
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          [(ngModel)]="row.unitPrice"
+                          name="unitPrice_{{ i }}"
+                          (ngModelChange)="recalcTotals()"
+                        />
+                      </td>
+                      <td><strong>{{ row.total | number: '1.2-2' }}</strong></td>
+                    </tr>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <th colspan="3" class="text-end">Grand Total</th>
+                      <th><strong>{{ grandTotal | number: '1.2-2' }}</strong></th>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+            Save
+          </button>
+
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</form>
