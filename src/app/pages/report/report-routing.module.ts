@@ -1,15 +1,15 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ReportComponent } from './report.component';
-import { LeadCrmReportComponent } from './lead-crm-report/lead-crm-report.component';
+import { AssetsReportComponent } from './assets-report/assets-report.component';
 
 const routes: Routes = [{
   path: '',
   component: ReportComponent,
   children: [
   {
-    path: 'lead-crm-report',
-    component: LeadCrmReportComponent,
+    path: 'assets-report',
+    component: AssetsReportComponent,
   },
 ],
 }];
