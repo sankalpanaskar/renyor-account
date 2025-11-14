@@ -50,8 +50,8 @@ max-width: 1000px;margin: 0 auto;">
                                             <td>{{ brand.pincode }}</td>
                                             <td>{{ brand.address }}</td>
                                             <td>{{ brand.register_status }}</td>
-                                            <td *ngIf="brand.gst_no != null">{{ brand.gst_no}}</td>
-                                            <td *ngIf="brand.gst_no == null">N/A</td>
+                                            <td *ngIf="brand.gst_no !== null">{{ brand.gst_no}}</td>
+                                            <td *ngIf="brand.gst_no === null">N/A</td>
                                             <td>{{ brand.pan_no}}</td>
                                         </tr>
 
