@@ -1,0 +1,123 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%;margin: 0 auto;">
+    <div class="row">
+        <div class="col-lg-12">
+            <nb-card>
+                <nb-card-header>Assets Report</nb-card-header>
+                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+                    <div class="row">
+
+                        <div class="col-lg-12">
+                            <label class="small-label" id="label-category"> Center </label>
+                            <!-- Custom Dropdown Wrapper -->
+                            <div class="custom-select" #dropdownTrigger [class.invalid]="fm.submitted && centers.invalid"
+                                (click)="toggleDropdown()">
+                                <span class="truncate-text" [ngClass]="{ 'placeholder': !model.centers }">
+                                    <ng-container *ngIf="model.centers; else placeholderText">
+                                        {{ model.center }}
+                                    </ng-container>
+                                    <ng-template #placeholderText>
+                                        Select Center
+                                    </ng-template>
+                                </span>
+
+                                <nb-icon [icon]="dropdownOpen ? 'chevron-up-outline' : 'chevron-down-outline'"
+                                    pack="eva"></nb-icon>
+                            </div>
+
+                            <!-- Form Binding for Validation -->
+                            <input type="text" name="centers" [(ngModel)]="model.centers" #centers="ngModel" hidden />
+
+                            <!-- Dropdown with dynamic direction -->
+                            <div class="custom-dropdown" [ngClass]="{ 'open-up': openAbove, 'open-down': !openAbove }"
+                                *ngIf="dropdownOpen">
+                                <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText"
+                                    (ngModelChange)="filterOptions()" />
+
+                                <div *ngFor="let center of filterCenterList"
+                                    (click)="selectCenter(center.center_code)" class="dropdown-item">
+                                    {{ center.center_name }}
+                                </div>
+
+                                <div *ngIf="filterCenterList.length === 0" class="dropdown-item disabled">
+                                    No Center found
+                                </div>
+                            </div>
+
+                            <!-- Error Message -->
+                            <!-- <div *ngIf="fm.submitted && center.invalid" class="error-message">
+                                Center is required
+                            </div> -->
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Asset Class</label>
+                            <nb-select shape="semi-round" placeholder="Select Asset Class" name="assets_class" #assets_class="ngModel" [(ngModel)]="model.assets_class"
+                                (selectedChange)="selectClass($event)">
+                                <nb-option value="">Select</nb-option>
+                                <nb-option *ngFor="let data of classList"
+                                    [value]="data.class_id">{{data.asset_class_name}}</nb-option>
+                            </nb-select>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Assets Sub Class</label>
+                            <nb-select shape="semi-round" placeholder="Select Assets Sub Class" name="assets_sub_class" #assets_sub_class="ngModel" [(ngModel)]="model.assets_sub_class"
+                                (selectedChange)="selectSubClass($event)">
+                                <nb-option value="">Select</nb-option>
+                                <nb-option *ngFor="let data of subClassList"
+                                    [value]="data.sub_class_id">{{data.sub_class_name}}</nb-option>
+                            </nb-select>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Brand Name</label>
+                            <nb-select shape="semi-round" placeholder="Select Brand" name="brand_name" #brand_name="ngModel" [(ngModel)]="model.brand_name">
+                                <nb-option value="">Select</nb-option>
+                                <nb-option *ngFor="let data of brandList" [value]="data.brand_name">{{data.brand_name}}</nb-option>
+                            </nb-select>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Status of Assets</label>
+                            <nb-select shape="semi-round" placeholder="Select Status of Assets" name="status_of_assets" #status_of_assets="ngModel" [(ngModel)]="model.status_of_assets">
+                                <nb-option value="">Select</nb-option>
+                                <nb-option value="WORKING">WORKING</nb-option>
+                                <nb-option value="NOT WORKING">NOT WORKING</nb-option>
+                                <nb-option value="MISSING">MISSING</nb-option>
+                                <nb-option value="SCRAP">SCRAP</nb-option>
+                                <nb-option value="DISPOSED">DISPOSED</nb-option>
+                            </nb-select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Assets Under</label>
+                            <nb-select shape="semi-round" placeholder="Select Status of Assets" name="assets_under" #assets_under="ngModel" [(ngModel)]="model.assets_under">
+                                <nb-option value="">Select</nb-option>
+                                <nb-option value="FC">FC</nb-option>
+                                <nb-option value="Non-FC">Non-FC</nb-option>
+                                <nb-option value="SCRAP">SCRAP</nb-option>
+                                <nb-option value="DISPOSED">DISPOSED</nb-option>
+                            </nb-select>
+                        </div>
+                    </div>
+
+                    <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+                        Download
+                    </button>
+
+                </nb-card-body>
+            </nb-card>
+        </div>
+    </div>
+</form>

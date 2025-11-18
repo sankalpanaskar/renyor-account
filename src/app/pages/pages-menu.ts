@@ -92,6 +92,23 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         ],
       },
     ]),
+
+    ...showMany(hasRole(roleId, COMMON_ROLES), [
+      {
+        title: 'Reports',
+        icon: 'layout-outline',
+        children: [
+          ...show(hasRole(roleId, BULK_UPLOAD_ROLES),           { title: 'Assets Report',               link: '/pages/report/assets-report' }),
+          ...show(hasRole(roleId, ADD_ASSET_ROLES),             { title: 'Asset Assigned To Me',        link: '/pages/report/assets-report' }),
+          ...show(hasRole(roleId, ASSET_LIST_ROLES),            { title: 'Depriciation Assets',         link: '/pages/report/assets-report' }),
+          ...show(hasRole(roleId, PENDING_ASSET_ROLES),         { title: 'Not Working Assets',          link: '/pages/report/assets-report' }),
+          ...show(hasRole(roleId, ASSET_TRANSFER_ROLES),        { title: 'Scrap Approval Pending',      link: '/pages/report/assets-report' }),
+          ...show(hasRole(roleId, STATUS_CHANGE_ROLES),         { title: 'Scrap Asset',                 link: '/pages/report/assets-report' }),
+          ...show(hasRole(roleId, ASSET_HISTORY_ROLES),         { title: 'Disposed Approval Pending',   link: '/pages/report/assets-report' }),
+          ...show(hasRole(roleId, ASSET_OWNER_CHANGE),          { title: 'Disposed Asset',              link: '/pages/report/assets-report' })
+        ],
+      },
+    ]),
   ];
 
   return menu;
