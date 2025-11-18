@@ -275,4 +275,8 @@ export class GlobalService {
     return this.http.post(`${this.assetUrl}/scrap-asset-list`,data);
   }  
 
+  public submitSale(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/''`,data);
+  } 
+
 }
