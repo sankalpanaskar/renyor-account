@@ -8,7 +8,7 @@
 
 /* 🔹 Remove extra padding inside Nebular card body */
 .asset-list-body {
-  padding: 1rem 0rem 1.5rem 0rem !important;
+  padding: 0.5rem 0rem 1.5rem 0rem !important;
   position: relative;
 }
 
@@ -36,6 +36,15 @@
   font-weight: 600;
   padding: 0 1.5rem;
 }
+
+.section-header {
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 
 /* 🔹 Search input (below the form) */
 .search {

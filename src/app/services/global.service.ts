@@ -279,9 +279,12 @@ export class GlobalService {
     return this.http.post(`${this.assetUrl}/asset-details-report`,data);
   }
 
-
   public submitSale(data:any): Observable<any> {
     return this.http.post(`${this.assetUrl}/''`,data);
+  } 
+
+  public getBrandList(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-brand-list`);
   } 
 
 }

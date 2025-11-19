@@ -88,7 +88,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         title: 'Brand',
         icon: 'keypad-outline',
         children: [
-          { title: 'Add Brand', link: '/pages/brand/add-brand' },
+          { title: 'Brand List', link: '/pages/brand/brand-list' },
         ],
       },
     ]),

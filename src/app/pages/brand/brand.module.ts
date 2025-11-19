@@ -8,12 +8,16 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { AddBrandComponent } from './add-brand/add-brand.component';
+import { BrandListComponent } from './brand-list/brand-list.component';
+import { BrandEditButtonComponent } from './brand-list/brand-edit-btn.component';
 
 
 @NgModule({
   declarations: [
     BrandComponent,
-    AddBrandComponent
+    AddBrandComponent,
+    BrandListComponent,
+    BrandEditButtonComponent
   ],
   imports: [
     CommonModule,

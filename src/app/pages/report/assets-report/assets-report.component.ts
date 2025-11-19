@@ -82,6 +82,7 @@ export class AssetsReportComponent {
   }
 
   selectCenter(centerData: any) {
+    console.log("center select",centerData);
     this.model.center = centerData;
     this.selectedCenter = this.centerList.find(
       (course) => course.center_code === centerData
