@@ -1,5 +1,5 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%;
-max-width: 900px;margin: 0 auto;">
+margin: 0 auto;">
     <div class="row">
         <div class="col-lg-12">
             <nb-card>
@@ -16,7 +16,7 @@ max-width: 900px;margin: 0 auto;">
                                 (click)="toggleDropdown()">
                                 <span class="truncate-text" [ngClass]="{ 'placeholder': !model.center }">
                                     <ng-container *ngIf="model.center; else placeholderText">
-                                        {{ model.center }}
+                                        {{ selectedCenter.center_name }}
                                     </ng-container>
                                     <ng-template #placeholderText>
                                         Select Center
@@ -39,7 +39,7 @@ max-width: 900px;margin: 0 auto;">
 
                                 <div *ngFor="let center of filterCenterList"
                                     (click)="selectTransCenter(center.center_code)" class="dropdown-item">
-                                    {{ center.center_code }}
+                                    {{ center.center_name }}
                                 </div>
 
                                 <div *ngIf="filterCenterList.length === 0" class="dropdown-item disabled">

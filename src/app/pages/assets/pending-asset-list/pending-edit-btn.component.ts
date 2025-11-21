@@ -11,7 +11,7 @@ import { GlobalService } from '../../../services/global.service'; // ✅ adjust 
       </button>
 
       <!-- 🔹 Edit Button -->
-      <button nbButton ghost size="small" status="primary" (click)="onEdit()">
+      <button *ngIf="showEditButton" nbButton ghost size="small" status="primary" (click)="onEdit()">
         <nb-icon icon="edit-outline"></nb-icon>
       </button>
 
@@ -53,13 +53,16 @@ export class PendingEditBtnComponent {
   @Output() approve = new EventEmitter<any>(); // ✅ new output event
 
   showApproveButton = false;
+  showEditButton = false;
 
   constructor(private globalService: GlobalService) {}
 
   ngOnInit(): void {
     // ✅ Check once when component loads
     console.log("ANp ID",this.globalService.user_code);
-    this.showApproveButton = String(this.globalService.user_code) === 'ANP-2770'|| String(this.globalService.user_code) === 'ANP-0011';
+    this.showApproveButton = String(this.globalService.user_code) === 'ANP-2770';
+    this.showEditButton = (this.globalService.role_id === 35 && this.globalService.user_code === "ANP-3540") || (this.globalService.role_id === 39 && this.globalService.user_code === "ANP-0011")
+
   }
 
   onView() {

@@ -1,5 +1,4 @@
-<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk"
-    style="width: 100%; margin: 0 auto;">
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%; margin: 0 auto;">
     <div class="row">
         <div class="col-lg-12">
             <nb-card>
@@ -28,8 +27,8 @@
                                             </th>
                                             <th>Sub Class</th>
                                             <th>Brand</th>
-                                            <th>Model</th>
                                             <th>Serial No</th>
+                                            <th>Center</th>
                                             <th>Purchase Date</th>
                                             <th>Anudip ID</th>
                                         </tr>
@@ -44,8 +43,8 @@
                                             </td>
                                             <td>{{ asset.assets_sub_class }}</td>
                                             <td>{{ asset.brand_name }}</td>
-                                            <td>{{ asset.model_no }}</td>
                                             <td>{{ asset.serial_no }}</td>
+                                            <td>{{ asset.center_code }}</td>
                                             <td>{{ asset.purchase_date | date:'yyyy-MM-dd' }}</td>
                                             <td>{{ asset.anudip_identification_no }}</td>
                                         </tr>
@@ -229,6 +228,29 @@
                                 required</div>
 
                         </div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-lg-12">
+                            <label class="small-label" id="label-category">
+                                Remarks
+                                <!-- <span style="color:#d32f2f">*</span> -->
+                            </label>
+                            <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="remarks"
+                                [(ngModel)]="model.remarks" #remarks="ngModel" rows="2" [maxlength]="500">
+                        </textarea>
+
+                            <!-- character counter -->
+                            <div style="font-size: 12px; color:#6c757d; margin-top: 4px;">
+                                {{ (model.remarks?.length || 0) }}/500
+                            </div>
+
+                            <!-- If you want Remarks to be required, add 'required' above and use this error -->
+                            <div *ngIf="fm.submitted && remarks.invalid" class="error-message">Remarks are required
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- ✅ Submit -->

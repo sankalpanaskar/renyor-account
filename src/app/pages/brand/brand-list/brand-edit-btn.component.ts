@@ -13,7 +13,7 @@ import { GlobalService } from '../../../services/global.service'; // ✅ adjust 
 
             <!-- 🔹 Delte Button -->
       <button nbButton ghost size="small" status="info" (click)="onDelete()">
-        <nb-icon icon="trash-2-outline"></nb-icon>
+        <nb-icon icon="repeat-outline"></nb-icon>
       </button>
 
     </div>

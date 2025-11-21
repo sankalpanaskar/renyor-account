@@ -8,12 +8,21 @@ import { NbAccordionModule, NbButtonModule, NbCardModule, NbDatepickerModule, Nb
 import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { AssetsReportComponent } from './assets-report/assets-report.component';
+import { AssignToMeReportComponent } from './assign-to-me-report/assign-to-me-report.component';
+import { DepriciationReportComponent } from './depriciation-report/depriciation-report.component';
+import { NotWorkingAssetReportComponent } from './not-working-asset-report/not-working-asset-report.component';
+import { ScrapApprovalPendingReportComponent } from './scrap-approval-pending-report/scrap-approval-pending-report.component';
 
 
 @NgModule({
   declarations: [
     ReportComponent,
-    AssetsReportComponent
+    AssetsReportComponent,
+    AssignToMeReportComponent,
+    DepriciationReportComponent,
+    NotWorkingAssetReportComponent,
+    ScrapApprovalPendingReportComponent
+    
   ],
   imports: [
     CommonModule,

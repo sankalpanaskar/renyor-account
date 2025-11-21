@@ -56,6 +56,7 @@ export class ScrapSaleFormComponent implements OnInit {
   searchText = '';
 
   today: Date = new Date(); // 🔹 for max invoice date
+  selectedBuyerId: any;
 
   constructor(
     private globalService: GlobalService,
@@ -105,7 +106,7 @@ export class ScrapSaleFormComponent implements OnInit {
     if (text) {
       this.filteredAssetList = this.assetList.filter((asset) =>
         (asset.brand_name || '').toLowerCase().includes(text) ||
-        (asset.model_no || '').toLowerCase().includes(text) ||
+        (asset.center_code || '').toLowerCase().includes(text) ||
         (asset.serial_no || '').toLowerCase().includes(text) ||
         (asset.purchase_date || '').toLowerCase().includes(text) ||
         (asset.anudip_identification_no || '').toLowerCase().includes(text) ||
@@ -151,6 +152,12 @@ export class ScrapSaleFormComponent implements OnInit {
   // 🔹 Select Buyer from dropdown
   selectFunder(buyerName: string): void {
     this.model.buyer_name = buyerName;
+    
+    const selectedBuyer= this.buyerList.find(
+      (buyer) => buyer.name === buyerName
+    );
+    console.log("buyer data",selectedBuyer);
+    this.selectedBuyerId = selectedBuyer.buyer_id;
     this.dropdownOpen = false;
     this.searchText = '';
     this.filterOptions();
@@ -268,8 +275,10 @@ onSubmit(fm: any): void {
 
     // 🔹 Buyer & invoice details
     buyer_name: this.model.buyer_name,
+    buyer_id : this.selectedBuyerId,
     invoice_no: this.model.invoice_no,
     invoice_date: this.model.invoice_date,
+    remarks: this.model.remarks,
 
     // 🔹 Selected assets
     selected_assets: selectedAssets.map((a) => ({
@@ -314,6 +323,7 @@ onSubmit(fm: any): void {
         this.model.buyer_name = null;
         this.model.invoice_no = null;
         this.model.invoice_date = null;
+        this.model.remarks = null
         this.priceRows = [];
         this.baseTotal = 0;
         this.grandTotal = 0;

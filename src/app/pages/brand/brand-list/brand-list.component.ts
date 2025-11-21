@@ -39,8 +39,8 @@ export class BrandListComponent implements OnInit{
           if (cell === 1) {
             return `<h6><span class="badge rounded-pill bg-success text-white pl-2 pr-2 custom-badge">Active</span></h6>`;
           }
-          else if(cell === 2){
-            return `<h6><span class="badge rounded-pill bg-warning text-white pl-2 pr-2 custom-badge">Not Active</span></h6>`;
+          else if(cell === 0){
+            return `<h6><span class="badge rounded-pill bg-danger text-white pl-2 pr-2 custom-badge">Not Active</span></h6>`;
           }
         }
       },
@@ -87,8 +87,23 @@ export class BrandListComponent implements OnInit{
   }
 
   onDelete(rowData: any) {
-    const assetData = rowData.fullData; // ✅ full object from API
-    console.log("asset data",assetData);
+    const brandData = rowData.fullData; // ✅ full object from API
+    console.log("asset data delete",brandData);
+    var data = {
+      id : brandData.id
+    }
+    this.loading = true;
+    this.globalService.changeBrandStatus(data).subscribe({
+      next:(res:any) => {
+        this.loadPendingList();
+          this.toastrService.success(res.message,'Brand Status Change');
+          this.loading = false;
+      },
+      error:(error:any) => {
+          this.toastrService.danger(error.message, 'Brand Status Change Failed');
+          this.loading = false;
+      }
+    })
   }
 
  onEdit(rowData: any) {

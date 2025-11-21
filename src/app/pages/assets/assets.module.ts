@@ -27,6 +27,9 @@ import { AssetOwnerChangeComponent } from './asset-owner-change/asset-owner-chan
 import { AddBuyerFormComponent } from './add-buyer-form/add-buyer-form.component';
 import { BuyerListComponent } from './buyer-list/buyer-list.component';
 import { ScrapSaleFormComponent } from './scrap-sale-form/scrap-sale-form.component';
+import { ScrapSaleDetailsComponent } from './scrap-sale-details/scrap-sale-details.component';
+import { SaleEditButtonComponent } from './scrap-sale-details/sale-edit-btn.component';
+import { ScrapSaleDialogComponent } from './scrap-sale-dialog/scrap-sale-dialog.component';
 
 
 @NgModule({
@@ -51,7 +54,10 @@ import { ScrapSaleFormComponent } from './scrap-sale-form/scrap-sale-form.compon
     AssetOwnerChangeComponent,
     AddBuyerFormComponent,
     BuyerListComponent,
-    ScrapSaleFormComponent
+    ScrapSaleFormComponent,
+    ScrapSaleDetailsComponent,
+    SaleEditButtonComponent,
+    ScrapSaleDialogComponent
 
   ],
   imports: [

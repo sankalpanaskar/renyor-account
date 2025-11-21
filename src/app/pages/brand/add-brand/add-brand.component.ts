@@ -8,34 +8,33 @@ import { NbToastrService, NbDialogRef } from '@nebular/theme';
   styleUrls: ['./add-brand.component.scss'],
 })
 export class AddBrandComponent implements OnInit {
-  // filled by Nebular dialog context: { brandData: ... }
+  // Filled from dialog context: { brandData }
   public brandData: any;
 
   model: any = {
+    id: null,
     brand_name: '',
   };
 
   isSubmitting = false;
-  isEdit = false;       // 🔹 Add vs Edit flag
+  isEdit = false;
   dialogTitle = 'Add Brand';
 
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private dialogRef: NbDialogRef<AddBrandComponent>,  // 👈 to close dialog
+    private dialogRef: NbDialogRef<AddBrandComponent>,
   ) {}
 
   ngOnInit(): void {
-    // If brandData is passed from BrandListComponent → EDIT mode
     if (this.brandData) {
+      // ✅ Edit mode
       this.isEdit = true;
       this.dialogTitle = 'Edit Brand';
-
-      // Prefill fields from brandData
-      this.model.brand_name = this.brandData.brand_name;
-      // If you need id for update:
       this.model.id = this.brandData.id;
+      this.model.brand_name = this.brandData.brand_name;
     } else {
+      // ✅ Add mode
       this.isEdit = false;
       this.dialogTitle = 'Add Brand';
     }
@@ -48,41 +47,63 @@ export class AddBrandComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    const payload: any = {
+    // 🔹 Common payload fields
+    const basePayload: any = {
       brand_name: this.model.brand_name,
-      created_by: this.globalService.fullName,
     };
 
-    // If editing, include id (backend can treat this as update)
-    if (this.isEdit && this.model.id) {
-      payload.id = this.model.id;
+    // 🔹 If editing → call UPDATE API
+    if (this.isEdit) {
+      const payload = {
+        ...basePayload,
+        id: this.model.id,
+        updated_by: this.globalService.fullName,
+      };
+
+      this.globalService.updateBrand(payload).subscribe({
+        next: (res: any) => {
+          this.isSubmitting = false;
+          this.toastrService.success(
+            res?.message || 'Brand updated successfully.',
+            'Updated',
+          );
+          this.dialogRef.close(true); // notify parent to refresh
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          const errorMessage =
+            err?.error?.message ||
+            err?.message ||
+            'Update Brand Failed. Please try again.';
+          this.toastrService.danger(errorMessage, 'Update Brand Failed');
+        },
+      });
+
+    } else {
+      // 🔹 If adding → call ADD API
+      const payload = {
+        ...basePayload,
+        created_by: this.globalService.fullName,
+      };
+
+      this.globalService.submitAddBrand(payload).subscribe({
+        next: (res: any) => {
+          this.isSubmitting = false;
+          this.toastrService.success(
+            res?.message || 'Brand added successfully.',
+            'Added',
+          );
+          this.dialogRef.close(true); // notify parent to refresh
+        },
+        error: (err) => {
+          this.isSubmitting = false;
+          const errorMessage =
+            err?.error?.message ||
+            err?.message ||
+            'Add Brand Failed. Please try again.';
+          this.toastrService.danger(errorMessage, 'Add Brand Failed');
+        },
+      });
     }
-
-    this.globalService.submitAddBrand(payload).subscribe({
-      next: (res) => {
-        this.isSubmitting = false;
-        this.toastrService.success(
-          res?.message || (this.isEdit ? 'Brand updated successfully.' : 'Brand added successfully.'),
-          this.isEdit ? 'Updated' : 'Added'
-        );
-
-        // Reset local form (optional)
-        fm.resetForm();
-        this.model = { brand_name: '' };
-
-        // ✅ Close dialog and notify parent to refresh
-        this.dialogRef.close(true);
-      },
-      error: (err) => {
-        this.isSubmitting = false;
-        console.error('Submit error:', err);
-        const errorMessage =
-          err?.error?.message ||
-          err?.message ||
-          (this.isEdit ? 'Update Brand Failed. Please try again.' : 'Add Brand Failed. Please try again.');
-
-        this.toastrService.danger(errorMessage, this.isEdit ? 'Update Brand Failed' : 'Add Brand Failed');
-      },
-    });
   }
 }

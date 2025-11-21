@@ -136,7 +136,7 @@ onEdit(rowData: any) {
   // ✅ When dialog closes
   dialogRef.onClose.subscribe((updatedData) => {
     if (updatedData) {
-      this.toastrService.success('Asset updated successfully', 'Success');
+      // this.toastrService.success('Asset updated successfully', 'Updated');
 
       // ✅ Re-run your search API automatically using the same filter form data
       // grab your last submitted form values (store them globally or from template ref)

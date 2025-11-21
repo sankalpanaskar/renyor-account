@@ -16,6 +16,7 @@ import { AssetOwnerChangeComponent } from './asset-owner-change/asset-owner-chan
 import { AddBuyerFormComponent } from './add-buyer-form/add-buyer-form.component';
 import { BuyerListComponent } from './buyer-list/buyer-list.component';
 import { ScrapSaleFormComponent } from './scrap-sale-form/scrap-sale-form.component';
+import { ScrapSaleDetailsComponent } from './scrap-sale-details/scrap-sale-details.component';
 
 const routes: Routes = [{
   path:'',
@@ -80,6 +81,10 @@ const routes: Routes = [{
     {
       path:'scrap-sale-form',
       component:ScrapSaleFormComponent
+    }, 
+    {
+      path:'scrap-sale-details',
+      component:ScrapSaleDetailsComponent
     }, 
   ]
 }];

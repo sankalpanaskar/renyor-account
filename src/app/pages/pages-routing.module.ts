@@ -91,6 +91,11 @@ const routes: Routes = [{
         .then(m => m.BrandModule),
     },    
     {
+      path: 'item',
+      loadChildren: () => import('./item/item.module')
+        .then(m => m.ItemModule),
+    },    
+    {
       path: '',
       redirectTo: 'dashboard',
       pathMatch: 'full',

@@ -102,7 +102,7 @@ export class GlobalService {
   }
 
   public getBrands(): Observable<any> {
-    return this.http.get(`${this.assetUrl}/brand-list`);
+    return this.http.get(`${this.assetUrl}/get-brand-list`);
   }
   
   public getClass(): Observable<any> {
@@ -150,7 +150,8 @@ export class GlobalService {
   }
 
   public submitAssetTransfer(data: any): Observable<any> {
-    return this.http.post(`${this.assetUrl}/transfer-asset`, data);
+    // return this.http.post(`${this.assetUrl}/transfer-asset`, data);
+    return this.http.post(`${this.assetUrl}/''`, data);
   }  
 
   public classByUser(data: any): Observable<any> {
@@ -280,11 +281,84 @@ export class GlobalService {
   }
 
   public submitSale(data:any): Observable<any> {
-    return this.http.post(`${this.assetUrl}/''`,data);
+    return this.http.post(`${this.assetUrl}/save-selling-details`,data);
   } 
 
   public getBrandList(): Observable<any> {
     return this.http.get(`${this.assetUrl}/get-brand-list`);
+  }
+  
+  public updateBrand(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/update-brand`,data);
   } 
+
+  public changeBrandStatus(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/deactive-brand`,data);
+  } 
+
+  public getCategoryList(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-asset-classes`);
+  }
+
+  public submitAddCategory(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/''`,data);
+  } 
+
+  public updateCategory(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/update-asset-class`,data);
+  }
+
+  public changeCategoryStatus(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/deactive-class`,data);
+  } 
+
+  public getItemList(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-asset-subclasses`);
+  }
+
+  public changeItemStatus(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/deactive-subclass`,data);
+  } 
+
+  public submitAddItem(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/insert-sub-class`,data);
+  } 
+
+  public updateItem(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/update-asset-subclass`,data);
+  } 
+
+  public getSellerDetails(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-seller-details`);
+  }
+
+  public downloadAssetSaleXls(sellerId:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/seller-report/${sellerId}`);
+  }
+
+  public getScrapAssetData(sellerId:any): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-seller-tr/${sellerId}`);
+  }
+
+  public assetsAssignedReport(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/asset-assigntome-report`,data);
+  } 
+
+  public depriciationReport(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/depriciation-asset-details-report`,data);
+  } 
+
+  public notWorkingAssetReport(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/not-working-asset-report`,data);
+  }
+
+  public scrapApprovalPendingReport(data:any): Observable<any> {
+    return this.http.post(`${this.assetUrl}/scrap-approval-pending-report`,data);
+  }
+
+
+
+
+  
 
 }
