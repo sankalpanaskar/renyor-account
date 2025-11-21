@@ -258,7 +258,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           }),
           ...show(hasRole(roleId, STATUS_CHANGE_ROLES), {
             title: 'Scrap Asset',
-            link: '/pages/report/assets-report',
+            link: '/pages/report/scrap-asset-report',
           }),
           ...show(hasRole(roleId, ASSET_HISTORY_ROLES), {
             title: 'Disposed Approval Pending',
