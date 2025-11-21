@@ -1,0 +1,42 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%; margin: 0 auto;">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        <!-- 🔹 Dynamic title -->
+        <nb-card-header>{{ dialogTitle }}</nb-card-header>
+
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+          <div class="row">
+            <div class="col-lg-12">
+              <label class="small-label" id="label-category">
+                 Category Name <span style="color:#d32f2f">*</span>
+              </label>
+
+              <input
+                type="text"
+                nbInput
+                fullWidth
+                shape="semi-round"
+                placeholder="Category Name"
+                name="category_name"
+                required
+                #category_name="ngModel"
+                [(ngModel)]="model.category_name"
+              />
+
+              <div *ngIf="fm.submitted && category_name.invalid" class="error-message">
+                Category Name is required
+              </div>
+            </div>
+          </div>
+
+          <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+            {{ isEdit ? 'Update' : 'Save' }}
+          </button>
+
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</form>

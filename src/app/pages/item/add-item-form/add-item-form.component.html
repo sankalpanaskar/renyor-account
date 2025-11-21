@@ -1,0 +1,54 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadFormBulk" style="width: 100%; margin: 0 auto;">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        <!-- 🔹 Dynamic title -->
+        <nb-card-header>{{ dialogTitle }}</nb-card-header>
+
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+
+          <div class="row">
+            <div class="col-lg-12">
+              <label class="small-label" id="label-category">Asset Class<span style="color:#d32f2f">*</span></label>
+              <nb-select fullWidth shape="semi-round" placeholder="Select Asset Class" name="asset_class" required #asset_class="ngModel"
+                [(ngModel)]="model.asset_class">
+                <nb-option *ngFor="let data of classList" [value]="data.class_id">{{data.asset_class_name}}</nb-option>
+              </nb-select>
+              <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is required</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-12">
+              <label class="small-label" id="label-category">
+                 Category Name <span style="color:#d32f2f">*</span>
+              </label>
+
+              <input
+                type="text"
+                nbInput
+                fullWidth
+                shape="semi-round"
+                placeholder="Item Name"
+                name="item_name"
+                required
+                #item_name="ngModel"
+                [(ngModel)]="model.item_name"
+              />
+
+              <div *ngIf="fm.submitted && item_name.invalid" class="error-message">
+                Item Name is required
+              </div>
+            </div>
+          </div>
+
+
+          <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+            {{ isEdit ? 'Update' : 'Save' }}
+          </button>
+
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</form>
