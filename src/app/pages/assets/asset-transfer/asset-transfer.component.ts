@@ -203,7 +203,7 @@ export class AssetTransferComponent implements OnInit {
       return (
         (asset.brand_name.toLowerCase().includes(text)) ||
         (asset.model_no.toLowerCase().includes(text)) ||
-        (asset.serial_no.toString().includes(text)) ||
+        (asset.serial_no.toLowerCase().includes(text)) ||
         (asset.purchase_date.toLowerCase().includes(text)) ||
         (asset.anudip_identification_no.toLowerCase().includes(text)) 
       );
