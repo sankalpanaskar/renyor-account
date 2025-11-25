@@ -16,6 +16,10 @@ margin: 0 auto;">
                                 [(ngModel)]="model.from_center">
                                 <nb-option *ngFor="let data of centerList"
                                     [value]="data.center_code">{{data.center_code}}</nb-option>
+                                <!-- 🔹 Show this when API returned empty array -->
+                                <nb-option *ngIf="centerList.length === 0" [value]="''" disabled>
+                                    No Center Found !
+                                </nb-option> 
                             </nb-select>
                             <div *ngIf="fm.submitted && from_center.invalid" class="error-message">Center is required
                             </div>
@@ -90,7 +94,6 @@ margin: 0 auto;">
                                     class="d-flex flex-row" #approval_status="ngModel" required>
                                     <nb-radio value="Accept">Accept</nb-radio>
                                     <nb-radio value="Reject">Reject</nb-radio>
-                                    <nb-radio value="Revoke">Revoke</nb-radio>
                                 </nb-radio-group>
 
                                 <div *ngIf="fm.submitted && approval_status.invalid" class="error-message">

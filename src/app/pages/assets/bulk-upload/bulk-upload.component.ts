@@ -23,8 +23,8 @@ export class BulkUploadComponent implements OnInit {
   isSubmitting: boolean = false;
 
   @ViewChild('fileInput') fileInput: ElementRef;
-  
- constructor(
+
+  constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService
   ) { }
@@ -82,21 +82,24 @@ export class BulkUploadComponent implements OnInit {
   onSubmit(fm: any) {
     if (this.selectedFile) {
       const formData = new FormData();
-
       formData.append('member_id', this.globalService.member_id);
       formData.append('role_id', this.globalService.role_id);
-
       formData.append('file', this.selectedFile);
+
       this.isSubmitting = true;
-      // Example call
+
       this.globalService.uploadBulkAsset(formData).subscribe({
         next: (res) => {
           console.log('Upload success:', res);
+
           fm.resetForm();
           this.model = '';
-          this.toastrService.success(res.message, 'Uploaded');
+
+          this.toastrService.success(res.message, 'Uploaded', {
+            duration: 5000,
+          });
+
           this.isSubmitting = false;
-          // ✅ Reset file input after successful upload
           this.resetFileInput();
         },
         error: (err) => {
@@ -107,18 +110,24 @@ export class BulkUploadComponent implements OnInit {
             err?.message ||        // Fallback to generic message
             'Upload failed. Please try again.';
 
-          this.toastrService.danger(errorMessage, 'Upload Failed');
+          this.toastrService.danger(errorMessage, 'Upload Failed', {
+            duration: 15000,
+            destroyByClick: true,
+            hasIcon: true,
+          });
           this.isSubmitting = false;
         }
+
       });
 
       console.log('Form Submitted', formData);
     } else {
-      if (!this.selectedFile) {
-        this.fileError = 'Please upload a valid Excel file.';
-      }
+      this.fileError = 'Please upload a valid Excel file.';
     }
   }
+
+
+
 
 
 }

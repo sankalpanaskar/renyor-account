@@ -34,6 +34,9 @@ margin: 0 auto;">
                                 (selectedChange)="selectClass($event)">
                                 <nb-option *ngFor="let data of classList"
                                     [value]="data.category">{{data.category}}</nb-option>
+                                <nb-option *ngIf="classList.length === 0" disabled>
+                                    No Class Found For Selected Center!
+                                </nb-option> 
                             </nb-select>
                             <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is
                                 required</div>

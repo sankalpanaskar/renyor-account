@@ -7,6 +7,7 @@ import { DepriciationReportComponent } from './depriciation-report/depriciation-
 import { NotWorkingAssetReportComponent } from './not-working-asset-report/not-working-asset-report.component';
 import { ScrapApprovalPendingReportComponent } from './scrap-approval-pending-report/scrap-approval-pending-report.component';
 import { ScrapAssetReportComponent } from './scrap-asset-report/scrap-asset-report.component';
+import { authGuard } from '../../auth/auth.guard';
 
 const routes: Routes = [{
   path: '',
@@ -15,26 +16,32 @@ const routes: Routes = [{
   {
     path: 'assets-report',
     component: AssetsReportComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'assign-to-me-report',
     component: AssignToMeReportComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'depriciation-report',
     component: DepriciationReportComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'not-working-asset-report',
     component: NotWorkingAssetReportComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'scrap-approval-pending-report',
     component: ScrapApprovalPendingReportComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'scrap-asset-report',
     component: ScrapAssetReportComponent,
+    canActivate: [authGuard]
   },
 ],
 }];

@@ -172,47 +172,68 @@ max-width: 950px;margin: 0 auto;">
                                 is required</div>
                         </div>
 
-            <div class="col-lg-6">
-             <label class="small-label" id="label-category">Select Funder<span
-                                    style="color:#d32f2f">*</span></label>
-              <!-- Custom Dropdown Wrapper -->
-              <div class="custom-select" #dropdownTrigger [class.invalid]="fm.submitted && funded_by.invalid"
-                (click)="toggleDropdown()">
-                <span class="truncate-text" [ngClass]="{ 'placeholder': !model.funded_by }">
-                  <ng-container *ngIf="model.funded_by; else placeholderText">
-                    {{ model.funded_by }}
-                  </ng-container>
-                  <ng-template #placeholderText>
-                    Select Funder
-                  </ng-template>
-                </span>
+<div class="col-lg-6">
+  <label class="small-label" id="label-category">Select Funder
+    <span style="color:#d32f2f" *ngIf="!isFunderDisabled">*</span>
+  </label>
 
-                <nb-icon [icon]="dropdownOpen ? 'chevron-up-outline' : 'chevron-down-outline'" pack="eva"></nb-icon>
-              </div>
+  <!-- Custom Dropdown Wrapper -->
+  <div class="custom-select"
+       #dropdownTrigger
+       [class.invalid]="fm.submitted && funded_by.invalid"
+       [class.disabled]="isFunderDisabled"
+       (click)="!isFunderDisabled && toggleDropdown()">
+    <span class="truncate-text" [ngClass]="{ 'placeholder': !model.funded_by }">
+      <ng-container *ngIf="model.funded_by; else placeholderText">
+        {{ model.funded_by }}
+      </ng-container>
+      <ng-template #placeholderText>
+        Select Funder
+      </ng-template>
+    </span>
 
-              <!-- Form Binding for Validation -->
-              <input type="text" name="funded_by" [(ngModel)]="model.funded_by" #funded_by="ngModel" required hidden />
+    <nb-icon
+      [icon]="dropdownOpen ? 'chevron-up-outline' : 'chevron-down-outline'"
+      pack="eva">
+    </nb-icon>
+  </div>
 
-              <!-- Dropdown with dynamic direction -->
-              <div class="custom-dropdown" [ngClass]="{ 'open-up': openAbove, 'open-down': !openAbove }"
-                *ngIf="dropdownOpen">
-                <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText"
-                  (ngModelChange)="filterOptions()" />
+  <!-- Form Binding for Validation -->
+  <input type="text"
+         name="funded_by"
+         [(ngModel)]="model.funded_by"
+         #funded_by="ngModel"
+         [required]="!isFunderDisabled"
+         [disabled]="isFunderDisabled"
+         hidden />
 
-                <div *ngFor="let funder of filterFunderList" (click)="selectFunder(funder.funder_name)" class="dropdown-item">
-                  {{ funder.funder_name }}
-                </div>
+  <!-- Dropdown with dynamic direction -->
+  <div class="custom-dropdown"
+       [ngClass]="{ 'open-up': openAbove, 'open-down': !openAbove }"
+       *ngIf="dropdownOpen && !isFunderDisabled">
+    <input nbInput fullWidth
+           placeholder="Search..."
+           [(ngModel)]="searchText"
+           (ngModelChange)="filterOptions()" />
 
-                <div *ngIf="filterFunderList.length === 0" class="dropdown-item disabled">
-                  No Funder found
-                </div>
-              </div>
+    <div *ngFor="let funder of filterFunderList"
+         (click)="selectFunder(funder.funder_name)"
+         class="dropdown-item">
+      {{ funder.funder_name }}
+    </div>
 
-              <!-- Error Message -->
-              <div *ngIf="fm.submitted && funded_by.invalid" class="error-message">
-                Funder is required
-              </div>
-            </div>
+    <div *ngIf="filterFunderList.length === 0" class="dropdown-item disabled">
+      No Funder found
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="fm.submitted && funded_by.invalid && !isFunderDisabled"
+       class="error-message">
+    Funder is required
+  </div>
+</div>
+
                         
 
                         <!-- <div class="col-lg-6">
@@ -266,7 +287,8 @@ max-width: 950px;margin: 0 auto;">
 
                         <div class="col-lg-12">
                             <label class="small-label" id="label-category">
-                                Remarks <span style="color:#d32f2f">*</span>
+                                Remarks 
+                                <!-- <span style="color:#d32f2f">*</span> -->
                             </label>
                             <!-- <label class="small-label"><strong>Remarks</strong></label> -->
                             <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="remarks"

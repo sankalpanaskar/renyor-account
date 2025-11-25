@@ -43,58 +43,8 @@ login() {
         return null;
       }
     };
-
-    // -------------------------------------------------------------------
-    // MOBILE LOGIN FLOW
-    // -------------------------------------------------------------------
-    if (isMobileLogin) {
-      console.log('📡 Sending mobile login request...');
-      this.http.post('https://leadapi.anudip.org/public/api/student-login', {
-        user_id: this.email.trim(),
-        password: this.password.trim(),
-      }).subscribe({
-        next: (res: any) => {
-          console.log('✅ Raw mobile login response:', res);
-
-          // Decode if Base64 encoded
-          let payload = res;
-          if (res?.message && typeof res.message === 'string') {
-            const decoded = decodeApiMessage(res.message);
-            if (decoded) payload = decoded;
-          }
-
-          console.log('📦 Decoded mobile payload:', payload);
-
-          const token = payload?.data?.token;
-          const user = payload?.data?.userDetails;
-
-          if (token && user) {
-            console.log('✅ Token and user extracted successfully');
-            localStorage.setItem('auth_token', token);
-            localStorage.setItem('user', JSON.stringify(user));
-            this.tokenService.set(new NbAuthSimpleToken(token, 'mobile'));
-            this.globalService.setUser(user);
-
-            this.toastrService.success(payload?.message || 'Login successful', 'Success');
-            this.router.navigate(['/pages/student/student-details']);
-          } else {
-            console.error('⚠️ Invalid response structure:', payload);
-            this.toastrService.danger('Invalid response from server', 'Login Failed');
-          }
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('❌ Mobile login failed:', err);
-          this.toastrService.danger(err?.error?.message || 'Login failed', 'Error');
-          this.isLoading = false;
-        },
-      });
-
-    // -------------------------------------------------------------------
-    // EMAIL LOGIN FLOW (Nebular Auth)
-    // -------------------------------------------------------------------
-    } else {
       console.log('📡 Sending email login request via Nebular...');
+
       this.authService.authenticate('email', {
         user_id: this.email.trim(),
         password: this.password.trim(),
@@ -132,13 +82,8 @@ login() {
             this.globalService.setUser(user);
 
             this.toastrService.success(payload?.message || 'Login successful', 'Success');
+            this.router.navigate(['/pages/custom-dashboard']);
 
-            // ✅ Redirect by role
-            if (user.role_id === 17) {
-              this.router.navigate(['/pages/admin-dashboard']);
-            } else {
-              this.router.navigate(['/pages/custom-dashboard']);
-            }
           } else {
             console.error('⚠️ Invalid login response format:', payload);
             this.toastrService.danger('Invalid login response', 'Login Failed');
@@ -153,7 +98,7 @@ login() {
         },
       });
     }
-  } catch (err) {
+  catch (err) {
     console.error('💥 Unexpected login error:', err);
     this.toastrService.danger('Unexpected error occurred', 'Login Failed');
     this.isLoading = false;

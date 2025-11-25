@@ -7,7 +7,8 @@
 
                     <div class="row">
                         <div class="col-lg-6">
-                            <label class="small-label" id="label-category">Anudip Identification No <span style="color:#d32f2f">*</span></label>
+                            <label class="small-label" id="label-category">Anudip Identification No <span
+                                    style="color:#d32f2f">*</span></label>
                             <input type="text" nbInput fullWidth shape="semi-round"
                                 placeholder="Ex. AF-PA-LAP-21-22-3456" name="id_no" required #id_no="ngModel"
                                 [(ngModel)]="model.id_no">
@@ -20,7 +21,8 @@
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Brand" name="brand" required
                                 #brand="ngModel" [(ngModel)]="model.brand">
-                                <nb-option *ngFor="let data of brandList" [value]="{id:data.id,brand_name:data.brand_name}">{{data.brand_name}}</nb-option>
+                                <nb-option *ngFor="let data of brandList"
+                                    [value]="{id:data.id,brand_name:data.brand_name}">{{data.brand_name}}</nb-option>
                             </nb-select>
                             <div *ngIf="fm.submitted && brand.invalid" class="error-message">Brand is required</div>
                         </div>
@@ -66,10 +68,13 @@
                             <label class="small-label" id="label-category">Asset Class<span
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Asset Class" name="asset_class" required
-                                #asset_class="ngModel" [(ngModel)]="model.asset_class" (selectedChange)="selectClass($event)">
-                                <nb-option *ngFor="let data of classList" [value]="data.class_id">{{data.asset_class_name}}</nb-option>
+                                #asset_class="ngModel" [(ngModel)]="model.asset_class"
+                                (selectedChange)="selectClass($event)">
+                                <nb-option *ngFor="let data of classList"
+                                    [value]="data.class_id">{{data.asset_class_name}}</nb-option>
                             </nb-select>
-                            <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is required</div>
+                            <div *ngIf="fm.submitted && asset_class.invalid" class="error-message">Asset Class is
+                                required</div>
                         </div>
                     </div>
 
@@ -79,8 +84,10 @@
                             <label class="small-label" id="label-category">Assets Sub Class<span
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Assets Sub Class" name="asset_sub_class"
-                                required #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class" (selectedChange)="selectSubClass($event)">
-                            <nb-option *ngFor="let data of subClassList" [value]="data.sub_class_id">{{data.sub_class_name}}</nb-option>
+                                required #asset_sub_class="ngModel" [(ngModel)]="model.asset_sub_class"
+                                (selectedChange)="selectSubClass($event)">
+                                <nb-option *ngFor="let data of subClassList"
+                                    [value]="data.sub_class_id">{{data.sub_class_name}}</nb-option>
 
                             </nb-select>
                             <div *ngIf="fm.submitted && asset_sub_class.invalid" class="error-message">Assets Sub Class
@@ -106,7 +113,8 @@
                             <label class="small-label" id="label-category">Owner of Assets<span
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Owner of Assets" name="owner_of_asset"
-                                required #owner_of_asset="ngModel" [(ngModel)]="model.owner_of_asset">
+                                required #owner_of_asset="ngModel" [(ngModel)]="model.owner_of_asset"
+                                (selectedChange)="onOwnerChange($event)">
                                 <nb-option value="Anudip">Anudip</nb-option>
                                 <nb-option value="Project">Project</nb-option>
                             </nb-select>
@@ -171,48 +179,51 @@
                                 is required</div>
                         </div>
 
-            <div class="col-lg-6">
-             <label class="small-label" id="label-category">Select Funder<span
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Select Funder<span
                                     style="color:#d32f2f">*</span></label>
-              <!-- Custom Dropdown Wrapper -->
-              <div class="custom-select" #dropdownTrigger [class.invalid]="fm.submitted && funded_by.invalid"
-                (click)="toggleDropdown()">
-                <span class="truncate-text" [ngClass]="{ 'placeholder': !model.funded_by }">
-                  <ng-container *ngIf="model.funded_by; else placeholderText">
-                    {{ model.funded_by }}
-                  </ng-container>
-                  <ng-template #placeholderText>
-                    Select Funder
-                  </ng-template>
-                </span>
+                            <!-- Custom Dropdown Wrapper -->
+                            <div class="custom-select" #dropdownTrigger
+                                [class.invalid]="fm.submitted && funded_by.invalid" (click)="toggleDropdown()">
+                                <span class="truncate-text" [ngClass]="{ 'placeholder': !model.funded_by }">
+                                    <ng-container *ngIf="model.funded_by; else placeholderText">
+                                        {{ model.funded_by }}
+                                    </ng-container>
+                                    <ng-template #placeholderText>
+                                        Select Funder
+                                    </ng-template>
+                                </span>
 
-                <nb-icon [icon]="dropdownOpen ? 'chevron-up-outline' : 'chevron-down-outline'" pack="eva"></nb-icon>
-              </div>
+                                <nb-icon [icon]="dropdownOpen ? 'chevron-up-outline' : 'chevron-down-outline'"
+                                    pack="eva"></nb-icon>
+                            </div>
 
-              <!-- Form Binding for Validation -->
-              <input type="text" name="funded_by" [(ngModel)]="model.funded_by" #funded_by="ngModel" required hidden />
+                            <!-- Form Binding for Validation -->
+                            <input type="text" name="funded_by" [(ngModel)]="model.funded_by" #funded_by="ngModel"
+                                required hidden />
 
-              <!-- Dropdown with dynamic direction -->
-              <div class="custom-dropdown" [ngClass]="{ 'open-up': openAbove, 'open-down': !openAbove }"
-                *ngIf="dropdownOpen">
-                <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText"
-                  (ngModelChange)="filterOptions()" />
+                            <!-- Dropdown with dynamic direction -->
+                            <div class="custom-dropdown" [ngClass]="{ 'open-up': openAbove, 'open-down': !openAbove }"
+                                *ngIf="dropdownOpen">
+                                <input nbInput fullWidth placeholder="Search..." [(ngModel)]="searchText"
+                                    (ngModelChange)="filterOptions()" />
 
-                <div *ngFor="let funder of filterFunderList" (click)="selectFunder(funder.funder_name)" class="dropdown-item">
-                  {{ funder.funder_name }}
-                </div>
+                                <div *ngFor="let funder of filterFunderList" (click)="selectFunder(funder.funder_name)"
+                                    class="dropdown-item">
+                                    {{ funder.funder_name }}
+                                </div>
 
-                <div *ngIf="filterFunderList.length === 0" class="dropdown-item disabled">
-                  No Funder found
-                </div>
-              </div>
+                                <div *ngIf="filterFunderList.length === 0" class="dropdown-item disabled">
+                                    No Funder found
+                                </div>
+                            </div>
 
-              <!-- Error Message -->
-              <div *ngIf="fm.submitted && funded_by.invalid" class="error-message">
-                Funder is required
-              </div>
-            </div>
-                        
+                            <!-- Error Message -->
+                            <div *ngIf="fm.submitted && funded_by.invalid" class="error-message">
+                                Funder is required
+                            </div>
+                        </div>
+
 
                         <!-- <div class="col-lg-6">
                             <label class="small-label" id="label-category">Funded by<span
@@ -265,7 +276,7 @@
 
                         <div class="col-lg-12">
                             <label class="small-label" id="label-category">
-                                Remarks 
+                                Remarks
                                 <!-- <span style="color:#d32f2f">*</span> -->
                             </label>
                             <textarea nbInput fullWidth placeholder="Add remarks (optional)" name="remarks"

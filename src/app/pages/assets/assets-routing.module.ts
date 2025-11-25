@@ -17,6 +17,7 @@ import { AddBuyerFormComponent } from './add-buyer-form/add-buyer-form.component
 import { BuyerListComponent } from './buyer-list/buyer-list.component';
 import { ScrapSaleFormComponent } from './scrap-sale-form/scrap-sale-form.component';
 import { ScrapSaleDetailsComponent } from './scrap-sale-details/scrap-sale-details.component';
+import { authGuard } from '../../auth/auth.guard';
 
 const routes: Routes = [{
   path:'',
@@ -24,67 +25,85 @@ const routes: Routes = [{
   children: [
     {
       path:'bulk-upload',
-      component:BulkUploadComponent
+      component:BulkUploadComponent,
+      canActivate: [authGuard]
     },
     {
       path:'add-asset',
-      component:AddAssetFormComponent
+      component:AddAssetFormComponent,
+      canActivate: [authGuard]
     },
     {
       path:'asset-list',
-      component:AssetListComponent
+      component:AssetListComponent,
+      canActivate: [authGuard]
+     
     },
     {
       path:'asset-transfer',
-      component:AssetTransferComponent
+      component:AssetTransferComponent,
+      canActivate: [authGuard]
+
     },
     {
       path:'asset-status-change',
-      component:AssetStatusChangeComponent
+      component:AssetStatusChangeComponent,
+      canActivate: [authGuard]
     },
     {
       path:'pending-asset-list',
-      component:PendingAssetListComponent
+      component:PendingAssetListComponent,
+      canActivate: [authGuard]
     },
     {
       path:'center-to-center',
-      component:ApproveCenterToCenterComponent
+      component:ApproveCenterToCenterComponent,
+      canActivate: [authGuard]
     },
     {
       path:'center-to-ho',
-      component:ApproveCenterToHoComponent
+      component:ApproveCenterToHoComponent,
+      canActivate: [authGuard]
     },
     {
       path:'asset-history',
-      component:AssetHistoryComponent
+      component:AssetHistoryComponent,
+      canActivate: [authGuard]
     },
     {
       path:'transfer-to-scrap',
-      component:TransferToScrapComponent
+      component:TransferToScrapComponent,
+      canActivate: [authGuard]
     },
     {
       path:'approve-scrap-request',
-      component:ApproveScrapRequestComponent
+      component:ApproveScrapRequestComponent,
+      canActivate: [authGuard]
     },
     {
       path:'asset-owner-change',
-      component:AssetOwnerChangeComponent
+      component:AssetOwnerChangeComponent,
+      canActivate: [authGuard]
     },
     {
       path:'add-buyer-form',
-      component:AddBuyerFormComponent
+      component:AddBuyerFormComponent,
+      canActivate: [authGuard]
     },
     {
       path:'buyer-list',
-      component:BuyerListComponent
+      component:BuyerListComponent,
+      canActivate: [authGuard]
     },    
     {
       path:'scrap-sale-form',
-      component:ScrapSaleFormComponent
+      component:ScrapSaleFormComponent,
+      canActivate: [authGuard]
     }, 
     {
       path:'scrap-sale-details',
-      component:ScrapSaleDetailsComponent
+      component:ScrapSaleDetailsComponent,
+      canActivate: [authGuard]
     }, 
   ]
 }];

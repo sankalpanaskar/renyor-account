@@ -50,7 +50,7 @@ export class AddCategoryFormComponent {
 
     // 🔹 Common payload fields
     const basePayload: any = {
-      asset_class_name: this.model.category_name,
+      class_name: this.model.category_name,
     };
 
     // 🔹 If editing → call UPDATE API

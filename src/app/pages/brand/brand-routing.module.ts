@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { BrandComponent } from './brand.component';
 import { AddBrandComponent } from './add-brand/add-brand.component';
 import { BrandListComponent } from './brand-list/brand-list.component';
+import { authGuard } from '../../auth/auth.guard';
 
 const routes: Routes = [
   {
@@ -11,11 +12,13 @@ const routes: Routes = [
     children:[
       {
         path:'add-brand',
-        component:AddBrandComponent
+        component:AddBrandComponent,
+        canActivate: [authGuard]      
       },
       {
         path:'brand-list',
-        component:BrandListComponent
+        component:BrandListComponent,
+        canActivate: [authGuard]
       }
     ]
 

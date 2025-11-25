@@ -150,8 +150,8 @@ export class GlobalService {
   }
 
   public submitAssetTransfer(data: any): Observable<any> {
-    // return this.http.post(`${this.assetUrl}/transfer-asset`, data);
-    return this.http.post(`${this.assetUrl}/''`, data);
+    return this.http.post(`${this.assetUrl}/transfer-asset`, data);
+    // return this.http.post(`${this.assetUrl}/''`, data);
   }  
 
   public classByUser(data: any): Observable<any> {
@@ -179,7 +179,7 @@ export class GlobalService {
   }
 
   public uploadBulkAsset(data: any): Observable<any> {
-    return this.http.post(`${this.assetUrl}/fetch-transfer-asset`, data);
+    return this.http.post(`${this.assetUrl}/upload-excel`,data);
   }
 
   public getCenterApproveHO(memID:any,roleId): Observable<any> {
@@ -301,7 +301,7 @@ export class GlobalService {
   }
 
   public submitAddCategory(data:any): Observable<any> {
-    return this.http.post(`${this.assetUrl}/''`,data);
+    return this.http.post(`${this.assetUrl}/insert-asset-class`,data);
   } 
 
   public updateCategory(data:any): Observable<any> {

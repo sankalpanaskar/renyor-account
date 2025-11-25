@@ -316,7 +316,7 @@ onSubmit(fm: any) {
     role_id: this.globalService.role_id,
     member_id: this.globalService.member_id,
     user_id: this.globalService.user_id,
-    from_center: this.model.from_center,
+    from_center: this.selectedFromCenter,
     asset_class_name: this.selectedClassName,
     asset_sub_class_name: this.selectedSubClassName,
     transfer_center: this.model.transfer_center,

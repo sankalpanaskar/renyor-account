@@ -7,7 +7,7 @@ import { NbToastrService } from '@nebular/theme';
   templateUrl: './asset-history.component.html',
   styleUrls: ['./asset-history.component.scss']
 })
-export class AssetHistoryComponent implements OnInit{
+export class AssetHistoryComponent implements OnInit {
   assetSearch = '';
   showDetails = false;
 
@@ -68,39 +68,36 @@ export class AssetHistoryComponent implements OnInit{
   assetHistory: any = [];
 
   constructor(
-      private globalService: GlobalService,
-      private toastrService: NbToastrService
-    ) { }
-  
-    ngOnInit(): void {
-      console.log("member is", this.globalService.member_id, this.globalService.role_id);
-    }
+    private globalService: GlobalService,
+    private toastrService: NbToastrService
+  ) { }
+
+  ngOnInit(): void {
+    console.log("member is", this.globalService.member_id, this.globalService.role_id);
+  }
 
   onSearch() {
-  this.isSubmitting = true;
+    this.isSubmitting = true;
 
-  this.globalService.getAssetHistory(this.assetSearch).subscribe({
-    next: (res: any) => {
-      this.isSubmitting = false;
-
-      if (res.status === true) {
+    this.globalService.getAssetHistory(this.assetSearch).subscribe({
+      next: (res: any) => {
+        this.isSubmitting = false;
         this.assetData = res.data.assetData || {};
         this.assetHistory = res.data.assetHistory || [];
         this.showDetails = true;
         console.log('data---', this.assetData);
         console.log('data2---', this.assetHistory);
-      } else {
-        this.assetData = null;
-        this.assetHistory = [];
-        this.showDetails = false;
-        this.toastrService.danger(res.message || 'No data found.', 'Error');
+      },
+      error: (err:any) => {
+        console.error('History error:', err);
+        const errorMessage =
+          err?.error?.message || // Use server error message if available
+          err?.message ||        // Fallback to generic message
+          'Asset History Not Found!. Please try again.';
+        this.toastrService.danger(errorMessage, 'Asset History Not Found !');
+        this.isSubmitting = false;
       }
-    },
-    error: (err) => {
-      this.isSubmitting = false;
-      this.toastrService.danger(err.message || 'API error occurred', 'Error');
-    }
-  });
-}
-
+    });
   }
+
+}

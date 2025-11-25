@@ -210,3 +210,8 @@ nb-card-body {
 :host ::ng-deep textarea[nbInput][disabled]:hover {
   background-color: #f0f0f0 !important;
 }
+.custom-select.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}

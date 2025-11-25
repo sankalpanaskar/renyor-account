@@ -43,3 +43,6 @@ nb-card-body {
   font-size: 13px;
   margin-top: 4px;
 }
+:host ::ng-deep nb-toast .message {
+  white-space: pre-line;
+}

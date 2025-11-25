@@ -17,13 +17,14 @@ const ASSET_TRANSFER_ROLES    = DASHBOARD_ROLES;
 const STATUS_CHANGE_ROLES     = new Set([39,35]);
 const ASSET_HISTORY_ROLES     = new Set([35, 39, 14]);
 const ASSET_OWNER_CHANGE      = BULK_UPLOAD_ROLES;
-const TRANSFER_TO_SCRAP_ROLES = BULK_UPLOAD_ROLES;
 const APPROVE_SCRAP_REQUEST_ROLES = new Set([39, 18, 14]);
-const BUYER_MENU_ROLES = new Set([25,35,39]);
+const BUYER_MENU_ROLES = new Set([25,35,39,14]);
+const SCRAP_MENU_ROLES = new Set([25,35,39,14]);
+const REPORT_ROLES = new Set([25,35,39,14]);
+
 
 // Approve
 const APPROVE_CENTER_TO_CENTER_ROLES = COMMON_ROLES;
-const APPROVE_CENTER_TO_HO_ROLES     = COMMON_ROLES;
 
 /** ---------- Allow-lists by user code ---------- */
 const APPROVE_SCRAP_USERS = new Set(['ANP-0011', 'ANP-0049', 'ADI-0001']);
@@ -32,10 +33,12 @@ const SCRAP_MENU_USERS    = new Set(['ANP-0011', 'ANP-2770', 'ADI-0001', 'ANP-16
 const TRANS_SCRAP_USERS    = new Set(['ANP-0011', 'ANP-2770']);
 const APPROVE_SCRAP_USER    = new Set(['ADI-0001', 'ANP-1697']);
 const DISPOSAL_MENU_USERS = new Set(['ANP-0011', 'ANP-0049']);
+const CENTER_TO_HO_USER = new Set(['ANP-0011','ANP-0191','ANP-1648','ANP-1756','ANP-0185','ANP-3540','ANP-3270']); // <-- only these for role 39
 const ADD_BUYER_USER = new Set(['ANP-0011', 'ANP-3540']); // <-- only these for role 39
 const BULK_UPLOAD_ROLE39_USERS = new Set(['ANP-0011']); // <-- only these for role 39
 const ADD_ASSET_ROLE39_USERS = new Set(['ANP-0011']); // <-- only these for role 39
 const ITEM_ROLE39_USERS = new Set(['ANP-0011']); // <-- only these for role 39
+
 
 
 
@@ -59,6 +62,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
   const canSeeTransferScrap    = hasUser(userCode, TRANS_SCRAP_USERS);
   const canSeeApproveScrap    = hasUser(userCode, APPROVE_SCRAP_USER);
   const canSeeAddBuyer    = hasUser(userCode, ADD_BUYER_USER);
+  const centerToHoApprove    = hasUser(userCode, CENTER_TO_HO_USER);
 
 
   // ✅ Bulk Upload visibility rule:
@@ -80,7 +84,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
   // - role 39 -> only if userCode is ANP-0011
   const canSeeItem =
     roleId === 35 ||
-    (roleId === 39 && hasUser(userCode, ITEM_ROLE39_USERS));  
+    (roleId === 39 && hasUser(userCode, ITEM_ROLE39_USERS));    
 
   const menu: NbMenuItem[] = [
     // Dashboard
@@ -147,7 +151,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
             title: 'Center To Center',
             link: '/pages/assets/center-to-center',
           }),
-          ...show(hasRole(roleId, APPROVE_CENTER_TO_HO_ROLES), {
+          ...show(centerToHoApprove, {
             title: 'Center To HO',
             link: '/pages/assets/center-to-ho',
           }),
@@ -168,7 +172,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
     ]),
 
     // Scrap
-    ...showMany(canSeeScrapMenu, [
+    ...showMany(hasRole(roleId, SCRAP_MENU_ROLES), [
       {
         title: 'Scrap',
         icon: 'car-outline',
@@ -180,6 +184,14 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           ...show(canSeeApproveScrap, {
             title: 'Approve Scrap Request',
             link: '/pages/assets/approve-scrap-request',
+          }),
+          ...show(canSeeScrapMenu, {
+            title: 'Scrap Sell Form',
+            link: '/pages/assets/scrap-sale-form',
+          }),
+           ...show(canSeeScrapMenu, {
+            title: 'Scrap Sell Details',
+            link: '/pages/assets/scrap-sale-details',
           }),
         ],
       },
@@ -199,25 +211,17 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
             title: 'Buyer List',
             link: '/pages/assets/buyer-list',
           }),
-          ...show(canSeeAddBuyer, {
-            title: 'Scrap Sale',
-            link: '/pages/assets/scrap-sale-form',
-          }),
-           ...show(hasRole(roleId, BUYER_MENU_ROLES), {
-            title: 'Scrap Sale Details',
-            link: '/pages/assets/scrap-sale-details',
-          }),
         ],
       },
     ]),
 
     // Disposal
-    ...showMany(canSeeDisposal, [
-      {
-        title: 'Disposal',
-        icon: 'trash-2-outline',
-      },
-    ]),
+    // ...showMany(canSeeDisposal, [
+    //   {
+    //     title: 'Disposal',
+    //     icon: 'trash-2-outline',
+    //   },
+    // ]),
 
     // Brand
     ...showMany(canSeeBrand, [
@@ -236,38 +240,38 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         title: 'Reports',
         icon: 'layout-outline',
         children: [
-          ...show(hasRole(roleId, BULK_UPLOAD_ROLES), {
+          ...show(hasRole(roleId, REPORT_ROLES), {
             title: 'Assets Report',
             link: '/pages/report/assets-report',
           }),
-          ...show(hasRole(roleId, ADD_ASSET_ROLES), {
+          ...show(hasRole(roleId, COMMON_ROLES), {
             title: 'Asset Assigned To Me',
             link: '/pages/report/assign-to-me-report',
           }),
-          ...show(hasRole(roleId, ASSET_LIST_ROLES), {
+          ...show(hasRole(roleId, REPORT_ROLES), {
             title: 'Depriciation Assets',
             link: '/pages/report/depriciation-report',
           }),
-          ...show(hasRole(roleId, PENDING_ASSET_ROLES), {
+          ...show(hasRole(roleId, REPORT_ROLES), {
             title: 'Not Working Assets',
             link: '/pages/report/not-working-asset-report',
           }),
-          ...show(hasRole(roleId, ASSET_TRANSFER_ROLES), {
+          ...show(hasRole(roleId, REPORT_ROLES), {
             title: 'Scrap Approval Pending',
             link: '/pages/report/scrap-approval-pending-report',
           }),
-          ...show(hasRole(roleId, STATUS_CHANGE_ROLES), {
+          ...show(hasRole(roleId, REPORT_ROLES), {
             title: 'Scrap Asset',
             link: '/pages/report/scrap-asset-report',
           }),
-          ...show(hasRole(roleId, ASSET_HISTORY_ROLES), {
-            title: 'Disposed Approval Pending',
-            link: '/pages/report/assets-report',
-          }),
-          ...show(hasRole(roleId, ASSET_OWNER_CHANGE), {
-            title: 'Disposed Asset',
-            link: '/pages/report/assets-report',
-          }),
+          // ...show(hasRole(roleId, REPORT_ROLES), {
+          //   title: 'Disposed Approval Pending',
+          //   link: '/pages/report/assets-report',
+          // }),
+          // ...show(hasRole(roleId, REPORT_ROLES), {
+          //   title: 'Disposed Asset',
+          //   link: '/pages/report/assets-report',
+          // }),
         ],
       },
     ]),

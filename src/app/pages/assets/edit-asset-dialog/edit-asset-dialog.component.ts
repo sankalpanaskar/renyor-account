@@ -267,22 +267,30 @@ loadSubClass() {
 
   }
 
+  get isFunderDisabled(): boolean {
+  return this.model?.owner_of_asset === 'Anudip';
+}
 
-
-  toggleDropdown() {
-    this.dropdownOpen = !this.dropdownOpen;
-
-    if (this.dropdownOpen) {
-      setTimeout(() => {
-        const rect = this.dropdownTrigger.nativeElement.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const spaceBelow = viewportHeight - rect.bottom;
-        const spaceAbove = rect.top;
-
-        this.openAbove = spaceBelow < 300 && spaceAbove > 300;
-      });
-    }
+toggleDropdown() {
+  // 🚫 Do nothing if owner is Anudip
+  if (this.isFunderDisabled) {
+    return;
   }
+
+  this.dropdownOpen = !this.dropdownOpen;
+
+  if (this.dropdownOpen) {
+    setTimeout(() => {
+      const rect = this.dropdownTrigger.nativeElement.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const spaceBelow = viewportHeight - rect.bottom;
+      const spaceAbove = rect.top;
+
+      this.openAbove = spaceBelow < 300 && spaceAbove > 300;
+    });
+  }
+}
+
 
   filterOptions() {
     const text = this.searchText.toLowerCase();

@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { ItemComponent } from './item.component';
 import { CategoryListComponent } from './category-list/category-list.component';
 import { ItemListComponent } from './item-list/item-list.component';
+import { authGuard } from '../../auth/auth.guard';
 
 const routes: Routes = [
   {
@@ -11,11 +12,13 @@ const routes: Routes = [
     children:[
       {
         path:'category-list',
-        component:CategoryListComponent
+        component:CategoryListComponent,
+        canActivate: [authGuard]      
       },
       {
         path:'item-list',
-        component:ItemListComponent
+        component:ItemListComponent,
+        canActivate: [authGuard]      
       }
     ]
 
