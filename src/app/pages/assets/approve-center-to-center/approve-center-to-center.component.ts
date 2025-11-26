@@ -93,7 +93,7 @@ export class ApproveCenterToCenterComponent {
     if (text) {
       this.filteredAssetList = this.assetList.filter(asset => {
         return (
-          (asset.brand_name.toLowerCase().includes(text)) ||
+          (asset.requested_by_name.toLowerCase().includes(text)) ||
           (asset.assets_sub_class.toLowerCase().includes(text)) ||
           (asset.serial_no.toString().includes(text)) ||
           (asset.from_center.toLowerCase().includes(text)) ||

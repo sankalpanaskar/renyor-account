@@ -43,33 +43,35 @@ margin: 0 auto;">
                                     <table class="table table-bordered">
                                         <thead>
                                             <tr>
-                                                <th style="width: 15%;">
+                                                <th style="width: 10%;">
                                                     <input type="checkbox" class="custom-checkbox"
                                                         [(ngModel)]="masterSelected" (change)="selectAll()"
                                                         [ngModelOptions]="{standalone: true}">
                                                     Select ({{ selectedCount }})
                                                 </th>
-                                                <th style="width: 10%;">Brand </th>
+                                                <th style="width: 15%;">Anudip ID</th>
                                                 <th style="width: 15%;">Item</th>
                                                 <th style="width: 15%;">Serial No</th>
-                                                <th style="width: 12%;">From Center</th>
-                                                <th style="width: 12%;">To Center</th>
-                                                <th style="width: 32%;">Anudip ID</th>
+                                                <th style="width: 10%;">From Center</th>
+                                                <th style="width: 8%;">To Center</th>
+                                                <th style="width: 15%;">Request By </th>
+                                                <th style="width: 14%;">Requested Date</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr *ngFor="let asset of filteredAssetList; let i = index">
-                                                <td style="width: 15%;">
+                                                <td style="width: 10%;">
                                                     <input type="checkbox" class="custom-checkbox-td"
                                                         [(ngModel)]="asset.isSelected" (change)="checkIfAllSelected()"
                                                         name="leadSelect{{i}}" [ngModelOptions]="{standalone: true}">
                                                 </td>
-                                                <td style="width: 10%;">{{ asset.brand_name }}</td>
+                                                <td style="width: 15%;">{{ asset.anudip_identification_no }}</td>
                                                 <td style="width: 15%;">{{ asset.assets_sub_class }}</td>
                                                 <td style="width: 15%;">{{ asset.serial_no }}</td>
-                                                <td style="width: 12%;">{{ asset.from_center }}</td>
-                                                <td style="width: 12%;">{{ asset.to_center }}</td>
-                                                <td style="width: 32%;">{{ asset.anudip_identification_no }}</td>
+                                                <td style="width: 10%;">{{ asset.from_center }}</td>
+                                                <td style="width: 8%;">{{ asset.to_center }}</td>
+                                                <td style="width: 15%;">{{ asset.requested_by_name }}</td>
+                                                <td style="width: 14%;">{{ asset.created_at | date:'dd/MM/yyyy'}}</td>
                                             </tr>
 
                                             <tr *ngIf="assetList.length === 0">
