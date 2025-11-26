@@ -278,7 +278,7 @@ export class AssetTransferComponent implements OnInit {
   filterMember() {
     const text = this.searchTextMember.toLowerCase();
     this.filterEmpList = this.empList.filter((c) =>
-      c.member_code.toLowerCase().includes(text)
+      c.member_code.toLowerCase().includes(text) || c.name.toLowerCase().includes(text)
     );
   }
 
