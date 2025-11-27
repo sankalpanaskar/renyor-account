@@ -22,6 +22,7 @@ export class AssetStatusChangeComponent implements OnInit {
   subClassList: any = [];
   selectedCenterCode: any;
   selectedStatus: any;
+  changeStatus: any;
   assetList: any = [];
   filteredAssetList: any = [];
   masterSelected: boolean = false;
@@ -41,7 +42,7 @@ export class AssetStatusChangeComponent implements OnInit {
 
   loadCenter(): void {
     this.isSubmitting = true;
-    this.globalService.getAllCenter().subscribe({
+    this.globalService.getAllActiveDeactiveCenter().subscribe({
       next: (res) => {
         this.centerList = res.centers;
         this.filterCenterList = this.centerList;
@@ -145,8 +146,13 @@ export class AssetStatusChangeComponent implements OnInit {
 
   selectStatus(status: any) {
     this.selectedStatus = status;
+    //console.log(this.selectedStatus);
     this.showAssetList = true;
     this.loadAsset();
+  }
+
+  selectedChangeTo(status:any){
+    this.changeStatus = status;
   }
 
   loadAsset() {
@@ -232,7 +238,7 @@ export class AssetStatusChangeComponent implements OnInit {
       center: this.selectedCenterCode,
       asset_class_name: this.selectedClassName,
       asset_sub_class_name: this.selectedSubClassName,
-      status: this.model.status,
+      status: this.changeStatus,
 
       // 🟢 Include selected asset details
       selected_assets: selectedAssets.map(asset => ({

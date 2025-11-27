@@ -55,7 +55,7 @@ export class AssetsReportComponent {
 
   loadCenter(): void {
     this.isSubmitting = true;
-    this.globalService.getAllCenter().subscribe({
+    this.globalService.getAllActiveDeactiveCenter().subscribe({
       next: (res) => {
         this.centerList = res.centers;
         this.filterCenterList = this.centerList;

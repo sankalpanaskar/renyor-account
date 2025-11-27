@@ -35,9 +35,9 @@ const APPROVE_SCRAP_USER    = new Set(['ADI-0001', 'ANP-1697']);
 const DISPOSAL_MENU_USERS = new Set(['ANP-0011']);
 const CENTER_TO_HO_USER = new Set(['ANP-0011','ANP-0191','ANP-1648','ANP-1756','ANP-0185','ANP-3540','ANP-3270']); // <-- only these for role 39
 const ADD_BUYER_USER = new Set(['ANP-0011', 'ANP-3540']); // <-- only these for role 39
-const BULK_UPLOAD_ROLE39_USERS = new Set(['ANP-0011']); // <-- only these for role 39
+const BULK_UPLOAD_ROLE39_USERS = new Set(['ANP-0011','ANP-2770']); // <-- only these for role 39
 const ADD_ASSET_ROLE39_USERS = new Set(['ANP-0011']); // <-- only these for role 39
-const ITEM_ROLE39_USERS = new Set(['ANP-0011']); // <-- only these for role 39
+const ITEM_ROLE39_USERS = new Set(['ANP-0011','ANP-2770']); // <-- only these for role 39
 
 
 

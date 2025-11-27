@@ -145,6 +145,10 @@ export class GlobalService {
     return this.http.get(`${this.assetUrl}/get-all-centers`);
   }
 
+  public getAllActiveDeactiveCenter(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/get-all-active-deactive-centers`);
+  }
+
   public getEmployeeCenter(centerId:any): Observable<any> {
     return this.http.get(`${this.assetUrl}/get-employee-by-center/${centerId}`);
   }
