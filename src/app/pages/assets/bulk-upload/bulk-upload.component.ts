@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
-import { NbToastrService } from '@nebular/theme';
+import { NbDialogService, NbToastrService } from '@nebular/theme';
+import { ExcelErrorDialogComponent } from '../excel-error-dialog/excel-error-dialog.component';
 
 @Component({
   selector: 'ngx-bulk-upload',
@@ -26,7 +27,8 @@ export class BulkUploadComponent implements OnInit {
 
   constructor(
     private globalService: GlobalService,
-    private toastrService: NbToastrService
+    private toastrService: NbToastrService,
+    private dialogService: NbDialogService
   ) { }
 
   ngOnInit(): void {
@@ -96,7 +98,7 @@ export class BulkUploadComponent implements OnInit {
           this.model = '';
 
           this.toastrService.success(res.message, 'Uploaded', {
-            duration: 5000,
+            duration: 4000,
           });
 
           this.isSubmitting = false;
@@ -105,22 +107,34 @@ export class BulkUploadComponent implements OnInit {
         error: (err) => {
           console.error('Upload error:', err);
 
-          const errorMessage =
-            err?.error?.message || // Use server error message if available
-            err?.message ||        // Fallback to generic message
-            'Upload failed. Please try again.';
+          const apiMsg = err?.error?.message;
 
-          this.toastrService.danger(errorMessage, 'Upload Failed', {
-            duration: 15000,
-            destroyByClick: true,
-            hasIcon: true,
-          });
+          // If API sends array of errors → open dialog
+          if (Array.isArray(apiMsg)) {
+            this.dialogService.open(ExcelErrorDialogComponent, {
+              context: {
+                errors: apiMsg
+              },
+              closeOnBackdropClick: true,
+              hasScroll: true,
+            });
+          } else {
+            // fallback toast
+            this.toastrService.danger(
+              apiMsg || err?.message || 'Upload failed. Please try again.',
+              'Upload Failed',
+              {
+                duration: 5000,
+              }
+            );
+          }
+
           this.isSubmitting = false;
         }
 
       });
 
-      console.log('Form Submitted', formData);
+      // console.log('Form Submitted', formData);
     } else {
       this.fileError = 'Please upload a valid Excel file.';
     }

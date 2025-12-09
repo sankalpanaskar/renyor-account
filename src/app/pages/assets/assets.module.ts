@@ -30,6 +30,7 @@ import { ScrapSaleFormComponent } from './scrap-sale-form/scrap-sale-form.compon
 import { ScrapSaleDetailsComponent } from './scrap-sale-details/scrap-sale-details.component';
 import { SaleEditButtonComponent } from './scrap-sale-details/sale-edit-btn.component';
 import { ScrapSaleDialogComponent } from './scrap-sale-dialog/scrap-sale-dialog.component';
+import { ExcelErrorDialogComponent } from './excel-error-dialog/excel-error-dialog.component';
 
 
 @NgModule({
@@ -57,7 +58,8 @@ import { ScrapSaleDialogComponent } from './scrap-sale-dialog/scrap-sale-dialog.
     ScrapSaleFormComponent,
     ScrapSaleDetailsComponent,
     SaleEditButtonComponent,
-    ScrapSaleDialogComponent
+    ScrapSaleDialogComponent,
+    ExcelErrorDialogComponent
 
   ],
   imports: [
