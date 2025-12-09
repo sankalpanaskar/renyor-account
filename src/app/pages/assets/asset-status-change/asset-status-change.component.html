@@ -163,8 +163,8 @@ margin: 0 auto;">
                                     style="color:#d32f2f">*</span></label>
                             <nb-select shape="semi-round" placeholder="Select Status Of Asset" name="current_status_of_asset"
                                 required #current_status_of_asset="ngModel" [(ngModel)]="model.current_status_of_asset" (selectedChange)="selectedChangeTo($event)" required>
-                                <nb-option value="WORKING" *ngIf="selectedStatus=='NOT WORKING'">WORKING</nb-option>
-                                <nb-option value="NOT WORKING" *ngIf="selectedStatus=='WORKING'">NOT WORKING</nb-option>
+                                <nb-option value="WORKING" *ngIf="selectedStatus==='NOT WORKING'">WORKING</nb-option>
+                                <nb-option value="NOT WORKING" *ngIf="selectedStatus==='WORKING'">NOT WORKING</nb-option>
                                 <nb-option value="RETURN TO VENDOR">RETURN TO VENDOR</nb-option>
                                 <nb-option value="RETURN TO DONOR">RETURN TO DONOR</nb-option>
                                 <nb-option value="MISSING">MISSING</nb-option>
