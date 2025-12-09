@@ -3,11 +3,11 @@ import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 
 @Component({
-  selector: 'ngx-assign-to-me-report',
-  templateUrl: './assign-to-me-report.component.html',
-  styleUrls: ['./assign-to-me-report.component.scss']
+  selector: 'ngx-transfer-approval-report',
+  templateUrl: './transfer-approval-report.component.html',
+  styleUrls: ['./transfer-approval-report.component.scss']
 })
-export class AssignToMeReportComponent {
+export class TransferApprovalReportComponent {
   isSubmitting: boolean = false;
   model:any = [];
 
@@ -22,7 +22,7 @@ export class AssignToMeReportComponent {
       console.log(fm.value);
       fm.value.member_id = this.globalService.member_id;
       this.isSubmitting = true;
-      this.globalService.assetsAssignedReport(fm.value).subscribe({
+      this.globalService.transferPendingReport().subscribe({
         next: (res) => {
           console.log(res);
           //fm.resetForm();

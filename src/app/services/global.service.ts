@@ -364,6 +364,10 @@ export class GlobalService {
     return this.http.post(`${this.assetUrl}/scrap-asset-report`,data);
   }
 
+  public transferPendingReport(): Observable<any> {
+    return this.http.get(`${this.assetUrl}/transfer-approval-pending-report`,);
+  }
+
 
 
 

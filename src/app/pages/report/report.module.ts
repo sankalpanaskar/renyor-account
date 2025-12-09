@@ -13,6 +13,7 @@ import { DepriciationReportComponent } from './depriciation-report/depriciation-
 import { NotWorkingAssetReportComponent } from './not-working-asset-report/not-working-asset-report.component';
 import { ScrapApprovalPendingReportComponent } from './scrap-approval-pending-report/scrap-approval-pending-report.component';
 import { ScrapAssetReportComponent } from './scrap-asset-report/scrap-asset-report.component';
+import { TransferApprovalReportComponent } from './transfer-approval-report/transfer-approval-report.component';
 
 
 @NgModule({
@@ -23,7 +24,8 @@ import { ScrapAssetReportComponent } from './scrap-asset-report/scrap-asset-repo
     DepriciationReportComponent,
     NotWorkingAssetReportComponent,
     ScrapApprovalPendingReportComponent,
-    ScrapAssetReportComponent
+    ScrapAssetReportComponent,
+    TransferApprovalReportComponent
     
   ],
   imports: [

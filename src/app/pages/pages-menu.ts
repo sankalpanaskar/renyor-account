@@ -248,6 +248,10 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
             title: 'Asset Assigned To Me',
             link: '/pages/report/assign-to-me-report',
           }),
+         ...show(hasRole(roleId, REPORT_ROLES), {
+            title: 'Assets Transfer Pending',
+            link: '/pages/report/transfer-approval-report',
+          }),
           ...show(hasRole(roleId, REPORT_ROLES), {
             title: 'Depriciation Assets',
             link: '/pages/report/depriciation-report',

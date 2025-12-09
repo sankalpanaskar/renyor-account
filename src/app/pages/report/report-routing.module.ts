@@ -8,6 +8,7 @@ import { NotWorkingAssetReportComponent } from './not-working-asset-report/not-w
 import { ScrapApprovalPendingReportComponent } from './scrap-approval-pending-report/scrap-approval-pending-report.component';
 import { ScrapAssetReportComponent } from './scrap-asset-report/scrap-asset-report.component';
 import { authGuard } from '../../auth/auth.guard';
+import { TransferApprovalReportComponent } from './transfer-approval-report/transfer-approval-report.component';
 
 const routes: Routes = [{
   path: '',
@@ -41,6 +42,11 @@ const routes: Routes = [{
   {
     path: 'scrap-asset-report',
     component: ScrapAssetReportComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'transfer-approval-report',
+    component: TransferApprovalReportComponent,
     canActivate: [authGuard]
   },
 ],
