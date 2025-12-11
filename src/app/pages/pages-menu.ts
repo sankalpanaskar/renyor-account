@@ -279,6 +279,14 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         ],
       },
     ]),
+
+    { title: 'Others', group: true },
+     // Dashboard
+    {
+      title: 'Settings',
+      icon: 'settings-2-outline',
+      link: '/pages/settings',
+    },
   ];
 
   return menu;

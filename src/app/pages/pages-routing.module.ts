@@ -8,7 +8,7 @@ import { NotFoundComponent } from './miscellaneous/not-found/not-found.component
 import { authGuard } from '../auth/auth.guard';
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
-import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { SettingsComponent } from './settings/settings.component';
 
 
 const routes: Routes = [{
@@ -113,8 +113,8 @@ const routes: Routes = [{
       canActivate: [authGuard],
     },
     {
-      path: 'admin-dashboard',
-      component: AdminDashboardComponent,
+      path: 'settings',
+      component: SettingsComponent,
       canActivate: [authGuard],
     },
     {

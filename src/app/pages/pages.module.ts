@@ -13,7 +13,8 @@ import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 import { ChartsModule } from './charts/charts.module';
-import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.component';
+import { SettingsComponent } from './settings/settings.component';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   imports: [
@@ -38,14 +39,15 @@ import { AdminDashboardComponent } from './admin-dashboard/admin-dashboard.compo
     Ng2SmartTableModule,
     FormsModule,
     NbSpinnerModule,
-    ChartsModule
+    ChartsModule,
+    RouterModule
 
   ],
   declarations: [
     PagesComponent,
     ProfileComponent,
     CustomDashboardComponent,
-    AdminDashboardComponent,
+    SettingsComponent
   ],
   exports: [
     

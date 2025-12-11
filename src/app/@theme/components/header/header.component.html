@@ -3,7 +3,7 @@
     <a (click)="toggleSidebar()" href="#" class="sidebar-toggle">
       <nb-icon icon="menu-2-outline"></nb-icon>
     </a>
-    <a class="logo" href="#" (click)="navigateHome()">Assets</a>
+    <a class="logo" href="#" (click)="navigateHome()">Accounts</a>
   </div>
   <nb-select [selected]="currentTheme" (selectedChange)="changeTheme($event)" status="primary">
     <nb-option *ngFor="let theme of themes" [value]="theme.value"> {{ theme.name }}</nb-option>
@@ -18,6 +18,7 @@
     </nb-action> 
     <nb-action class="control-item" icon="email-outline"></nb-action> -->
     <nb-action class="control-item" icon="bell-outline"></nb-action>
+    <nb-action icon="settings-2-outline" routerLink="settings"></nb-action>
     <nb-action class="user-action" *nbIsGranted="['view', 'user']" >
       <nb-user
       [nbContextMenu]="userMenu"
