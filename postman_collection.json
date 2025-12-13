@@ -1,0 +1,39 @@
+{
+  "info": {
+    "name": "Multi-tenant RBAC API",
+    "_postman_id": "00000000-0000-0000-0000-000000000000",
+    "description": "Basic collection for auth and RBAC entities",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:4000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "4000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"admin@example.com\", \"password\": \"123\"}"
+        }
+      }
+    }
+  ]
+}
