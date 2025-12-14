@@ -36,10 +36,19 @@ exports.login = async (req, res) => {
     // Do not send back hashed password
     delete user.password;
 
-    res.json({ user, token });
+    //res.json({ user, token });
+    return res.success(
+      200,
+      "Login successful",
+      { user, token}
+    );
+    
 
   } catch (err) {
     console.error("login error", err);
-    res.status(500).json({ error: "Internal server error" });
+    return res.error(
+      401,
+      err.message
+    );
   }
 };

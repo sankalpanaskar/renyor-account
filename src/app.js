@@ -4,6 +4,7 @@ const morgan = require('morgan');
 
 const routes = require('./routes');
 const { swaggerUi, swaggerSpec } = require('./swagger');
+const responseMiddleware = require('./middleware/responseMiddleware');
 
 const app = express();
 
@@ -18,8 +19,9 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
+app.use(responseMiddleware);
 app.use('/api', upload.none(),routes);
+
 
 app.use((err, req, res, next) => {
   console.error('Unhandled error', err);
