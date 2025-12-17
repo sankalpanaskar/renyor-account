@@ -39,25 +39,25 @@ exports.create = async (data) => {
 };
 
 exports.packageCreate = async (data) => {
-  const { package_name, package_type, description, base_price, offer_price, final_price } = data;
+  const { package_name, package_type, package_details, base_price, offer_price, final_price } = data;
 
   // Validation
-  if (!package_name || !description) {
+  if (!package_name || !package_details) {
     throw new Error("Package Name and Description are required");
   }
 
   // Insert into MySQL (NO RETURNING)
   const [result] = await db.query(
-    `INSERT INTO packages (package_name, package_type, description, base_price, offer_price, final_price)
+    `INSERT INTO packages (package_name, package_type, package_details, base_price, offer_price, final_price)
      VALUES (?, ?, ?, ?, ?, ?)`,
-    [package_name, package_type, description, base_price, offer_price, final_price]
+    [package_name, package_type, package_details, base_price, offer_price, final_price]
   );
 
   // Manually return created record
   return {
     id: result.insertId,
     package_name,
-    description
+    package_details
   };
 };
 exports.getPackages = async () => {
