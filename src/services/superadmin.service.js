@@ -39,7 +39,7 @@ exports.create = async (data) => {
 };
 
 exports.packageCreate = async (data) => {
-  const { package_name, description, base_price, offer_price, final_price } = data;
+  const { package_name, package_type, description, base_price, offer_price, final_price } = data;
 
   // Validation
   if (!package_name || !description) {
@@ -48,9 +48,9 @@ exports.packageCreate = async (data) => {
 
   // Insert into MySQL (NO RETURNING)
   const [result] = await db.query(
-    `INSERT INTO packages (package_name, description, base_price, offer_price, final_price)
-     VALUES (?, ?, ?, ?, ?)`,
-    [package_name, description, base_price, offer_price, final_price]
+    `INSERT INTO packages (package_name, package_type, description, base_price, offer_price, final_price)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    [package_name, package_type, description, base_price, offer_price, final_price]
   );
 
   // Manually return created record
@@ -59,6 +59,16 @@ exports.packageCreate = async (data) => {
     package_name,
     description
   };
+};
+exports.getPackages = async () => {
+  const [rows] = await db.query(
+    `SELECT 
+        *
+     FROM packages
+     ORDER BY id DESC`
+  );
+
+  return rows; // array (can be empty)
 };
 
 exports.createPackageModule = async (data) => {

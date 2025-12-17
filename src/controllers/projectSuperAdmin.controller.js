@@ -69,19 +69,47 @@ exports.createPackage = async (req, res) => {
   try {
     const package = await SuperadminService.packageCreate(req.body);
     console.log(package);
-    return res.status(201).json({
-      message: "Package created successfully",
-      package
-    });
+    return res.success(
+      200,
+      "Package created successfully",
+      {package}
+    );
+    
 
   } catch (err) {
     // ANY error thrown in service comes here
-    return res.status(400).json({
-      error: err.message
-    });
+    //console.log(err.code);
+    if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "Package with the same name and type already exists"
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+    
   }
 };
+exports.fetchPackages = async (req, res) => {
+  try {
+    const packages = await SuperadminService.getPackages();
 
+    return res.success(
+      200,
+      "Packages fetched successfully",
+      packages
+    );
+
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch packages"
+    );
+  }
+};
 exports.createPackageModule = async (req, res) => {
   try {
     const package = await SuperadminService.createPackageModule(req.body);
