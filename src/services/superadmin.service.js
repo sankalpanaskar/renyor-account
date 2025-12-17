@@ -43,7 +43,11 @@ exports.packageCreate = async (data) => {
 
   // Validation
   if (!package_name || !package_details) {
-    throw new Error("Package Name and Description are required");
+    //throw new Error("Package Name and Description are required");
+    return res.error(
+      400,
+      "Package Name and Description are required"
+       );
   }
 
   // Insert into MySQL (NO RETURNING)
