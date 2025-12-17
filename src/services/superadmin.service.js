@@ -39,7 +39,7 @@ exports.create = async (data) => {
 };
 
 exports.packageCreate = async (data) => {
-  const { package_name, description } = data;
+  const { package_name, description, base_price, offer_price, final_price } = data;
 
   // Validation
   if (!package_name || !description) {
@@ -48,9 +48,9 @@ exports.packageCreate = async (data) => {
 
   // Insert into MySQL (NO RETURNING)
   const [result] = await db.query(
-    `INSERT INTO packages (package_name, description)
-     VALUES (?, ?)`,
-    [package_name, description]
+    `INSERT INTO packages (package_name, description, base_price, offer_price, final_price)
+     VALUES (?, ?, ?, ?, ?)`,
+    [package_name, description, base_price, offer_price, final_price]
   );
 
   // Manually return created record
