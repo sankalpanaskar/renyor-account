@@ -72,6 +72,19 @@ exports.getPackages = async () => {
   return rows; // array (can be empty)
 };
 
+exports.fetchSubMenuBasedOnParentMenu = async (parentMenuId) => {
+  const [rows] = await db.query(
+    `SELECT 
+        *
+     FROM menu_modules
+     WHERE parent_id = ?
+     ORDER BY id DESC`,
+    [parentMenuId] // 👈 value binding
+  );
+
+  return rows; // array (can be empty)
+};
+
 exports.createMenuSubmenu = async (data) => {
   const { menu_name, parent_id , icon,link} = data;
 

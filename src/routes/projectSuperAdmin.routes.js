@@ -9,5 +9,6 @@ router.get("/fetch-package", authSuperadmin,Controller.fetchPackages);
 router.post("/create-menu-submenu", authSuperadmin,Controller.createMenuSubmenu);
 router.get("/fetch-menu-structure", authSuperadmin,Controller.fetchMenuStructure);
 router.get("/fetch-parent-menu", authSuperadmin,Controller.fetchParentMenu);
+router.get("/fetch-submenu-based-on-parent-menu", authSuperadmin,Controller.fetchSubMenuBasedOnParentMenu);
 
 module.exports = router;

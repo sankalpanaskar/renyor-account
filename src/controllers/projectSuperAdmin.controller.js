@@ -163,3 +163,23 @@ exports.fetchParentMenu = async (req, res) => {
     );
   }
 };
+
+exports.fetchSubMenuBasedOnParentMenu = async (req, res) => {
+  try {
+    const { parentMenuId } = req.query;
+    const package = await SuperadminService.fetchSubMenuBasedOnParentMenu(parentMenuId);
+    console.log(package);
+    
+    return res.success(
+      200,
+      "Menu fetrch successfully",
+      package
+    );
+
+  } catch (err) {
+    // ANY error thrown in service comes here
+    return res.status(400).json({
+      error: err.message
+    });
+  }
+};
