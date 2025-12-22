@@ -43,11 +43,8 @@ exports.packageCreate = async (data) => {
 
   // Validation
   if (!package_name || !package_details) {
-    //throw new Error("Package Name and Description are required");
-    return res.error(
-      400,
-      "Package Name and Description are required"
-       );
+    throw new Error("Package Name and Description are required");
+   
   }
 
   // Insert into MySQL (NO RETURNING)
@@ -76,11 +73,11 @@ exports.getPackages = async () => {
 };
 
 exports.createPackageModule = async (data) => {
-  const { package_id, module_name, parent_id } = data;
+  const { module_name, parent_id , icon,link} = data;
 
   // Validation
-  if (!package_id || !module_name) {
-    throw new Error("Package Id and Module Name are required");
+  if (!module_name) {
+    throw new Error("Module Name are required");
   }
 
   // Normalize parent_id (INTEGER column)
@@ -94,18 +91,62 @@ exports.createPackageModule = async (data) => {
 
   // Insert into MySQL
   const [result] = await db.query(
-    `INSERT INTO package_modules (package_id, module_name, parent_id)
-     VALUES (?, ?, ?)`,
-    [package_id, module_name, finalParentId]
+    `INSERT INTO package_modules (module_name, parent_id, menu_pic, link)
+     VALUES (?, ?, ?, ?)`,
+    [module_name, finalParentId, icon, link]
   );
 
   // Manually return created record
   return {
     id: result.insertId,
-    package_id,
     module_name,
     parent_id: finalParentId
   };
+};
+
+exports.fetchMenuStructure = async () => {
+  const [rows] = await db.query(
+    `
+    SELECT id, module_name, parent_id,menu_pic,link
+    FROM menu_modules
+    WHERE status = 1
+    ORDER BY parent_id, id`
+  );
+
+  const map = {};
+  const menu = [];
+
+  rows.forEach(row => {
+    map[row.id] = {
+      id: row.id,
+      title: row.module_name,
+      parent_id: row.parent_id,
+      icon:row.menu_pic,
+      link:row.link,
+      children: []
+    };
+  });
+
+  rows.forEach(row => {
+    if (row.parent_id === 0) {
+      menu.push(map[row.id]);
+    } else if (map[row.parent_id]) {
+      map[row.parent_id].children.push(map[row.id]);
+    }
+  });
+
+  return menu;
+};
+
+exports.fetchParentMenu = async () => {
+  const [rows] = await db.query(
+    `SELECT 
+        *
+     FROM menu_modules
+     where parent_id=0`
+  );
+
+  return rows; // array (can be empty)
 };
 
 // exports.getAll = async () => {

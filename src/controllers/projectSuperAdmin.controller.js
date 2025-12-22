@@ -126,3 +126,38 @@ exports.createPackageModule = async (req, res) => {
     });
   }
 };
+
+exports.fetchMenuStructure = async (req, res) => {
+  try {
+    const packages = await SuperadminService.fetchMenuStructure();
+
+    return res.success(
+      200,
+      "Packages fetched successfully",
+      packages
+    );
+
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch packages"
+    );
+  }
+};
+exports.fetchParentMenu = async (req, res) => {
+  try {
+    const menu = await SuperadminService.fetchParentMenu();
+
+    return res.success(
+      200,
+      "Menu fetched successfully",
+      menu
+    );
+
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch packages"
+    );
+  }
+};

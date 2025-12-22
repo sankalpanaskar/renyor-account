@@ -3,7 +3,9 @@ const db = require('../config/db');
 
 module.exports = async function auth(req, res, next) {
   const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
+  const token = header.startsWith('Bearer ')
+    ? header.slice(7)
+    : null;
 
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
@@ -11,15 +13,19 @@ module.exports = async function auth(req, res, next) {
 
   try {
     const payload = verifyToken(token);
-    const result = await db.query(
-      'SELECT id, tenant_id, role_id, email, name FROM users WHERE id = $1',
-      [payload.userId]
+    console.log(payload);
+    const [rows] = await db.query(
+      'SELECT id, tenant_id, role_id, email, name FROM users WHERE id = ?',
+      [payload.user_id || payload.userId]
     );
-    if (result.rowCount === 0) {
+
+    if (rows.length === 0) {
       return res.status(401).json({ error: 'User not found' });
     }
-    req.user = result.rows[0];
+
+    req.user = payload; // 👈 attached to request
     next();
+
   } catch (err) {
     console.error('auth error', err.message);
     return res.status(401).json({ error: 'Invalid token' });

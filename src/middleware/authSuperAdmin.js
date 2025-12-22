@@ -12,6 +12,7 @@ module.exports = async function authSuperadmin(req, res, next) {
   try {
     // Verify JWT
     const payload = verifyToken(token);
+    
 
     // MySQL query (use ?)
     const [rows] = await db.query(
@@ -19,7 +20,7 @@ module.exports = async function authSuperadmin(req, res, next) {
        FROM users WHERE id = ?`,
       [payload.userId]
     );
-
+    console.log(payload.userId);
     if (rows.length === 0) {
       return res.status(401).json({ error: 'User not found' });
     }

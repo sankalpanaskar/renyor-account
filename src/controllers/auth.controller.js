@@ -11,44 +11,53 @@ exports.login = async (req, res) => {
   }
 
   try {
-    // Fetch full user (including password)
-    const [result] = await db.query(
-      'SELECT id, tenant_id, role_id, email, name, password, is_system_super_admin FROM users WHERE email = ?',
-      [email]
-    );
-     console.log(result.length);
+    const [result] = await db.query(`
+      SELECT 
+        u.id,
+        u.tenant_id,
+        u.role_id,
+        u.email,
+        u.name,
+        u.password,
+        u.is_system_super_admin,
+        u.is_company_super_admin,
+        c.package_id
+      FROM users u
+      JOIN tenants c ON c.id = u.tenant_id
+      WHERE u.email = ?
+    `, [email]);
+
     if (result.length === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     const user = result[0];
 
-    // Compare hashed password
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
-    // Generate JWT
-    const token = signToken({ userId: user.id });
+    const token = signToken({
+      userId: user.id,
+      tenant_id: user.tenant_id,
+      package_id: user.package_id,
+      is_system_super_admin: user.is_system_super_admin,
+      is_company_super_admin: user.is_company_super_admin,
+      role_id: user.role_id
+    });
 
-    // Do not send back hashed password
     delete user.password;
 
-    //res.json({ user, token });
     return res.success(
       200,
       "Login successful",
-      { user, token}
+      { user, token }
     );
-    
 
   } catch (err) {
     console.error("login error", err);
-    return res.error(
-      401,
-      err.message
-    );
+    return res.error(401, err.message);
   }
 };
+
