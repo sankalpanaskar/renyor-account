@@ -91,7 +91,7 @@ exports.createPackageModule = async (data) => {
 
   // Insert into MySQL
   const [result] = await db.query(
-    `INSERT INTO package_modules (module_name, parent_id, menu_pic, link)
+    `INSERT INTO menu_modules (module_name, parent_id, menu_pic, link)
      VALUES (?, ?, ?, ?)`,
     [module_name, finalParentId, icon, link]
   );
