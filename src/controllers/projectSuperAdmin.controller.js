@@ -114,10 +114,12 @@ exports.createPackageModule = async (req, res) => {
   try {
     const package = await SuperadminService.createPackageModule(req.body);
     console.log(package);
-    return res.status(201).json({
-      message: "Package Module created successfully",
+    
+    return res.success(
+      200,
+      "Packages fetched successfully",
       package
-    });
+    );
 
   } catch (err) {
     // ANY error thrown in service comes here
