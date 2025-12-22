@@ -72,7 +72,7 @@ exports.getPackages = async () => {
   return rows; // array (can be empty)
 };
 
-exports.createPackageModule = async (data) => {
+exports.createMenuSubmenu = async (data) => {
   const { menu_name, parent_id , icon,link} = data;
 
   // Validation

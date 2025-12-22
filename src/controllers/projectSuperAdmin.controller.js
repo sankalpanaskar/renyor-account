@@ -110,9 +110,9 @@ exports.fetchPackages = async (req, res) => {
     );
   }
 };
-exports.createPackageModule = async (req, res) => {
+exports.createMenuSubmenu = async (req, res) => {
   try {
-    const package = await SuperadminService.createPackageModule(req.body);
+    const package = await SuperadminService.createMenuSubmenu(req.body);
     console.log(package);
     
     return res.success(

@@ -6,7 +6,7 @@ const authSuperadmin = require('../middleware/authSuperAdmin');
 router.post("/create-project-superadmin", Controller.createProjectSuperAdmin);
 router.post("/create-project-package", authSuperadmin,Controller.createPackage);
 router.get("/fetch-package", authSuperadmin,Controller.fetchPackages);
-router.post("/create-project-package-module", authSuperadmin,Controller.createPackageModule);
+router.post("/create-menu-submenu", authSuperadmin,Controller.createMenuSubmenu);
 router.get("/fetch-menu-structure", authSuperadmin,Controller.fetchMenuStructure);
 router.get("/fetch-parent-menu", authSuperadmin,Controller.fetchParentMenu);
 
