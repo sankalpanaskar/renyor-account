@@ -117,7 +117,7 @@ exports.createPackageModule = async (req, res) => {
     
     return res.success(
       200,
-      "Packages fetched successfully",
+      "Menu Created successfully",
       package
     );
 

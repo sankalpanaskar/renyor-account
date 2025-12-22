@@ -77,7 +77,7 @@ exports.createPackageModule = async (data) => {
 
   // Validation
   if (!menu_name) {
-    throw new Error("Module Name are required");
+    throw new Error("Menu Name are required");
   }
 
   // Normalize parent_id (INTEGER column)
