@@ -73,10 +73,10 @@ exports.getPackages = async () => {
 };
 
 exports.createPackageModule = async (data) => {
-  const { module_name, parent_id , icon,link} = data;
+  const { menu_name, parent_id , icon,link} = data;
 
   // Validation
-  if (!module_name) {
+  if (!menu_name) {
     throw new Error("Module Name are required");
   }
 
@@ -91,15 +91,15 @@ exports.createPackageModule = async (data) => {
 
   // Insert into MySQL
   const [result] = await db.query(
-    `INSERT INTO menu_modules (module_name, parent_id, menu_pic, link)
+    `INSERT INTO menu_modules (menu_name, parent_id, menu_pic, link)
      VALUES (?, ?, ?, ?)`,
-    [module_name, finalParentId, icon, link]
+    [menu_name, finalParentId, icon, link]
   );
 
   // Manually return created record
   return {
     id: result.insertId,
-    module_name,
+    menu_name,
     parent_id: finalParentId
   };
 };
@@ -107,7 +107,7 @@ exports.createPackageModule = async (data) => {
 exports.fetchMenuStructure = async () => {
   const [rows] = await db.query(
     `
-    SELECT id, module_name, parent_id,menu_pic,link
+    SELECT id, menu_name, parent_id,menu_pic,link
     FROM menu_modules
     WHERE status = 1
     ORDER BY parent_id, id`
@@ -119,7 +119,7 @@ exports.fetchMenuStructure = async () => {
   rows.forEach(row => {
     map[row.id] = {
       id: row.id,
-      title: row.module_name,
+      title: row.menu_name,
       parent_id: row.parent_id,
       icon:row.menu_pic,
       link:row.link,
