@@ -169,6 +169,9 @@ exports.fetchSubMenuBasedOnParentMenu = async (req, res) => {
     const { parentMenuId } = req.query;
     const package = await SuperadminService.fetchSubMenuBasedOnParentMenu(parentMenuId);
     console.log(package);
+    if (!parentMenuId) {
+      return res.status(400).json({ message: "parentMenuId is required" });
+    }
     
     return res.success(
       200,
@@ -178,8 +181,9 @@ exports.fetchSubMenuBasedOnParentMenu = async (req, res) => {
 
   } catch (err) {
     // ANY error thrown in service comes here
-    return res.status(400).json({
-      error: err.message
-    });
+   return res.error(
+      500,
+      err.message || "Failed to fetch packages"
+    );
   }
 };
