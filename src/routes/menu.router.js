@@ -6,4 +6,5 @@ const auth = require('../middleware/auth');
 router.get('/fetch-menu', auth, menuontroller.fetchMenu);
 
 
+
 module.exports = router;
