@@ -28,7 +28,7 @@ exports.login = async (req, res) => {
     `, [email]);
 
     if (result.length === 0) {
-      return res.status(401).json({ error: "Invalid email or password" });
+      return res.status(401).json({ error: "Invalid email or password db check" });
     }
 
     const user = result[0];
