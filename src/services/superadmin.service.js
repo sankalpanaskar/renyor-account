@@ -38,6 +38,27 @@ exports.create = async (data) => {
   };
 };
 
+exports.assignModuleInPackage=async(data) =>{
+  const { package_id, parent_id, module_id } = data;
+
+  const values = module_id.map(id => [
+    package_id,
+    id,
+    parent_id,
+    1
+  ]);
+
+  return db.query(
+    `
+    INSERT INTO package_modules
+      (package_id, menu_id, parent_menu_id, status)
+    VALUES ?
+    `,
+    [values]
+  );
+};
+
+
 exports.packageCreate = async (data) => {
   const { package_name, package_type, package_details, base_price, offer_price, final_price } = data;
 

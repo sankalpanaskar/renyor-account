@@ -5,6 +5,7 @@ const authSuperadmin = require('../middleware/authSuperAdmin');
 // Only run ONCE (no token needed)
 router.post("/create-project-superadmin", Controller.createProjectSuperAdmin);
 router.post("/create-project-package", authSuperadmin,Controller.createPackage);
+router.post("/assign-module-in-package", authSuperadmin,Controller.assignModuleInPackage);
 router.get("/fetch-package", authSuperadmin,Controller.fetchPackages);
 router.post("/create-menu-submenu", authSuperadmin,Controller.createMenuSubmenu);
 router.get("/fetch-menu-structure", authSuperadmin,Controller.fetchMenuStructure);

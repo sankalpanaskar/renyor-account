@@ -65,6 +65,33 @@ exports.createProjectSuperAdmin = async (req, res) => {
     });
   }
 };
+exports.assignModuleInPackage = async (req, res) => {
+  try {
+    
+    
+    const user = await SuperadminService.assignModuleInPackage(req.body);
+
+    return res.success(
+      200,
+      "Module assign successfully",
+      {user}
+    );
+
+  } catch (err) {
+
+    if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "Same details cant assign in a package"
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+  }
+};
 exports.createPackage = async (req, res) => {
   try {
     const package = await SuperadminService.packageCreate(req.body);
