@@ -1,8 +1,12 @@
 const menu = require('../services/menu.service');
 exports.fetchMenu = async (req, res) => {
   try {
-    const packageId = req.user.package_id;
-    console.log(req.user);
+   
+    const tokenPackageId = req.user?.package_id;
+
+    // 2️⃣ package_id from request (query / params / body)
+    const requestPackageId = req.query.package_id;
+    const packageId = requestPackageId || tokenPackageId;
      if (!packageId) {
         return res.error(
         500,

@@ -191,6 +191,7 @@ exports.fetchParentMenu = async (req, res) => {
   }
 };
 
+
 exports.fetchSubMenuBasedOnParentMenu = async (req, res) => {
   try {
     const { parentMenuId } = req.query;
