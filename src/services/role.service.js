@@ -19,9 +19,12 @@ exports.create = async (data,tenant_id) => {
 
 
 exports.getAll = async (tenant_id) => {
-  const result = await db.query(
-    'SELECT * FROM roles WHERE tenant_id = $1 ORDER BY id',
+  const [rows] = await db.query(
+    'SELECT * FROM roles WHERE tenant_id = ? ORDER BY id',
     [tenant_id]
   );
-  return result.rows;
+  return rows;
 };
+
+
+

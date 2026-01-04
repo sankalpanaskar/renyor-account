@@ -19,9 +19,15 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     const roles = await RoleService.getAll(req.user.tenant_id);
-    res.json(roles);
+    return res.success(
+      200,
+      "Role fetched successfully",
+      roles
+    );
   } catch (err) {
-    console.error('get roles error', err);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.error(
+      500,
+      err.message || "Failed to fetch roles"
+    );
   }
 };
