@@ -3,18 +3,18 @@ exports.fetchMenu = async (req, res) => {
   try {
    
     const tokenPackageId = req.user?.package_id;
-
-    // 2️⃣ package_id from request (query / params / body)
     const requestPackageId = req.query.package_id;
     const packageId = requestPackageId || tokenPackageId;
-     if (!packageId) {
-        return res.error(
-        500,
-        "Package Not assign"
-        );
+
+    if (!packageId) {
+      return res.error(
+        400,
+        "Package not assigned"
+      );
     }
+     
     
-    const menu_details = await menu.fetchMenu(packageId);
+    const menu_details = await menu.fetchMenu(packageId,req.user.role_id);
 
     return res.success(
       200,

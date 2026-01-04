@@ -3,7 +3,7 @@ const RoleController = require('../controllers/role.controller');
 const auth = require('../middleware/auth');
 const checkPermission = require('../middleware/checkPermission');
 
-router.post('/', auth, checkPermission('create', 'Roles'), RoleController.create);
-router.get('/', auth, checkPermission('read', 'Roles'), RoleController.getAll);
+router.post('/role-create', auth, RoleController.create);
+router.get('/', auth, RoleController.getAll);
 
 module.exports = router;
