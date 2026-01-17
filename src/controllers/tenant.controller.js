@@ -11,7 +11,7 @@ exports.create = async (req, res) => {
   } catch (err) {
     return res.error(
       500,
-      err.message || "Failed to create tenant"
+      err || "Failed to create tenant"
     );
   }
 };
