@@ -13,7 +13,7 @@ exports.create = async (req, res) => {
   500,
   process.env.NODE_ENV === "production"
     ? "Internal Server Error"
-    : err.message
+    : err.stack
 );
   }
 };
