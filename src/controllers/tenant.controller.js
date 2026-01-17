@@ -10,9 +10,11 @@ exports.create = async (req, res) => {
     );
   } catch (err) {
     return res.error(
-      500,
-      err || "Failed to create tenant"
-    );
+  500,
+  process.env.NODE_ENV === "production"
+    ? "Internal Server Error"
+    : err.message
+);
   }
 };
 
