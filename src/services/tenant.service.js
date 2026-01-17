@@ -24,6 +24,7 @@ exports.create = async (data) => {
       gst,
       is_active = 1
     } = data;
+    return data;
     if (!name || !email) {
       throw new Error("Company name and email are required");
     }
