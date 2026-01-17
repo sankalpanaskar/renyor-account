@@ -1,8 +1,5 @@
 const db = require('../config/db');
-
-
-
-
+const bcrypt = require('bcryptjs');
 
 exports.create = async (data) => {
   const connection = await db.getConnection(); // for transaction
@@ -27,7 +24,6 @@ exports.create = async (data) => {
       gst,
       is_active = 1
     } = data;
-
     if (!name || !email) {
       throw new Error("Company name and email are required");
     }
@@ -42,7 +38,7 @@ exports.create = async (data) => {
         address, city, state, country, pin, pan, gst, is_active
       ]
     );
-
+   
     const tenant_id = tenantResult.insertId;
 
     const DEFAULT_PASSWORD = "1234567";
@@ -57,7 +53,7 @@ exports.create = async (data) => {
         email,
         password,
         is_company_super_admin
-      ) VALUES (?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?)`,
       [
         tenant_id,
         name,

@@ -26,6 +26,7 @@ exports.login = async (req, res) => {
       JOIN tenants c ON c.id = u.tenant_id
       WHERE u.email = ?
     `, [email]);
+    console.log(result.length,email);
 
     if (result.length === 0) {
       return res.status(401).json({ error: "Invalid email or password db check" });
