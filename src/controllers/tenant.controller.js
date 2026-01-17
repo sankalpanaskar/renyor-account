@@ -3,10 +3,16 @@ const TenantService = require('../services/tenant.service');
 exports.create = async (req, res) => {
   try {
     const tenant = await TenantService.create(req.body);
-    res.json(tenant);
+    return res.success(
+      200,
+      "Tenant created successfully",
+      tenant
+    );
   } catch (err) {
-    console.error('create tenant error', err);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.error(
+      500,
+      err.message || "Failed to create tenant"
+    );
   }
 };
 

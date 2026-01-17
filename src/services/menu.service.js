@@ -109,7 +109,11 @@ exports.fetchMenu = async (packageId,roleId = null) => {
         m.menu_name,
         m.parent_id,
         m.menu_pic,
-        m.link
+        m.link,
+        rma.can_view,
+        rma.can_create,
+        rma.can_edit,
+        rma.can_delete
       FROM package_modules p
       JOIN menu_modules m
         ON m.id = p.menu_id
@@ -135,16 +139,23 @@ exports.fetchMenu = async (packageId,roleId = null) => {
   const menu = [];
 
   // create map
-  rows.forEach(row => {
-    map[row.id] = {
-      id: row.id,
-      title: row.menu_name,
-      parent_id: row.parent_id,
-      icon: row.menu_pic,
-      link: row.link,
-      children: []
-    };
-  });
+rows.forEach(row => {
+  map[row.id] = {
+    id: row.id,
+    title: row.menu_name,
+    parent_id: row.parent_id,
+    icon: row.menu_pic,
+    link: row.link,
+    ...(row.parent_id !== 0 && { //using spread separetor
+      can_view: row.can_view,
+      can_create: row.can_create,
+      can_edit: row.can_edit,
+      can_delete: row.can_delete
+    }),
+    children: []
+  };
+});
+
 
   // build tree
   rows.forEach(row => {

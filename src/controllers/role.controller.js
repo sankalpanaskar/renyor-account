@@ -11,8 +11,10 @@ exports.create = async (req, res) => {
       role
     );
   } catch (err) {
-    console.error('create role error', err);
-    res.status(500).json({ error: 'Internal server error' });
+    return res.error(
+      500,
+      err.message || "Failed to create roles"
+    );
   }
 };
 
