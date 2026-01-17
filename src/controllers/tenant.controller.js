@@ -3,6 +3,7 @@ const TenantService = require('../services/tenant.service');
 exports.create = async (req, res) => {
   try {
     const tenant = await TenantService.create(req.body);
+    return 0;
     return res.success(
       200,
       "Tenant created successfully",
