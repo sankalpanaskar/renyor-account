@@ -26,7 +26,7 @@ exports.create = async (data) => {
       gst,
       is_active = 1
     } = data;
-    return 'ff';
+    
     if (!name || !email) {
       throw new Error("Company name and email are required");
     }
@@ -41,7 +41,7 @@ exports.create = async (data) => {
         address, city, state, country, pin, pan, gst, is_active
       ]
     );
-   
+   return data;
     const tenant_id = tenantResult.insertId;
 
     const DEFAULT_PASSWORD = "1234567";
