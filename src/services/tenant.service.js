@@ -4,8 +4,9 @@ const bcrypt = require('bcryptjs');
 exports.create = async (data) => {
   
   const connection = await db.getConnection(); // for transaction
-  return data;
+ 
   try {
+     return data;
     await connection.beginTransaction();
 
     const {
