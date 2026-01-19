@@ -11,8 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(morgan('dev'));
-const multer = require("multer");
-const upload = multer();
+
 
 
 app.get('/', (req, res) => {
@@ -21,7 +20,7 @@ app.get('/', (req, res) => {
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(responseMiddleware);
-app.use('/api', upload.none(),routes);
+app.use('/api',routes);
 
 
 app.use((err, req, res, next) => {
