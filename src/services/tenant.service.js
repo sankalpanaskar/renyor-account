@@ -88,6 +88,6 @@ exports.create = async (data) => {
 
 
 exports.getAll = async () => {
-  const [result] = await db.query('SELECT * FROM tenants ORDER BY id');
+  const [result] = await db.query('SELECT t.*, p.package_name FROM tenants t LEFT JOIN packages p ON t.package_id = p.id ORDER BY t.id');
   return result;
 };
