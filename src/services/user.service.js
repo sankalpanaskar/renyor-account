@@ -34,7 +34,7 @@ exports.create = async (data,tenant_id) => {
 
 exports.getAll = async (tenant_id) => {
   const [rows] = await db.query(
-    'SELECT u.id,u.tenant_id,u.role_id,COALESCE(r.role_name,"superadmin") AS role_name,u.name,u.email FROM users u LEFT JOIN roles r ON r.id=u.role_id WHERE u.tenant_id=? ORDER BY u.id',
+    'SELECT u.id,u.tenant_id,u.role_id,COALESCE(r.role_name,"superadmin") AS role_name,u.name,u.email,u.phone FROM users u LEFT JOIN roles r ON r.id=u.role_id WHERE u.tenant_id=? ORDER BY u.id',
     [tenant_id]
   );
 
