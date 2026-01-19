@@ -6,9 +6,9 @@ exports.create = async (data) => {
   const connection = await db.getConnection(); // for transaction
  
   try {
-     return data;
+     
     await connection.beginTransaction();
-
+    return data;
     const {
       package_id,
       name,
