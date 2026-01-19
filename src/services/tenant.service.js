@@ -65,9 +65,9 @@ exports.create = async (data) => {
         1
       ]
     );
-     return data;
+     
     await connection.commit();
-
+    return data;
     const [rows] = await connection.query(
       'SELECT * FROM tenants WHERE id = ?',
       [tenant_id]
