@@ -48,7 +48,7 @@ exports.create = async (data) => {
     const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
 
     const DEFAULT_ROLE_ID = 1;
-     return data;
+     
     await connection.query(
       `INSERT INTO users (
         tenant_id,
@@ -65,7 +65,7 @@ exports.create = async (data) => {
         1
       ]
     );
-
+     return data;
     await connection.commit();
 
     const [rows] = await connection.query(
