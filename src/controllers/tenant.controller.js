@@ -23,6 +23,7 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
+    return 6;
     const tenants = await TenantService.getAll();
     res.json(tenants);
   } catch (err) {
