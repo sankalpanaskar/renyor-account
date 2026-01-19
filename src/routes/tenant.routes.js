@@ -19,6 +19,6 @@ router.post('/create-tenant', authSuperadmin,upload.single("logo"),TenantControl
 //     next();
 //   });
 // }, TenantController.create);
-router.get('/get-tenant', authSuperadmin, TenantController.getAll);
+router.get('/fetch-tenant', authSuperadmin, TenantController.getAll);
 
 module.exports = router;
