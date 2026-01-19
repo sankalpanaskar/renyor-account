@@ -5,7 +5,7 @@ const { signToken } = require('../utils/jwt');
 
 exports.login = async (req, res) => {
   const { email, password } = req.body || {};
-
+  console.log(req.body);
   if (!email || !password) {
     return res.status(400).json({ error: "Email and password required" });
   }
@@ -47,6 +47,7 @@ exports.login = async (req, res) => {
       is_company_super_admin: user.is_company_super_admin,
       role_id: user.role_id
     });
+     req.user = token;
 
     delete user.password;
 

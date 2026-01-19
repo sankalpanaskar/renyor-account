@@ -1,12 +1,11 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
-exports.create = async (data) => {
-  const { tenant_id,role_id, name, email } = data;
+exports.create = async (data,tenant_id) => {
+  const { role_id, name, email, phone } = data;
+  console.log(data);
 
-  if (!tenant_id  || !name || !email) {
-    throw new Error("tenant_id, name and email are required");
-  }
+ 
 
   // 🔐 Default password
   const DEFAULT_PASSWORD = "1234567";
@@ -16,9 +15,9 @@ exports.create = async (data) => {
 
   // Insert user
   const [result] = await db.query(
-    `INSERT INTO users (tenant_id, role_id, name, email, password,is_company_super_admin)
-     VALUES (?, ?, ?, ?, ?,?)`,
-    [tenant_id, role_id, name, email, hashedPassword,1]
+    `INSERT INTO users (tenant_id, role_id, name, email,phone, password,is_company_super_admin)
+     VALUES (?, ?, ?, ?, ?,?,?)`,
+    [tenant_id, role_id, name, email,phone, hashedPassword,1]
   );
 
   // Return user info (never return password)
@@ -27,15 +26,18 @@ exports.create = async (data) => {
     tenant_id,
     role_id,
     name,
-    email
+    email,
+    phone
   };
 };
 
 
 exports.getAll = async (tenant_id) => {
-  const result = await db.query(
-    'SELECT id, tenant_id, role_id, name, email FROM users WHERE tenant_id = $1 ORDER BY id',
+  const [rows] = await db.query(
+    'SELECT u.id,u.tenant_id,u.role_id,COALESCE(r.role_name,"superadmin") AS role_name,u.name,u.email FROM users u LEFT JOIN roles r ON r.id=u.role_id WHERE u.tenant_id=? ORDER BY u.id',
     [tenant_id]
   );
-  return result.rows;
+
+  return rows;
 };
+
