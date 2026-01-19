@@ -12,12 +12,17 @@ exports.create = async (req, res) => {
       tenant
     );
   } catch (err) {
-    return res.error(
-  500,
-  process.env.NODE_ENV === "production"
-    ? "Internal Server Error"
-    : err.stack
-);
+     if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "Same email cant insert"
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
   }
 };
 
