@@ -2,6 +2,7 @@ const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
 exports.create = async (data) => {
+  return data;
   const connection = await db.getConnection(); // for transaction
 
   try {
