@@ -23,7 +23,12 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    return 6;
+    
+    return res.success(
+      200,
+      "Tenant created successfully",
+      1
+    );
     const tenants = await TenantService.getAll();
     res.json(tenants);
   } catch (err) {
