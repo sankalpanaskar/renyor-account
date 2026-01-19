@@ -24,13 +24,15 @@ exports.create = async (req, res) => {
 exports.getAll = async (req, res) => {
   try {
     
-    return res.success(
-      200,
-      "Tenant created successfully",
-      1
-    );
+   
     const tenants = await TenantService.getAll();
-    res.json(tenants);
+    
+
+     return res.success(
+      200,
+      "Tenant fetched successfully",
+      tenants
+    );
   } catch (err) {
     console.error('get tenants error', err);
     res.status(500).json({ error: 'Internal server error' });
