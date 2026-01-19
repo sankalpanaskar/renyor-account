@@ -41,14 +41,14 @@ exports.create = async (data) => {
         address, city, state, country, pin, pan, gst, is_active
       ]
     );
-   return data;
+   
     const tenant_id = tenantResult.insertId;
 
     const DEFAULT_PASSWORD = "1234567";
     const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
 
     const DEFAULT_ROLE_ID = 1;
-
+     return data;
     await connection.query(
       `INSERT INTO users (
         tenant_id,
