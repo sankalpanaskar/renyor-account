@@ -8,7 +8,7 @@ exports.create = async (data) => {
   try {
      
     await connection.beginTransaction();
-    return data;
+    
     const {
       package_id,
       name,
