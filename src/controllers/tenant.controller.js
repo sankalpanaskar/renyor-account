@@ -15,7 +15,7 @@ exports.create = async (req, res) => {
      if(err.code==='ER_DUP_ENTRY'){
         return res.error(
               409,
-              "Same email cant insert"
+              "This email address already exists. Please use a different email."
             );
     }else{
       return res.error(
