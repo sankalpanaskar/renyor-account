@@ -45,50 +45,18 @@ import { TokenInterceptor } from './interceptors/token.interceptor';
     CoreModule.forRoot(),
     ThemeModule.forRoot(),
     NbAuthModule.forRoot({
-      strategies: [
-        NbPasswordAuthStrategy.setup({
-          name: 'email',
-          baseEndpoint: 'https://assetapi.anudip.org/api',
-          login: {
-            endpoint: '/login',
-            method: 'post',
-          },
-          register: {
-            endpoint: '/register',
-            method: 'post',
-          },
- token: {
-  class: NbAuthSimpleToken,
-  key: 'data.token',
-  getter: (module, res) => {
-    try {
-      // Get the raw response body
-      const body = res?.body;
-
-      if (!body) return null;
-
-      // If backend sends base64 message
-      if (body.message && typeof body.message === 'string') {
-        const decodedStr = atob(body.message);
-        const decoded = JSON.parse(decodedStr);
-        return decoded?.data?.token ?? null; // ✅ Return the real token
-      }
-
-      // Otherwise, fallback for normal JSON
-      return body?.data?.token ?? null;
-    } catch (e) {
-      console.error('❌ Token getter error:', e);
-      return null;
-    }
-  },
-},
-
-        }),
-      ],
-      forms: {},
-    }),
-    
-  ],
+    strategies: [
+      NbPasswordAuthStrategy.setup({
+        name: 'email',
+        baseEndpoint: 'https://api.msmeaccounts.com/api',
+        login: { endpoint: '/auth/login', method: 'post' },
+        token: {
+          class: NbAuthJWTToken,
+          key: 'data.token', // ✅ matches your response
+        },
+      }),
+    ],
+  })],
   bootstrap: [AppComponent],
   providers: [
     {

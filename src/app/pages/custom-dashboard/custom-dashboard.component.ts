@@ -23,7 +23,7 @@ export class CustomDashboardComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    console.log('member is', this.globalService.member_id, this.globalService.role_id, this.globalService.user_code);
+    //console.log('member is', this.globalService.member_id, this.globalService.role_id, this.globalService.user_code);
     this.loadDashboardData();
   }
 
@@ -36,7 +36,7 @@ export class CustomDashboardComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    this.globalService.getDashboardButtonData(payload).subscribe({
+    this.globalService.getCustomerList().subscribe({
       next: (res: any) => {
         console.log('📦 Raw dashboard API response:', res);
         this.isSubmitting = false;

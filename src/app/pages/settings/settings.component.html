@@ -1,6 +1,8 @@
-<nb-card>
-  <nb-card-header class="section-header">Company Logo</nb-card-header>
-  <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
-    
-  </nb-card-body>
-</nb-card>
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;"> 
+  <nb-card>
+    <nb-card-header class="section-header">Company Information</nb-card-header>
+    <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+      
+    </nb-card-body>
+  </nb-card>
+</form>

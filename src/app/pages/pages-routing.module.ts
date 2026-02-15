@@ -113,6 +113,24 @@ const routes: Routes = [{
       canActivate: [authGuard],
     },
     {
+      path: 'sales',
+      loadChildren: () => import('./sales/sales.module')
+        .then(m => m.SalesModule)
+
+    },
+    {
+      path: 'admin-setting',
+      loadChildren: () => import('./admin-setting/admin-setting.module')
+        .then(m => m.AdminSettingModule)
+
+    },
+    {
+      path: 'organization-setting',
+      loadChildren: () => import('./organization-settings/organization-settings.module')
+        .then(m => m.OrganizationSettingsModule)
+
+    },
+    {
       path: 'settings',
       component: SettingsComponent,
       canActivate: [authGuard],

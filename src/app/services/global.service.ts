@@ -66,9 +66,19 @@ export class GlobalService {
   private apiUrl= environment.apiBaseUrl+ 'api';
   private assetUrl= environment.apiBaseUrl+ 'api'+ '/asset';
   private leadUrl= environment.apiBaseUrl+ 'api'+ '/asset';
-  private accontUrl = environment.apiAccountBaseUrl+ 'api'+ '/account';
+
+  private accountsUrl= environment.apiBaseUrl+ 'api'+ '/asset';
+  private systemUrl= environment.apiBaseUrl+ 'api'+ '/system';
+  private menuUrl = environment.apiBaseUrl+ 'api' + '/menu';
+  private roleUrl = environment.apiBaseUrl+ 'api' + '/roles';
+  private tenantsUrl = environment.apiBaseUrl+ 'api' + '/tenants';
+  private usersUrl = environment.apiBaseUrl+ 'api' + '/users';
+  
   // constructor(private http: HttpClient) {}
   
+  public getStates() {
+    return this.http.get<any[]>('assets/data/state.json');
+  }
   //old
     public getSourcesReg(): Observable<any> {
     return this.http.get(`${this.apiUrl}/fetch-lead-source`);
@@ -369,8 +379,69 @@ export class GlobalService {
   }
 
 
+  ///Accounts Renyor
 
+  public getMenuByUser() {
+    return this.http.get(`${this.menuUrl}/fetch-menu`);
+  }
+  public getCustomerList() {
+    return this.http.get(`${this.accountsUrl}/get-tenant`,);
+  }
 
+  public addPackage(data:any): Observable<any> {
+    return this.http.post(`${this.systemUrl}/create-project-package`,data);
+  }
+
+  public gePackageList() {
+    return this.http.get(`${this.systemUrl}/fetch-package`,);
+  }
+
+  public getParentMenuList() {
+    return this.http.get(`${this.systemUrl}/fetch-parent-menu`,);
+  }
+
+  public addMenu(data:any): Observable<any> {
+    return this.http.post(`${this.systemUrl}/create-menu-submenu`,data);
+  }
   
+  public getMenuTree() {
+    return this.http.get(`${this.systemUrl}/fetch-menu-structure`,);
+  }
 
+  public getModuleByParentMenuID(parentMenuId:any): Observable<any> {
+    return this.http.get(`${this.systemUrl}/fetch-submenu-based-on-parent-menu?parentMenuId=${parentMenuId}`);
+  }
+
+  public assignModuleIntoPackage(data:any): Observable<any> {
+    return this.http.post(`${this.systemUrl}/assign-module-in-package`,data);
+  }
+
+  public getMenuByPackage(packageId:any) {
+    return this.http.get(`${this.menuUrl}/fetch-menu?package_id=${packageId}`,);
+  }
+
+  public addRole(data:any): Observable<any> {
+    return this.http.post(`${this.roleUrl}/role-create`,data);
+  }
+
+  public fetchRoles() {
+    return this.http.get(`${this.roleUrl}/get-roles`,);
+  }
+
+  public addCompany(data:any): Observable<any> {
+    return this.http.post(`${this.tenantsUrl}/create-tenant`,data);
+  }
+
+  public geCompanyList() {
+    return this.http.get(`${this.tenantsUrl}/fetch-tenant`,);
+  }
+
+  public addUser(data:any): Observable<any> {
+    return this.http.post(`${this.usersUrl}/user-create`,data);
+  }
+
+  public getUserByCompany(): Observable<any> {
+    return this.http.get(`${this.usersUrl}/fetch-user`);
+  }
+  
 }

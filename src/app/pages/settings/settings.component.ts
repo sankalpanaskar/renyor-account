@@ -24,5 +24,9 @@ export class SettingsComponent implements OnInit {
    
   }
 
+  onSubmit(fm:any){
+    
+  }
+
 }
 

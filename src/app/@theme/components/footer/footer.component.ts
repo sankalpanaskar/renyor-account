@@ -5,12 +5,14 @@ import { Component } from '@angular/core';
   styleUrls: ['./footer.component.scss'],
   template: `
     <span class="created-by">
-      © Copyright 2025.<b><a href="https://anudip.org" target="_blank">Anudip Foundation for Social welfare</a></b>
+      © Copyright 2025.<b><a href="https://renyor.com" target="_blank">Renyor</a></b>
     </span>
     <div class="socials">
-      <a href=" https://www.facebook.com/AnudipFoundation/" target="_blank" class="ion ion-social-facebook"></a>
-      <a href="https://x.com/AnudipF" target="_blank" class="ion ion-social-twitter"></a>
-      <a href="https://www.linkedin.com/company/anudip-foundation-for-social-welfare/" target="_blank" class="ion ion-social-linkedin"></a>
+      <a href="https://www.facebook.com/itsRenYor" target="_blank" class="ion ion-social-facebook"></a>
+      <a href="https://x.com/itsRenYor" target="_blank" class="ion ion-social-twitter"></a>
+      <a href="https://www.instagram.com/itsrenyor/" target="_blank" class="ion ion-social-instagram"></a>
+      <a href="https://www.youtube.com/channel/UCWhcXUC8UoSqr0qUvHBq3Hg" target="_blank" class="ion ion-social-youtube"></a>
+      <a href="https://wa.me/918335833329" target="_blank" class="ion ion-social-whatsapp"></a>
     </div>
   `,
 })

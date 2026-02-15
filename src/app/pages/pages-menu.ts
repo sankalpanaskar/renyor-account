@@ -280,13 +280,138 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       },
     ]),
 
-    { title: 'Others', group: true },
-     // Dashboard
     {
-      title: 'Settings',
-      icon: 'settings-2-outline',
-      link: '/pages/settings',
+      title: 'Sales',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Customers',
+          link: '/pages/sales/customer-list',
+        },
+        {
+          title: 'Quotes',
+          link: '/pages/assets/buyer-list',
+        },
+      ],
     },
+    {
+      title: 'Item',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Item',
+          link: '/pages/sales/item-list',
+        }
+      ],
+    },
+    { title: 'Organization Settings', group: true },
+    {
+      title: 'Organization',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Company Profile',
+          link: '/pages/organization-setting/orgprofile',
+        },
+        {
+          title: 'Manage Subscription',
+          link: '/pages/organization-setting/package-list',
+        },
+      ],
+    },
+    { title: 'Users & Roles', group: true },
+    {
+      title: 'Users',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Add Users',
+          link: '/pages/organization-setting/add-user',
+        },
+        {
+          title: 'User List',
+          link: '/pages/organization-setting/user-list',
+        }
+      ],
+    },
+    {
+      title: 'Roles',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Add Roles',
+          link: '/pages/organization-setting/add-roles',
+        },
+        {
+          title: 'Roles',
+          link: '/pages/organization-setting/roles',
+        }
+      ],
+    },
+    {
+      title: 'Setup & Configurations',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'General',
+          link: '/pages/organization-setting/profile',
+        }
+      ],
+    },
+    { title: 'Module Settings', group: true },
+    { title: 'Admin Settings', group: true },
+     // Dashboard
+     {
+      title: 'Package & Module',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Menu/Module',
+          link: '/pages/admin-setting/setup-menu',
+        },
+        {
+          title: 'Add Package',
+          link: '/pages/admin-setting/add-package',
+        },
+        {
+          title: 'Package List',
+          link: '/pages/admin-setting/package-list',
+        },
+        {
+          title: 'Assign Module Into Package',
+          link: '/pages/admin-setting/assign-module',
+        },
+      ],
+    },
+    {
+      title: 'Company',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Add Company',
+          link: '/pages/admin-setting/add-company',
+        },
+        {
+          title: 'Company List',
+          link: '/pages/admin-setting/company-list',
+        }
+      ],
+    },
+    {
+      title: 'Custom Field',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Add Custom Field',
+          link: '/pages/admin-setting/add-custom-field',
+        },
+        {
+          title: 'Custom Field List',
+          link: '/pages/admin-setting/custom-field',
+        }
+      ],
+    },
+    
   ];
 
   return menu;

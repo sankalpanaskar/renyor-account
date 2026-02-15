@@ -15,6 +15,5 @@
 // };
 export const environment = {
   production: true,
-  apiBaseUrl: 'https://assetapi.anudip.org/',
-  apiAccountBaseUrl: 'https://cmis4api.anudip.org/public/',
+  apiBaseUrl: 'https://api.msmeaccounts.com/',
 };
