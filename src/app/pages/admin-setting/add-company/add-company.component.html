@@ -1,0 +1,148 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="uploadFile" style="width: 100%;margin: 0 auto;">      
+    <nb-card>
+        <nb-card-header>Add Company</nb-card-header>
+            <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+                <div class="row">
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Package <span
+                                style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select Package" name="package_id"
+                            required #package_id="ngModel" [(ngModel)]="model.package_id">
+                            <nb-option  *ngFor="let package of packageList" [value]="package.id">{{package.package_name}}</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && package_id.invalid" class="error-message">
+                            Package is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Industry <span
+                                style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select Industry" name="industry"
+                            required #industry="ngModel" [(ngModel)]="model.industry">
+                            <nb-option value="1">Non-Profit</nb-option>
+                            <!-- <nb-option  *ngFor="let pm of parentMenuList" [value]="pm.id">{{pm.menu_name}}</nb-option> -->
+                        </nb-select>
+                        <div *ngIf="fm.submitted && industry.invalid" class="error-message">
+                            Industry is required
+                        </div>
+                    </div>
+                    <div class="col-lg-12 mb-10">
+                        <label class="small-label">Organization Name <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization Name"
+                            name="name" required #name="ngModel" [(ngModel)]="model.name">
+                        <div *ngIf="fm.submitted && name.invalid" class="error-message">
+                            Organization name is required
+                        </div>
+                    </div>
+                    <div class="col-lg-12 mb-10">
+                        <label class="small-label">Address <span
+                                style="color:#d32f2f">*</span></label>
+                        <textarea nbInput fullWidth shape="semi-round" placeholder="Enter address" name="address"
+                        [(ngModel)]="model.address" #address="ngModel" rows="3" [maxlength]="500"></textarea>
+                        <div *ngIf="fm.submitted && address.invalid" class="error-message">
+                            Organization address is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Country</label>
+                        <nb-select shape="semi-round" placeholder="Select Country" name="country"
+                            required #country="ngModel" [(ngModel)]="model.country">
+                            <nb-option value="India">India</nb-option>
+                            <nb-option value="Other">Other</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && country.invalid" class="error-message">
+                            Select Coutry
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">City <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization City"
+                            name="city" required #city="ngModel" [(ngModel)]="model.city">
+                        <div *ngIf="fm.submitted && city.invalid" class="error-message">
+                            Enter the city.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">State <span
+                        style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select State" name="state"
+                            required #state="ngModel" [(ngModel)]="model.state">
+                            <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && state.invalid" class="error-message">
+                            Select state.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Pincode <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Pincode"
+                            name="pin" required #pin="ngModel" [(ngModel)]="model.pin">
+                        <div *ngIf="fm.submitted && pin.invalid" class="error-message">
+                            Enter the pin.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Phone <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization phone"
+                            name="phone" required #phone="ngModel" [(ngModel)]="model.phone">
+                        <div *ngIf="fm.submitted && phone.invalid" class="error-message">
+                            Enter the phone.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Email <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization email"
+                            name="email" required #email="ngModel" [(ngModel)]="model.email">
+                        <div *ngIf="fm.submitted && email.invalid" class="error-message">
+                            Enter the email.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">PAN <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization pan"
+                            name="pan" required #pan="ngModel" [(ngModel)]="model.pan">
+                        <div *ngIf="fm.submitted && pan.invalid" class="error-message">
+                            Enter the pan.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">GST <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization gst"
+                            name="gst" required #gst="ngModel" [(ngModel)]="model.gst">
+                        <div *ngIf="fm.submitted && gst.invalid" class="error-message">
+                            Enter the gst.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Website URL <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization website"
+                            name="website" required #website="ngModel" [(ngModel)]="model.website">
+                        <div *ngIf="fm.submitted && website.invalid" class="error-message">
+                            Enter the website.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Logo <span
+                        style="color:#d32f2f">*</span></label>
+                        <input type="file" nbInput fullWidth shape="semi-round" name="logo" required #logo="ngModel" [(ngModel)]="model.logo" (change)="onFileChange($event)">
+                    </div>
+                </div>
+            </nb-card-body>
+        <nb-card-footer>
+            <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button nbButton status="primary" shape="semi-round" hero type="submit"
+                    [disabled]="isSubmitting">
+                    Update
+                </button>
+            </div>
+        </nb-card-footer>
+    </nb-card>
+</form>

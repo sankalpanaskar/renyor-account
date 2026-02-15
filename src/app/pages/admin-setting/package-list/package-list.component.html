@@ -1,0 +1,55 @@
+<div class="asset-list-container">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        
+            <nb-card-header class="section-header d-flex justify-content-between align-items-center">
+            <span>Package List</span>
+
+            <!-- Right-side button -->
+            <button
+                nbButton
+                status="primary"
+                size="small"
+                shape="semi-round"
+                (click)="gotoAddPackage()"
+            >
+                Add Package
+            </button>
+            </nb-card-header>
+
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+        
+          <!-- 🔹 Loading Spinner Overlay -->
+          <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
+            <nb-spinner size="large" status="primary"></nb-spinner>
+          </div>
+
+          <!-- 🔹 Table Section -->
+          <div [class.content-blur]="loading">
+            <div class="row mt-3">
+              <div class="col-12" style="padding-left: 30px;padding-right: 30px;">
+                <input
+                  type="text"
+                  nbInput
+                  fullWidth
+                  shape="semi-round"
+                  #search
+                  class="search"
+                  placeholder="Search Brand..." (keydown.enter)="onSearch(search.value)"/>
+              </div>
+
+              <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
+                <ng2-smart-table
+                  [settings]="settings"
+                  [source]="source">
+                </ng2-smart-table>
+              </div>
+            </div>
+          </div>
+
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</div>

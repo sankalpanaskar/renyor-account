@@ -1,0 +1,84 @@
+<div class="row">
+    <div class="col-lg-12">
+        <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">
+            <nb-card>
+                <nb-card-header>Add Menu</nb-card-header>
+                <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+                    <div class="row">
+                        <div class="col-lg-6 mb-10">
+                            <label class="small-label" id="label-category">Name <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Menu Name"
+                                name="menu_name" required #menu_name="ngModel" [(ngModel)]="model.menu_name">
+                            <div *ngIf="fm.submitted && menu_name.invalid" class="error-message">
+                                Menu name is required
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-10">
+                            <label class="small-label" id="label-category">
+                                Parent Menu<span style="color:#d32f2f">*</span>
+                            </label>
+                            <nb-select shape="semi-round" placeholder="Select Parent Menu" name="parent_id"
+                                required #parent_id="ngModel" [(ngModel)]="model.parent_id">
+                                <nb-option value="0">None</nb-option>
+                                <nb-option  *ngFor="let pm of parentMenuList" [value]="pm.id">{{pm.menu_name}}</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && parent_id.invalid" class="error-message">
+                                Parent menu is required
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Icon <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Menu Icon"
+                                name="icon" required #icon="ngModel" [(ngModel)]="model.icon">
+                            <div *ngIf="fm.submitted && icon.invalid" class="error-message">
+                                Menu icon is required
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="small-label" id="label-category">Link <span
+                                    style="color:#d32f2f">*</span></label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Menu Link"
+                                name="link" required #link="ngModel" [(ngModel)]="model.link">
+                            <div *ngIf="fm.submitted && link.invalid" class="error-message">
+                                Menu link is required
+                            </div>
+                        </div>
+                    </div>
+                </nb-card-body>
+                <nb-card-footer>
+                    <div style="display:flex; justify-content:flex-end; gap:8px;">
+                        <button nbButton status="primary" shape="semi-round" hero type="submit"
+                            [disabled]="isSubmitting">
+                            Save
+                        </button>
+                    </div>
+                </nb-card-footer>
+            </nb-card>
+        </form>
+    </div>
+    <div class="col-lg-12">
+        <nb-card>
+            <nb-card-header>Menu Tree</nb-card-header>
+
+            <nb-card-body style="max-height: 300px;overflow-y: scroll;">
+                <div class="menu-tree">
+
+                    <div *ngFor="let menu of menuTreeList" class="menu-parent">
+                        <!-- Parent -->
+                        <div class="parent-title">
+                            {{ menu.title }}
+                        </div>
+
+                        <!-- Children -->
+                        <div *ngFor="let child of menu.children" class="menu-child">
+                            {{ child.title }}
+                        </div>
+                    </div>
+
+                </div>
+            </nb-card-body>
+        </nb-card>
+    </div>
+</div>
