@@ -215,3 +215,22 @@ exports.fetchSubMenuBasedOnParentMenu = async (req, res) => {
     );
   }
 };
+
+exports.customFieldCreate = async (req, res) => {
+  try {
+    const fields = await SuperadminService.customFieldCreate(req.body);
+    console.log(fields);
+    
+    return res.success(
+      200,
+      "Fields Created successfully",
+      fields
+    );
+
+  } catch (err) {
+    // ANY error thrown in service comes here
+    return res.status(400).json({
+      error: err.message
+    });
+  }
+};

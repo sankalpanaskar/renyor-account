@@ -137,6 +137,96 @@ exports.createMenuSubmenu = async (data) => {
     parent_id: finalParentId
   };
 };
+exports.customFieldCreate = async (data) => {
+  const {
+    module_id,
+    entity_type,
+    field_key,
+    label,
+    field_type,
+    default_value,
+    sort_order,
+    grid_col,
+    is_disabled,
+    admin_only,
+    is_required,
+    show_on_table,
+  } = data;
+
+  // Validation
+  if (!module_id) throw new Error("Module is required");
+  if (!entity_type) throw new Error("Entity type is required");
+  if (!field_key) throw new Error("Field key is required");
+  if (!label) throw new Error("Label is required");
+
+  // Normalize numbers (INT columns)
+  const finalModuleId =
+    module_id !== undefined && module_id !== null && module_id !== "" && module_id !== "null"
+      ? Number(module_id)
+      : null;
+
+  const finalSortOrder =
+    sort_order !== undefined && sort_order !== null && sort_order !== "" && sort_order !== "null"
+      ? Number(sort_order)
+      : 0;
+
+  const finalGridCol =
+    grid_col !== undefined && grid_col !== null && grid_col !== "" && grid_col !== "null"
+      ? Number(grid_col)
+      : 12;
+
+  // Normalize booleans (TINYINT)
+  const toTinyInt = (v) => (v === true || v === 1 || v === "1" || v === "true" ? 1 : 0);
+
+  const finalDisabled = toTinyInt(is_disabled);
+  const finalAdminOnly = toTinyInt(admin_only);
+  const finalRequired = toTinyInt(is_required);
+  const finalShowOnTable = toTinyInt(show_on_table);
+
+  // Default type
+  const finalFieldType = field_type || "text";
+
+  // Insert into MySQL
+  const [result] = await db.query(
+    `INSERT INTO dynamic_fields
+      (module_id, entity_type, field_key, label, field_type, default_value, sort_order, grid_col,
+       is_disabled, admin_only, is_required, show_on_table)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+      finalModuleId,
+      entity_type,
+      field_key,
+      label,
+      finalFieldType,
+      default_value ?? null,
+      finalSortOrder,
+      finalGridCol,
+      finalDisabled,
+      finalAdminOnly,
+      finalRequired,
+      finalShowOnTable,
+    ]
+  );
+
+  // Return created record
+  return {
+    id: result.insertId,
+    module_id: finalModuleId,
+    entity_type,
+    field_key,
+    label,
+    field_type: finalFieldType,
+    default_value: default_value ?? null,
+    sort_order: finalSortOrder,
+    grid_col: finalGridCol,
+    is_disabled: finalDisabled,
+    admin_only: finalAdminOnly,
+    is_required: finalRequired,
+    show_on_table: finalShowOnTable,
+  };
+};
+
+
 
 exports.fetchMenuStructure = async () => {
   const [rows] = await db.query(
