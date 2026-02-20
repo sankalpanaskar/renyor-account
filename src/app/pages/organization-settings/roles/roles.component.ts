@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
-import { NbDialogService, NbToastrService } from '@nebular/theme';
-import { AddRolesComponent } from '../add-roles/add-roles.component';
+import { NbToastrService } from '@nebular/theme';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'ngx-roles',
@@ -18,7 +18,7 @@ export class RolesComponent implements OnInit {
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private dialogService: NbDialogService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -30,7 +30,7 @@ export class RolesComponent implements OnInit {
     this.globalService.fetchRoles().subscribe({
       next: (res:any) => {
         console.log(res);
-        this.roleList = res.data; // ✅ Store API data here first
+        this.roleList = res.data;
         this.loading = false;
       },
       error: (err) => {
@@ -41,16 +41,7 @@ export class RolesComponent implements OnInit {
   }
 
   gotoAddRole(){
-   const dialogRef = this.dialogService.open(AddRolesComponent, {
-      context: {},   // 👈 pass data to dialog
-      closeOnBackdropClick: true,
-      hasScroll: true,
-    });
-
-    dialogRef.onClose.subscribe(() => {
-      
-      this.getRolesByCompany();              // 👈 refresh list on close
-    });
+    this.router.navigate(['/pages/organization-setting/add-roles']);
   }
 
 }

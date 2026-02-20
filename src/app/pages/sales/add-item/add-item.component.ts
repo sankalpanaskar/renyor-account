@@ -41,24 +41,24 @@ export class AddItemComponent implements OnInit {
 
   onSubmit(fm: any) {
     if (fm.valid) {
-      this.globalService.submitAssetData(fm.value).subscribe({
-        next: (res) => {
-          this.model = '';
-          fm.resetForm();
-          this.toastrService.success(res.message, 'Added');
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          console.error('Submit error:', err);
-          const errorMessage =
-            err?.error?.message ||
-            err?.message ||
-            'Add Lead Failed. Please try again.';
+      // this.globalService.submitAssetData(fm.value).subscribe({
+      //   next: (res) => {
+      //     this.model = '';
+      //     fm.resetForm();
+      //     this.toastrService.success(res.message, 'Added');
+      //     this.isSubmitting = false;
+      //   },
+      //   error: (err) => {
+      //     console.error('Submit error:', err);
+      //     const errorMessage =
+      //       err?.error?.message ||
+      //       err?.message ||
+      //       'Add Lead Failed. Please try again.';
 
-          this.toastrService.danger(errorMessage, 'Add Asset Failed');
-          this.isSubmitting = false;
-        },
-      });
+      //     this.toastrService.danger(errorMessage, 'Add Asset Failed');
+      //     this.isSubmitting = false;
+      //   },
+      // });
 
 
     }

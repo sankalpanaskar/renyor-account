@@ -142,17 +142,17 @@ export class UserListComponent implements OnInit{
       id : brandData.id
     }
     this.loading = true;
-    this.globalService.changeBrandStatus(data).subscribe({
-      next:(res:any) => {
-          //this.loadPendingList();
-          this.toastrService.success(res.message,'Brand Status Change');
-          this.loading = false;
-      },
-      error:(error:any) => {
-          this.toastrService.danger(error.message, 'Brand Status Change Failed');
-          this.loading = false;
-      }
-    })
+    // this.globalService.changeBrandStatus(data).subscribe({
+    //   next:(res:any) => {
+    //       //this.loadPendingList();
+    //       this.toastrService.success(res.message,'Brand Status Change');
+    //       this.loading = false;
+    //   },
+    //   error:(error:any) => {
+    //       this.toastrService.danger(error.message, 'Brand Status Change Failed');
+    //       this.loading = false;
+    //   }
+    // })
   }
 
   onEdit(rowData: any) {

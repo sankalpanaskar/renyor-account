@@ -5,7 +5,7 @@ import { OrganizationSettingsRoutingModule } from './organization-settings-routi
 import { RolesComponent } from './roles/roles.component';
 import { AddRolesComponent } from './add-roles/add-roles.component';
 import { OrganizationSettingComponent } from './organization-settings.component';
-import { NbAlertModule, NbButtonModule, NbCardModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbListModule, NbSelectModule, NbSpinnerModule } from '@nebular/theme';
+import { NbAlertModule, NbButtonModule, NbCardModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbListModule, NbSelectModule, NbSpinnerModule, NbCheckboxModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './profile/profile.component';
 import { AddUserComponent } from './add-user/add-user.component';
@@ -39,6 +39,7 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     NbSpinnerModule,
     NbListModule,
     NbAlertModule,
+    NbCheckboxModule,
     Ng2SmartTableModule
   ]
 })

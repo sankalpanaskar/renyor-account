@@ -24,7 +24,7 @@ export class CustomDashboardComponent implements OnInit {
 
   ngOnInit(): void {
     //console.log('member is', this.globalService.member_id, this.globalService.role_id, this.globalService.user_code);
-    this.loadDashboardData();
+    //this.loadDashboardData();
   }
 
   // ✅ Fetch Dashboard data dynamically
@@ -36,40 +36,40 @@ export class CustomDashboardComponent implements OnInit {
 
     this.isSubmitting = true;
 
-    this.globalService.getCustomerList().subscribe({
-      next: (res: any) => {
-        console.log('📦 Raw dashboard API response:', res);
-        this.isSubmitting = false;
+    // this.globalService.getCustomerList().subscribe({
+    //   next: (res: any) => {
+    //     console.log('📦 Raw dashboard API response:', res);
+    //     this.isSubmitting = false;
 
-        if (res?.status && res?.data) {
-          const apiAssets = res.data.asset_details || [];
-          const apiCenters = res.data.centers || [];
+    //     if (res?.status && res?.data) {
+    //       const apiAssets = res.data.asset_details || [];
+    //       const apiCenters = res.data.centers || [];
 
-          // ✅ Map API asset data into your display structure
-          this.assets = apiAssets.map((item: any) => ({
-            label: item.assets_sub_class,
-            count: item.subclass_count,
-            icon: this.getIconForAsset(item.assets_sub_class),
-          }));
+    //       // ✅ Map API asset data into your display structure
+    //       this.assets = apiAssets.map((item: any) => ({
+    //         label: item.assets_sub_class,
+    //         count: item.subclass_count,
+    //         icon: this.getIconForAsset(item.assets_sub_class),
+    //       }));
 
-          // ✅ Centers (if any)
-          this.centers = apiCenters.map((center: any, index: number) => ({
-            id: index + 1,
-            name: center.name || 'N/A',
-            code: center.short_code || 'N/A',
-          }));
+    //       // ✅ Centers (if any)
+    //       this.centers = apiCenters.map((center: any, index: number) => ({
+    //         id: index + 1,
+    //         name: center.name || 'N/A',
+    //         code: center.short_code || 'N/A',
+    //       }));
 
-          this.toastrService.success(res?.message || 'Dashboard loaded successfully', 'Success');
-        } else {
-          this.toastrService.warning('No data found', 'Warning');
-        }
-      },
-      error: (err) => {
-        console.error('❌ Dashboard API error:', err);
-        this.toastrService.danger(err?.error?.message || 'Failed to load dashboard data', 'Error');
-        this.isSubmitting = false;
-      },
-    });
+    //       this.toastrService.success(res?.message || 'Dashboard loaded successfully', 'Success');
+    //     } else {
+    //       this.toastrService.warning('No data found', 'Warning');
+    //     }
+    //   },
+    //   error: (err) => {
+    //     console.error('❌ Dashboard API error:', err);
+    //     this.toastrService.danger(err?.error?.message || 'Failed to load dashboard data', 'Error');
+    //     this.isSubmitting = false;
+    //   },
+    // });
   }
 
   // ✅ Helper function to assign icons dynamically

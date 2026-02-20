@@ -14,10 +14,9 @@ import {
 } from '@nebular/theme';
 import { RouterModule } from '@angular/router';
 import { NgxLoginComponent } from './login/login.component';
-import { StudentRegisterComponent } from './student-register/student-register.component';
 
 @NgModule({
-  declarations: [NgxLoginComponent, StudentRegisterComponent],
+  declarations: [NgxLoginComponent],
   imports: [
     NbThemeModule.forRoot(),
     CommonModule,

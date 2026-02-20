@@ -1,34 +1,141 @@
-<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%; margin: 0 auto;">
     <nb-card>
-        <nb-card-header>Add Role</nb-card-header>
-            <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
-                <div class="row">
-                    <div class="col-lg-12 mb-10">
-                        <label class="small-label" id="label-category">Name <span
-                                style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Role Name"
-                            name="role_name" required #role_name="ngModel" [(ngModel)]="model.role_name">
-                        <div *ngIf="fm.submitted && role_name.invalid" class="error-message">
-                            Role name is required
-                        </div>
+        <nb-card-header>Add Role with Permissions</nb-card-header>
+        <nb-card-body [nbSpinner]="isSubmitting || isLoading" nbSpinnerStatus="primary">
+            <!-- Role Information Section -->
+            <div class="row mb-4">
+                <div class="col-lg-6 mb-10">
+                    <label class="small-label" id="label-role-name">Role Name <span style="color:#d32f2f">*</span></label>
+                    <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Role Name"
+                        name="role_name" required #role_name="ngModel" [(ngModel)]="model.role_name">
+                    <div *ngIf="fm.submitted && role_name.invalid" class="error-message">
+                        Role name is required
                     </div>
-                    
-                    <div class="col-lg-12 mb-10">
-                        <label class="small-label" id="label-category">Remarks </label>
-                        <textarea nbInput fullWidth shape="semi-round" placeholder="Enter details" name="remarks"
-                        [(ngModel)]="model.remarks" #remarks="ngModel" rows="3" [maxlength]="500"></textarea>
+                </div>
+
+                <div class="col-lg-6 mb-10">
+                    <label class="small-label" id="label-remarks">Remarks</label>
+                    <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter role description"
+                        name="remarks" [(ngModel)]="model.remarks">
+                </div>
+            </div>
+
+            <!-- Permissions Section -->
+            <nb-card>
+                <nb-card-header>
+                    <span>Module Permissions (Select at least one)</span>
+                </nb-card-header>
+
+                <nb-card-body class="permissions-container">
+                    <div *ngIf="isLoading" class="loading-state text-center py-5">
+                        <nb-spinner size="small" status="primary"></nb-spinner>
+                        <p class="mt-2">Loading modules...</p>
                     </div>
 
-                </div>
-            </nb-card-body>
+                    <div *ngIf="!isLoading && menuStructure.length === 0" class="no-modules text-center py-5">
+                        <p>No modules available</p>
+                    </div>
+
+                    <!-- Categories and Modules List -->
+                    <div *ngIf="!isLoading && menuStructure.length > 0" class="categories-list">
+                        <!-- Parent Category Section -->
+                        <div *ngFor="let category of menuStructure" class="category-section">
+                            <!-- Category Header -->
+                            <div class="category-header" (click)="toggleCategory(category.category)">
+                                <div class="category-info">
+                                    <nb-icon [icon]="isCategoryExpanded(category.category) ? 'chevron-down-outline' : 'chevron-right-outline'" 
+                                        class="expand-icon"></nb-icon>
+                                    <span class="category-name">{{ category.category }}</span>
+                                </div>
+                                <span class="module-count">({{ category.modules.length }} modules)</span>
+                            </div>
+
+                            <!-- Modules under Category -->
+                            <div class="category-modules" *ngIf="isCategoryExpanded(category.category)">
+                                <div *ngFor="let module of category.modules" class="module-item">
+                                    <div class="module-header" (click)="toggleModule(module.id)">
+                                        <div class="module-info">
+                                            <nb-icon [icon]="isModuleExpanded(module.id) ? 'chevron-down-outline' : 'chevron-right-outline'" 
+                                                class="expand-icon module-icon"></nb-icon>
+                                            <span class="module-name">{{ module.name }}</span>
+                                        </div>
+                                        <div class="module-checkbox">
+                                            <input type="checkbox" 
+                                                [checked]="hasAnyPermission(module.id)"
+                                                (change)="toggleAllPermissions(module.id)"
+                                                class="select-all-checkbox"
+                                                title="Select/Deselect all permissions">
+                                        </div>
+                                    </div>
+
+                                    <!-- Permissions Grid -->
+                                    <div class="module-permissions" *ngIf="isModuleExpanded(module.id)">
+                                        <div class="permissions-grid">
+                                            <!-- Create Permission -->
+                                            <div class="permission-item">
+                                                <label class="permission-label">
+                                                    <input type="checkbox" 
+                                                        [checked]="getModulePermission(module.id)?.create || false"
+                                                        (change)="updatePermission(module.id, 'create', $any($event.target).checked)"
+                                                        class="permission-checkbox">
+                                                    <span class="permission-name">Create</span>
+                                                </label>
+                                                <p class="permission-description">Add new records</p>
+                                            </div>
+
+                                            <!-- View Permission -->
+                                            <div class="permission-item">
+                                                <label class="permission-label">
+                                                    <input type="checkbox" 
+                                                        [checked]="getModulePermission(module.id)?.view || false"
+                                                        (change)="updatePermission(module.id, 'view', $any($event.target).checked)"
+                                                        class="permission-checkbox">
+                                                    <span class="permission-name">View</span>
+                                                </label>
+                                                <p class="permission-description">View records</p>
+                                            </div>
+
+                                            <!-- Edit Permission -->
+                                            <div class="permission-item">
+                                                <label class="permission-label">
+                                                    <input type="checkbox" 
+                                                        [checked]="getModulePermission(module.id)?.edit || false"
+                                                        (change)="updatePermission(module.id, 'edit', $any($event.target).checked)"
+                                                        class="permission-checkbox">
+                                                    <span class="permission-name">Edit</span>
+                                                </label>
+                                                <p class="permission-description">Modify records</p>
+                                            </div>
+
+                                            <!-- Delete Permission -->
+                                            <div class="permission-item">
+                                                <label class="permission-label">
+                                                    <input type="checkbox" 
+                                                        [checked]="getModulePermission(module.id)?.delete || false"
+                                                        (change)="updatePermission(module.id, 'delete', $any($event.target).checked)"
+                                                        class="permission-checkbox">
+                                                    <span class="permission-name">Delete</span>
+                                                </label>
+                                                <p class="permission-description">Remove records</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </nb-card-body>
+            </nb-card>
+        </nb-card-body>
+
         <nb-card-footer>
-            <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
-                <button nbButton status="danger" shape="semi-round" hero (click)="cancel()">
+            <div class="mt-3" style="display: flex; justify-content: flex-end; gap: 8px;">
+                <button nbButton status="danger" shape="semi-round" hero (click)="cancel()" type="button">
                     Close
                 </button>
                 <button nbButton status="primary" shape="semi-round" hero type="submit"
-                    [disabled]="isSubmitting">
-                    Save
+                    [disabled]="isSubmitting || isLoading">
+                    <span>Save Role</span>
                 </button>
             </div>
         </nb-card-footer>

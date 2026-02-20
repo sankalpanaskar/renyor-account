@@ -1,6 +1,54 @@
-<nb-card>
-  <nb-card-header class="section-header">Welcome</nb-card-header>
-  <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+<div class="welcome-banner">
+  <h1>Welcome to <span>Renyor Account Management System</span></h1>
+</div>
+
+<!-- Show this for all roles EXCEPT 51 -->
+<div class="dashboard-grid">
+
+  <div class="followup-buttons-wrapper">
+    <button nbButton size="small" class="status-success">
+      Company
+      <span class="count-badge"> 632 </span>
+    </button>
+    <button nbButton size="small" class="status-info">
+      Package
+      <span class="count-badge"> 4 </span>
+    </button>
+    <button nbButton size="small" class="status-warning" app>
+      Paid User
+      <span class="count-badge"> 3 </span>
+    </button>
+    <button nbButton size="small" class="status-primary">
+      Free User
+      <span class="count-badge"> 1 </span>
+    </button>
     
-  </nb-card-body>
-</nb-card>
+  </div>
+  <div *ngIf="isSubmitting" class="loading-overlay d-flex justify-content-center align-items-center">
+    <nb-spinner size="large" status="primary"></nb-spinner>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards compact">
+    <nb-card class="compact-card clickable-card">
+      <nb-card-header>Box 1</nb-card-header>
+      <nb-card-body class="summary-value">20</nb-card-body>
+    </nb-card>
+    <nb-card class="compact-card clickable-card">
+      <nb-card-header>Box 1</nb-card-header>
+      <nb-card-body class="summary-value">20</nb-card-body>
+    </nb-card>
+    <nb-card class="compact-card clickable-card">
+      <nb-card-header>Box 1</nb-card-header>
+      <nb-card-body class="summary-value">20</nb-card-body>
+    </nb-card>
+    <nb-card class="compact-card clickable-card">
+      <nb-card-header>Box 1</nb-card-header>
+      <nb-card-body class="summary-value">20</nb-card-body>
+    </nb-card>
+    <nb-card class="compact-card clickable-card">
+      <nb-card-header>Box 1</nb-card-header>
+      <nb-card-body class="summary-value">20</nb-card-body>
+    </nb-card>
+  </div>
+</div>

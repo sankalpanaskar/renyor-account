@@ -74,33 +74,6 @@ const routes: Routes = [{
       path: 'miscellaneous',
       loadChildren: () => import('./miscellaneous/miscellaneous.module')
         .then(m => m.MiscellaneousModule),
-    },
-    {
-      path: 'report',
-      loadChildren: () => import('./report/report.module')
-        .then(m => m.ReportModule),
-      canActivate: [authGuard],
-      
-    },
-    {
-      path: 'assets',
-      loadChildren: () => import('./assets/assets.module')
-        .then(m => m.AssetsModule),
-      canActivate: [authGuard],
-
-    },
-    {
-      path: 'brand',
-      loadChildren: () => import('./brand/brand.module')
-        .then(m => m.BrandModule),
-      canActivate: [authGuard],
-    },    
-    {
-      path: 'item',
-      loadChildren: () => import('./item/item.module')
-        .then(m => m.ItemModule),
-      canActivate: [authGuard],
-
     },    
     {
       path: '',
