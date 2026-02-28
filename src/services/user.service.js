@@ -17,7 +17,7 @@ exports.create = async (data,tenant_id) => {
   const [result] = await db.query(
     `INSERT INTO users (tenant_id, role_id, name, email,phone, password,is_company_super_admin)
      VALUES (?, ?, ?, ?, ?,?,?)`,
-    [tenant_id, role_id, name, email,phone, hashedPassword,1]
+    [tenant_id, role_id, name, email,phone, hashedPassword,0]
   );
 
   // Return user info (never return password)
