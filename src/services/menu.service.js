@@ -81,6 +81,7 @@ const db = require('../config/db');
 exports.fetchMenu = async (packageId,roleId = null) => {
   console.log(packageId,roleId)
   if(!roleId){
+    console.log('dd');
     var [rows] = await db.query(
       `
       SELECT DISTINCT
@@ -101,33 +102,33 @@ exports.fetchMenu = async (packageId,roleId = null) => {
       [packageId]
     );
   } else{
+    console.log('dsssd');
 
     var [rows] = await db.query(
       `
       SELECT DISTINCT
-        m.id,
-        m.menu_name,
-        m.parent_id,
-        m.menu_pic,
-        m.link,
-        rma.can_view,
-        rma.can_create,
-        rma.can_edit,
-        rma.can_delete
-      FROM package_modules p
-      JOIN menu_modules m
-        ON m.id = p.menu_id
-        OR m.id = p.parent_menu_id
-      JOIN role_menu_access rma
-        ON rma.menu_id = m.id
-      WHERE p.package_id = ?
-        AND p.status = 1
-        AND m.status = 1
-        AND rma.role_id = ?
-        AND rma.can_view = 1
-      ORDER BY m.parent_id, m.id
+            m.id,
+            m.menu_name,
+            m.parent_id,
+            m.menu_pic,
+            m.link,
+            COALESCE(rma.can_view, 0) AS can_view,
+            COALESCE(rma.can_create, 0) AS can_create,
+            COALESCE(rma.can_edit, 0) AS can_edit,
+            COALESCE(rma.can_delete, 0) AS can_delete
+        FROM package_modules p
+        JOIN menu_modules m
+            ON m.id = p.menu_id
+            OR m.id = p.parent_menu_id
+        LEFT JOIN role_menu_access rma
+            ON rma.menu_id = m.id
+            AND rma.role_id = ?
+        WHERE p.package_id = ?
+            AND p.status = 1
+            AND m.status = 1
+        ORDER BY m.parent_id, m.id
       `,
-      [packageId, roleId]
+      [roleId, packageId]   // ✅ Correct order
     );
 
 
@@ -165,6 +166,7 @@ rows.forEach(row => {
       map[row.parent_id].children.push(map[row.id]);
     }
   });
+  console.log(menu)
 
   return menu;
 };
