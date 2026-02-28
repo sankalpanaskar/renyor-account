@@ -22,7 +22,11 @@ exports.create = async (data, tenant_id) => {
   await connection.beginTransaction();
 
   try {
-    const { role_name, remarks, permissions } = data;
+    //console.log(data);
+    let { role_name, remarks, permissions } = data;
+    if (typeof permissions === "string") {
+      permissions = JSON.parse(permissions);
+    }
 
     // 1️⃣ Insert role
     const [result] = await connection.query(
@@ -33,6 +37,7 @@ exports.create = async (data, tenant_id) => {
     const roleId = result.insertId;
 
     // 2️⃣ Insert permissions (bulk insert)
+    console.log(permissions);
     if (permissions && permissions.length > 0) {
       const values = permissions.map(module => [
         tenant_id,

@@ -3,6 +3,7 @@ const RoleService = require('../services/role.service');
 exports.create = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
+    //console.log(req.body);
     const role = await RoleService.create(req.body,tenant_id);
     
     return res.success(
