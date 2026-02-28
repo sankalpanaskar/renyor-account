@@ -29,3 +29,21 @@ exports.fetchMenu = async (req, res) => {
     );
   }
 };
+
+exports.menuAssignOnRole = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const role = await menu.menuAssignOnRole(req.body,tenant_id);
+    
+    return res.success(
+      200,
+      "menu assign on role successfully",
+      role
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message
+    );
+  }
+};
