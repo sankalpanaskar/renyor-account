@@ -191,6 +191,24 @@ exports.fetchParentMenu = async (req, res) => {
   }
 };
 
+exports.fetchChildMenu = async (req, res) => {
+  try {
+    const menu = await SuperadminService.fetchChildMenu();
+
+    return res.success(
+      200,
+      "Menu fetched successfully",
+      menu
+    );
+
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch packages"
+    );
+  }
+};
+
 
 exports.fetchSubMenuBasedOnParentMenu = async (req, res) => {
   try {
@@ -234,3 +252,31 @@ exports.customFieldCreate = async (req, res) => {
     });
   }
 };
+
+exports.getCustomFields = async (req, res) => {
+  try {
+    const { module_id } = req.query;   // <-- changed here
+
+    if (!module_id) {
+      return res.status(400).json({ message: "module_id is required" });
+    }
+
+    // Call service
+    const fields = await SuperadminService.fetchFieldsByTable(module_id);
+
+    return res.success(
+      200,
+      "Fields fetch successfully",
+      fields
+    );
+
+  } catch (err) {
+    console.error(err);
+    return res.error(
+      400,
+      err.message|| "Failed to fetch fields"
+       );
+    
+  }
+};
+

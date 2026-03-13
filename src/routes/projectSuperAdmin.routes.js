@@ -13,5 +13,7 @@ router.get("/fetch-menu-structure", authSuperadmin,Controller.fetchMenuStructure
 router.get("/fetch-parent-menu", authSuperadmin,Controller.fetchParentMenu);
 router.get("/fetch-submenu-based-on-parent-menu", authSuperadmin,Controller.fetchSubMenuBasedOnParentMenu);
 router.post("/custom-field-create", authSuperadmin,Controller.customFieldCreate);
+router.get("/fetch-custom-fields", authSuperadmin,Controller.getCustomFields);
+router.get("/fetch-child-menu", authSuperadmin,Controller.fetchChildMenu);
 
 module.exports = router;

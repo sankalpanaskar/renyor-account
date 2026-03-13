@@ -273,6 +273,33 @@ exports.fetchParentMenu = async () => {
   return rows; // array (can be empty)
 };
 
+
+
+exports.fetchChildMenu = async () => {
+  const [rows] = await db.query(
+    `SELECT 
+        *
+     FROM menu_modules
+     where parent_id!=0`
+  );
+
+  return rows; // array (can be empty)
+};
+
+exports.fetchFieldsByTable = async (module_id) => {   // <-- parameter name updated
+  try {
+    const query = `
+      SELECT * FROM custom_fields
+      WHERE module_id = ? AND show_in_form = 1 AND status = 1
+      ORDER BY field_order ASC
+    `;
+    const [rows] = await db.query(query, [module_id]);
+    return rows;
+  } catch (err) {
+    throw new Error(err.message || "Error fetching fields from DB");
+  }
+};
+
 // exports.getAll = async () => {
 //   const result = await db.query('SELECT * FROM tenants ORDER BY id');
 //   return result.rows;
