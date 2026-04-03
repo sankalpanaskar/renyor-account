@@ -139,7 +139,7 @@ exports.createMenuSubmenu = async (data) => {
 };
 exports.customFieldCreate = async (data) => {
   const {
-    table_name,
+    module_id,
     field_name,
     field_label,
     field_type,
@@ -193,7 +193,7 @@ exports.customFieldCreate = async (data) => {
   const [result] = await db.query(
     `INSERT INTO custom_fields
     (
-      table_name,
+      module_id,
       field_name,
       field_label,
       field_type,
@@ -211,7 +211,7 @@ exports.customFieldCreate = async (data) => {
     )
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      table_name,
+      module_id,
       field_name,
       field_label,
       finalFieldType,
@@ -232,7 +232,7 @@ exports.customFieldCreate = async (data) => {
   // Return created record
   return {
     id: result.insertId,
-    table_name,
+    module_id,
     field_name,
     field_label,
     field_type: finalFieldType,
