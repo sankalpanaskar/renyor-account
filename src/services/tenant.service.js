@@ -75,6 +75,8 @@ exports.create = async (data) => {
 
     return rows[0];
 
+    
+
   } catch (error) {
     await connection.rollback();
     throw error;

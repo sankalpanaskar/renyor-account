@@ -2,7 +2,7 @@ const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 
 exports.create = async (data,tenant_id) => {
-  const { role_id, name, email, phone } = data;
+  const { role_id, name, email, phone, module_id,custom_fields } = data;
   console.log(data);
 
  
@@ -19,6 +19,36 @@ exports.create = async (data,tenant_id) => {
      VALUES (?, ?, ?, ?, ?,?,?)`,
     [tenant_id, role_id, name, email,phone, hashedPassword,0]
   );
+
+    const userId = result.insertId;
+
+    if (custom_fields) {
+
+      for (const key in custom_fields) {
+
+        // Get field id
+        const [field] = await db.query(
+          "SELECT id FROM custom_fields WHERE field_name=? AND module_id=?",
+          [key, module_id]
+        );
+
+        if(field.length){
+
+          const fieldId = field[0].id;
+          const value = custom_fields[key];
+
+          await db.query(
+            `INSERT INTO custom_field_values 
+            (module_id,record_id,field_id,value) 
+            VALUES (?,?,?,?)`,
+            [module_id,userId,fieldId,value]
+          );
+
+        }
+
+      }
+
+    }
 
   // Return user info (never return password)
   return {

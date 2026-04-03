@@ -139,90 +139,114 @@ exports.createMenuSubmenu = async (data) => {
 };
 exports.customFieldCreate = async (data) => {
   const {
-    module_id,
-    entity_type,
-    field_key,
-    label,
+    table_name,
+    field_name,
+    field_label,
     field_type,
+    field_options,
+    placeholder,
     default_value,
-    sort_order,
-    grid_col,
-    is_disabled,
-    admin_only,
+    validation_type,
+    min_length,
+    max_length,
+    field_order,
     is_required,
-    show_on_table,
+    show_in_form,
+    show_in_list,
+    status
   } = data;
 
   // Validation
-  if (!module_id) throw new Error("Module is required");
-  if (!entity_type) throw new Error("Entity type is required");
-  if (!field_key) throw new Error("Field key is required");
-  if (!label) throw new Error("Label is required");
+  if (!table_name) throw new Error("Table name is required");
+  if (!field_name) throw new Error("Field name is required");
+  if (!field_label) throw new Error("Field label is required");
 
-  // Normalize numbers (INT columns)
-  const finalModuleId =
-    module_id !== undefined && module_id !== null && module_id !== "" && module_id !== "null"
-      ? Number(module_id)
+  // Normalize numbers
+  const finalMinLength =
+    min_length !== undefined && min_length !== null && min_length !== ""
+      ? Number(min_length)
       : null;
 
-  const finalSortOrder =
-    sort_order !== undefined && sort_order !== null && sort_order !== "" && sort_order !== "null"
-      ? Number(sort_order)
+  const finalMaxLength =
+    max_length !== undefined && max_length !== null && max_length !== ""
+      ? Number(max_length)
+      : null;
+
+  const finalFieldOrder =
+    field_order !== undefined && field_order !== null && field_order !== ""
+      ? Number(field_order)
       : 0;
 
-  const finalGridCol =
-    grid_col !== undefined && grid_col !== null && grid_col !== "" && grid_col !== "null"
-      ? Number(grid_col)
-      : 12;
+  // Convert boolean → tinyint
+  const toTinyInt = (v) =>
+    v === true || v === 1 || v === "1" || v === "true" ? 1 : 0;
 
-  // Normalize booleans (TINYINT)
-  const toTinyInt = (v) => (v === true || v === 1 || v === "1" || v === "true" ? 1 : 0);
-
-  const finalDisabled = toTinyInt(is_disabled);
-  const finalAdminOnly = toTinyInt(admin_only);
   const finalRequired = toTinyInt(is_required);
-  const finalShowOnTable = toTinyInt(show_on_table);
+  const finalShowForm = show_in_form !== undefined ? toTinyInt(show_in_form) : 1;
+  const finalShowList = show_in_list !== undefined ? toTinyInt(show_in_list) : 1;
+  const finalStatus = status !== undefined ? toTinyInt(status) : 1;
 
-  // Default type
+  // Default field type
   const finalFieldType = field_type || "text";
 
-  // Insert into MySQL
+  // Insert Query
   const [result] = await db.query(
-    `INSERT INTO dynamic_fields
-      (module_id, entity_type, field_key, label, field_type, default_value, sort_order, grid_col,
-       is_disabled, admin_only, is_required, show_on_table)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO custom_fields
+    (
+      table_name,
+      field_name,
+      field_label,
+      field_type,
+      field_options,
+      placeholder,
+      default_value,
+      validation_type,
+      min_length,
+      max_length,
+      field_order,
+      is_required,
+      show_in_form,
+      show_in_list,
+      status
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      finalModuleId,
-      entity_type,
-      field_key,
-      label,
+      table_name,
+      field_name,
+      field_label,
       finalFieldType,
+      field_options ?? null,
+      placeholder ?? null,
       default_value ?? null,
-      finalSortOrder,
-      finalGridCol,
-      finalDisabled,
-      finalAdminOnly,
+      validation_type ?? null,
+      finalMinLength,
+      finalMaxLength,
+      finalFieldOrder,
       finalRequired,
-      finalShowOnTable,
+      finalShowForm,
+      finalShowList,
+      finalStatus
     ]
   );
 
   // Return created record
   return {
     id: result.insertId,
-    module_id: finalModuleId,
-    entity_type,
-    field_key,
-    label,
+    table_name,
+    field_name,
+    field_label,
     field_type: finalFieldType,
+    field_options: field_options ?? null,
+    placeholder: placeholder ?? null,
     default_value: default_value ?? null,
-    sort_order: finalSortOrder,
-    grid_col: finalGridCol,
-    is_disabled: finalDisabled,
-    admin_only: finalAdminOnly,
+    validation_type: validation_type ?? null,
+    min_length: finalMinLength,
+    max_length: finalMaxLength,
+    field_order: finalFieldOrder,
     is_required: finalRequired,
-    show_on_table: finalShowOnTable,
+    show_in_form: finalShowForm,
+    show_in_list: finalShowList,
+    status: finalStatus
   };
 };
 
