@@ -7,7 +7,7 @@ router.use('/roles', require('./role.routes'));
 router.use('/permissions', require('./permission.routes'));
 router.use('/users', require('./user.routes'));
 router.use('/system', require('./projectSuperAdmin.routes'));
-router.use('/customer', require('./customer.routes'));
+router.use('/customer', require('./customer.router'));
 
 
 
