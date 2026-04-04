@@ -157,7 +157,7 @@ exports.customFieldCreate = async (data) => {
   } = data;
 
   // Validation
-  if (!table_name) throw new Error("Table name is required");
+  if (!module_id) throw new Error("Table name is required");
   if (!field_name) throw new Error("Field name is required");
   if (!field_label) throw new Error("Field label is required");
 
