@@ -259,9 +259,9 @@ exports.createCustomer = async (data, tenant_id) => {
     [result.insertId]
   );
 
-  if (custom_fields) {
+  if (custom_field) {
 
-      for (const key in custom_fields) {
+      for (const key in custom_field) {
 
         // Get field id
         const [field] = await db.query(
