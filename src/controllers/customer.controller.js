@@ -1,34 +1,30 @@
 const customer = require('../services/customer.service');
-exports.fetchMenu = async (req, res) => {
-  try {
-   
-    const tokenPackageId = req.user?.package_id;
-    const requestPackageId = req.query.package_id;
-    const packageId = requestPackageId || tokenPackageId;
 
-    if (!packageId) {
-      return res.error(
-        400,
-        "Package not assigned"
-      );
+
+exports.fetchCustomers = async (req, res) => {
+  try {
+    const { module_id } = req.query;   // <-- changed here
+
+    if (!module_id) {
+      return res.status(400).json({ message: "module_id is required" });
     }
-     
-    
-    const menu_details = await menu.fetchMenu(packageId,req.user.role_id);
+    const tenant_id = req.user.tenant_id;
+    const customers = await customer.fetchAllCustomers(tenant_id, module_id);
 
     return res.success(
       200,
-      "Menu fetched successfully",
-      menu_details
+      "Customers fetched successfully",
+      customers
     );
-
   } catch (err) {
     return res.error(
       500,
-      err.message || "Failed to fetch menuz"
+      err.message || "Failed to fetch customers"
     );
   }
 };
+
+    
 
 exports.createCustomer = async (req, res) => {
   try {

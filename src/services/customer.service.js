@@ -78,97 +78,46 @@ const db = require('../config/db');
 //   return menu;
 // };
 
-exports.fetchMenu = async (packageId,roleId = null) => {
-  console.log(packageId,roleId)
-  if(!roleId){
-    console.log('dd');
-    var [rows] = await db.query(
-      `
-      SELECT DISTINCT
-        m.id,
-        m.menu_name,
-        m.parent_id,
-        m.menu_pic,
-        m.link
-      FROM package_modules p
-      JOIN menu_modules m
-        ON m.id = p.menu_id
-        OR m.id = p.parent_menu_id
-      WHERE p.package_id = ?
-        AND p.status = 1
-        AND m.status = 1
-      ORDER BY m.parent_id, m.id
-      `,
-      [packageId]
-    );
-  } else{
-    console.log('dsssd');
+exports.fetchAllCustomers = async (tenant_id, module_id) => {
+  const [customers] = await db.query(
+    "SELECT * FROM customers WHERE tenant_id = ? ORDER BY id DESC",
+    [tenant_id]
+  );
 
-    var [rows] = await db.query(
-      `
-      SELECT DISTINCT
-            m.id,
-            m.menu_name,
-            m.parent_id,
-            m.menu_pic,
-            m.link,
-            COALESCE(rma.can_view, 0) AS can_view,
-            COALESCE(rma.can_create, 0) AS can_create,
-            COALESCE(rma.can_edit, 0) AS can_edit,
-            COALESCE(rma.can_delete, 0) AS can_delete
-        FROM package_modules p
-        JOIN menu_modules m
-            ON m.id = p.menu_id
-            OR m.id = p.parent_menu_id
-        LEFT JOIN role_menu_access rma
-            ON rma.menu_id = m.id
-            AND rma.role_id = ?
-        WHERE p.package_id = ?
-            AND p.status = 1
-            AND m.status = 1
-        ORDER BY m.parent_id, m.id
-      `,
-      [roleId, packageId]   // ✅ Correct order
-    );
+  if (!customers.length) {
+    return [];
+  }
 
+  const customerIds = customers.map((c) => c.id);
 
-  } 
+  const [customRows] = await db.query(
+    `SELECT 
+        cfv.record_id,
+        cf.field_name,
+        cfv.field_value
+     FROM custom_field_values cfv
+     INNER JOIN custom_fields cf 
+       ON cf.id = cfv.field_id
+     WHERE cfv.module_id = ?
+     AND cfv.tenant_id = ?
+       AND cfv.record_id IN (?)`,
+    [module_id, tenant_id, customerIds]
+  );
+  console.log(customRows,module_id, customerIds);
 
-  console.log(rows)
+  const customFieldMap = {};
 
-  const map = {};
-  const menu = [];
-
-  // create map
-rows.forEach(row => {
-  map[row.id] = {
-    id: row.id,
-    title: row.menu_name,
-    parent_id: row.parent_id,
-    icon: row.menu_pic,
-    link: row.link,
-    ...(row.parent_id !== 0 && { //using spread separetor
-      can_view: row.can_view,
-      can_create: row.can_create,
-      can_edit: row.can_edit,
-      can_delete: row.can_delete
-    }),
-    children: []
-  };
-});
-
-
-  // build tree
-  rows.forEach(row => {
-    if (row.parent_id === 0) {
-      menu.push(map[row.id]);
-    } else if (map[row.parent_id]) {
-      map[row.parent_id].children.push(map[row.id]);
+  for (const row of customRows) {
+    if (!customFieldMap[row.record_id]) {
+      customFieldMap[row.record_id] = {};
     }
-  });
-  console.log(menu)
+    customFieldMap[row.record_id][row.field_name] = row.field_value;
+  }
 
-  return menu;
+  return customers.map((customer) => ({
+    ...customer,
+    custom_field: customFieldMap[customer.id] || {}
+  }));
 };
 
 exports.createCustomer = async (data, tenant_id,userId) => {
@@ -278,9 +227,9 @@ exports.createCustomer = async (data, tenant_id,userId) => {
 
           await db.query(
             `INSERT INTO custom_field_values 
-            (module_id,record_id,field_id,field_value) 
-            VALUES (?,?,?,?)`,
-            [module_id,userId,fieldId,value]
+            (module_id,tenant_id,record_id,field_id,field_value) 
+            VALUES (?,?,?,?,?)`,
+            [module_id, tenant_id, result.insertId, fieldId, value]
           );
 
         }
