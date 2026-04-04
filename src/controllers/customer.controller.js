@@ -33,12 +33,14 @@ exports.fetchMenu = async (req, res) => {
 exports.createCustomer = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
-    const customer = await customer.createCustomer(req.body,tenant_id);
+    const userId = req.user.userId;
+    console.log(req.body);
+    const customers = await customer.createCustomer(req.body,tenant_id,userId);
 
     return res.success(
       200,
       "Customer created successfully",
-      customer
+      customers
     );
   } catch (err) {
     return res.error(

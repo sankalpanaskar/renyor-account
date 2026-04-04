@@ -171,7 +171,7 @@ rows.forEach(row => {
   return menu;
 };
 
-exports.createCustomer = async (data, tenant_id) => {
+exports.createCustomer = async (data, tenant_id,userId) => {
   const {
     customer_type,
     primary_contact_f_name,
@@ -195,7 +195,8 @@ exports.createCustomer = async (data, tenant_id) => {
     shipping_city,
     shipping_state,
     shipping_pin,
-    custom_field
+    custom_field,
+    module_id
   } = data;
 
   const [result] = await db.query(
@@ -253,7 +254,7 @@ exports.createCustomer = async (data, tenant_id) => {
       custom_field?.gst_no
     ]
   );
-
+   console.log(result);
   const [rows] = await db.query(
     'SELECT * FROM customers WHERE id = ?',
     [result.insertId]
@@ -268,15 +269,16 @@ exports.createCustomer = async (data, tenant_id) => {
           "SELECT id FROM custom_fields WHERE field_name=? AND module_id=?",
           [key, module_id]
         );
+        console.log(field,key, module_id);
 
         if(field.length){
 
           const fieldId = field[0].id;
-          const value = custom_fields[key];
+          const value = custom_field[key];
 
           await db.query(
             `INSERT INTO custom_field_values 
-            (module_id,record_id,field_id,value) 
+            (module_id,record_id,field_id,field_value) 
             VALUES (?,?,?,?)`,
             [module_id,userId,fieldId,value]
           );
