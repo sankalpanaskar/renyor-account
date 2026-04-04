@@ -30,7 +30,7 @@ exports.fetchMenu = async (req, res) => {
   }
 };
 
-exports.menuAssignOnRole = async (req, res) => {
+exports.createCustomer = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
     const customer = await customer.createCustomer(req.body,tenant_id);
