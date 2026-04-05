@@ -29,9 +29,9 @@ exports.fetchCustomers = async (req, res) => {
 exports.createCustomer = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
-    const userId = req.user.userId;
+    
     console.log(req.body);
-    const customers = await customer.createCustomer(req.body,tenant_id,userId);
+    const customers = await customer.createCustomer(req.body,tenant_id);
 
     return res.success(
       200,

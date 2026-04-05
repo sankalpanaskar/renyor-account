@@ -241,6 +241,131 @@ exports.createCustomer = async (data, tenant_id,userId) => {
   return rows[0];
 };
 
+exports.createCustomer = async (data, tenant_id, userId) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      customer_type,
+      primary_contact_f_name,
+      primary_contact_l_name,
+      company_name,
+      display_name,
+      email,
+      work_phone,
+      mobile_no,
+      website,
+      group,
+      gst_treatment,
+      opening_balance,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      custom_field,
+      module_id
+    } = data;
+
+    const [result] = await connection.query(
+      `INSERT INTO customers (
+        tenant_id,
+        customer_type,
+        primary_contact_f_name,
+        primary_contact_l_name,
+        company_name,
+        display_name,
+        email,
+        work_phone,
+        mobile_no,
+        website,
+        customer_group,
+        gst_treatment,
+        opening_balance,
+        billing_address,
+        billing_country,
+        billing_city,
+        billing_state,
+        billing_pin,
+        shipping_address,
+        shipping_country,
+        shipping_city,
+        shipping_state,
+        shipping_pin,
+        gst_no
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        tenant_id,
+        customer_type,
+        primary_contact_f_name,
+        primary_contact_l_name,
+        company_name,
+        display_name,
+        email,
+        work_phone,
+        mobile_no,
+        website,
+        group,
+        gst_treatment,
+        opening_balance,
+        billing_address,
+        billing_country,
+        billing_city,
+        billing_state,
+        billing_pin,
+        shipping_address,
+        shipping_country,
+        shipping_city,
+        shipping_state,
+        shipping_pin,
+        custom_field?.gst_no || null
+      ]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT * FROM customers WHERE id = ?`,
+      [result.insertId]
+    );
+
+    if (custom_field) {
+      for (const key in custom_field) {
+        const [field] = await connection.query(
+          `SELECT id FROM custom_fields WHERE field_name = ? AND module_id = ?`,
+          [key, module_id]
+        );
+
+        if (field.length) {
+          const fieldId = field[0].id;
+          const value = custom_field[key];
+
+          await connection.query(
+            `INSERT INTO custom_field_values
+             (module_id, tenant_id, record_id, field_id, field_value)
+             VALUES (?, ?, ?, ?, ?)`,
+            [module_id, tenant_id, result.insertId, fieldId, value]
+          );
+        }
+      }
+    }
+
+    await connection.commit();
+
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 
 
 
