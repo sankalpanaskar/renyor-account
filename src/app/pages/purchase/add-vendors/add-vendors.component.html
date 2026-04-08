@@ -1,0 +1,468 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
+    <nb-card>
+        <nb-card-header>Add Vendor</nb-card-header>
+        <nb-tabset fullWidth>
+            <nb-tab tabTitle="Vendor Details">
+                <div class="row">
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Primary Contact <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="First Name" name="primary_contact_f_name" required #primary_contact_f_name="ngModel"
+                            [(ngModel)]="model.primary_contact_f_name">
+                        <div *ngIf="fm.submitted && primary_contact_f_name.invalid" class="error-message">
+                            First Name is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <input type="text" nbInput fullWidth shape="semi-round" style="margin-top: 24px;"
+                            placeholder="Last Name" name="primary_contact_l_name" required #primary_contact_l_name="ngModel"
+                            [(ngModel)]="model.primary_contact_l_name">
+                        <div *ngIf="fm.submitted && primary_contact_l_name.invalid" class="error-message">
+                            Last Name is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Company Name <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Company Name"
+                            name="company_name" required #company_name="ngModel" [(ngModel)]="model.company_name">
+                        <div *ngIf="fm.submitted && company_name.invalid" class="error-message">
+                            Company name is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Display Name <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter the Display Name of your customer."
+                            name="display_name" required #display_name="ngModel" [(ngModel)]="model.display_name">
+                        <div *ngIf="fm.submitted && display_name.invalid" class="error-message">
+                            Enter the Display Name of your customer.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Email <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Email"
+                            name="email" required #email="ngModel" [(ngModel)]="model.email">
+                        <div *ngIf="fm.submitted && email.invalid" class="error-message">
+                            Email is required
+                        </div>
+                    </div>
+                    <div class="col-lg-3 mb-10">
+                        <label class="small-label" id="label-category">Phone <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Work Phone"
+                            name="work_phone" required #work_phone="ngModel"
+                            [(ngModel)]="model.work_phone">
+                        <div *ngIf="fm.submitted && work_phone.invalid" class="error-message">
+                            Work phone is required
+                        </div>
+                    </div>
+                    <div class="col-lg-3 mb-10">
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Mobile No" style="margin-top: 24px;"
+                            name="mobile_no" required #mobile_no="ngModel"
+                            [(ngModel)]="model.mobile_no">
+                        <div *ngIf="fm.submitted && mobile_no.invalid" class="error-message">
+                            Mobile no is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">GST Treatment <span
+                                style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select" name="gst_treatment"
+                            required #gst_treatment="ngModel" [(ngModel)]="model.gst_treatment">
+                            <nb-option value="Registered Business - Regular Business that is registered under GST">Registered Business - Regular Business that is registered under GST</nb-option>
+                            <nb-option value="Registered Business - Composition Business that is registered under the composition scheme in GST">Registered Business - Composition Business that is registered under the composition scheme in GST</nb-option>
+                            <nb-option value="Unregistered Business - Business that has not been registered under GST">Unregistered Business - Business that has not been registered under GST</nb-option>
+                            <nb-option value="Consumer - A customer who is a regular consumer">Consumer - A customer who is a regular consumer</nb-option>
+                            <nb-option value="Overseas - Persons with whom you do import or export of supplies outside India">Overseas - Persons with whom you do import or export of supplies outside India</nb-option>
+                            <nb-option value="Special Economic Zone - Business (Unit) that is located in a Special Economic Zone (SEZ) of India or a SEZ Developer">Special Economic Zone - Business (Unit) that is located in a Special Economic Zone (SEZ) of India or a SEZ Developer</nb-option>
+                            <nb-option value="Deemed Export - Supply of goods to an Export Oriented Unit or against Advanced Authorization/Export Promotion Capital Goods">Deemed Export - Supply of goods to an Export Oriented Unit or against Advanced Authorization/Export Promotion Capital Goods</nb-option>
+                            <nb-option value="Tax Deductor - Departments of the State/Central government, governmental agencies or local authorities">Tax Deductor - Departments of the State/Central government, governmental agencies or local authorities</nb-option>
+                            <nb-option value="SEZ Developer - A person/organisation who owns at least 26% of the equity in creating business units in a Special Economic Zone (SEZ)">SEZ Developer - A person/organisation who owns at least 26% of the equity in creating business units in a Special Economic Zone (SEZ)</nb-option>
+                            <nb-option value="Input Service Distributor - Input Service Distributor (ISD) is an office that receives tax invoices for services used by the company in different states under the same PAN">Input Service Distributor - Input Service Distributor (ISD) is an office that receives tax invoices for services used by the company in different states under the same PAN</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && gst_treatment.invalid" class="error-message">
+                            GST treatment is required
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Source Of Supply <span
+                        style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select State" name="source_of_supply"
+                            required #source_of_supply="ngModel" [(ngModel)]="model.source_of_supply">
+                            <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && source_of_supply.invalid" class="error-message">
+                            Select state.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">PAN</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter PAN" name="pan" required
+                            #pan="ngModel" [(ngModel)]="model.pan">
+                    </div>
+                    <div class="col-md-12 mb-10 d-flex justify-content-between align-items-center">
+                        <label class="small-label" style="font-weight: bold;font-size: 14px;">MSME Registered?</label>
+                        <nb-checkbox name="is_msme_registered" [(ngModel)]="model.is_msme_registered">
+                            This vendor is MSME registered
+                        </nb-checkbox>
+                    </div>
+                    <div class="col-lg-6" *ngIf="model.is_msme_registered">
+                        <label class="small-label" id="label-category">MSME/Udyam Registration Type</label>
+                        <nb-select shape="semi-round" placeholder="Select Group" name="msme_registration_type"
+                            required #msme_registration_type="ngModel" [(ngModel)]="model.msme_registration_type" required>
+                            <nb-option value="Group 1">Group 1</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && msme_registration_type.invalid" class="error-message">
+                            MSME/Udyam Registration Type is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10" *ngIf="model.is_msme_registered">
+                        <label class="small-label" id="label-category">MSME/Udyam Registration Number</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter MSME/Udyam Registration Number" name="msme_registration_number" required
+                            #msme_registration_number="ngModel" [(ngModel)]="model.msme_registration_number">
+                            <div *ngIf="fm.submitted && msme_registration_number.invalid" class="error-message">
+                            Enter a valid MSME/Udyam Registration Number. Ensure that the number is in the format UDYAM-XX-00-0000000.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Opening Balance <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter ammount" name="opening_balance" required
+                            #opening_balance="ngModel" [(ngModel)]="model.opening_balance">
+                        <div *ngIf="fm.submitted && opening_balance.invalid" class="error-message">
+                            Amount is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Payment Terms</label>
+                        <div class="payment-terms-control">
+                            <nb-select shape="semi-round" placeholder="Select Payment Terms" name="payment_terms"
+                                required #payment_terms="ngModel" [(ngModel)]="model.payment_terms" required>
+                                <nb-option *ngFor="let term of paymentTerms" [value]="term.termName">{{ term.termName }}</nb-option>
+                            </nb-select>
+                            <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
+                                (click)="openPaymentTermsPopup()" aria-label="Add payment term">
+                                <nb-icon icon="plus-circle"></nb-icon>
+                            </button>
+                        </div>
+                        <div *ngIf="fm.submitted && payment_terms.invalid" class="error-message">
+                            Payment Terms is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">TDS</label>
+                        <div class="payment-terms-control">
+                            <nb-select shape="semi-round" placeholder="Select TDS" name="tds"
+                                required #tds="ngModel" [(ngModel)]="model.tds" required>
+                                <nb-option *ngFor="let term of tdsTerms" [value]="term.termName">{{ term.termName }}</nb-option>
+                            </nb-select>
+                            <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
+                                (click)="openTdsPopup()" aria-label="Add tds term">
+                                <nb-icon icon="plus-circle"></nb-icon>
+                            </button>
+                        </div>
+                        <div *ngIf="fm.submitted && tds.invalid" class="error-message">
+                            TDS is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Website URL</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter website url" name="website" required
+                            #website="ngModel" [(ngModel)]="model.website">
+                    </div>
+                    <div class="col-lg-6">
+                        <label class="small-label" id="label-category">Group</label>
+                        <nb-select shape="semi-round" placeholder="Select Group" name="group"
+                            required #group="ngModel" [(ngModel)]="model.group">
+                            <nb-option value="Group 1">Group 1</nb-option>
+                        </nb-select>
+                    </div>
+                    
+
+                </div>
+            </nb-tab>
+            <nb-tab tabTitle="Custom Fields">
+                <div class="row">
+                    <div class="col-lg-6 mb-10" *ngFor="let field of customFields">
+                        <label class="small-label" id="label-category">
+                            {{ field.field_label || field.field_name }}
+                            <span *ngIf="field.is_required" style="color:#d32f2f">*</span>
+                        </label>
+
+                        <ng-container [ngSwitch]="getFieldType(field)">
+                            <textarea *ngSwitchCase="'textarea'" nbInput fullWidth shape="semi-round"
+                                [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [maxlength]="field.max_length || null"
+                                [(ngModel)]="model[field.field_name]" rows="3"></textarea>
+
+                            <nb-select *ngSwitchCase="'select'" shape="semi-round"
+                                [placeholder]="field.placeholder || 'Select ' + (field.field_label || field.field_name)"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [(ngModel)]="model[field.field_name]">
+                                <nb-option *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-option>
+                            </nb-select>
+
+                            <nb-radio-group *ngSwitchCase="'radio'" class="d-flex flex-row flex-wrap" style="gap: 16px;"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [(ngModel)]="model[field.field_name]">
+                                <nb-radio *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-radio>
+                            </nb-radio-group>
+
+                            <div *ngSwitchCase="'checkbox'" class="d-flex flex-row flex-wrap" style="gap: 16px;">
+                                <nb-checkbox *ngFor="let option of getFieldOptions(field)"
+                                    [checked]="isCheckboxChecked(field.field_name, option)"
+                                    (checkedChange)="onCheckboxOptionChange(field.field_name, option, $event)">
+                                    {{ option }}
+                                </nb-checkbox>
+                            </div>
+
+                            <input *ngSwitchDefault nbInput fullWidth shape="semi-round"
+                                [type]="getFieldType(field)"
+                                [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [attr.minlength]="field.min_length || null"
+                                [attr.maxlength]="field.max_length || null"
+                                [(ngModel)]="model[field.field_name]">
+                        </ng-container>
+
+                        <div *ngIf="hasFieldError(fm, field)" class="error-message">
+                            {{ (field.field_label || field.field_name) }} is required.
+                        </div>
+                    </div>
+                </div>
+            </nb-tab>
+            <nb-tab tabTitle="Billing & Shipping">
+                <div class="row">
+                    <div class="col-lg-6 mb-10">
+                        <h3 style="font-size: 18px;color: #8f9bb3;">Billing Address</h3>
+                        <div class="row">
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">Address <span
+                                style="color:#d32f2f">*</span></label>
+                                <textarea nbInput fullWidth shape="semi-round" placeholder="Enter Billing Address" name="billing_address"
+                                [(ngModel)]="model.billing_address" #billing_address="ngModel" rows="3" [maxlength]="500"></textarea>
+                                <div *ngIf="fm.submitted && billing_address.invalid" class="error-message">
+                                    Enter the address.
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">Country</label>
+                                <nb-select shape="semi-round" placeholder="Select Group" name="billing_country"
+                                    required #billing_country="ngModel" [(ngModel)]="model.billing_country">
+                                    <nb-option value="India">India</nb-option>
+                                    <nb-option value="Other">Other</nb-option>
+                                </nb-select>
+                                <div *ngIf="fm.submitted && billing_country.invalid" class="error-message">
+                                   Select Coutry
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">City <span
+                                style="color:#d32f2f">*</span></label>
+                                <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Billing City"
+                                    name="billing_city" required #billing_city="ngModel" [(ngModel)]="model.billing_city">
+                                <div *ngIf="fm.submitted && billing_city.invalid" class="error-message">
+                                    Enter the city.
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">State <span
+                                style="color:#d32f2f">*</span></label>
+                                <nb-select shape="semi-round" placeholder="Select State" name="billing_state"
+                                    required #billing_state="ngModel" [(ngModel)]="model.billing_state">
+                                    <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
+                                </nb-select>
+                                <div *ngIf="fm.submitted && billing_state.invalid" class="error-message">
+                                    Select state.
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">Pincode <span
+                                style="color:#d32f2f">*</span></label>
+                                <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Pincode"
+                                    name="billing_pin" required #billing_pin="ngModel" [(ngModel)]="model.billing_pin">
+                                <div *ngIf="fm.submitted && billing_pin.invalid" class="error-message">
+                                    Enter the details.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <h3 style="font-size: 18px;color: #8f9bb3;">Shipping Address (<a style="color: #3466ff;cursor: pointer;" (click)="copyBillingToShipping()">Copy Billing Address</a>)</h3>
+                        
+                        <div class="row">
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">Address <span
+                                style="color:#d32f2f">*</span></label>
+                                <textarea nbInput fullWidth shape="semi-round" placeholder="Enter Shipping Address" name="shipping_address"
+                                [(ngModel)]="model.shipping_address" #shipping_address="ngModel" rows="3" [maxlength]="500"></textarea>
+                                <div *ngIf="fm.submitted && shipping_address.invalid" class="error-message">
+                                    Enter the address.
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">Country</label>
+                                <nb-select shape="semi-round" placeholder="Select Group" name="shipping_country"
+                                    required #shipping_country="ngModel" [(ngModel)]="model.shipping_country">
+                                    <nb-option value="India">India</nb-option>
+                                    <nb-option value="Other">Other</nb-option>
+                                </nb-select>
+                                <div *ngIf="fm.submitted && shipping_country.invalid" class="error-message">
+                                   Select Coutry
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">City <span
+                                style="color:#d32f2f">*</span></label>
+                                <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter shipping City"
+                                    name="shipping_city" required #shipping_city="ngModel" [(ngModel)]="model.shipping_city">
+                                <div *ngIf="fm.submitted && shipping_city.invalid" class="error-message">
+                                    Enter the city.
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">State <span
+                                style="color:#d32f2f">*</span></label>
+                                <nb-select shape="semi-round" placeholder="Select State" name="shipping_state"
+                                    required #shipping_state="ngModel" [(ngModel)]="model.shipping_state">
+                                    <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
+                                </nb-select>
+                                <div *ngIf="fm.submitted && shipping_state.invalid" class="error-message">
+                                    Select state.
+                                </div>
+                            </div>
+                            <div class="col-lg-12 mb-10">
+                                <label class="small-label" id="label-category">Pincode <span
+                                style="color:#d32f2f">*</span></label>
+                                <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Pincode"
+                                    name="shipping_pin" required #shipping_pin="ngModel" [(ngModel)]="model.shipping_pin">
+                                <div *ngIf="fm.submitted && shipping_pin.invalid" class="error-message">
+                                    Enter the details.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nb-tab>
+        </nb-tabset>
+        <nb-card-footer>
+            <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button nbButton status="primary" shape="semi-round" hero type="submit"
+                    [disabled]="isSubmitting">
+                    Save
+                </button>
+            </div>
+        </nb-card-footer>
+    </nb-card>
+</form>
+
+<div class="payment-terms-modal-overlay" *ngIf="showPaymentTermsPopup">
+    <nb-card class="payment-terms-modal">
+        <nb-card-header class="payment-terms-modal-header">
+            <span>Configure Payment Terms</span>
+            <button type="button" class="modal-close-btn" (click)="closePaymentTermsPopup()" aria-label="Close">
+                ×
+            </button>
+        </nb-card-header>
+
+        <nb-card-body class="payment-terms-modal-body">
+            <table class="payment-terms-table">
+                <thead>
+                    <tr>
+                        <th>Term Name</th>
+                        <th>No Of Days</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let term of paymentTerms" (click)="selectPaymentTerm(term.termName)" class="term-row">
+                        <td>{{ term.termName }}</td>
+                        <td>{{ term.days }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button type="button" class="add-new-link" (click)="startAddPaymentTerm()">
+                <nb-icon icon="plus-circle"></nb-icon>
+                Add New
+            </button>
+
+            <div class="payment-term-new-row" *ngIf="showAddPaymentTermForm">
+                <div class="row">
+                    <div class="col-md-8 mb-10">
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Term Name"
+                            [(ngModel)]="newPaymentTermName" [ngModelOptions]="{standalone: true}">
+                    </div>
+                    <div class="col-md-4 mb-10">
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="No Of Days"
+                            [(ngModel)]="newPaymentTermDays" [ngModelOptions]="{standalone: true}">
+                    </div>
+                </div>
+            </div>
+        </nb-card-body>
+
+        <nb-card-footer class="payment-terms-modal-footer">
+            <button type="button" nbButton status="success" (click)="closePaymentTermsPopup()">Save</button>
+            <button type="button" nbButton status="basic" (click)="closePaymentTermsPopup()">Cancel</button>
+        </nb-card-footer>
+    </nb-card>
+</div>
+
+<div class="payment-terms-modal-overlay" *ngIf="showTdsPopup">
+    <nb-card class="payment-terms-modal">
+        <nb-card-header class="payment-terms-modal-header">
+            <span>Configure TDS</span>
+            <button type="button" class="modal-close-btn" (click)="closeTdsPopup()" aria-label="Close">
+                ×
+            </button>
+        </nb-card-header>
+
+        <nb-card-body class="payment-terms-modal-body">
+            <table class="payment-terms-table">
+                <thead>
+                    <tr>
+                        <th>Term Name</th>
+                        <th>Percentage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let term of tdsTerms" (click)="selectTds(term.termName)" class="term-row">
+                        <td>{{ term.termName }}</td>
+                        <td>{{ term.percentage }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <button type="button" class="add-new-link" (click)="startAddTds()">
+                <nb-icon icon="plus-circle"></nb-icon>
+                Add New
+            </button>
+
+            <div class="payment-term-new-row" *ngIf="showAddTdsForm">
+                <div class="row">
+                    <div class="col-md-8 mb-10">
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Term Name"
+                            [(ngModel)]="newTdsName" [ngModelOptions]="{standalone: true}">
+                    </div>
+                    <div class="col-md-4 mb-10">
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Percentage"
+                            [(ngModel)]="newTdsPercentage" [ngModelOptions]="{standalone: true}">
+                    </div>
+                </div>
+            </div>
+        </nb-card-body>
+
+        <nb-card-footer class="payment-terms-modal-footer">
+            <button type="button" nbButton status="success" (click)="closeTdsPopup()">Save</button>
+            <button type="button" nbButton status="basic" (click)="closeTdsPopup()">Cancel</button>
+        </nb-card-footer>
+    </nb-card>
+</div>

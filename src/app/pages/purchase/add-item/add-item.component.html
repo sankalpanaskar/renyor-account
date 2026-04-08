@@ -1,0 +1,221 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
+    <nb-card>
+        <nb-card-header>Add Item</nb-card-header>
+            <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+                <div class="row">
+                    <div class="col-lg-3 mb-10">
+                        <label class="small-label" id="label-category">
+                            Type <span style="color:#d32f2f">*</span>
+                        </label>
+                        <nb-radio-group (valueChange)="typeChange($event)" name="customer_type" [(ngModel)]="model.customer_type"
+                            #customer_type="ngModel" required class="d-flex flex-row">
+                            <nb-radio value="Goods">Goods</nb-radio>
+                            <nb-radio value="Service">Service</nb-radio>
+                        </nb-radio-group>
+                        <div *ngIf="fm.submitted && customer_type.invalid" class="error-message">
+                            Type is required
+                        </div>
+                    </div>
+
+                    <div class="col-lg-9 mb-10">
+                        <label class="small-label" id="label-category">Name <span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Item Name"
+                            name="item_name" required #item_name="ngModel" [(ngModel)]="model.item_name">
+                        <div *ngIf="fm.submitted && item_name.invalid" class="error-message">
+                            Item name is required
+                        </div>
+                    </div>
+
+                    <!-- Unit Select -->
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-unit">
+                            Unit <span style="color:#d32f2f">*</span>
+                        </label>
+                        <nb-select shape="semi-round" placeholder="Select Unit" name="unit"
+                            required #unit="ngModel" [(ngModel)]="model.unit">
+                            <nb-option value="box">box (Box)</nb-option>
+                            <nb-option value="cm">cm (Centimeter)</nb-option>
+                            <nb-option value="dz">dz (Dozen)</nb-option>
+                            <nb-option value="ft">ft (Foot)</nb-option>
+                            <nb-option value="g">g (Grams)</nb-option>
+                            <nb-option value="in">in (Inch)</nb-option>
+                            <nb-option value="kg">kg (Kilograms)</nb-option>
+                            <nb-option value="km">km (Kilometer)</nb-option>
+                            <nb-option value="lb">lb (Pounds)</nb-option>
+                            <nb-option value="mg">mg (Milligrams)</nb-option>
+                            <nb-option value="ml">ml (Milliliter)</nb-option>
+                            <nb-option value="m">m (Meter)</nb-option>
+                            <nb-option value="pcs">pcs (Pieces)</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && unit.invalid" class="error-message">
+                            Unit is required
+                        </div>
+                    </div>
+
+                    <!-- HSN Code (for Goods) -->
+                    <div class="col-lg-6 mb-10" *ngIf="model.customer_type === 'Goods'">
+                        <label class="small-label" id="label-hsn-code">
+                            HSN Code <span style="color:#d32f2f">*</span>
+                        </label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter HSN Code"
+                            name="hsn_code" required #hsn_code="ngModel" [(ngModel)]="model.hsn_code">
+                        <div *ngIf="fm.submitted && hsn_code.invalid" class="error-message">
+                            HSN Code is required for Goods
+                        </div>
+                    </div>
+
+                    <!-- SAC (for Service) -->
+                    <div class="col-lg-6 mb-10" *ngIf="model.customer_type === 'Service'">
+                        <label class="small-label" id="label-sac">
+                            SAC <span style="color:#d32f2f">*</span>
+                        </label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter SAC"
+                            name="sac" required #sac="ngModel" [(ngModel)]="model.sac">
+                        <div *ngIf="fm.submitted && sac.invalid" class="error-message">
+                            SAC is required for Service
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-tax-preference">
+                            Tax Preference <span style="color:#d32f2f">*</span>
+                        </label>
+                        <nb-select shape="semi-round" placeholder="Select Tax Preference" name="tax_preference"
+                            required #tax_preference="ngModel" [(ngModel)]="model.tax_preference">
+                            <nb-option value="Taxable">Taxable</nb-option>
+                            <nb-option value="Non-taxable">Non-taxable</nb-option>
+                            <nb-option value="Out Of Scope">Out Of Scope</nb-option>
+                            <nb-option value="Non-GST Supply">Non-GST Supply</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && tax_preference.invalid" class="error-message">
+                            Tax Preference is required
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-lg-6 mb-10" style="padding: 0;">
+                        <div class="col-md-12 mb-10">
+                            <label class="small-label" style="font-weight: bold;font-size: 14px;">Sales Information</label>
+                            
+                        </div>
+                        <div class="col-md-12 mb-10">
+                            <label class="small-label" id="label-sac">
+                                Selling Price <span style="color:#d32f2f">*</span>
+                            </label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Selling Price"
+                                name="selling_price" required #selling_price="ngModel" [(ngModel)]="model.selling_price">
+                            <div *ngIf="fm.submitted && selling_price.invalid" class="error-message">
+                                Selling Price is required
+                            </div>
+                        </div>
+                        <div class="col-lg-12 mb-10">
+                            <label class="small-label" id="label-account">
+                                Account <span style="color:#d32f2f">*</span>
+                            </label>
+                            <nb-select shape="semi-round" placeholder="Select Account" name="sales_account"
+                                required #sales_account="ngModel" [(ngModel)]="model.sales_account">
+                                <nb-option value="Taxable">Taxable</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && sales_account.invalid" class="error-message">
+                                Account is required
+                            </div>
+                        </div>
+                        <div class="col-lg-12 mb-10">
+                            <label class="small-label" id="label-account">
+                                Description 
+                            </label>
+                            <textarea nbInput fullWidth shape="semi-round" name="sales_account_description" [(ngModel)]="model.sales_account_description" required #sales_account_description="ngModel"></textarea>
+                            <div *ngIf="fm.submitted && sales_account_description.invalid" class="error-message">
+                                Description is required
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10" style="padding: 0;">
+                        <div class="col-md-12 mb-10">
+                            <label class="small-label" style="font-weight: bold;font-size: 14px;">Purchase Information</label>
+                        </div>
+                        <div class="col-md-12 mb-10">
+                            <label class="small-label" id="label-sac">
+                                Cost Price <span style="color:#d32f2f">*</span>
+                            </label>
+                            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Cost Price"
+                                name="cost_price" required #cost_price="ngModel" [(ngModel)]="model.cost_price">
+                            <div *ngIf="fm.submitted && cost_price.invalid" class="error-message">
+                                Cost Price is required
+                            </div>
+                        </div>
+                        <div class="col-lg-12 mb-10">
+                            <label class="small-label" id="label-account">
+                                Account <span style="color:#d32f2f">*</span>
+                            </label>
+                            <nb-select shape="semi-round" placeholder="Select Account" name="purchase_account"
+                                required #purchase_account="ngModel" [(ngModel)]="model.purchase_account">
+                                <nb-option value="Taxable">Taxable</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && purchase_account.invalid" class="error-message">
+                                Account is required
+                            </div>
+                        </div>
+                        <div class="col-lg-12 mb-10">
+                            <label class="small-label" id="label-account">
+                                Description 
+                            </label>
+                            <textarea nbInput fullWidth shape="semi-round" name="purchase_account_description" [(ngModel)]="model.purchase_account_description" required #purchase_account_description="ngModel"></textarea>
+                            <div *ngIf="fm.submitted && purchase_account_description.invalid" class="error-message">
+                                Description is required
+                            </div>
+                        </div>
+                        <div class="col-lg-12 mb-10">
+                            <label class="small-label" id="label-prefered-vendor">
+                                Prefered Vendor <span style="color:#d32f2f">*</span>
+                            </label>
+                            <nb-select shape="semi-round" placeholder="Select Vendor" name="prefered_vendor"
+                                required #prefered_vendor="ngModel" [(ngModel)]="model.prefered_vendor">
+                                <nb-option value="Vendor1">Vendor1</nb-option>
+                            </nb-select>
+                            <div *ngIf="fm.submitted && prefered_vendor.invalid" class="error-message">
+                                Prefered Vendor is required
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12 mb-10">
+                        <label class="small-label" style="font-weight: bold;font-size: 14px;">Default Tax Rates</label>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-tax-preference">
+                            Intra State Tax Rates <span style="color:#d32f2f">*</span>
+                        </label>
+                        <nb-select shape="semi-round" placeholder="Select Intra State Tax Rates" name="intra_state_tax_rates"
+                            required #intra_state_tax_rates="ngModel" [(ngModel)]="model.intra_state_tax_rates">
+                            <nb-option value="Taxable">Taxable</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && intra_state_tax_rates.invalid" class="error-message">
+                            Intra State Tax Rates is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-tax-preference">
+                            Inter State Tax Rates <span style="color:#d32f2f">*</span>
+                        </label>
+                        <nb-select shape="semi-round" placeholder="Select Inter State Tax Rates" name="inter_state_tax_rates"
+                            required #inter_state_tax_rates="ngModel" [(ngModel)]="model.inter_state_tax_rates">
+                            <nb-option value="Taxable">Taxable</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && inter_state_tax_rates.invalid" class="error-message">
+                            Inter State Tax Rates is required
+                        </div>
+                    </div>
+                </div>
+            </nb-card-body>
+            <nb-card-footer>
+            <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
+                <button nbButton status="primary" shape="semi-round" hero type="submit"
+                    [disabled]="isSubmitting">
+                    Save
+                </button>
+            </div>
+        </nb-card-footer>
+    </nb-card>
+</form>
