@@ -3,10 +3,12 @@
   "compilerOptions": {
     "importHelpers": true,
     "module": "es2020",
+    "rootDir": "./src",
     "outDir": "./dist/out-tsc",
     "sourceMap": true,
     "declaration": false,
     "moduleResolution": "node",
+    "ignoreDeprecations": "6.0",
     "experimentalDecorators": true,
     "target": "ES2022",
     "typeRoots": [
