@@ -1,5 +1,6 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
     <nb-card>
+        <nb-card-header>Add Customer</nb-card-header>
         <nb-tabset fullWidth>
             <nb-tab tabTitle="Customers Details">
                 <div class="row">
@@ -128,13 +129,51 @@
             </nb-tab>
             <nb-tab tabTitle="Custom Fields">
                 <div class="row">
-                    <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">PAN <span
-                                style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter "
-                            name="custom_field_pan" required #custom_field_pan="ngModel" [(ngModel)]="model.custom_field_pan">
-                        <div *ngIf="fm.submitted && custom_field_pan.invalid" class="error-message">
-                            Enter the details.
+                    <div class="col-lg-6 mb-10" *ngFor="let field of customFields">
+                        <label class="small-label" id="label-category">
+                            {{ field.field_label || field.field_name }}
+                            <span *ngIf="field.is_required" style="color:#d32f2f">*</span>
+                        </label>
+
+                        <ng-container [ngSwitch]="getFieldType(field)">
+                            <textarea *ngSwitchCase="'textarea'" nbInput fullWidth shape="semi-round"
+                                [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [maxlength]="field.max_length || null"
+                                [(ngModel)]="model[field.field_name]" rows="3"></textarea>
+
+                            <nb-select *ngSwitchCase="'select'" shape="semi-round"
+                                [placeholder]="field.placeholder || 'Select ' + (field.field_label || field.field_name)"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [(ngModel)]="model[field.field_name]">
+                                <nb-option *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-option>
+                            </nb-select>
+
+                            <nb-radio-group *ngSwitchCase="'radio'" class="d-flex flex-row flex-wrap" style="gap: 16px;"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [(ngModel)]="model[field.field_name]">
+                                <nb-radio *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-radio>
+                            </nb-radio-group>
+
+                            <div *ngSwitchCase="'checkbox'" class="d-flex flex-row flex-wrap" style="gap: 16px;">
+                                <nb-checkbox *ngFor="let option of getFieldOptions(field)"
+                                    [checked]="isCheckboxChecked(field.field_name, option)"
+                                    (checkedChange)="onCheckboxOptionChange(field.field_name, option, $event)">
+                                    {{ option }}
+                                </nb-checkbox>
+                            </div>
+
+                            <input *ngSwitchDefault nbInput fullWidth shape="semi-round"
+                                [type]="getFieldType(field)"
+                                [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                                [name]="field.field_name" [required]="isFieldRequired(field)"
+                                [attr.minlength]="field.min_length || null"
+                                [attr.maxlength]="field.max_length || null"
+                                [(ngModel)]="model[field.field_name]">
+                        </ng-container>
+
+                        <div *ngIf="hasFieldError(fm, field)" class="error-message">
+                            {{ (field.field_label || field.field_name) }} is required.
                         </div>
                     </div>
                 </div>

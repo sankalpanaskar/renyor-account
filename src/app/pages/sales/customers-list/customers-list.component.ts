@@ -114,7 +114,7 @@ export class CustomersListComponent implements OnInit{
 
 
   ngOnInit(): void {
-    //this.loadPendingList();
+    this.getCustomerList();
   }
 
   // onDelete(rowData: any) {
@@ -151,34 +151,35 @@ export class CustomersListComponent implements OnInit{
     // });
   }
 
-  // loadPendingList() {
-  //     this.loading = true;
-  //     this.globalService.getBrandList().subscribe({
-  //       next: (res) => {
-  //         this.apiData = res.data.brands; // ✅ Store API data here first
-  //          const mappedData = this.apiData.map((item, index) => ({
-  //           slNo: index + 1,
-  //           Id: item.id,
-  //           BrandName: item.brand_name,
-  //           Status : item.status,
-  //           fullData: item, // ✅ include full object
+  getCustomerList() {
+      this.loading = true;
+      this.globalService.geCompanyListByTenant(34).subscribe({
+        next: (res: any) => {
+          console.log("customer list response", res);
+          this.apiData = res?.data?.brands || []; // ✅ Store API data here first
+           const mappedData = this.apiData.map((item: any, index: number) => ({
+            slNo: index + 1,
+            Id: item.id,
+            BrandName: item.brand_name,
+            Status : item.status,
+            fullData: item, // ✅ include full object
 
-  //         }));
-  //         this.source.load(mappedData);
-  //         this.loading = false;
-  //       },
-  //       error: (err) => {
-  //         console.error('Submit error:', err);
-  //         const errorMessage =
-  //           err?.error?.message ||
-  //           err?.message ||
-  //           'Brand List Failed. Please try again.';
+          }));
+          this.source.load(mappedData);
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Submit error:', err);
+          const errorMessage =
+            err?.error?.message ||
+            err?.message ||
+            'Brand List Failed. Please try again.';
 
-  //         this.toastrService.danger(errorMessage, 'Brand List Failed');
-  //         this.loading = false;
-  //       },
-  //     });
-  // }
+          this.toastrService.danger(errorMessage, 'Brand List Failed');
+          this.loading = false;
+        },
+      });
+  }
     onSearch(query: string = ''): void {
     this.source.setFilter([
       { field: 'BrandName', search: query },

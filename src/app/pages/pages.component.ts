@@ -101,16 +101,24 @@ export class PagesComponent implements OnInit, OnDestroy {
         icon: item.icon || 'layers-outline',
       };
 
-      // If item has children, add them as sub-menu
-      if (item.children && Array.isArray(item.children) && item.children.length > 0) {
-        menuItem.children = item.children.map((child: any) => ({
+      const itemChildren = this.extractChildren(item);
+
+      // If item has children, add them as sub-menu.  A child is included
+      // if explicit permission fields are present, it must satisfy at least
+      // one permission. If no permission fields are present, include it.
+      if (itemChildren.length > 0) {
+        const childrenMenu = itemChildren.filter((child: any) => this.canShowChild(child)).map((child: any) => ({
           title: child.title || child.name,
-          link: child.link || child.url,
+          link: child.link || child.url || child.route,
           icon: child.icon,
         }));
-      } else if (item.link || item.url) {
+
+        if (childrenMenu.length) {
+          menuItem.children = childrenMenu;
+        }
+      } else if (item.link || item.url || item.route) {
         // If item has direct link, add it
-        menuItem.link = item.link || item.url;
+        menuItem.link = item.link || item.url || item.route;
       }
 
       // Skip group items unless explicitly needed
@@ -120,5 +128,46 @@ export class PagesComponent implements OnInit, OnDestroy {
     });
 
     return nbMenuItems;
+  }
+
+  private extractChildren(item: any): any[] {
+    const candidates = [
+      item?.children,
+      item?.submenus,
+      item?.submenu,
+      item?.sub_menu,
+      item?.modules,
+    ];
+
+    const children = candidates.find((candidate: any) => Array.isArray(candidate));
+    return Array.isArray(children) ? children : [];
+  }
+
+  private canShowChild(child: any): boolean {
+    const permissionKeys = ['can_create', 'can_view', 'can_edit', 'can_delete'];
+    const hasPermissionFields = permissionKeys.some((key: string) => child?.[key] !== undefined && child?.[key] !== null);
+
+    if (!hasPermissionFields) {
+      return true;
+    }
+
+    return permissionKeys.some((key: string) => this.isTruthyPermission(child?.[key]));
+  }
+
+  private isTruthyPermission(value: any): boolean {
+    if (typeof value === 'boolean') {
+      return value;
+    }
+
+    if (typeof value === 'number') {
+      return value === 1;
+    }
+
+    if (typeof value === 'string') {
+      const normalized = value.trim().toLowerCase();
+      return ['1', 'true', 'yes', 'y'].includes(normalized);
+    }
+
+    return false;
   }
 }

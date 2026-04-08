@@ -6,7 +6,7 @@ import { AddCustomersComponent } from './add-customers/add-customers.component';
 import { CustomersListComponent } from './customers-list/customers-list.component';
 import { SalesComponent } from './sales.component';
 import { RouterModule } from '@angular/router';
-import { NbAccordionModule, NbButtonModule, NbCardModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule } from '@nebular/theme';
+import { NbAccordionModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { CustomersButtonComponent } from './customers-list/customers-btn.component';
@@ -41,7 +41,8 @@ import { ItemListComponent } from './item-list/item-list.component';
     FormsModule,
     Ng2SmartTableModule,
     NbSpinnerModule,
-    NbDatepickerModule
+    NbDatepickerModule,
+    NbCheckboxModule
   ]
 })
 export class SalesModule { }

@@ -9,9 +9,16 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./add-item.component.scss']
 })
 export class AddItemComponent implements OnInit {
-  model: any = [];
+  model: any = {
+    customer_type: 'Goods',
+    unit: '',
+    hsn_code: '',
+    sac: '',
+    tax_preference: ''
+  };
   isSubmitting: boolean = false;
   stateList : any = [];
+  
 
   constructor(
     private globalService: GlobalService,
@@ -21,22 +28,15 @@ export class AddItemComponent implements OnInit {
 
   ngOnInit(): void {
   }
-
-  // getState(){
-  //   this.globalService.getStates().subscribe({
-  //     next: (res: any) => {
-  //       this.stateList = res;
-  //       this.isSubmitting = false;
-  //       console.log(res);
-  //     },
-  //     error: (res: any) => {
-  //       this.isSubmitting = false;
-  //     }
-  //   })
-  // }
   
-  typeChange(value:string){
-    
+  typeChange(value: string) {
+    console.log('Type selected:', value);
+    // Reset unit when type changes
+    this.model.unit = '';
+    // Reset HSN code and SAC when type changes
+    this.model.hsn_code = '';
+    this.model.sac = '';
+    this.model.tax_preference = '';
   }
 
   onSubmit(fm: any) {

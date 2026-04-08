@@ -67,6 +67,7 @@ export class GlobalService {
     private roleUrl = environment.apiBaseUrl+ 'api' + '/roles';
     private tenantsUrl = environment.apiBaseUrl+ 'api' + '/tenants';
     private usersUrl = environment.apiBaseUrl+ 'api' + '/users';
+    private customerUrl = environment.apiBaseUrl+ 'api' + '/customer';
     
     // constructor(private http: HttpClient) {}
     
@@ -88,6 +89,10 @@ export class GlobalService {
 
     public getParentMenuList() {
       return this.http.get(`${this.systemUrl}/fetch-parent-menu`,);
+    }
+
+    public getAllModule() {
+      return this.http.get(`${this.systemUrl}/fetch-child-menu`,);
     }
 
     public addMenu(data:any): Observable<any> {
@@ -132,6 +137,22 @@ export class GlobalService {
 
     public getUserByCompany(): Observable<any> {
       return this.http.get(`${this.usersUrl}/fetch-user`);
+    }
+
+    public fetchCustomFieldsByModule(moduleId: any):Observable<any>  {
+      return this.http.get(`${this.systemUrl}/fetch-custom-fields?module_id=${moduleId}`);
+    }
+
+    public addCustomField(data:any): Observable<any> {
+      return this.http.post(`${this.systemUrl}/custom-field-create`,data);
+    }
+
+    public addCustomer(data:any): Observable<any> {
+      return this.http.post(`${this.customerUrl}/create-customer`,data);
+    }
+
+    public geCompanyListByTenant(moduleId?: number): Observable<any> {
+      return this.http.get(`${this.customerUrl}/fetch-customers?module_id=${moduleId}`);
     }
   
 }

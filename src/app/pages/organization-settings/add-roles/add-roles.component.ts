@@ -26,7 +26,7 @@ export class AddRolesComponent implements OnInit, OnDestroy {
   isSubmitting: boolean = false;
   isLoading: boolean = false;
   expandedModules: Set<number> = new Set();
-  expandedCategories: Set<string> = new Set(); // Track expanded parent categories
+  // expandedCategories: Set<string> = new Set(); // no longer needed when header hidden
   
   private destroy$ = new Subject<void>();
 
@@ -144,23 +144,6 @@ export class AddRolesComponent implements OnInit, OnDestroy {
     console.log('🔍 Final Modules:', this.modulePermissions);
   }
 
-  /**
-   * Toggle category expansion
-   */
-  toggleCategory(categoryName: string) {
-    if (this.expandedCategories.has(categoryName)) {
-      this.expandedCategories.delete(categoryName);
-    } else {
-      this.expandedCategories.add(categoryName);
-    }
-  }
-
-  /**
-   * Check if category is expanded
-   */
-  isCategoryExpanded(categoryName: string): boolean {
-    return this.expandedCategories.has(categoryName);
-  }
 
   /**
    * Get module permission by module id
@@ -188,35 +171,111 @@ export class AddRolesComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Update permission for a module
+   * Determine whether a module should be considered a "list" type.
+   * Backend menus do not expose a dedicated flag yet, so we fall back to
+   * checking the name/title for the word "list" (case‑insensitive).
+   *
+   * This allows us to hide the create permission for list‑only menus while
+   * still showing it for "Add" or other types.
+   */
+  isListModule(module: any): boolean {
+    if (!module) {
+      return false;
+    }
+    const name = (module.name || module.title || module.module_name || '').toString().toLowerCase();
+    return name.includes('list');
+  }
+
+  /**
+   * Look up a module in the current structure by id and test if it is a list.
+   */
+  isListModuleById(moduleId: number): boolean {
+    for (const cat of this.menuStructure) {
+      if (cat.modules) {
+        const found = cat.modules.find((m: any) => m.id === moduleId);
+        if (found) {
+          return this.isListModule(found);
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Update a permission flag, but ignore attempts to set create on list modules.
    */
   updatePermission(moduleId: number, permissionType: 'create' | 'view' | 'edit' | 'delete', value: boolean) {
     const permission = this.getModulePermission(moduleId);
     if (permission) {
+      if (permissionType === 'create' && this.isListModuleById(moduleId)) {
+        // silently ignore -- create should never be granted on list menus
+        return;
+      }
       permission[permissionType] = value;
     }
   }
 
   /**
-   * Check if at least one permission is selected for a module
+   * Return whether the module has any active permission. For list menus we
+   * deliberately exclude the create flag from the calculation.
    */
   hasAnyPermission(moduleId: number): boolean {
     const permission = this.getModulePermission(moduleId);
-    return permission ? (permission.create || permission.view || permission.edit || permission.delete) : false;
+    if (!permission) {
+      return false;
+    }
+    const includeCreate = !this.isListModuleById(moduleId);
+    return (includeCreate && permission.create) || permission.view || permission.edit || permission.delete;
   }
 
   /**
-   * Select/Deselect all permissions for a module
+   * Toggle all permissions for a module. Preserve create=false on list menus.
    */
   toggleAllPermissions(moduleId: number) {
     const permission = this.getModulePermission(moduleId);
     if (permission) {
       const hasAny = this.hasAnyPermission(moduleId);
-      permission.create = !hasAny;
+      permission.create = this.isListModuleById(moduleId) ? false : !hasAny;
       permission.view = !hasAny;
       permission.edit = !hasAny;
       permission.delete = !hasAny;
     }
+  }
+
+  /**
+   * Return the modules for a category excluding list-type entries. Used by
+   * the template because arrow functions aren't allowed in bindings.
+   */
+  filteredModules(category: any): any[] {
+    if (!category || !Array.isArray(category.modules)) {
+      return [];
+    }
+    // remove list modules and any child whose name equals the parent category
+    const filtered = category.modules.filter((m: any) => {
+      if (this.isListModule(m)) {
+        return false;
+      }
+      if (m.name && category.category && m.name === category.category) {
+        return false;
+      }
+      return true;
+    });
+
+    // dedupe by name in case there are multiple children with identical titles
+    const uniq: any[] = [];
+    filtered.forEach((m: any) => {
+      if (!uniq.find(x => x.name === m.name)) {
+        uniq.push(m);
+      }
+    });
+    return uniq;
+  }
+
+  /**
+   * Convenience helper used in the header for the module count.
+   */
+  filteredModuleCount(category: any): number {
+    return this.filteredModules(category).length;
   }
 
   /**
@@ -248,6 +307,7 @@ export class AddRolesComponent implements OnInit, OnDestroy {
       remarks: this.model.remarks || '',
       permissions: selectedPermissions
     };
+    console.log('🚀 Submitting Role Payload:', payload);
 
     this.isSubmitting = true;
     this.globalService.addRole(payload)

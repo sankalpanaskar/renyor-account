@@ -1,7 +1,7 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%; margin: 0 auto;">
     <nb-card>
         <nb-card-header>Add Role with Permissions</nb-card-header>
-        <nb-card-body [nbSpinner]="isSubmitting || isLoading" nbSpinnerStatus="primary">
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
             <!-- Role Information Section -->
             <div class="row mb-4">
                 <div class="col-lg-6 mb-10">
@@ -29,7 +29,6 @@
                 <nb-card-body class="permissions-container">
                     <div *ngIf="isLoading" class="loading-state text-center py-5">
                         <nb-spinner size="small" status="primary"></nb-spinner>
-                        <p class="mt-2">Loading modules...</p>
                     </div>
 
                     <div *ngIf="!isLoading && menuStructure.length === 0" class="no-modules text-center py-5">
@@ -40,88 +39,78 @@
                     <div *ngIf="!isLoading && menuStructure.length > 0" class="categories-list">
                         <!-- Parent Category Section -->
                         <div *ngFor="let category of menuStructure" class="category-section">
-                            <!-- Category Header -->
-                            <div class="category-header" (click)="toggleCategory(category.category)">
-                                <div class="category-info">
-                                    <nb-icon [icon]="isCategoryExpanded(category.category) ? 'chevron-down-outline' : 'chevron-right-outline'" 
-                                        class="expand-icon"></nb-icon>
-                                    <span class="category-name">{{ category.category }}</span>
-                                </div>
-                                <span class="module-count">({{ category.modules.length }} modules)</span>
-                            </div>
-
                             <!-- Modules under Category -->
-                            <div class="category-modules" *ngIf="isCategoryExpanded(category.category)">
-                                <div *ngFor="let module of category.modules" class="module-item">
+                                <ng-container *ngFor="let module of filteredModules(category)">
+                                    <div class="module-item" *ngIf="!isListModule(module)">
                                     <div class="module-header" (click)="toggleModule(module.id)">
-                                        <div class="module-info">
-                                            <nb-icon [icon]="isModuleExpanded(module.id) ? 'chevron-down-outline' : 'chevron-right-outline'" 
-                                                class="expand-icon module-icon"></nb-icon>
-                                            <span class="module-name">{{ module.name }}</span>
+                                            <div class="module-info">
+                                                <nb-icon [icon]="isModuleExpanded(module.id) ? 'chevron-down-outline' : 'chevron-right-outline'" 
+                                                    class="expand-icon module-icon"></nb-icon>
+                                                <span class="module-name">{{ category.category }}</span>
+                                            </div>
+                                            <div class="module-checkbox">
+                                                <input type="checkbox" 
+                                                    [checked]="hasAnyPermission(module.id)"
+                                                    (change)="toggleAllPermissions(module.id)"
+                                                    class="select-all-checkbox"
+                                                    title="Select/Deselect all permissions">
+                                            </div>
                                         </div>
-                                        <div class="module-checkbox">
-                                            <input type="checkbox" 
-                                                [checked]="hasAnyPermission(module.id)"
-                                                (change)="toggleAllPermissions(module.id)"
-                                                class="select-all-checkbox"
-                                                title="Select/Deselect all permissions">
+
+                                        <!-- Permissions Grid -->
+                                        <div class="module-permissions" *ngIf="isModuleExpanded(module.id)">
+                                            <div class="permissions-grid">
+                                                <!-- Create Permission (hidden for list modules) -->
+                                                <div class="permission-item" *ngIf="!isListModule(module)">
+                                                    <label class="permission-label">
+                                                        <input type="checkbox" 
+                                                            [checked]="getModulePermission(module.id)?.create || false"
+                                                            (change)="updatePermission(module.id, 'create', $any($event.target).checked)"
+                                                            class="permission-checkbox">
+                                                        <span class="permission-name">Create</span>
+                                                    </label>
+                                                    <p class="permission-description">Add new records</p>
+                                                </div>
+
+                                                <!-- View Permission -->
+                                                <div class="permission-item">
+                                                    <label class="permission-label">
+                                                        <input type="checkbox" 
+                                                            [checked]="getModulePermission(module.id)?.view || false"
+                                                            (change)="updatePermission(module.id, 'view', $any($event.target).checked)"
+                                                            class="permission-checkbox">
+                                                        <span class="permission-name">View</span>
+                                                    </label>
+                                                    <p class="permission-description">View records</p>
+                                                </div>
+
+                                                <!-- Edit Permission -->
+                                                <div class="permission-item">
+                                                    <label class="permission-label">
+                                                        <input type="checkbox" 
+                                                            [checked]="getModulePermission(module.id)?.edit || false"
+                                                            (change)="updatePermission(module.id, 'edit', $any($event.target).checked)"
+                                                            class="permission-checkbox">
+                                                        <span class="permission-name">Edit</span>
+                                                    </label>
+                                                    <p class="permission-description">Modify records</p>
+                                                </div>
+
+                                                <!-- Delete Permission -->
+                                                <div class="permission-item">
+                                                    <label class="permission-label">
+                                                        <input type="checkbox" 
+                                                            [checked]="getModulePermission(module.id)?.delete || false"
+                                                            (change)="updatePermission(module.id, 'delete', $any($event.target).checked)"
+                                                            class="permission-checkbox">
+                                                        <span class="permission-name">Delete</span>
+                                                    </label>
+                                                    <p class="permission-description">Remove records</p>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    <!-- Permissions Grid -->
-                                    <div class="module-permissions" *ngIf="isModuleExpanded(module.id)">
-                                        <div class="permissions-grid">
-                                            <!-- Create Permission -->
-                                            <div class="permission-item">
-                                                <label class="permission-label">
-                                                    <input type="checkbox" 
-                                                        [checked]="getModulePermission(module.id)?.create || false"
-                                                        (change)="updatePermission(module.id, 'create', $any($event.target).checked)"
-                                                        class="permission-checkbox">
-                                                    <span class="permission-name">Create</span>
-                                                </label>
-                                                <p class="permission-description">Add new records</p>
-                                            </div>
-
-                                            <!-- View Permission -->
-                                            <div class="permission-item">
-                                                <label class="permission-label">
-                                                    <input type="checkbox" 
-                                                        [checked]="getModulePermission(module.id)?.view || false"
-                                                        (change)="updatePermission(module.id, 'view', $any($event.target).checked)"
-                                                        class="permission-checkbox">
-                                                    <span class="permission-name">View</span>
-                                                </label>
-                                                <p class="permission-description">View records</p>
-                                            </div>
-
-                                            <!-- Edit Permission -->
-                                            <div class="permission-item">
-                                                <label class="permission-label">
-                                                    <input type="checkbox" 
-                                                        [checked]="getModulePermission(module.id)?.edit || false"
-                                                        (change)="updatePermission(module.id, 'edit', $any($event.target).checked)"
-                                                        class="permission-checkbox">
-                                                    <span class="permission-name">Edit</span>
-                                                </label>
-                                                <p class="permission-description">Modify records</p>
-                                            </div>
-
-                                            <!-- Delete Permission -->
-                                            <div class="permission-item">
-                                                <label class="permission-label">
-                                                    <input type="checkbox" 
-                                                        [checked]="getModulePermission(module.id)?.delete || false"
-                                                        (change)="updatePermission(module.id, 'delete', $any($event.target).checked)"
-                                                        class="permission-checkbox">
-                                                    <span class="permission-name">Delete</span>
-                                                </label>
-                                                <p class="permission-description">Remove records</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                                </ng-container>
                         </div>
                     </div>
                 </nb-card-body>

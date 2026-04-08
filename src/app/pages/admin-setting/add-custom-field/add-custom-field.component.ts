@@ -10,7 +10,7 @@ import { NbToastrService } from '@nebular/theme';
 export class AddCustomFieldComponent implements OnInit {
   model: any = [];
   isSubmitting: boolean = false;
-  packageList : any = [];
+  moduleList : any = [];
   stateList : any = [];
   selectedFile: File | null = null;
 
@@ -22,15 +22,19 @@ export class AddCustomFieldComponent implements OnInit {
 
   ngOnInit(): void {
     this.getState();
-    this.getPackage();
+    this.getAllModule();
   }
 
-  getPackage() {
+  getAllModule() {
       this.isSubmitting = true;
-      this.globalService.gePackageList().subscribe({
+      this.globalService.getAllModule().subscribe({
         next: (res:any) => {
           console.log(res);
-          this.packageList = res.data; // ✅ Store API data here first
+          const modules = Array.isArray(res?.data) ? res.data : [];
+          this.moduleList = modules.filter((item: any) => {
+            const menuName = (item?.menu_name || '').toString().trim().toLowerCase();
+            return menuName.startsWith('add');
+          });
           this.isSubmitting = false;
         },
         error: (err) => {
@@ -64,26 +68,8 @@ export class AddCustomFieldComponent implements OnInit {
   if (fm.invalid) return;
 
   this.isSubmitting = true;
-
-  const formData = new FormData(); // ✅ empty
-
-  formData.append('name', this.model.name);
-  formData.append('industry', this.model.industry);
-  formData.append('website', this.model.website);
-  formData.append('address', this.model.address);
-  formData.append('country', this.model.country);
-  formData.append('city', this.model.city);
-  formData.append('state', this.model.state);
-  formData.append('pin', this.model.pin);
-  formData.append('phone', this.model.phone);
-  formData.append('email', this.model.email);
-  formData.append('pan', this.model.pan);
-  formData.append('gst', this.model.gst);
-  formData.append('package_id', this.model.package_id);
-
-  if (this.selectedFile) formData.append('logo', this.selectedFile);
-
-  this.globalService.addCompany(formData).subscribe({
+console.log(fm.value);
+  this.globalService.addCustomField(fm.value).subscribe({
     next: (res) => { 
       this.toastrService.success(res.message, 'Success!');
       fm.resetForm(); 

@@ -20,60 +20,6 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
   // Add admin-only menus if user is system super admin
   if (isSystemSuperAdmin) {
     menu.push(
-      {
-        title: 'Organization',
-        icon: 'people-outline',
-        children: [
-          {
-            title: 'Company Profile',
-            link: '/pages/organization-setting/orgprofile',
-          },
-          {
-            title: 'Manage Subscription',
-            link: '/pages/organization-setting/package-list',
-          },
-        ],
-      },
-      // { title: 'Users & Roles', group: true },
-      // {
-      //   title: 'Users',
-      //   icon: 'people-outline',
-      //   children: [
-      //     {
-      //       title: 'Add Users',
-      //       link: '/pages/organization-setting/add-user',
-      //     },
-      //     {
-      //       title: 'User List',
-      //       link: '/pages/organization-setting/user-list',
-      //     }
-      //   ],
-      // },
-      // {
-      //   title: 'Roles',
-      //   icon: 'people-outline',
-      //   children: [
-      //     {
-      //       title: 'Add Roles',
-      //       link: '/pages/organization-setting/add-roles',
-      //     },
-      //     {
-      //       title: 'Roles',
-      //       link: '/pages/organization-setting/roles',
-      //     }
-      //   ],
-      // },
-      {
-        title: 'Setup & Configurations',
-        icon: 'people-outline',
-        children: [
-          {
-            title: 'General',
-            link: '/pages/organization-setting/profile',
-          }
-        ],
-      },
-      { title: 'Module Settings', group: true },
       { title: 'Admin Settings', group: true },
       {
         title: 'Package & Module',
@@ -124,9 +70,67 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
             link: '/pages/admin-setting/custom-field',
           }
         ],
-      }
+      },
+      {
+        title: 'Setup',
+        icon: 'people-outline',
+        children: [
+          {
+            title: 'General',
+            link: '/pages/organization-setting/profile',
+          }
+        ],
+      },
     );
   }
+
+  // Add Users & Roles menu - visible to all users
+  menu.push(
+    { title: 'Organization Settings', group: true },
+    {
+      title: 'Organization',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Company Profile',
+          link: '/pages/organization-setting/orgprofile',
+        },
+        {
+          title: 'Manage Subscription',
+          link: '/pages/organization-setting/package-list',
+        },
+      ],
+    },
+    { title: 'Users & Roles', group: true },
+    {
+      title: 'Users',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Add Users',
+          link: '/pages/organization-setting/add-user',
+        },
+        {
+          title: 'User List',
+          link: '/pages/organization-setting/user-list',
+        }
+      ],
+    },
+    {
+      title: 'Roles',
+      icon: 'people-outline',
+      children: [
+        {
+          title: 'Add Roles',
+          link: '/pages/organization-setting/add-roles',
+        },
+        {
+          title: 'Roles',
+          link: '/pages/organization-setting/roles',
+        }
+      ],
+    }
+  );
 
   return menu;
 }

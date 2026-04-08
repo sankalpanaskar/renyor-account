@@ -6,121 +6,121 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Field Belongs to <span
                                 style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select Package" name="module_id"
+                        <nb-select shape="semi-round" placeholder="Select Module" name="module_id"
                             required #module_id="ngModel" [(ngModel)]="model.module_id">
-                            <nb-option  *ngFor="let package of packageList" [value]="package.id">{{package.package_name}}</nb-option>
+                            <nb-option  *ngFor="let module of moduleList" [value]="module.id">{{module.menu_name}}</nb-option>
                         </nb-select>
                         <div *ngIf="fm.submitted && module_id.invalid" class="error-message">
-                            Package is required
+                            Module is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Field Name <span
                                 style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization Name"
-                            name="name" required #name="ngModel" [(ngModel)]="model.name">
-                        <div *ngIf="fm.submitted && name.invalid" class="error-message">
-                            Organization name is required
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Name"
+                            name="field_name" required #field_name="ngModel" [(ngModel)]="model.field_name">
+                        <div *ngIf="fm.submitted && field_name.invalid" class="error-message">
+                            Field name is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">Type</label>
-                        <nb-select shape="semi-round" placeholder="Select Country" name="country"
-                            required #country="ngModel" [(ngModel)]="model.country">
-                            <nb-option value="India">India</nb-option>
-                            <nb-option value="Other">Other</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && country.invalid" class="error-message">
-                            Select Coutry
-                        </div>
-                    </div>
-                    <div class="col-lg-12 mb-10">
-                        <label class="small-label">Address <span
+                        <label class="small-label">Field Label<span
                                 style="color:#d32f2f">*</span></label>
-                        <textarea nbInput fullWidth shape="semi-round" placeholder="Enter address" name="address"
-                        [(ngModel)]="model.address" #address="ngModel" rows="3" [maxlength]="500"></textarea>
-                        <div *ngIf="fm.submitted && address.invalid" class="error-message">
-                            Organization address is required
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Label"
+                            name="field_label" required #field_label="ngModel" [(ngModel)]="model.field_label">
+                        <div *ngIf="fm.submitted && field_label.invalid" class="error-message">
+                            Field label is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">City <span
-                        style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization City"
-                            name="city" required #city="ngModel" [(ngModel)]="model.city">
-                        <div *ngIf="fm.submitted && city.invalid" class="error-message">
-                            Enter the city.
-                        </div>
-                    </div>
-                    <div class="col-lg-6 mb-10">
-                        <label class="small-label">State <span
-                        style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select State" name="state"
-                            required #state="ngModel" [(ngModel)]="model.state">
-                            <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
+                        <label class="small-label">Field Type</label>
+                        <nb-select shape="semi-round" placeholder="Select Type" name="field_type"
+                            required #field_type="ngModel" [(ngModel)]="model.field_type">
+                            <nb-option value="Text">Text</nb-option>
+                            <nb-option value="Number">Number</nb-option>
+                            <nb-option value="Date">Date</nb-option>
                         </nb-select>
-                        <div *ngIf="fm.submitted && state.invalid" class="error-message">
-                            Select state.
+                        <div *ngIf="fm.submitted && field_type.invalid" class="error-message">
+                            Select Field Type
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">Pincode <span
-                        style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Pincode"
-                            name="pin" required #pin="ngModel" [(ngModel)]="model.pin">
-                        <div *ngIf="fm.submitted && pin.invalid" class="error-message">
-                            Enter the pin.
+                        <label class="small-label">Field Options<span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Options"
+                            name="field_options" required #field_options="ngModel" [(ngModel)]="model.field_options">
+                        <div *ngIf="fm.submitted && field_options.invalid" class="error-message">
+                            Field options are required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">Phone <span
-                        style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization phone"
-                            name="phone" required #phone="ngModel" [(ngModel)]="model.phone">
-                        <div *ngIf="fm.submitted && phone.invalid" class="error-message">
-                            Enter the phone.
+                        <label class="small-label">Placeholder<span
+                                style="color:#d32f2f">*</span></label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Placeholder"
+                            name="placeholder" required #placeholder="ngModel" [(ngModel)]="model.placeholder">
+                        <div *ngIf="fm.submitted && placeholder.invalid" class="error-message">
+                            Placeholder is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">Email <span
-                        style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization email"
-                            name="email" required #email="ngModel" [(ngModel)]="model.email">
-                        <div *ngIf="fm.submitted && email.invalid" class="error-message">
-                            Enter the email.
+                        <label class="small-label">Default Value</label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Default Value"
+                            name="default_value" required #default_value="ngModel" [(ngModel)]="model.default_value">
+                        <div *ngIf="fm.submitted && default_value.invalid" class="error-message">
+                            Default value is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">PAN <span
-                        style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization pan"
-                            name="pan" required #pan="ngModel" [(ngModel)]="model.pan">
-                        <div *ngIf="fm.submitted && pan.invalid" class="error-message">
-                            Enter the pan.
+                        <label class="small-label">Is Required<span
+                                style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select Type" name="is_required"
+                            required #is_required="ngModel" [(ngModel)]="model.is_required">
+                            <nb-option value="1">Yes</nb-option>
+                            <nb-option value="0">No</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && is_required.invalid" class="error-message">
+                            Select if the field is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">GST <span
-                        style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization gst"
-                            name="gst" required #gst="ngModel" [(ngModel)]="model.gst">
-                        <div *ngIf="fm.submitted && gst.invalid" class="error-message">
-                            Enter the gst.
+                        <label class="small-label">Min Length</label>
+                        <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Min Length"
+                            name="min_length" required #min_length="ngModel" [(ngModel)]="model.min_length">
+                        <div *ngIf="fm.submitted && min_length.invalid" class="error-message">
+                            Enter the minimum length.
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">Website URL <span
-                        style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Organization website"
-                            name="website" required #website="ngModel" [(ngModel)]="model.website">
-                        <div *ngIf="fm.submitted && website.invalid" class="error-message">
-                            Enter the website.
+                        <label class="small-label">Max Length</label>
+                        <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Max Length"
+                            name="max_length" required #max_length="ngModel" [(ngModel)]="model.max_length">
+                        <div *ngIf="fm.submitted && max_length.invalid" class="error-message">
+                            Enter the maximum length.
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">Logo <span
+                        <label class="small-label">Show in Form <span
                         style="color:#d32f2f">*</span></label>
-                        <input type="file" nbInput fullWidth shape="semi-round" name="logo" required #logo="ngModel" [(ngModel)]="model.logo" (change)="onFileChange($event)">
+                        <nb-select shape="semi-round" placeholder="Select Option" name="show_in_form"
+                            required #show_in_form="ngModel" [(ngModel)]="model.show_in_form">
+                            <nb-option value="1">Yes</nb-option>
+                            <nb-option value="0">No</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && show_in_form.invalid" class="error-message">
+                            Select if the field should be shown in the form.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label">Show in List <span
+                        style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select Option" name="show_in_list"
+                            required #show_in_list="ngModel" [(ngModel)]="model.show_in_list">
+                            <nb-option value="1">Yes</nb-option>
+                            <nb-option value="0">No</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && show_in_list.invalid" class="error-message">
+                            Select if the field should be shown in the list.
+                        </div>
                     </div>
                 </div>
             </nb-card-body>
@@ -128,7 +128,7 @@
             <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
                 <button nbButton status="primary" shape="semi-round" hero type="submit"
                     [disabled]="isSubmitting">
-                    Update
+                    Submit
                 </button>
             </div>
         </nb-card-footer>

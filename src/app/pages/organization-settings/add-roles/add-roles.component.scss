@@ -144,7 +144,7 @@
 .module-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 5px;
   flex: 1;
 
   .expand-icon {
@@ -154,7 +154,7 @@
     transition: transform 0.2s ease;
 
     &.module-icon {
-      margin-left: 12px;
+      // margin-left: 12px;
       color: #3366ff;
     }
   }

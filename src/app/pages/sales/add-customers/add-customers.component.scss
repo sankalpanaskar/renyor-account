@@ -161,3 +161,10 @@ nb-card-body {
 .mb-10{
     margin-bottom: 10px;
 }
+
+:host ::ng-deep nb-checkbox,
+:host ::ng-deep nb-checkbox label,
+:host ::ng-deep nb-radio,
+:host ::ng-deep nb-radio label {
+  cursor: pointer;
+}
