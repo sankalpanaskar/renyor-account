@@ -52,20 +52,47 @@
                     <div class="col-lg-3 mb-10">
                         <label class="small-label" id="label-category">Phone <span
                                 style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Work Phone"
-                            name="work_phone" required #work_phone="ngModel"
-                            [(ngModel)]="model.work_phone">
-                        <div *ngIf="fm.submitted && work_phone.invalid" class="error-message">
+                        <div class="phone-input-group">
+                            <span class="country-code">+91</span>
+                            <input type="tel" nbInput shape="semi-round" class="phone-input" placeholder="Enter Work Phone"
+                                name="work_phone" required minlength="10" maxlength="10" pattern="^[0-9]{10}$"
+                                inputmode="numeric" #work_phone="ngModel" [(ngModel)]="model.work_phone"
+                                (ngModelChange)="onPhoneInputChange('work_phone')">
+                        </div>
+                        <div *ngIf="fm.submitted && work_phone.errors?.required" class="error-message">
                             Work phone is required
+                        </div>
+                        <div *ngIf="fm.submitted && !work_phone.errors?.required && work_phone.invalid" class="error-message">
+                            Enter valid 10 digit phone number
                         </div>
                     </div>
                     <div class="col-lg-3 mb-10">
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Mobile No" style="margin-top: 24px;"
-                            name="mobile_no" required #mobile_no="ngModel"
-                            [(ngModel)]="model.mobile_no">
-                        <div *ngIf="fm.submitted && mobile_no.invalid" class="error-message">
+                        <label class="small-label" id="label-category">Mobile No <span
+                                style="color:#d32f2f">*</span></label>
+                        <div class="phone-input-group">
+                            <span class="country-code">+91</span>
+                            <input type="tel" nbInput shape="semi-round" class="phone-input" placeholder="Enter Mobile No"
+                                name="mobile_no" required minlength="10" maxlength="10" pattern="^[0-9]{10}$"
+                                inputmode="numeric" #mobile_no="ngModel" [(ngModel)]="model.mobile_no"
+                                (ngModelChange)="onPhoneInputChange('mobile_no')">
+                        </div>
+                        <div *ngIf="fm.submitted && mobile_no.errors?.required" class="error-message">
                             Mobile no is required
                         </div>
+                        <div *ngIf="fm.submitted && !mobile_no.errors?.required && mobile_no.invalid" class="error-message">
+                            Enter valid 10 digit mobile number
+                        </div>
+                    </div>
+                </div>
+            </nb-tab>
+            <nb-tab tabTitle="Others Details">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <label class="small-label" id="label-category">Group</label>
+                        <nb-select shape="semi-round" placeholder="Select Group" name="group"
+                            required #group="ngModel" [(ngModel)]="model.group">
+                            <nb-option value="Group 1">Group 1</nb-option>
+                        </nb-select>
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">GST Treatment <span
@@ -178,15 +205,40 @@
                             placeholder="Enter website url" name="website" required
                             #website="ngModel" [(ngModel)]="model.website">
                     </div>
-                    <div class="col-lg-6">
-                        <label class="small-label" id="label-category">Group</label>
-                        <nb-select shape="semi-round" placeholder="Select Group" name="group"
-                            required #group="ngModel" [(ngModel)]="model.group">
-                            <nb-option value="Group 1">Group 1</nb-option>
-                        </nb-select>
-                    </div>
-                    
 
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Department</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter department" name="department"
+                            #department="ngModel" [(ngModel)]="model.department">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Designation</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter designation" name="designation"
+                            #designation="ngModel" [(ngModel)]="model.designation">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Document 1</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter Document 1 Name" name="document_1_name"
+                            #document_1_name="ngModel" [(ngModel)]="model.document_1_name" style="margin-bottom: 8px;">
+                        <input type="file" nbInput fullWidth shape="semi-round"
+                            name="document_1" (change)="onDocumentChange($event, 'document_1')"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Document 2</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter Document 2 Name" name="document_2_name"
+                            #document_2_name="ngModel" [(ngModel)]="model.document_2_name" style="margin-bottom: 8px;">
+                        <input type="file" nbInput fullWidth shape="semi-round"
+                            name="document_2" (change)="onDocumentChange($event, 'document_2')"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    </div>
                 </div>
             </nb-tab>
             <nb-tab tabTitle="Custom Fields">
@@ -365,104 +417,20 @@
     </nb-card>
 </form>
 
-<div class="payment-terms-modal-overlay" *ngIf="showPaymentTermsPopup">
-    <nb-card class="payment-terms-modal">
-        <nb-card-header class="payment-terms-modal-header">
-            <span>Configure Payment Terms</span>
-            <button type="button" class="modal-close-btn" (click)="closePaymentTermsPopup()" aria-label="Close">
-                ×
-            </button>
-        </nb-card-header>
+<ngx-payment-terms-popup
+    [open]="showPaymentTermsPopup"
+    [title]="'Configure Payment Terms'"
+    [terms]="paymentTerms"
+    (close)="closePaymentTermsPopup()"
+    (termsChange)="onPaymentTermsChanged($event)"
+    (termSelected)="onPaymentTermSelected($event)"
+></ngx-payment-terms-popup>
 
-        <nb-card-body class="payment-terms-modal-body">
-            <table class="payment-terms-table">
-                <thead>
-                    <tr>
-                        <th>Term Name</th>
-                        <th>No Of Days</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let term of paymentTerms" (click)="selectPaymentTerm(term.termName)" class="term-row">
-                        <td>{{ term.termName }}</td>
-                        <td>{{ term.days }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <button type="button" class="add-new-link" (click)="startAddPaymentTerm()">
-                <nb-icon icon="plus-circle"></nb-icon>
-                Add New
-            </button>
-
-            <div class="payment-term-new-row" *ngIf="showAddPaymentTermForm">
-                <div class="row">
-                    <div class="col-md-8 mb-10">
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Term Name"
-                            [(ngModel)]="newPaymentTermName" [ngModelOptions]="{standalone: true}">
-                    </div>
-                    <div class="col-md-4 mb-10">
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="No Of Days"
-                            [(ngModel)]="newPaymentTermDays" [ngModelOptions]="{standalone: true}">
-                    </div>
-                </div>
-            </div>
-        </nb-card-body>
-
-        <nb-card-footer class="payment-terms-modal-footer">
-            <button type="button" nbButton status="success" (click)="closePaymentTermsPopup()">Save</button>
-            <button type="button" nbButton status="basic" (click)="closePaymentTermsPopup()">Cancel</button>
-        </nb-card-footer>
-    </nb-card>
-</div>
-
-<div class="payment-terms-modal-overlay" *ngIf="showTdsPopup">
-    <nb-card class="payment-terms-modal">
-        <nb-card-header class="payment-terms-modal-header">
-            <span>Configure TDS</span>
-            <button type="button" class="modal-close-btn" (click)="closeTdsPopup()" aria-label="Close">
-                ×
-            </button>
-        </nb-card-header>
-
-        <nb-card-body class="payment-terms-modal-body">
-            <table class="payment-terms-table">
-                <thead>
-                    <tr>
-                        <th>Term Name</th>
-                        <th>Percentage</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let term of tdsTerms" (click)="selectTds(term.termName)" class="term-row">
-                        <td>{{ term.termName }}</td>
-                        <td>{{ term.percentage }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <button type="button" class="add-new-link" (click)="startAddTds()">
-                <nb-icon icon="plus-circle"></nb-icon>
-                Add New
-            </button>
-
-            <div class="payment-term-new-row" *ngIf="showAddTdsForm">
-                <div class="row">
-                    <div class="col-md-8 mb-10">
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Term Name"
-                            [(ngModel)]="newTdsName" [ngModelOptions]="{standalone: true}">
-                    </div>
-                    <div class="col-md-4 mb-10">
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Percentage"
-                            [(ngModel)]="newTdsPercentage" [ngModelOptions]="{standalone: true}">
-                    </div>
-                </div>
-            </div>
-        </nb-card-body>
-
-        <nb-card-footer class="payment-terms-modal-footer">
-            <button type="button" nbButton status="success" (click)="closeTdsPopup()">Save</button>
-            <button type="button" nbButton status="basic" (click)="closeTdsPopup()">Cancel</button>
-        </nb-card-footer>
-    </nb-card>
-</div>
+<ngx-tds-popup
+    [open]="showTdsPopup"
+    [title]="'Configure TDS'"
+    [terms]="tdsTerms"
+    (close)="closeTdsPopup()"
+    (termsChange)="onTdsTermsChanged($event)"
+    (termSelected)="onTdsTermSelected($event)"
+></ngx-tds-popup>

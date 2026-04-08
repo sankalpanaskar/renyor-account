@@ -12,6 +12,7 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { CustomersButtonComponent } from './customers-list/customers-btn.component';
 import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
+import { SharedModule } from '../shared/shared.module';
 
 
 @NgModule({
@@ -42,7 +43,8 @@ import { ItemListComponent } from './item-list/item-list.component';
     Ng2SmartTableModule,
     NbSpinnerModule,
     NbDatepickerModule,
-    NbCheckboxModule
+    NbCheckboxModule,
+    SharedModule
   ]
 })
 export class SalesModule { }

@@ -1,0 +1,76 @@
+<nb-card>
+  <nb-card-header class="d-flex justify-content-between align-items-center">
+    <span>Chart of Account</span>
+    <button nbButton status="primary" size="small" shape="semi-round" (click)="openAddPopup()">
+      Add
+    </button>
+  </nb-card-header>
+
+  <nb-card-body>
+    <ng2-smart-table [settings]="settings" [source]="source"></ng2-smart-table>
+  </nb-card-body>
+</nb-card>
+
+<div class="coa-modal-overlay" *ngIf="showAddPopup">
+  <nb-card class="coa-modal">
+    <nb-card-header class="d-flex justify-content-between align-items-center">
+      <span>Add Chart of Account</span>
+      <button type="button" class="modal-close-btn" (click)="closeAddPopup()" aria-label="Close">
+        <nb-icon icon="close-outline"></nb-icon>
+      </button>
+    </nb-card-header>
+
+    <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Account Head <span class="required">*</span></label>
+            <nb-select fullWidth shape="semi-round" placeholder="Select Account Head"
+              name="account_head" required #account_head="ngModel" [(ngModel)]="model.account_head">
+              <nb-option *ngFor="let head of accountHeads" [value]="head">{{ head }}</nb-option>
+            </nb-select>
+            <div *ngIf="fm.submitted && account_head.invalid" class="error-message">
+              Account Head is required
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Account Type <span class="required">*</span></label>
+            <nb-select fullWidth shape="semi-round" placeholder="Select Account Type"
+              name="account_type" required #account_type="ngModel" [(ngModel)]="model.account_type">
+              <nb-option *ngFor="let type of accountTypes" [value]="type">{{ type }}</nb-option>
+            </nb-select>
+            <div *ngIf="fm.submitted && account_type.invalid" class="error-message">
+              Account Type is required
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Account Name <span class="required">*</span></label>
+            <nb-select fullWidth shape="semi-round" placeholder="Select Account Name"
+              name="account_name" required #account_name="ngModel" [(ngModel)]="model.account_name">
+              <nb-option *ngFor="let name of accountNames" [value]="name">{{ name }}</nb-option>
+            </nb-select>
+            <div *ngIf="fm.submitted && account_name.invalid" class="error-message">
+              Account Name is required
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Account Item <span class="required">*</span></label>
+            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Account Item"
+              name="account_item" required #account_item="ngModel" [(ngModel)]="model.account_item">
+            <div *ngIf="fm.submitted && account_item.invalid" class="error-message">
+              Account Item is required
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+
+      <nb-card-footer class="d-flex justify-content-end" style="gap: 8px;">
+        <button type="button" nbButton status="basic" shape="semi-round" (click)="closeAddPopup(fm)">Cancel</button>
+        <button nbButton status="primary" shape="semi-round" hero type="submit">Save</button>
+      </nb-card-footer>
+    </form>
+  </nb-card>
+</div>

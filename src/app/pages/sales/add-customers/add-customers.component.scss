@@ -168,3 +168,39 @@ nb-card-body {
 :host ::ng-deep nb-radio label {
   cursor: pointer;
 }
+
+.payment-terms-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-term-add-btn {
+  min-width: auto;
+  padding: 0.45rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-term-add-btn nb-icon {
+  font-size: 22px;
+}
+
+.phone-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.country-code {
+  min-width: 42px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222b45;
+}
+
+.phone-input {
+  width: 100%;
+}

@@ -1,0 +1,67 @@
+<div class="payment-terms-modal-overlay" *ngIf="open">
+  <nb-card class="payment-terms-modal">
+    <nb-card-header class="payment-terms-modal-header">
+      <span>{{ title }}</span>
+      <button type="button" class="modal-close-btn" (click)="closePopup()" aria-label="Close">
+        ×
+      </button>
+    </nb-card-header>
+
+    <nb-card-body class="payment-terms-modal-body">
+      <table class="payment-terms-table">
+        <thead>
+          <tr>
+            <th>Term Name</th>
+            <th>Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let term of terms" (click)="selectTerm(term.termName)" class="term-row">
+            <td>{{ term.termName }}</td>
+            <td>{{ term.percentage }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="add-new-link" (click)="startAddTerm()">
+        <nb-icon icon="plus-circle"></nb-icon>
+        Add New
+      </button>
+
+      <div class="payment-term-new-row" *ngIf="showAddForm">
+        <div class="row">
+          <div class="col-md-8 mb-10">
+            <input
+              type="text"
+              nbInput
+              fullWidth
+              shape="semi-round"
+              placeholder="Term Name"
+              [(ngModel)]="newTermName"
+              [ngModelOptions]="{standalone: true}"
+            >
+          </div>
+          <div class="col-md-4 mb-10">
+            <input
+              type="text"
+              nbInput
+              fullWidth
+              shape="semi-round"
+              placeholder="Percentage"
+              [(ngModel)]="newTermPercentage"
+              [ngModelOptions]="{standalone: true}"
+            >
+          </div>
+        </div>
+        <div class="payment-term-new-actions">
+          <button type="button" nbButton status="success" size="small" (click)="saveTerm()">Add</button>
+          <button type="button" nbButton status="basic" size="small" (click)="cancelAddTerm()">Cancel</button>
+        </div>
+      </div>
+    </nb-card-body>
+
+    <nb-card-footer class="payment-terms-modal-footer">
+      <button type="button" nbButton status="basic" (click)="closePopup()">Close</button>
+    </nb-card-footer>
+  </nb-card>
+</div>

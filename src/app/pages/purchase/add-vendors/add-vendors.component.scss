@@ -187,6 +187,24 @@ nb-card-body {
   font-size: 22px;
 }
 
+.phone-input-group {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 8px;
+}
+
+.country-code {
+  min-width: 42px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #222b45;
+}
+
+.phone-input {
+  width: 100%;
+}
+
 .payment-terms-modal-overlay {
   position: fixed;
   inset: 0;

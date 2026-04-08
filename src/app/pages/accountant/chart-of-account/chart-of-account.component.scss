@@ -1,0 +1,58 @@
+.small-label {
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.required {
+  color: #d32f2f;
+}
+
+.error-message {
+  color: #d32f2f;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.coa-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.coa-modal {
+  width: 100%;
+  max-width: 900px;
+  max-height: 92vh;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-close-btn {
+  border: 0;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  color: #e53e3e;
+}
+
+.modal-close-btn nb-icon {
+  cursor: pointer;
+}
+
+:host ::ng-deep .coa-modal nb-card-body {
+  overflow: visible;
+}
+.row{
+    padding: 0px 20px;
+}

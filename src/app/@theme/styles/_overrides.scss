@@ -8,4 +8,29 @@
       right: 0.41rem !important;
     }
   }
+
+  @media (max-width: 767px) {
+    nb-tabset .tabset {
+      display: block !important;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+    }
+
+    nb-tabset .tabset .tab {
+      flex: 0 0 auto;
+      min-width: max-content;
+    }
+
+    nb-tabset .tabset .tab a,
+    nb-tabset .tabset .tab .tab-link {
+      white-space: nowrap;
+    }
+
+    nb-tabset[fullwidth] .tabset .tab,
+    nb-tabset.full-width .tabset .tab {
+      flex: 0 0 auto !important;
+    }
+  }
 }

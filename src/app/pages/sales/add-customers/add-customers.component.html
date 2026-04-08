@@ -35,13 +35,13 @@
                             Last Name is required
                         </div>
                     </div>
-                    <div class="col-lg-12 mb-10">
+                    <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Company Name <span
                                 style="color:#d32f2f">*</span></label>
                         <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Company Name"
                             name="company_name" required #company_name="ngModel" [(ngModel)]="model.company_name">
                         <div *ngIf="fm.submitted && company_name.invalid" class="error-message">
-                            Comapny name is required
+                            Company name is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
@@ -56,7 +56,7 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Email <span
                                 style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Invoice No"
+                        <input type="email" nbInput fullWidth shape="semi-round" placeholder="Enter email"
                             name="email" required #email="ngModel" [(ngModel)]="model.email">
                         <div *ngIf="fm.submitted && email.invalid" class="error-message">
                             Email is required
@@ -65,27 +65,41 @@
                     <div class="col-lg-3 mb-10">
                         <label class="small-label" id="label-category">Phone <span
                                 style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Work Phone"
-                            name="work_phone" required #work_phone="ngModel"
-                            [(ngModel)]="model.work_phone">
-                        <div *ngIf="fm.submitted && work_phone.invalid" class="error-message">
+                        <div class="phone-input-group">
+                            <span class="country-code">+91</span>
+                            <input type="tel" nbInput shape="semi-round" class="phone-input" placeholder="Enter Work Phone"
+                                name="work_phone" required minlength="10" maxlength="10" pattern="^[0-9]{10}$"
+                                inputmode="numeric" #work_phone="ngModel" [(ngModel)]="model.work_phone"
+                                (ngModelChange)="onPhoneInputChange('work_phone')">
+                        </div>
+                        <div *ngIf="fm.submitted && work_phone.errors?.required" class="error-message">
                             Work phone is required
+                        </div>
+                        <div *ngIf="fm.submitted && !work_phone.errors?.required && work_phone.invalid" class="error-message">
+                            Enter valid 10 digit phone number
                         </div>
                     </div>
                     <div class="col-lg-3 mb-10">
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Mobile No" style="margin-top: 24px;"
-                            name="mobile_no" required #mobile_no="ngModel"
-                            [(ngModel)]="model.mobile_no">
-                        <div *ngIf="fm.submitted && mobile_no.invalid" class="error-message">
+                        <label class="small-label" id="label-category">Mobile No <span
+                                style="color:#d32f2f">*</span></label>
+                        <div class="phone-input-group">
+                            <span class="country-code">+91</span>
+                            <input type="tel" nbInput shape="semi-round" class="phone-input" placeholder="Enter Mobile No"
+                                name="mobile_no" required minlength="10" maxlength="10" pattern="^[0-9]{10}$"
+                                inputmode="numeric" #mobile_no="ngModel" [(ngModel)]="model.mobile_no"
+                                (ngModelChange)="onPhoneInputChange('mobile_no')">
+                        </div>
+                        <div *ngIf="fm.submitted && mobile_no.errors?.required" class="error-message">
                             Mobile no is required
                         </div>
+                        <div *ngIf="fm.submitted && !mobile_no.errors?.required && mobile_no.invalid" class="error-message">
+                            Enter valid 10 digit mobile number
+                        </div>
                     </div>
-                    <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">Website URL</label>
-                        <input type="text" nbInput fullWidth shape="semi-round"
-                            placeholder="Enter website url" name="website" required
-                            #website="ngModel" [(ngModel)]="model.website">
-                    </div>
+                </div>
+            </nb-tab>
+            <nb-tab tabTitle="Others Details">
+                <div class="row">
                     <div class="col-lg-6">
                         <label class="small-label" id="label-category">Group</label>
                         <nb-select shape="semi-round" placeholder="Select Group" name="group"
@@ -113,6 +127,66 @@
                             GST treatment is required
                         </div>
                     </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Source Of Supply <span
+                        style="color:#d32f2f">*</span></label>
+                        <nb-select shape="semi-round" placeholder="Select State" name="source_of_supply"
+                            required #source_of_supply="ngModel" [(ngModel)]="model.source_of_supply">
+                            <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && source_of_supply.invalid" class="error-message">
+                            Select state.
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">PAN</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter PAN" name="pan" required
+                            #pan="ngModel" [(ngModel)]="model.pan">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">
+                            Tax Preference <span style="color:#d32f2f">*</span>
+                        </label>
+                        <nb-radio-group
+                            name="tax_preference"
+                            [(ngModel)]="model.tax_preference"
+                            (valueChange)="onTaxPreferenceChange($event)"
+                            #tax_preference="ngModel"
+                            required
+                            class="d-flex flex-row"
+                        >
+                            <nb-radio value="Taxable">Taxable</nb-radio>
+                            <nb-radio value="Tax Exempt">Tax Exempt</nb-radio>
+                        </nb-radio-group>
+                        <div *ngIf="fm.submitted && tax_preference.invalid" class="error-message">
+                            Tax Preference is required
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-10" *ngIf="model.tax_preference === 'Tax Exempt'">
+                        <label class="small-label" id="label-category">
+                            Exemption Reason <span style="color:#d32f2f">*</span>
+                        </label>
+                        <input
+                            type="text"
+                            nbInput
+                            fullWidth
+                            shape="semi-round"
+                            placeholder="Enter Exemption Reason"
+                            name="exemption_reason"
+                            [required]="model.tax_preference === 'Tax Exempt'"
+                            #exemption_reason="ngModel"
+                            [(ngModel)]="model.exemption_reason"
+                        >
+                        <div
+                            *ngIf="fm.submitted && model.tax_preference === 'Tax Exempt' && exemption_reason.invalid"
+                            class="error-message"
+                        >
+                            Exemption Reason is required
+                        </div>
+                    </div>
 
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Opening Balance <span
@@ -124,6 +198,66 @@
                             Amount is required
                         </div>
                     </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Payment Terms</label>
+                        <div class="payment-terms-control">
+                            <nb-select shape="semi-round" placeholder="Select Payment Terms" name="payment_terms"
+                                required #payment_terms="ngModel" [(ngModel)]="model.payment_terms" required>
+                                <nb-option *ngFor="let term of paymentTerms" [value]="term.termName">{{ term.termName }}</nb-option>
+                            </nb-select>
+                            <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
+                                (click)="openPaymentTermsPopup()" aria-label="Add payment term">
+                                <nb-icon icon="plus-circle"></nb-icon>
+                            </button>
+                        </div>
+                        <div *ngIf="fm.submitted && payment_terms.invalid" class="error-message">
+                            Payment Terms is required
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Website URL</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter website url" name="website" required
+                            #website="ngModel" [(ngModel)]="model.website">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Department</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter department" name="department"
+                            #department="ngModel" [(ngModel)]="model.department">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Designation</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter designation" name="designation"
+                            #designation="ngModel" [(ngModel)]="model.designation">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Document 1</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter Document 1 Name" name="document_1_name"
+                            #document_1_name="ngModel" [(ngModel)]="model.document_1_name" style="margin-bottom: 8px;">
+                        <input type="file" nbInput fullWidth shape="semi-round"
+                            name="document_1" (change)="onDocumentChange($event, 'document_1')"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    </div>
+
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Document 2</label>
+                        <input type="text" nbInput fullWidth shape="semi-round"
+                            placeholder="Enter Document 2 Name" name="document_2_name"
+                            #document_2_name="ngModel" [(ngModel)]="model.document_2_name" style="margin-bottom: 8px;">
+                        <input type="file" nbInput fullWidth shape="semi-round"
+                            name="document_2" (change)="onDocumentChange($event, 'document_2')"
+                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    </div>
+
+                    
 
                 </div>
             </nb-tab>
@@ -302,3 +436,12 @@
         </nb-card-footer>
     </nb-card>
 </form>
+
+<ngx-payment-terms-popup
+    [open]="showPaymentTermsPopup"
+    [title]="'Configure Payment Terms'"
+    [terms]="paymentTerms"
+    (close)="closePaymentTermsPopup()"
+    (termsChange)="onPaymentTermsChanged($event)"
+    (termSelected)="onPaymentTermSelected($event)"
+></ngx-payment-terms-popup>

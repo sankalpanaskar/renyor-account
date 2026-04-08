@@ -13,6 +13,18 @@ export class AddCustomersComponent implements OnInit {
   isSubmitting: boolean = false;
   stateList : any = [];
   customFields: any[] = [];
+  showPaymentTermsPopup: boolean = false;
+  document1File: File | null = null;
+  document2File: File | null = null;
+  paymentTerms: Array<{ termName: string; days: string | number }> = [
+    { termName: 'Due end of next month', days: 'N/A' },
+    { termName: 'Due end of the month', days: 'N/A' },
+    { termName: 'Due on Receipt', days: 0 },
+    { termName: 'Net 15', days: 15 },
+    { termName: 'Net 30', days: 30 },
+    { termName: 'Net 45', days: 45 },
+    { termName: 'Net 60', days: 60 },
+  ];
 
   constructor(
     private globalService: GlobalService,
@@ -241,10 +253,76 @@ export class AddCustomersComponent implements OnInit {
     // this.fm?.form?.controls?.['shipping_state']?.markAsTouched();
     // this.fm?.form?.controls?.['shipping_pin']?.markAsTouched();
   }
+
+  onTaxPreferenceChange(value: string): void {
+    if (value !== 'Tax Exempt') {
+      this.model.exemption_reason = '';
+    }
+  }
+
+  openPaymentTermsPopup(): void {
+    this.showPaymentTermsPopup = true;
+  }
+
+  closePaymentTermsPopup(): void {
+    this.showPaymentTermsPopup = false;
+  }
+
+  onPaymentTermsChanged(terms: Array<{ termName: string; days: string | number }>): void {
+    this.paymentTerms = terms;
+  }
+
+  onPaymentTermSelected(termName: string): void {
+    this.model.payment_terms = termName;
+    this.showPaymentTermsPopup = false;
+  }
+
+  onPhoneInputChange(field: 'work_phone' | 'mobile_no'): void {
+    const digitsOnly = `${this.model?.[field] ?? ''}`.replace(/\D/g, '').slice(0, 10);
+    this.model[field] = digitsOnly;
+  }
+
+  onDocumentChange(event: Event, field: 'document_1' | 'document_2'): void {
+    const input = event.target as HTMLInputElement;
+    const selectedFile = input?.files && input.files.length > 0 ? input.files[0] : null;
+
+    if (field === 'document_1') {
+      this.document1File = selectedFile;
+      if (!this.model.document_1_name || !`${this.model.document_1_name}`.trim()) {
+        this.model.document_1_name = selectedFile ? selectedFile.name : '';
+      }
+      return;
+    }
+
+    this.document2File = selectedFile;
+    if (!this.model.document_2_name || !`${this.model.document_2_name}`.trim()) {
+      this.model.document_2_name = selectedFile ? selectedFile.name : '';
+    }
+  }
+
+  private appendFormDataValue(formData: FormData, key: string, value: any): void {
+    if (value === undefined || value === null) {
+      formData.append(key, '');
+      return;
+    }
+
+    if (value instanceof File) {
+      formData.append(key, value);
+      return;
+    }
+
+    if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+      return;
+    }
+
+    formData.append(key, `${value}`);
+  }
   
 
   onSubmit(fm: any) {
     if (fm.valid) {
+      this.isSubmitting = true;
       const customFieldNames = this.customFields.map((field: any) => field?.field_name);
       const payload = { ...fm.value };
       const customFieldData: any = {};
@@ -264,10 +342,24 @@ export class AddCustomersComponent implements OnInit {
         payload.custom_field = customFieldData;
       }
 
-      console.log('Form Submitted', payload);
-      this.globalService.addCustomer(payload).subscribe({
+      const formData = new FormData();
+      Object.keys(payload).forEach((key: string) => {
+        this.appendFormDataValue(formData, key, payload[key]);
+      });
+
+      if (this.document1File) {
+        formData.append('document_1', this.document1File, this.document1File.name);
+      }
+
+      if (this.document2File) {
+        formData.append('document_2', this.document2File, this.document2File.name);
+      }
+
+      this.globalService.addCustomer(formData).subscribe({
         next: (res) => {
           this.model = '';
+          this.document1File = null;
+          this.document2File = null;
           fm.resetForm();
           this.toastrService.success(res.message, 'Added');
           this.isSubmitting = false;

@@ -1,0 +1,103 @@
+.payment-terms-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.payment-terms-modal {
+  width: 100%;
+  max-width: 860px;
+  max-height: 92vh;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-terms-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 24px;
+  border-bottom: 1px solid #e5e7ef;
+}
+
+.modal-close-btn {
+  border: 0;
+  background: transparent;
+  font-size: 34px;
+  line-height: 1;
+  cursor: pointer;
+  color: #e53e3e;
+}
+
+.payment-terms-modal-body {
+  padding: 20px 24px;
+  overflow: auto;
+}
+
+.payment-terms-table {
+  width: 100%;
+  border-collapse: collapse;
+  overflow: hidden;
+}
+
+.payment-terms-table th,
+.payment-terms-table td {
+  border: 1px solid #e4e7ef;
+  padding: 12px 16px;
+  text-align: left;
+}
+
+.payment-terms-table th {
+  text-transform: uppercase;
+  color: #6f7283;
+  font-size: 14px;
+}
+
+.payment-terms-table td:last-child,
+.payment-terms-table th:last-child {
+  text-align: right;
+}
+
+.term-row {
+  cursor: pointer;
+}
+
+.term-row:hover {
+  background: #f8faff;
+}
+
+.add-new-link {
+  margin-top: 16px;
+  border: 0;
+  background: transparent;
+  color: #2f6fed;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.payment-term-new-row {
+  margin-top: 14px;
+}
+
+.payment-term-new-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.payment-terms-modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid #e5e7ef;
+}

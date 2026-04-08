@@ -1,0 +1,13 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { NbButtonModule, NbCardModule, NbIconModule, NbInputModule } from '@nebular/theme';
+import { PaymentTermsPopupComponent } from './payment-terms-popup/payment-terms-popup.component';
+import { TdsPopupComponent } from './tds-popup/tds-popup.component';
+
+@NgModule({
+  declarations: [PaymentTermsPopupComponent, TdsPopupComponent],
+  imports: [CommonModule, FormsModule, NbCardModule, NbButtonModule, NbInputModule, NbIconModule],
+  exports: [PaymentTermsPopupComponent, TdsPopupComponent],
+})
+export class SharedModule {}
