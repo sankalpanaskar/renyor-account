@@ -59,6 +59,7 @@ exports.createCustomer = async (req, res) => {
       uploaded_file_name_1,
       uploaded_file_name_2
     );
+    return res.success(200, "Customer created successfully", customers);
 
     return res.success(200, "Customer created successfully", customers);
   } catch (err) {
