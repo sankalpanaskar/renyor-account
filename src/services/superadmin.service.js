@@ -324,6 +324,8 @@ exports.fetchFieldsByTable = async (module_id) => {   // <-- parameter name upda
   }
 };
 
+
+
 // exports.getAll = async () => {
 //   const result = await db.query('SELECT * FROM tenants ORDER BY id');
 //   return result.rows;
