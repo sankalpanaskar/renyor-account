@@ -11,28 +11,15 @@ import { HttpClient } from '@angular/common/http';
 export class AddVendorsComponent implements OnInit {
   model: any = [];
   isSubmitting: boolean = false;
+  showAccountNumber: boolean[] = [];
   stateList : any = [];
   customFields: any[] = [];
   showPaymentTermsPopup: boolean = false;
   document1File: File | null = null;
   document2File: File | null = null;
   showTdsPopup: boolean = false;
-  paymentTerms: Array<{ termName: string; days: string | number }> = [
-    { termName: 'Due end of next month', days: 'N/A' },
-    { termName: 'Due end of the month', days: 'N/A' },
-    { termName: 'Due on Receipt', days: 0 },
-    { termName: 'Net 15', days: 15 },
-    { termName: 'Net 30', days: 30 },
-    { termName: 'Net 45', days: 45 },
-    { termName: 'Net 60', days: 60 },
-  ];
-  tdsTerms: Array<{ termName: string; percentage: string | number }> = [
-    { termName: 'TDS 0%', percentage: 0 },
-    { termName: 'TDS 1%', percentage: 1 },
-    { termName: 'TDS 2%', percentage: 2 },
-    { termName: 'TDS 5%', percentage: 5 },
-    { termName: 'TDS 10%', percentage: 10 },
-  ];
+  paymentTerms: Array<{ termName: string; days: string | number }> = [];
+  tdsTerms: Array<{ termName: string; percentage: string | number }> = [];
 
   constructor(
     private globalService: GlobalService,
@@ -41,8 +28,39 @@ export class AddVendorsComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.model.bank_accounts = [this.getEmptyBankAccount()];
+    this.showAccountNumber = [false];
     this.getState();
     this.getCustomFields();
+    this.getTdsTerms();
+    this.fetchPaymentTerms();
+  }
+
+  private getEmptyBankAccount(): any {
+    return {
+      account_holder_name: '',
+      bank_name: '',
+      account_number: '',
+      re_enter_account_number: '',
+      ifsc: '',
+    };
+  }
+
+  addBankAccount(): void {
+    if (!Array.isArray(this.model.bank_accounts)) {
+      this.model.bank_accounts = [];
+    }
+    this.model.bank_accounts.push(this.getEmptyBankAccount());
+    this.showAccountNumber.push(false);
+  }
+
+  removeBankAccount(index: number): void {
+    if (!Array.isArray(this.model.bank_accounts) || this.model.bank_accounts.length <= 1) {
+      return;
+    }
+
+    this.model.bank_accounts.splice(index, 1);
+    this.showAccountNumber.splice(index, 1);
   }
 
   openPaymentTermsPopup(): void {
@@ -90,6 +108,55 @@ export class AddVendorsComponent implements OnInit {
         this.isSubmitting = false;
       }
     })
+  }
+
+  fetchPaymentTerms(): void {
+    this.globalService.getPaymentTerms().subscribe({
+      next: (res: any) => {
+        const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+
+        this.paymentTerms = rows
+          .map((row: any) => {
+            const days = row?.days ?? row?.num_of_days ?? row?.day ?? 'N/A';
+            const termName = `${row?.term_name ?? row?.name ?? row?.payment_term ?? ''}`.trim();
+
+            return {
+              termName,
+              days: `${days}`.trim(),
+            };
+          })
+          .filter((term: any) => !!term.termName);
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch payment terms:', error);
+        this.paymentTerms = [];
+      },
+    });
+  }
+
+  getTdsTerms(): void {
+    this.globalService.getTDS().subscribe({
+      next: (res: any) => {
+        const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+
+        this.tdsTerms = rows
+          .map((row: any) => {
+            const percentage = row?.percentage ?? row?.tds_percentage ?? row?.rate ?? row?.value ?? '';
+            const normalizedPercentage = `${percentage}`.trim();
+            const termName = `${row?.term_name ?? row?.name ?? row?.tds_name ?? `TDS ${normalizedPercentage}%`}`.trim();
+
+            return {
+              termName,
+              percentage: normalizedPercentage,
+            };
+          })
+          .filter((term: any) => !!term.termName);
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch TDS terms:', error);
+        this.tdsTerms = [];
+      },
+    });
   }
 
   getCustomFields(){
@@ -301,6 +368,50 @@ export class AddVendorsComponent implements OnInit {
     this.model[field] = digitsOnly;
   }
 
+  onAccountNumberInputChange(index: number, field: 'account_number' | 're_enter_account_number'): void {
+    const digitsOnly = `${this.model?.bank_accounts?.[index]?.[field] ?? ''}`.replace(/\D/g, '');
+    this.model.bank_accounts[index][field] = digitsOnly;
+  }
+
+  allowOnlyDigits(event: KeyboardEvent): void {
+    const allowedKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'ArrowLeft', 'ArrowRight', 'Home', 'End'];
+
+    if (allowedKeys.includes(event.key)) {
+      return;
+    }
+
+    if (!/^[0-9]$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  onAccountNumberPaste(event: ClipboardEvent, index: number, field: 'account_number' | 're_enter_account_number'): void {
+    event.preventDefault();
+    const pasted = event.clipboardData?.getData('text') ?? '';
+    const digitsOnly = pasted.replace(/\D/g, '');
+    this.model.bank_accounts[index][field] = `${this.model?.bank_accounts?.[index]?.[field] ?? ''}${digitsOnly}`;
+  }
+
+  toggleAccountNumberVisibility(index: number): void {
+    this.showAccountNumber[index] = !this.showAccountNumber[index];
+  }
+
+  hasAccountNumberMismatch(index: number): boolean {
+    const accountNumber = `${this.model?.bank_accounts?.[index]?.account_number ?? ''}`;
+    const reEnterAccountNumber = `${this.model?.bank_accounts?.[index]?.re_enter_account_number ?? ''}`;
+
+    if (!accountNumber || !reEnterAccountNumber) {
+      return false;
+    }
+
+    return accountNumber !== reEnterAccountNumber;
+  }
+
+  hasAnyAccountNumberMismatch(): boolean {
+    return Array.isArray(this.model?.bank_accounts)
+      && this.model.bank_accounts.some((_: any, index: number) => this.hasAccountNumberMismatch(index));
+  }
+
   onDocumentChange(event: Event, field: 'document_1' | 'document_2'): void {
     const input = event.target as HTMLInputElement;
     const selectedFile = input?.files && input.files.length > 0 ? input.files[0] : null;
@@ -340,11 +451,30 @@ export class AddVendorsComponent implements OnInit {
   
 
   onSubmit(fm: any) {
+    if (this.hasAnyAccountNumberMismatch()) {
+      this.toastrService.danger('Re-enter Account Number must match Account Number.', 'Validation Failed');
+      return;
+    }
+
     if (fm.valid) {
       this.isSubmitting = true;
       const customFieldNames = this.customFields.map((field: any) => field?.field_name);
       const payload = { ...fm.value };
       const customFieldData: any = {};
+
+      payload.bank_accounts = (this.model.bank_accounts || []).map((bank: any) => ({
+        account_holder_name: bank?.account_holder_name ?? '',
+        bank_name: bank?.bank_name ?? '',
+        account_number: bank?.account_number ?? '',
+        re_enter_account_number: bank?.re_enter_account_number ?? '',
+        ifsc: bank?.ifsc ?? '',
+      }));
+
+      Object.keys(payload).forEach((key: string) => {
+        if (/^(account_holder_name|bank_name|account_number|re_enter_account_number|ifsc)_\d+$/.test(key)) {
+          delete payload[key];
+        }
+      });
 
       payload.module_id = 34;
 
@@ -376,10 +506,11 @@ export class AddVendorsComponent implements OnInit {
 
       this.globalService.addCustomer(formData).subscribe({
         next: (res) => {
-          this.model = '';
+          this.model = { bank_accounts: [this.getEmptyBankAccount()] };
+          this.showAccountNumber = [false];
           this.document1File = null;
           this.document2File = null;
-          fm.resetForm();
+          fm.resetForm(this.model);
           this.toastrService.success(res.message, 'Added');
           this.isSubmitting = false;
         },

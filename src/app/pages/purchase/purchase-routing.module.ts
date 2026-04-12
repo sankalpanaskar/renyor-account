@@ -4,8 +4,6 @@ import { PurchaseComponent } from './purchase.component';
 import { AddVendorsComponent } from './add-vendors/add-vendors.component';
 import { authGuard } from '../../auth/auth.guard';
 import { VendorsListComponent } from './vendors-list/vendors-list.component';
-import { AddItemComponent } from './add-item/add-item.component';
-import { ItemListComponent } from './item-list/item-list.component';
 
 const routes: Routes = [
   {
@@ -20,16 +18,6 @@ const routes: Routes = [
       {
         path:'customer-list',
         component:VendorsListComponent,
-        canActivate: [authGuard]
-      },
-      {
-        path:'add-item',
-        component:AddItemComponent,
-        canActivate: [authGuard]
-      },
-      {
-        path:'item-list',
-        component:ItemListComponent,
         canActivate: [authGuard]
       }
     ]

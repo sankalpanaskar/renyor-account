@@ -19,7 +19,31 @@ export class PagesComponent implements OnInit, OnDestroy {
 
   menu: any[] = [];
   isSubmitting: boolean = false;
-  private subscription: Subscription;
+  private subscription?: Subscription;
+
+  // Manual grouping for API-driven menus. Add more groups or parent menu titles here.
+  private dynamicMenuGroups: Array<{ groupTitle: string; parentTitles: string[]; linkPrefixes: string[] }> = [
+    {
+      groupTitle: 'Items',
+      parentTitles: ['Items'],
+      linkPrefixes: ['/pages/items/'],
+    },
+    {
+      groupTitle: 'Sales',
+      parentTitles: ['Customers'],
+      linkPrefixes: ['/pages/sales/'],
+    },
+    {
+      groupTitle: 'Purchases',
+      parentTitles: ['Vendors'],
+      linkPrefixes: ['/pages/purchase/'],
+    },
+    {
+      groupTitle: 'Accountant',
+      parentTitles: ['Chart Of Account'],
+      linkPrefixes: ['/pages/accountant/'],
+    },
+  ];
 
   constructor(
     private globalService: GlobalService,
@@ -67,16 +91,17 @@ export class PagesComponent implements OnInit, OnDestroy {
           
           // Convert API menu structure to NbMenuItem format
           const dynamicMenuItems = this.convertMenuStructure(res.data);
+          const groupedDynamicMenuItems = this.applyManualDynamicGroups(dynamicMenuItems);
           
           // Find FEATURES group and insert after it
           const featuresIndex = this.menu.findIndex(item => item.title === 'FEATURES' && item.group === true);
           
           if (featuresIndex !== -1) {
             // Insert after FEATURES group
-            this.menu.splice(featuresIndex + 1, 0, ...dynamicMenuItems);
+            this.menu.splice(featuresIndex + 1, 0, ...groupedDynamicMenuItems);
           } else {
             // If FEATURES group not found, insert after Dashboard (index 1)
-            this.menu.splice(1, 0, ...dynamicMenuItems);
+            this.menu.splice(1, 0, ...groupedDynamicMenuItems);
           }
           
           console.log('📋 Final menu with dynamic items:', this.menu);
@@ -128,6 +153,62 @@ export class PagesComponent implements OnInit, OnDestroy {
     });
 
     return nbMenuItems;
+  }
+
+  private applyManualDynamicGroups(dynamicItems: any[]): any[] {
+    const remainingItems = [...dynamicItems];
+    const groupedItems: any[] = [];
+
+    this.dynamicMenuGroups.forEach((groupConfig: { groupTitle: string; parentTitles: string[]; linkPrefixes: string[] }) => {
+      const groupMenus: any[] = [];
+
+      for (let index = remainingItems.length - 1; index >= 0; index--) {
+        const item = remainingItems[index];
+        if (this.matchesGroup(item, groupConfig)) {
+          groupMenus.unshift(item);
+          remainingItems.splice(index, 1);
+        }
+      }
+
+      if (groupMenus.length > 0) {
+        groupedItems.push({ title: groupConfig.groupTitle, group: true }, ...groupMenus);
+      }
+    });
+
+    return [...groupedItems, ...remainingItems];
+  }
+
+  private normalizeTitle(value: any): string {
+    return `${value || ''}`.trim().toLowerCase();
+  }
+
+  private matchesGroup(item: any, groupConfig: { parentTitles: string[]; linkPrefixes: string[] }): boolean {
+    const itemTitle = this.normalizeTitle(item?.title);
+
+    const titleMatched = groupConfig.parentTitles.some((title: string) => {
+      const normalizedTitle = this.normalizeTitle(title);
+      return itemTitle === normalizedTitle || itemTitle.includes(normalizedTitle) || normalizedTitle.includes(itemTitle);
+    });
+
+    if (titleMatched) {
+      return true;
+    }
+
+    const links: string[] = [];
+    if (item?.link) {
+      links.push(`${item.link}`);
+    }
+    if (Array.isArray(item?.children)) {
+      item.children.forEach((child: any) => {
+        if (child?.link) {
+          links.push(`${child.link}`);
+        }
+      });
+    }
+
+    return groupConfig.linkPrefixes.some((prefix: string) =>
+      links.some((link: string) => `${link}`.toLowerCase().startsWith(prefix.toLowerCase()))
+    );
   }
 
   private extractChildren(item: any): any[] {

@@ -26,8 +26,9 @@
           <div class="col-lg-6 mb-10">
             <label class="small-label">Account Head <span class="required">*</span></label>
             <nb-select fullWidth shape="semi-round" placeholder="Select Account Head"
-              name="account_head" required #account_head="ngModel" [(ngModel)]="model.account_head">
-              <nb-option *ngFor="let head of accountHeads" [value]="head">{{ head }}</nb-option>
+              name="account_head" required #account_head="ngModel" [(ngModel)]="model.account_head"
+              (ngModelChange)="onAccountHeadChange()">
+              <nb-option *ngFor="let head of accountHeads" [value]="head.id">{{ head.group_name }}</nb-option>
             </nb-select>
             <div *ngIf="fm.submitted && account_head.invalid" class="error-message">
               Account Head is required
@@ -38,7 +39,7 @@
             <label class="small-label">Account Type <span class="required">*</span></label>
             <nb-select fullWidth shape="semi-round" placeholder="Select Account Type"
               name="account_type" required #account_type="ngModel" [(ngModel)]="model.account_type">
-              <nb-option *ngFor="let type of accountTypes" [value]="type">{{ type }}</nb-option>
+              <nb-option *ngFor="let type of accountTypes" [value]="type.id">{{ type.group_name }}</nb-option>
             </nb-select>
             <div *ngIf="fm.submitted && account_type.invalid" class="error-message">
               Account Type is required
@@ -47,10 +48,12 @@
 
           <div class="col-lg-6 mb-10">
             <label class="small-label">Account Name <span class="required">*</span></label>
-            <nb-select fullWidth shape="semi-round" placeholder="Select Account Name"
-              name="account_name" required #account_name="ngModel" [(ngModel)]="model.account_name">
-              <nb-option *ngFor="let name of accountNames" [value]="name">{{ name }}</nb-option>
-            </nb-select>
+            <input nbInput fullWidth shape="semi-round" placeholder="Search or enter Account Name"
+              name="account_name" required #account_name="ngModel" [(ngModel)]="model.account_name"
+              list="account-name-list" autocomplete="off">
+            <datalist id="account-name-list">
+              <option *ngFor="let name of accountNames" [value]="name"></option>
+            </datalist>
             <div *ngIf="fm.submitted && account_name.invalid" class="error-message">
               Account Name is required
             </div>

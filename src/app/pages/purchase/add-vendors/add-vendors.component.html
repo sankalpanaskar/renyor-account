@@ -142,7 +142,9 @@
                         <label class="small-label" id="label-category">MSME/Udyam Registration Type</label>
                         <nb-select shape="semi-round" placeholder="Select Group" name="msme_registration_type"
                             required #msme_registration_type="ngModel" [(ngModel)]="model.msme_registration_type" required>
-                            <nb-option value="Group 1">Group 1</nb-option>
+                            <nb-option value="Micro">Micro</nb-option>
+                            <nb-option value="Small">Small</nb-option>
+                            <nb-option value="Medium">Medium</nb-option>
                         </nb-select>
                         <div *ngIf="fm.submitted && msme_registration_type.invalid" class="error-message">
                             MSME/Udyam Registration Type is required
@@ -188,7 +190,7 @@
                         <div class="payment-terms-control">
                             <nb-select shape="semi-round" placeholder="Select TDS" name="tds"
                                 required #tds="ngModel" [(ngModel)]="model.tds" required>
-                                <nb-option *ngFor="let term of tdsTerms" [value]="term.termName">{{ term.termName }}</nb-option>
+                                <nb-option *ngFor="let term of tdsTerms" [value]="term.termName">{{ term.termName }} [{{term.percentage}}%]</nb-option>
                             </nb-select>
                             <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
                                 (click)="openTdsPopup()" aria-label="Add tds term">
@@ -238,6 +240,95 @@
                         <input type="file" nbInput fullWidth shape="semi-round"
                             name="document_2" (change)="onDocumentChange($event, 'document_2')"
                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    </div>
+                </div>
+            </nb-tab>
+            <nb-tab tabTitle="Bank Details">
+                <div class="row">
+                    <div class="col-12 mb-10 bank-section-head">
+                        <button type="button" nbButton status="primary" size="small" (click)="addBankAccount()">
+                            Add New Bank
+                        </button>
+                    </div>
+
+                    <div class="col-12" *ngFor="let bank of model.bank_accounts; let i = index">
+                        <div class="bank-account-block mb-10">
+                            <div class="bank-account-header">
+                                <h6 class="bank-account-title">Bank Account {{ i + 1 }}</h6>
+                                <button *ngIf="model.bank_accounts.length > 1" type="button" nbButton status="danger" size="tiny" outline (click)="removeBankAccount(i)">
+                                    Remove
+                                </button>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-lg-6 mb-10">
+                                    <label class="small-label" id="label-category">Account Holder Name <span
+                                            style="color:#d32f2f">*</span></label>
+                                    <input type="text" nbInput fullWidth shape="semi-round"
+                                        placeholder="Enter Account Holder Name" [name]="'account_holder_name_' + i" required
+                                        #account_holder_name="ngModel" [(ngModel)]="bank.account_holder_name">
+                                    <div *ngIf="fm.submitted && account_holder_name.invalid" class="error-message">
+                                        Account Holder Name is required
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-10">
+                                    <label class="small-label" id="label-category">Bank Name <span
+                                            style="color:#d32f2f">*</span></label>
+                                    <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Bank Name" [name]="'bank_name_' + i" required
+                                        #bank_name="ngModel" [(ngModel)]="bank.bank_name">
+                                    <div *ngIf="fm.submitted && bank_name.invalid" class="error-message">
+                                        Bank Name is required
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-10">
+                                    <label class="small-label" id="label-category">Account Number <span
+                                            style="color:#d32f2f">*</span></label>
+                                    <div class="account-number-input-wrapper">
+                                        <input [type]="showAccountNumber[i] ? 'text' : 'password'" nbInput fullWidth shape="semi-round" placeholder="Enter Account Number"
+                                            [name]="'account_number_' + i" required #account_number="ngModel" [(ngModel)]="bank.account_number"
+                                            pattern="^[0-9]+$" inputmode="numeric" (ngModelChange)="onAccountNumberInputChange(i, 'account_number')"
+                                            (keydown)="allowOnlyDigits($event)" (paste)="onAccountNumberPaste($event, i, 'account_number')"
+                                            autocomplete="new-password">
+                                        <button type="button" class="account-number-toggle" (click)="toggleAccountNumberVisibility(i)" aria-label="Toggle account number visibility">
+                                            <nb-icon [icon]="showAccountNumber[i] ? 'eye-off' : 'eye'"></nb-icon>
+                                        </button>
+                                    </div>
+                                    <div *ngIf="fm.submitted && account_number.errors?.required" class="error-message">
+                                        Account Number is required
+                                    </div>
+                                    <div *ngIf="fm.submitted && !account_number.errors?.required && account_number.invalid" class="error-message">
+                                        Account Number should contain digits only
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-10">
+                                    <label class="small-label" id="label-category">Re-enter Account Number <span
+                                            style="color:#d32f2f">*</span></label>
+                                    <input type="text" nbInput fullWidth shape="semi-round" placeholder="Re-enter Account Number"
+                                        [name]="'re_enter_account_number_' + i" required #re_enter_account_number="ngModel" [(ngModel)]="bank.re_enter_account_number"
+                                        pattern="^[0-9]+$" inputmode="numeric" (ngModelChange)="onAccountNumberInputChange(i, 're_enter_account_number')"
+                                        (keydown)="allowOnlyDigits($event)" (paste)="onAccountNumberPaste($event, i, 're_enter_account_number')"
+                                        autocomplete="new-password">
+                                    <div *ngIf="fm.submitted && re_enter_account_number.errors?.required" class="error-message">
+                                        Re-enter Account Number is required
+                                    </div>
+                                    <div *ngIf="fm.submitted && !re_enter_account_number.errors?.required && re_enter_account_number.invalid" class="error-message">
+                                        Re-enter Account Number should contain digits only
+                                    </div>
+                                    <div *ngIf="(re_enter_account_number.touched || fm.submitted) && !re_enter_account_number.errors?.required && !re_enter_account_number.invalid && hasAccountNumberMismatch(i)" class="error-message">
+                                        Re-enter Account Number must match Account Number
+                                    </div>
+                                </div>
+                                <div class="col-lg-6 mb-10">
+                                    <label class="small-label" id="label-category">IFSC <span
+                                            style="color:#d32f2f">*</span></label>
+                                    <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter IFSC"
+                                        [name]="'ifsc_' + i" required #ifsc="ngModel" [(ngModel)]="bank.ifsc">
+                                    <div *ngIf="fm.submitted && ifsc.invalid" class="error-message">
+                                        IFSC is required
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </nb-tab>

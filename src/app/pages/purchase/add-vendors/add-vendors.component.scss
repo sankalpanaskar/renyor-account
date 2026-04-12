@@ -205,6 +205,59 @@ nb-card-body {
   width: 100%;
 }
 
+.account-number-input-wrapper {
+  position: relative;
+}
+
+.account-number-input-wrapper input {
+  padding-right: 42px;
+}
+
+.account-number-toggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  color: #8f9bb3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.account-number-toggle nb-icon {
+  font-size: 18px;
+}
+
+.bank-section-head {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bank-account-block {
+  border: 1px solid #e4e9f2;
+  border-radius: 8px;
+  padding: 12px;
+  background: #fafbff;
+}
+
+.bank-account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.bank-account-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2e3a59;
+}
+
 .payment-terms-modal-overlay {
   position: fixed;
   inset: 0;

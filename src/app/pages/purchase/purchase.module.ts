@@ -10,8 +10,6 @@ import { NbAccordionModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDa
 import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { VendorsButtonComponent } from './vendors-list/vendors-btn.component';
-import { AddItemComponent } from './add-item/add-item.component';
-import { ItemListComponent } from './item-list/item-list.component';
 import { SharedModule } from '../shared/shared.module';
 
 
@@ -20,9 +18,7 @@ import { SharedModule } from '../shared/shared.module';
     PurchaseComponent,
     AddVendorsComponent,
     VendorsListComponent,
-    VendorsButtonComponent,
-    AddItemComponent,
-    ItemListComponent
+    VendorsButtonComponent
   ],
   imports: [
     CommonModule,

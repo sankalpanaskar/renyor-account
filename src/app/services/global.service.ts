@@ -67,7 +67,7 @@ export class GlobalService {
     private roleUrl = environment.apiBaseUrl+ 'api' + '/roles';
     private tenantsUrl = environment.apiBaseUrl+ 'api' + '/tenants';
     private usersUrl = environment.apiBaseUrl+ 'api' + '/users';
-    private customerUrl = environment.apiBaseUrl+ 'api' + '/customer';
+    private salesUrl = environment.apiBaseUrl+ 'api' + '/sales';
     
     // constructor(private http: HttpClient) {}
     
@@ -148,11 +148,27 @@ export class GlobalService {
     }
 
     public addCustomer(data:any): Observable<any> {
-      return this.http.post(`${this.customerUrl}/create-customer`,data);
+      return this.http.post(`${this.salesUrl}/create-customer`,data);
     }
 
     public geCompanyListByTenant(moduleId?: number): Observable<any> {
-      return this.http.get(`${this.customerUrl}/fetch-customers?module_id=${moduleId}`);
+      return this.http.get(`${this.salesUrl}/fetch-customers?module_id=${moduleId}`);
+    }
+
+    public getAccountHeadType(): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-chartofaccounts-head-type`);
+    }
+
+    public addChartOfAccount(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-chartofaccounts`,data);
+    }
+
+    public getTDS(): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-tds`);
+    }
+
+    public getPaymentTerms(): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-payment-terms`);
     }
   
 }
