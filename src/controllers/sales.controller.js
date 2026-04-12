@@ -85,13 +85,13 @@ exports.getchartofaccountsHeadType = async (req, res) => {
   }
 };
 
-exports.createchartofaccountsName = async (req, res) => {
+exports.createchartofaccounts = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
     
     console.log(req.body);
-    const chartOfAccountsName = await sales.createchartofaccountsName(req.body,tenant_id,user_id);
+    const chartOfAccountsName = await sales.createchartofaccounts(req.body,tenant_id,user_id);
 
     return res.success(
       200,

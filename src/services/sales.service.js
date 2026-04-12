@@ -458,7 +458,7 @@ exports.getchartofaccountsHeadType = async (req, res) => {
 };
 
 
-exports.createchartofaccountsName = async (data, tenant_id, user_id) => {
+exports.createchartofaccounts = async (data, tenant_id, user_id) => {
   const connection = await db.getConnection();
 
   try {

@@ -26,7 +26,7 @@ router.post(
 router.get('/fetch-customers', auth, salesController.fetchCustomers);
 //router.post('/create-customer', auth, upload.none(),salesController.createCustomer);
 router.get('/fetch-chartofaccounts-head-type', auth, salesController.getchartofaccountsHeadType);
-router.post('/create-chartofaccounts-name', auth, upload.none(),salesController.createchartofaccountsName);
+router.post('/create-chartofaccounts', auth, upload.none(),salesController.createchartofaccounts);
 
 
 module.exports = router;
