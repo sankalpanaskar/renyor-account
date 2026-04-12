@@ -479,7 +479,7 @@ exports.fetchPaymentTerms = async (tenant_id) => {
 
    
 
-    return rows[0];
+    return rows;
   
 };
 
