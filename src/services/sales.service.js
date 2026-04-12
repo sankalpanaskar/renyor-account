@@ -429,14 +429,7 @@ exports.createCustomer = async (
 
 
 
-function buildTree(data, parentId = null) {
-  return data
-    .filter(item => item.parent_id === parentId)
-    .map(item => ({
-      ...item,
-      children: buildTree(data, item.id)
-    }));
-}
+
 
 exports.getchartofaccountsHeadType = async (req, res) => {
   try {
@@ -444,6 +437,25 @@ exports.getchartofaccountsHeadType = async (req, res) => {
     const [rows] = await db.query(`
     SELECT id, group_name, parent_id, status
     FROM chartofaccounts_head_type
+    WHERE status = 1
+    ORDER BY id
+  `);
+    //const groups = await exports.fetchGroups();
+    //const tree = buildTree(rows, null); // root = NULL
+
+    return rows
+
+  } catch (error) {
+    
+  }
+};
+
+exports.fetchTds = async (req, res) => {
+  try {
+
+    const [rows] = await db.query(`
+    SELECT *
+    FROM tds
     WHERE status = 1
     ORDER BY id
   `);

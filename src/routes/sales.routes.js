@@ -28,5 +28,7 @@ router.get('/fetch-customers', auth, salesController.fetchCustomers);
 router.get('/fetch-chartofaccounts-head-type', auth, salesController.getchartofaccountsHeadType);
 router.post('/create-chartofaccounts', auth, upload.none(),salesController.createchartofaccounts);
 
+router.get('/fetch-tds', auth, salesController.fetchTds);
+
 
 module.exports = router;

@@ -85,6 +85,24 @@ exports.getchartofaccountsHeadType = async (req, res) => {
   }
 };
 
+exports.fetchTds = async (req, res) => {
+  try {
+    
+    const tds = await sales.fetchTds();
+
+    return res.success(
+      200,
+      "TDS fetched successfully",
+      tds
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch TDS"
+    );
+  }
+};
+
 exports.createchartofaccounts = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
