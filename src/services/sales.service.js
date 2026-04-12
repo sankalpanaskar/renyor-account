@@ -448,9 +448,9 @@ exports.getchartofaccountsHeadType = async (req, res) => {
     ORDER BY id
   `);
     //const groups = await exports.fetchGroups();
-    const tree = buildTree(rows, null); // root = NULL
+    //const tree = buildTree(rows, null); // root = NULL
 
-    return tree
+    return rows
 
   } catch (error) {
     
