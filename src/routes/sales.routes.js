@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 const multer = require('multer');
 const upload = multer();
 
-const uploadFile = require('../middleware/upload');
+const createUpload = require('../middleware/upload');
 
 router.post(
   '/create-customer',
