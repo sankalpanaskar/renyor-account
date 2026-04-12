@@ -457,6 +457,7 @@ exports.getchartofaccountsHeadType = async (req, res) => {
   }
 };
 
+
 exports.createchartofaccountsName = async (data, tenant_id, user_id) => {
   const connection = await db.getConnection();
 
@@ -465,33 +466,62 @@ exports.createchartofaccountsName = async (data, tenant_id, user_id) => {
 
     const {
       account_name,
-      chartofaccounts_head_type_id,custom_field
+      account_item,
+      chartofaccounts_head_type_id,
+      custom_field,
+      module_id, // make sure this comes from data
     } = data;
 
-    const [result] = await connection.query(
-      `INSERT INTO chartofaccounts_name (
-        account_name,
-        chartofaccounts_head_type_id,
-        tenant_id,
-        user_id
-      ) VALUES (?, ?, ?, ?)`,
-      [
-        account_name,
-        chartofaccounts_head_type_id,
-        tenant_id,
-        user_id,
-      ]
+    // Check if account_name already exists for this tenant
+    const [existingRows] = await connection.query(
+      `SELECT * 
+       FROM chartofaccounts_name 
+       WHERE account_name = ? AND tenant_id = ?
+       LIMIT 1`,
+      [account_name, tenant_id]
     );
 
-    const [rows] = await connection.query(
-      `SELECT * FROM chartofaccounts_name WHERE id = ?`,
-      [result.insertId]
-    );
+    let recordId;
 
-    if (custom_field) {
+    if (existingRows.length > 0) {
+      // If present, update account_item
+      recordId = existingRows[0].id;
+
+      await connection.query(
+        `UPDATE chartofaccounts_name
+         SET account_item = ?,
+         WHERE id = ?`,
+        [account_item, recordId]
+      );
+    } else {
+      // If not present, insert new row
+      const [result] = await connection.query(
+        `INSERT INTO chartofaccounts_name (
+          account_name,
+          account_item,
+          chartofaccounts_head_type_id,
+          tenant_id,
+          user_id
+        ) VALUES (?, ?, ?, ?, ?)`,
+        [
+          account_name,
+          account_item,
+          chartofaccounts_head_type_id,
+          tenant_id,
+          user_id,
+        ]
+      );
+
+      recordId = result.insertId;
+    }
+
+    // Handle custom fields
+    if (custom_field && module_id) {
       for (const key in custom_field) {
         const [field] = await connection.query(
-          `SELECT id FROM custom_fields WHERE field_name = ? AND module_id = ?`,
+          `SELECT id 
+           FROM custom_fields 
+           WHERE field_name = ? AND module_id = ?`,
           [key, module_id]
         );
 
@@ -499,18 +529,29 @@ exports.createchartofaccountsName = async (data, tenant_id, user_id) => {
           const fieldId = field[0].id;
           const value = custom_field[key];
 
+          // optional: delete old value first if only one value per field is allowed
+          await connection.query(
+            `DELETE FROM custom_field_values
+             WHERE module_id = ? AND tenant_id = ? AND record_id = ? AND field_id = ?`,
+            [module_id, tenant_id, recordId, fieldId]
+          );
+
           await connection.query(
             `INSERT INTO custom_field_values
              (module_id, tenant_id, record_id, field_id, field_value)
              VALUES (?, ?, ?, ?, ?)`,
-            [module_id, tenant_id, result.insertId, fieldId, value]
+            [module_id, tenant_id, recordId, fieldId, value]
           );
         }
       }
     }
 
-    await connection.commit();
+    const [rows] = await connection.query(
+      `SELECT * FROM chartofaccounts_name WHERE id = ?`,
+      [recordId]
+    );
 
+    await connection.commit();
     return rows[0];
   } catch (error) {
     await connection.rollback();
@@ -519,7 +560,6 @@ exports.createchartofaccountsName = async (data, tenant_id, user_id) => {
     connection.release();
   }
 };
-
 
 
 
