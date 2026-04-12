@@ -103,6 +103,24 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
+exports.fetchPaymentTerms = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const paymentTerms = await sales.fetchPaymentTerms(tenant_id);
+
+    return res.success(
+      200,
+      "Payment Terms fetched successfully",
+      paymentTerms
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch TDS"
+    );
+  }
+};
+
 exports.createchartofaccounts = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;

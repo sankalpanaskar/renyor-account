@@ -30,5 +30,7 @@ router.post('/create-chartofaccounts', auth, upload.none(),salesController.creat
 
 router.get('/fetch-tds', auth, salesController.fetchTds);
 
+router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
+
 
 module.exports = router;

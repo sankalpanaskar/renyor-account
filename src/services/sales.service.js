@@ -469,6 +469,24 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
+exports.fetchPaymentTerms = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+
+   const [paymentTerms] = await db.query(
+    "SELECT * FROM payment_terms WHERE tenant_id = ? ORDER BY id DESC",
+    [tenant_id]
+  );
+    //const groups = await exports.fetchGroups();
+    //const tree = buildTree(rows, null); // root = NULL
+
+    return rows
+
+  } catch (error) {
+    
+  }
+};
+
 
 exports.createchartofaccounts = async (data, tenant_id, user_id) => {
   const connection = await db.getConnection();
