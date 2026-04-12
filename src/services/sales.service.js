@@ -469,24 +469,21 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
-exports.fetchPaymentTerms = async (req, res) => {
-  try {
-    const tenant_id = req.user.tenant_id;
-    return tenant_id;
 
-   const [paymentTerms] = await db.query(
-    "SELECT * FROM payment_terms WHERE tenant_id = ? ORDER BY id DESC",
-    [tenant_id]
-  );
-    //const groups = await exports.fetchGroups();
-    //const tree = buildTree(rows, null); // root = NULL
+exports.fetchPaymentTerms = async (tenant_id) => {
+ 
+    const [rows] = await db.query(
+      "SELECT * FROM payment_terms WHERE tenant_id = ? ORDER BY id DESC",
+      [tenant_id]
+    );
 
-    return rows
+   
 
-  } catch (error) {
-    
-  }
+    return rows[0];
+  
 };
+
+
 
 
 exports.createchartofaccounts = async (data, tenant_id, user_id) => {
