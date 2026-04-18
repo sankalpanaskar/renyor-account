@@ -32,8 +32,41 @@ export class AddVendorsComponent implements OnInit {
     this.showAccountNumber = [false];
     this.getState();
     this.getCustomFields();
-    this.getTdsTerms();
+    this.fetchTdsTerms();
     this.fetchPaymentTerms();
+  }
+
+  fetchTdsTerms(): void {
+    this.globalService.getTDS().subscribe({
+      next: (res: any) => {
+        this.tdsTerms = Array.isArray(res?.data)
+          ? res.data.map((item: any) => ({
+              id: item.id,
+              name: item.name + ' [' + item.percentage + '%]',
+              percentage: item.percentage
+            }))
+          : [];
+      },
+      error: () => {
+        this.tdsTerms = [];
+      }
+    });
+  }
+
+  fetchPaymentTerms(): void {
+    this.globalService.getPaymentTerms().subscribe({
+      next: (res: any) => {
+        this.paymentTerms = Array.isArray(res?.data)
+          ? res.data.map((item: any) => ({
+              termName: item.term_name,
+              days: item.no_of_days
+            }))
+          : [];
+      },
+      error: () => {
+        this.paymentTerms = [];
+      }
+    });
   }
 
   private getEmptyBankAccount(): any {
@@ -108,55 +141,6 @@ export class AddVendorsComponent implements OnInit {
         this.isSubmitting = false;
       }
     })
-  }
-
-  fetchPaymentTerms(): void {
-    this.globalService.getPaymentTerms().subscribe({
-      next: (res: any) => {
-        const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-
-        this.paymentTerms = rows
-          .map((row: any) => {
-            const days = row?.days ?? row?.num_of_days ?? row?.day ?? 'N/A';
-            const termName = `${row?.term_name ?? row?.name ?? row?.payment_term ?? ''}`.trim();
-
-            return {
-              termName,
-              days: `${days}`.trim(),
-            };
-          })
-          .filter((term: any) => !!term.termName);
-      },
-      error: (error: any) => {
-        console.error('Failed to fetch payment terms:', error);
-        this.paymentTerms = [];
-      },
-    });
-  }
-
-  getTdsTerms(): void {
-    this.globalService.getTDS().subscribe({
-      next: (res: any) => {
-        const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
-
-        this.tdsTerms = rows
-          .map((row: any) => {
-            const percentage = row?.percentage ?? row?.tds_percentage ?? row?.rate ?? row?.value ?? '';
-            const normalizedPercentage = `${percentage}`.trim();
-            const termName = `${row?.term_name ?? row?.name ?? row?.tds_name ?? `TDS ${normalizedPercentage}%`}`.trim();
-
-            return {
-              termName,
-              percentage: normalizedPercentage,
-            };
-          })
-          .filter((term: any) => !!term.termName);
-      },
-      error: (error: any) => {
-        console.error('Failed to fetch TDS terms:', error);
-        this.tdsTerms = [];
-      },
-    });
   }
 
   getCustomFields(){

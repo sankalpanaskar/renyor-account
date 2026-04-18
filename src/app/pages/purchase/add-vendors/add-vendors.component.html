@@ -118,10 +118,16 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Source Of Supply <span
                         style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select State" name="source_of_supply"
-                            required #source_of_supply="ngModel" [(ngModel)]="model.source_of_supply">
-                            <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
-                        </nb-select>
+                        <ngx-search-select
+                                name="source_of_supply"
+                                [placeholder]="'Select State'"
+                                #source_of_supply="ngModel"
+                                [options]="stateList"
+                                [(ngModel)]="model.source_of_supply"
+                                displayKey="name"
+                                valueKey="code"
+                                [required]="true"
+                            ></ngx-search-select>
                         <div *ngIf="fm.submitted && source_of_supply.invalid" class="error-message">
                             Select state.
                         </div>
@@ -172,32 +178,42 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Payment Terms</label>
                         <div class="payment-terms-control">
-                            <nb-select shape="semi-round" placeholder="Select Payment Terms" name="payment_terms"
-                                required #payment_terms="ngModel" [(ngModel)]="model.payment_terms" required>
-                                <nb-option *ngFor="let term of paymentTerms" [value]="term.termName">{{ term.termName }}</nb-option>
-                            </nb-select>
+                            <ngx-search-select
+                                name="payment_terms"
+                                [placeholder]="'Select Payment Terms'"
+                                [options]="paymentTerms"
+                                [(ngModel)]="model.payment_terms"
+                                displayKey="termName"
+                                valueKey="termName"
+                                [required]="true"
+                            ></ngx-search-select>
                             <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
                                 (click)="openPaymentTermsPopup()" aria-label="Add payment term">
                                 <nb-icon icon="plus-circle"></nb-icon>
                             </button>
                         </div>
-                        <div *ngIf="fm.submitted && payment_terms.invalid" class="error-message">
+                        <div *ngIf="fm.submitted && !model.payment_terms" class="error-message">
                             Payment Terms is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">TDS</label>
                         <div class="payment-terms-control">
-                            <nb-select shape="semi-round" placeholder="Select TDS" name="tds"
-                                required #tds="ngModel" [(ngModel)]="model.tds" required>
-                                <nb-option *ngFor="let term of tdsTerms" [value]="term.termName">{{ term.termName }} [{{term.percentage}}%]</nb-option>
-                            </nb-select>
+                            <ngx-search-select
+                                name="tds"
+                                [placeholder]="'Select TDS'"
+                                [options]="tdsTerms"
+                                [(ngModel)]="model.tds"
+                                displayKey="name"
+                                valueKey="id"
+                                [required]="true"
+                            ></ngx-search-select>
                             <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
                                 (click)="openTdsPopup()" aria-label="Add tds term">
                                 <nb-icon icon="plus-circle"></nb-icon>
                             </button>
                         </div>
-                        <div *ngIf="fm.submitted && tds.invalid" class="error-message">
+                        <div *ngIf="fm.submitted && !model.tds" class="error-message">
                             TDS is required
                         </div>
                     </div>
@@ -420,10 +436,16 @@
                             <div class="col-lg-12 mb-10">
                                 <label class="small-label" id="label-category">State <span
                                 style="color:#d32f2f">*</span></label>
-                                <nb-select shape="semi-round" placeholder="Select State" name="billing_state"
-                                    required #billing_state="ngModel" [(ngModel)]="model.billing_state">
-                                    <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
-                                </nb-select>
+                                <ngx-search-select
+                                name="billing_state"
+                                [placeholder]="'Select State'"
+                                #billing_state="ngModel"
+                                [options]="stateList"
+                                [(ngModel)]="model.billing_state"
+                                displayKey="name"
+                                valueKey="code"
+                                [required]="true"
+                            ></ngx-search-select>
                                 <div *ngIf="fm.submitted && billing_state.invalid" class="error-message">
                                     Select state.
                                 </div>
@@ -475,10 +497,16 @@
                             <div class="col-lg-12 mb-10">
                                 <label class="small-label" id="label-category">State <span
                                 style="color:#d32f2f">*</span></label>
-                                <nb-select shape="semi-round" placeholder="Select State" name="shipping_state"
-                                    required #shipping_state="ngModel" [(ngModel)]="model.shipping_state">
-                                    <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
-                                </nb-select>
+                                <ngx-search-select
+                                    name="shipping_state"
+                                    [placeholder]="'Select State'"
+                                    #shipping_state="ngModel"
+                                    [options]="stateList"
+                                    [(ngModel)]="model.shipping_state"
+                                    displayKey="name"
+                                    valueKey="code"
+                                    [required]="true"
+                                ></ngx-search-select>
                                 <div *ngIf="fm.submitted && shipping_state.invalid" class="error-message">
                                     Select state.
                                 </div>

@@ -11,6 +11,7 @@ import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { VendorsButtonComponent } from './vendors-list/vendors-btn.component';
 import { SharedModule } from '../shared/shared.module';
+import { ThemeModule } from '../../@theme/theme.module';
 
 
 @NgModule({
@@ -40,7 +41,8 @@ import { SharedModule } from '../shared/shared.module';
     NbSpinnerModule,
     NbDatepickerModule,
     NbCheckboxModule,
-    SharedModule
+    SharedModule,
+    ThemeModule
   ]
 })
 export class PurchaseModule { }

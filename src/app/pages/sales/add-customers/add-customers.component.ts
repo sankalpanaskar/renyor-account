@@ -10,23 +10,15 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./add-customers.component.scss']
 })
 export class AddCustomersComponent implements OnInit {
-  model: any = [];
+  model: any = {};
   isSubmitting: boolean = false;
   stateList : Array<{ name: string; code: string }> = [];
-  //nsdcCourseOptions: Array<{ course_name: string; nsdc_course_fees: number }> = [];
   customFields: any[] = [];
   showPaymentTermsPopup: boolean = false;
   document1File: File | null = null;
   document2File: File | null = null;
-  paymentTerms: Array<{ termName: string; days: string | number }> = [
-    { termName: 'Due end of next month', days: 'N/A' },
-    { termName: 'Due end of the month', days: 'N/A' },
-    { termName: 'Due on Receipt', days: 0 },
-    { termName: 'Net 15', days: 15 },
-    { termName: 'Net 30', days: 30 },
-    { termName: 'Net 45', days: 45 },
-    { termName: 'Net 60', days: 60 },
-  ];
+  paymentTerms: any[] = [];
+  tdsTerms: any[] = [];
 
   gstTreatmentOptions: string[] = [
     'Registered Business - Regular Business that is registered under GST',
@@ -50,6 +42,23 @@ export class AddCustomersComponent implements OnInit {
   ngOnInit(): void {
     this.getState();
     this.getCustomFields();
+    this.fetchPaymentTerms();
+  }
+
+  fetchPaymentTerms(): void {
+    this.globalService.getPaymentTerms().subscribe({
+      next: (res: any) => {
+        this.paymentTerms = Array.isArray(res?.data)
+          ? res.data.map((item: any) => ({
+              termName: item.term_name,
+              days: item.no_of_days
+            }))
+          : [];
+      },
+      error: () => {
+        this.paymentTerms = [];
+      }
+    });
   }
 
   onGstTreatmentChange(value: string) {
@@ -386,7 +395,7 @@ export class AddCustomersComponent implements OnInit {
 
       this.globalService.addCustomer(formData).subscribe({
         next: (res) => {
-          this.model = '';
+          this.model = {};
           this.document1File = null;
           this.document2File = null;
           fm.resetForm();

@@ -108,7 +108,8 @@
                         </nb-select>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">GST Treatment</label>
+                        <label class="small-label" id="label-category">GST Treatment <span
+                                style="color:#d32f2f">*</span></label>
                             <ngx-search-select
                                 name="gst_treatment"
                                 [placeholder]="'Select GST Treatment'"
@@ -123,7 +124,8 @@
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">Source of Supply</label>
+                        <label class="small-label" id="label-category">Source of Supply <span
+                                style="color:#d32f2f">*</span></label>
                         <ngx-search-select
                             name="source_of_supply"
                             [placeholder]="'Select State'"
@@ -181,8 +183,7 @@
                         >
                         <div
                             *ngIf="fm.submitted && model.tax_preference === 'Tax Exempt' && exemption_reason.invalid"
-                            class="error-message"
-                        >
+                            class="error-message">
                             Exemption Reason is required
                         </div>
                     </div>
@@ -199,18 +200,24 @@
                     </div>
 
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">Payment Terms</label>
+                        <label class="small-label" id="label-category">Payment Terms <span
+                                style="color:#d32f2f">*</span></label>
                         <div class="payment-terms-control">
-                            <nb-select shape="semi-round" placeholder="Select Payment Terms" name="payment_terms"
-                                required #payment_terms="ngModel" [(ngModel)]="model.payment_terms" required>
-                                <nb-option *ngFor="let term of paymentTerms" [value]="term.termName">{{ term.termName }}</nb-option>
-                            </nb-select>
+                            <ngx-search-select
+                                name="payment_terms"
+                                [placeholder]="'Select Payment Terms'"
+                                [options]="paymentTerms"
+                                [(ngModel)]="model.payment_terms"
+                                displayKey="termName"
+                                valueKey="termName"
+                                [required]="true"
+                            ></ngx-search-select>
                             <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
                                 (click)="openPaymentTermsPopup()" aria-label="Add payment term">
                                 <nb-icon icon="plus-circle"></nb-icon>
                             </button>
                         </div>
-                        <div *ngIf="fm.submitted && payment_terms.invalid" class="error-message">
+                        <div *ngIf="fm.submitted && !model.payment_terms" class="error-message">
                             Payment Terms is required
                         </div>
                     </div>
@@ -237,7 +244,8 @@
                     </div>
 
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">Document 1</label>
+                        <label class="small-label" id="label-category">Document 1 <span
+                                style="color:#d32f2f">*</span></label>
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 1 Name" name="document_1_name"
                             #document_1_name="ngModel" [(ngModel)]="model.document_1_name" style="margin-bottom: 8px;">
@@ -250,7 +258,8 @@
                     </div>
 
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">Document 2</label>
+                        <label class="small-label" id="label-category">Document 2 <span
+                                style="color:#d32f2f">*</span></label>
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 2 Name" name="document_2_name"
                             #document_2_name="ngModel" [(ngModel)]="model.document_2_name" style="margin-bottom: 8px;">
@@ -329,7 +338,8 @@
                                 </div>
                             </div>
                             <div class="col-lg-12 mb-10">
-                                <label class="small-label" id="label-category">Country</label>
+                                <label class="small-label" id="label-category">Country <span
+                                style="color:#d32f2f">*</span></label>
                                 <nb-select shape="semi-round" placeholder="Select Group" name="billing_country"
                                     required #billing_country="ngModel" [(ngModel)]="model.billing_country">
                                     <nb-option value="India">India</nb-option>
@@ -384,7 +394,8 @@
                                 </div>
                             </div>
                             <div class="col-lg-12 mb-10">
-                                <label class="small-label" id="label-category">Country</label>
+                                <label class="small-label" id="label-category">Country <span
+                                style="color:#d32f2f">*</span></label>
                                 <nb-select shape="semi-round" placeholder="Select Group" name="shipping_country"
                                     required #shipping_country="ngModel" [(ngModel)]="model.shipping_country">
                                     <nb-option value="India">India</nb-option>
