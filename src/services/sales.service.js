@@ -293,7 +293,7 @@ exports.createCustomer = async (
       work_phone,
       mobile_no,
       website,
-      group,
+      group: customer_group,
       gst_treatment,
       source_of_supply,
       pan,
@@ -363,7 +363,7 @@ exports.createCustomer = async (
         work_phone,
         mobile_no,
         website,
-        group,
+        customer_group,
         gst_treatment,
         source_of_supply,
         pan,
@@ -384,31 +384,37 @@ exports.createCustomer = async (
         shipping_country,
         shipping_city,
         shipping_state,
-        shipping_pin,
-        
+        shipping_pin
       ]
     );
 
-    const [rows] = await connection.query(
-      `SELECT * FROM customers WHERE id = ?`,
-      [result.insertId]
-    );
-    console.log(custom_field);
+    let customFieldObj = {};
 
     if (custom_field) {
-      const custom_field_obj = typeof custom_field === "string"
-                                ? JSON.parse(custom_field)
-                                : custom_field;
-      for (const key in custom_field_obj) {
-        const [field] = await connection.query(
+      try {
+        customFieldObj =
+          typeof custom_field === "string"
+            ? JSON.parse(custom_field)
+            : custom_field;
+      } catch (err) {
+        throw new Error("Invalid custom_field JSON");
+      }
+    }
+
+    if (Object.keys(customFieldObj).length > 0) {
+      if (!module_id) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      for (const key of Object.keys(customFieldObj)) {
+        const [fieldRows] = await connection.query(
           `SELECT id FROM custom_fields WHERE field_name = ? AND module_id = ?`,
           [key, module_id]
         );
-        //console.log(key,module_id);
-        if (field.length) {
-          const fieldId = field[0].id;
-          const value = custom_field_obj[key];
-          
+
+        if (fieldRows.length > 0) {
+          const fieldId = fieldRows[0].id;
+          const value = customFieldObj[key];
 
           await connection.query(
             `INSERT INTO custom_field_values
@@ -419,6 +425,11 @@ exports.createCustomer = async (
         }
       }
     }
+
+    const [rows] = await connection.query(
+      `SELECT * FROM customers WHERE id = ? AND tenant_id = ?`,
+      [result.insertId, tenant_id]
+    );
 
     await connection.commit();
 
