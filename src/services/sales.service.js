@@ -405,6 +405,7 @@ exports.createCustomer = async (
         if (field.length) {
           const fieldId = field[0].id;
           const value = custom_field[key];
+          return fieldId;
 
           await connection.query(
             `INSERT INTO custom_field_values
