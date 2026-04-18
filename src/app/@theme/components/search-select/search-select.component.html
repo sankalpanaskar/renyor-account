@@ -1,0 +1,43 @@
+<div class="searchable-select">
+  <div class="input-wrap">
+    <input
+      class="searchable-input"
+      nbInput
+      fullWidth
+      type="text"
+      [placeholder]="placeholder"
+      [value]="displayText"
+      readonly
+      [disabled]="disabled"
+      (click)="toggleDropdown($event)" />
+
+    <nb-icon class="toggle-icon" [icon]="isOpen ? 'chevron-up-outline' : 'chevron-down-outline'"></nb-icon>
+  </div>
+
+  <div class="options-panel" *ngIf="isOpen && !disabled">
+    <div class="search-box">
+      <input
+        #searchInput
+        class="dropdown-search-input"
+        nbInput
+        fullWidth
+        type="text"
+        [placeholder]="placeholder"
+        [value]="searchText"
+        (input)="onSearchInput($event)"
+        (click)="$event.stopPropagation()" />
+    </div>
+
+    <button
+      type="button"
+      class="option-item"
+      *ngFor="let option of filteredOptions"
+      (mousedown)="selectOption(option, $event)">
+      {{ getOptionLabel(option) }}
+    </button>
+
+    <div class="no-results" *ngIf="!filteredOptions.length">
+      {{ noResultsText }}
+    </div>
+  </div>
+</div>

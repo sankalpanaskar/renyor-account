@@ -1,0 +1,25 @@
+<div class="upload-wrapper">
+  <label
+    class="upload-box"
+    (dragover)="allowDrop($event)"
+    (drop)="onDrop($event)">
+    <input
+      class="upload-input"
+      type="file"
+      [name]="inputName"
+      [accept]="accept"
+      [multiple]="multiple"
+      [required]="required"
+      (change)="onInputChange($event)" />
+
+    <div class="upload-content">
+      <nb-icon icon="cloud-upload-outline"></nb-icon>
+      <div class="upload-title">Click to upload</div>
+      <div class="upload-helper" *ngIf="helperText">{{ helperText }}</div>
+    </div>
+  </label>
+
+  <div class="file-list" *ngIf="selectedFiles.length">
+    <span class="file-chip" *ngFor="let file of selectedFiles">{{ file.name }}</span>
+  </div>
+</div>

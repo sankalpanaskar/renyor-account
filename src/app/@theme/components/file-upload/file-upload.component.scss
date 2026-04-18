@@ -1,0 +1,64 @@
+.upload-wrapper {
+  width: 100%;
+}
+
+.upload-box {
+  display: block;
+  width: 100%;
+  border: 2px dashed #2f72d6;
+  border-radius: 0.75rem;
+  background: #f5f8ff;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.upload-box:hover {
+  background: #ebf2ff;
+}
+
+.upload-input {
+  display: none;
+}
+
+.upload-content {
+  min-height: 112px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.5rem;
+}
+
+.upload-content nb-icon {
+  font-size: 1.5rem;
+  color: #2f72d6;
+}
+
+.upload-title {
+  color: #2f72d6;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.upload-helper {
+  color: #7d869e;
+  font-size: 0.95rem;
+}
+
+.file-list {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.file-chip {
+  border: 1px solid #a8bce8;
+  border-radius: 999px;
+  padding: 0.35rem 0.9rem;
+  color: #204796;
+  background: #eef4ff;
+  font-size: 0.95rem;
+}
