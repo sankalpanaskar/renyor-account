@@ -42,7 +42,7 @@ export class AddVendorsComponent implements OnInit {
         this.tdsTerms = Array.isArray(res?.data)
           ? res.data.map((item: any) => ({
               id: item.id,
-              name: item.name + ' [' + item.percentage + '%]',
+              termName: item.name + ' [' + item.percentage + '%]',
               percentage: item.percentage
             }))
           : [];
@@ -58,6 +58,7 @@ export class AddVendorsComponent implements OnInit {
       next: (res: any) => {
         this.paymentTerms = Array.isArray(res?.data)
           ? res.data.map((item: any) => ({
+              id: item.id,
               termName: item.term_name,
               days: item.no_of_days
             }))
@@ -396,10 +397,8 @@ export class AddVendorsComponent implements OnInit {
       && this.model.bank_accounts.some((_: any, index: number) => this.hasAccountNumberMismatch(index));
   }
 
-  onDocumentChange(event: Event, field: 'document_1' | 'document_2'): void {
-    const input = event.target as HTMLInputElement;
-    const selectedFile = input?.files && input.files.length > 0 ? input.files[0] : null;
-
+  onFileChange(files: File[], field: 'document_1' | 'document_2'): void {
+    const selectedFile = files && files.length > 0 ? files[0] : null;
     if (field === 'document_1') {
       this.document1File = selectedFile;
       if (!this.model.document_1_name || !`${this.model.document_1_name}`.trim()) {
@@ -407,7 +406,6 @@ export class AddVendorsComponent implements OnInit {
       }
       return;
     }
-
     this.document2File = selectedFile;
     if (!this.model.document_2_name || !`${this.model.document_2_name}`.trim()) {
       this.model.document_2_name = selectedFile ? selectedFile.name : '';
@@ -488,7 +486,7 @@ export class AddVendorsComponent implements OnInit {
         formData.append('document_2', this.document2File, this.document2File.name);
       }
 
-      this.globalService.addCustomer(formData).subscribe({
+      this.globalService.addVendor(formData).subscribe({
         next: (res) => {
           this.model = { bank_accounts: [this.getEmptyBankAccount()] };
           this.showAccountNumber = [false];

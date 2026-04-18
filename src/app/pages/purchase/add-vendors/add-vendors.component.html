@@ -204,7 +204,7 @@
                                 [placeholder]="'Select TDS'"
                                 [options]="tdsTerms"
                                 [(ngModel)]="model.tds"
-                                displayKey="name"
+                                displayKey="termName"
                                 valueKey="id"
                                 [required]="true"
                             ></ngx-search-select>
@@ -243,9 +243,12 @@
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 1 Name" name="document_1_name"
                             #document_1_name="ngModel" [(ngModel)]="model.document_1_name" style="margin-bottom: 8px;">
-                        <input type="file" nbInput fullWidth shape="semi-round"
-                            name="document_1" (change)="onDocumentChange($event, 'document_1')"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        <ngx-file-upload
+                            inputName="document_1"
+                            helperText="PDF, Excel, Images (Max 10MB total)"
+                            [required]="false"
+                            (filesChange)="onFileChange($event, 'document_1')"
+                        ></ngx-file-upload>
                     </div>
 
                     <div class="col-lg-6 mb-10">
@@ -253,9 +256,12 @@
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 2 Name" name="document_2_name"
                             #document_2_name="ngModel" [(ngModel)]="model.document_2_name" style="margin-bottom: 8px;">
-                        <input type="file" nbInput fullWidth shape="semi-round"
-                            name="document_2" (change)="onDocumentChange($event, 'document_2')"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        <ngx-file-upload
+                            inputName="document_2"
+                            helperText="PDF, Excel, Images (Max 10MB total)"
+                            [required]="false"
+                            (filesChange)="onFileChange($event, 'document_2')"
+                        ></ngx-file-upload>
                     </div>
                 </div>
             </nb-tab>

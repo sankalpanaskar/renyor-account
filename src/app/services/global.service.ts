@@ -170,5 +170,9 @@ export class GlobalService {
     public getPaymentTerms(): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-payment-terms`);
     }
+
+    public addVendor(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-vendor`,data);
+    }
   
 }
