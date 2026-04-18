@@ -108,33 +108,32 @@
                         </nb-select>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">GST Treatment <span
-                                style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select" name="gst_treatment"
-                            required #gst_treatment="ngModel" [(ngModel)]="model.gst_treatment">
-                            <nb-option value="Registered Business - Regular Business that is registered under GST">Registered Business - Regular Business that is registered under GST</nb-option>
-                            <nb-option value="Registered Business - Composition Business that is registered under the composition scheme in GST">Registered Business - Composition Business that is registered under the composition scheme in GST</nb-option>
-                            <nb-option value="Unregistered Business - Business that has not been registered under GST">Unregistered Business - Business that has not been registered under GST</nb-option>
-                            <nb-option value="Consumer - A customer who is a regular consumer">Consumer - A customer who is a regular consumer</nb-option>
-                            <nb-option value="Overseas - Persons with whom you do import or export of supplies outside India">Overseas - Persons with whom you do import or export of supplies outside India</nb-option>
-                            <nb-option value="Special Economic Zone - Business (Unit) that is located in a Special Economic Zone (SEZ) of India or a SEZ Developer">Special Economic Zone - Business (Unit) that is located in a Special Economic Zone (SEZ) of India or a SEZ Developer</nb-option>
-                            <nb-option value="Deemed Export - Supply of goods to an Export Oriented Unit or against Advanced Authorization/Export Promotion Capital Goods">Deemed Export - Supply of goods to an Export Oriented Unit or against Advanced Authorization/Export Promotion Capital Goods</nb-option>
-                            <nb-option value="Tax Deductor - Departments of the State/Central government, governmental agencies or local authorities">Tax Deductor - Departments of the State/Central government, governmental agencies or local authorities</nb-option>
-                            <nb-option value="SEZ Developer - A person/organisation who owns at least 26% of the equity in creating business units in a Special Economic Zone (SEZ)">SEZ Developer - A person/organisation who owns at least 26% of the equity in creating business units in a Special Economic Zone (SEZ)</nb-option>
-                            <nb-option value="Input Service Distributor - Input Service Distributor (ISD) is an office that receives tax invoices for services used by the company in different states under the same PAN">Input Service Distributor - Input Service Distributor (ISD) is an office that receives tax invoices for services used by the company in different states under the same PAN</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && gst_treatment.invalid" class="error-message">
+                        <label class="small-label" id="label-category">GST Treatment</label>
+                            <ngx-search-select
+                                name="gst_treatment"
+                                [placeholder]="'Select GST Treatment'"
+                                [options]="gstTreatmentOptions"
+                                [(ngModel)]="model.gst_treatment"
+                                displayKey="gstTreatmentOptions"
+                                valueKey="gstTreatmentOptions"
+                                [required]="true"
+                            ></ngx-search-select>
+                        <div *ngIf="fm.submitted && !model.gst_treatment" class="error-message">
                             GST treatment is required
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-category">Source Of Supply <span
-                        style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select State" name="source_of_supply"
-                            required #source_of_supply="ngModel" [(ngModel)]="model.source_of_supply">
-                            <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && source_of_supply.invalid" class="error-message">
+                        <label class="small-label" id="label-category">Source of Supply</label>
+                        <ngx-search-select
+                            name="source_of_supply"
+                            [placeholder]="'Select State'"
+                            [options]="stateList"
+                            [(ngModel)]="model.source_of_supply"
+                            displayKey="name"
+                            valueKey="code"
+                            [required]="true"
+                        ></ngx-search-select>
+                        <div *ngIf="fm.submitted && !model.source_of_supply" class="error-message">
                             Select state.
                         </div>
                     </div>
@@ -219,7 +218,7 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Website URL</label>
                         <input type="text" nbInput fullWidth shape="semi-round"
-                            placeholder="Enter website url" name="website" required
+                            placeholder="Enter website url" name="website"
                             #website="ngModel" [(ngModel)]="model.website">
                     </div>
 
@@ -242,9 +241,12 @@
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 1 Name" name="document_1_name"
                             #document_1_name="ngModel" [(ngModel)]="model.document_1_name" style="margin-bottom: 8px;">
-                        <input type="file" nbInput fullWidth shape="semi-round"
-                            name="document_1" (change)="onDocumentChange($event, 'document_1')"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        <ngx-file-upload
+							inputName="document_1"
+							helperText="PDF, Excel, Images (Max 10MB total)"
+							[required]="true"
+							(filesChange)="onFileChange($event,'document_1')">
+						</ngx-file-upload>
                     </div>
 
                     <div class="col-lg-6 mb-10">
@@ -252,13 +254,13 @@
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 2 Name" name="document_2_name"
                             #document_2_name="ngModel" [(ngModel)]="model.document_2_name" style="margin-bottom: 8px;">
-                        <input type="file" nbInput fullWidth shape="semi-round"
-                            name="document_2" (change)="onDocumentChange($event, 'document_2')"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                        <ngx-file-upload
+							inputName="document_2"
+							helperText="PDF, Excel, Images (Max 10MB total)"
+							[required]="true"
+							(filesChange)="onFileChange($event,'document_2')">
+						</ngx-file-upload>
                     </div>
-
-                    
-
                 </div>
             </nb-tab>
             <nb-tab tabTitle="Custom Fields">
@@ -270,22 +272,22 @@
                         </label>
 
                         <ng-container [ngSwitch]="getFieldType(field)">
-                            <textarea *ngSwitchCase="'textarea'" nbInput fullWidth shape="semi-round"
+						<textarea *ngSwitchCase="'textarea'" nbInput fullWidth shape="semi-round"
                                 [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
                                 [name]="field.field_name" [required]="isFieldRequired(field)"
                                 [maxlength]="field.max_length || null"
-                                [(ngModel)]="model[field.field_name]" rows="3"></textarea>
+                                [ngModel]="model[field.field_name]" (ngModelChange)="model[field.field_name] = $event" rows="3"></textarea>
 
-                            <nb-select *ngSwitchCase="'select'" shape="semi-round"
+						<nb-select *ngSwitchCase="'select'" shape="semi-round"
                                 [placeholder]="field.placeholder || 'Select ' + (field.field_label || field.field_name)"
                                 [name]="field.field_name" [required]="isFieldRequired(field)"
-                                [(ngModel)]="model[field.field_name]">
+                                [ngModel]="model[field.field_name]" (ngModelChange)="model[field.field_name] = $event">
                                 <nb-option *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-option>
                             </nb-select>
 
-                            <nb-radio-group *ngSwitchCase="'radio'" class="d-flex flex-row flex-wrap" style="gap: 16px;"
+						<nb-radio-group *ngSwitchCase="'radio'" class="d-flex flex-row flex-wrap" style="gap: 16px;"
                                 [name]="field.field_name" [required]="isFieldRequired(field)"
-                                [(ngModel)]="model[field.field_name]">
+                                [ngModel]="model[field.field_name]" (ngModelChange)="model[field.field_name] = $event">
                                 <nb-radio *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-radio>
                             </nb-radio-group>
 
@@ -297,13 +299,13 @@
                                 </nb-checkbox>
                             </div>
 
-                            <input *ngSwitchDefault nbInput fullWidth shape="semi-round"
+						<input *ngSwitchDefault nbInput fullWidth shape="semi-round"
                                 [type]="getFieldType(field)"
                                 [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
                                 [name]="field.field_name" [required]="isFieldRequired(field)"
                                 [attr.minlength]="field.min_length || null"
                                 [attr.maxlength]="field.max_length || null"
-                                [(ngModel)]="model[field.field_name]">
+                                [ngModel]="model[field.field_name]" (ngModelChange)="model[field.field_name] = $event">
                         </ng-container>
 
                         <div *ngIf="hasFieldError(fm, field)" class="error-message">
@@ -437,11 +439,4 @@
     </nb-card>
 </form>
 
-<ngx-payment-terms-popup
-    [open]="showPaymentTermsPopup"
-    [title]="'Configure Payment Terms'"
-    [terms]="paymentTerms"
-    (close)="closePaymentTermsPopup()"
-    (termsChange)="onPaymentTermsChanged($event)"
-    (termSelected)="onPaymentTermSelected($event)"
-></ngx-payment-terms-popup>
+

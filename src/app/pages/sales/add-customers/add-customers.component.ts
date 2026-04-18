@@ -1,3 +1,4 @@
+// ...existing code up to the end of the first AddCustomersComponent class...
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
@@ -11,7 +12,8 @@ import { HttpClient } from '@angular/common/http';
 export class AddCustomersComponent implements OnInit {
   model: any = [];
   isSubmitting: boolean = false;
-  stateList : any = [];
+  stateList : Array<{ name: string; code: string }> = [];
+  //nsdcCourseOptions: Array<{ course_name: string; nsdc_course_fees: number }> = [];
   customFields: any[] = [];
   showPaymentTermsPopup: boolean = false;
   document1File: File | null = null;
@@ -26,6 +28,19 @@ export class AddCustomersComponent implements OnInit {
     { termName: 'Net 60', days: 60 },
   ];
 
+  gstTreatmentOptions: string[] = [
+    'Registered Business - Regular Business that is registered under GST',
+    'Registered Business - Composition Business that is registered under the composition scheme in GST',
+    'Unregistered Business - Business that has not been registered under GST',
+    'Consumer - A customer who is a regular consumer',
+    'Overseas - Persons with whom you do import or export of supplies outside India',
+    'Special Economic Zone - Business (Unit) that is located in a Special Economic Zone (SEZ) of India or a SEZ Developer',
+    'Deemed Export - Supply of goods to an Export Oriented Unit or against Advanced Authorization/Export Promotion Capital Goods',
+    'Tax Deductor - Departments of the State/Central government, governmental agencies or local authorities',
+    'SEZ Developer - A person/organisation who owns at least 26% of the equity in creating business units in a Special Economic Zone (SEZ)',
+    'Input Service Distributor - Input Service Distributor (ISD) is an office that receives tax invoices for services used by the company in different states under the same PAN',
+  ];
+
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
@@ -37,6 +52,13 @@ export class AddCustomersComponent implements OnInit {
     this.getCustomFields();
   }
 
+  onGstTreatmentChange(value: string) {
+    this.model.gst_treatment = value;
+  }
+
+  onSourceOfSupplyChange(value: string) {
+    this.model.source_of_supply = value;
+  }
   getState(){
     this.globalService.getStates().subscribe({
       next: (res: any) => {
@@ -282,10 +304,8 @@ export class AddCustomersComponent implements OnInit {
     this.model[field] = digitsOnly;
   }
 
-  onDocumentChange(event: Event, field: 'document_1' | 'document_2'): void {
-    const input = event.target as HTMLInputElement;
-    const selectedFile = input?.files && input.files.length > 0 ? input.files[0] : null;
-
+  onFileChange(files: File[], field: 'document_1' | 'document_2'): void {
+    const selectedFile = files && files.length > 0 ? files[0] : null;
     if (field === 'document_1') {
       this.document1File = selectedFile;
       if (!this.model.document_1_name || !`${this.model.document_1_name}`.trim()) {
@@ -293,11 +313,20 @@ export class AddCustomersComponent implements OnInit {
       }
       return;
     }
-
     this.document2File = selectedFile;
     if (!this.model.document_2_name || !`${this.model.document_2_name}`.trim()) {
       this.model.document_2_name = selectedFile ? selectedFile.name : '';
     }
+  }
+
+  onDocumentFileSelected(file: File, docField: 'document_1' | 'document_2') {
+    if (docField === 'document_1') {
+      this.document1File = file;
+    } else if (docField === 'document_2') {
+      this.document2File = file;
+    }
+    // Optionally, you can also store in the model:
+    // this.model[docField + '_file'] = file;
   }
 
   private appendFormDataValue(formData: FormData, key: string, value: any): void {

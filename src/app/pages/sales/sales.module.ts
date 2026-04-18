@@ -13,6 +13,7 @@ import { CustomersButtonComponent } from './customers-list/customers-btn.compone
 import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { SharedModule } from '../shared/shared.module';
+import { ThemeModule } from '../../@theme/theme.module';
 
 
 @NgModule({
@@ -44,7 +45,8 @@ import { SharedModule } from '../shared/shared.module';
     NbSpinnerModule,
     NbDatepickerModule,
     NbCheckboxModule,
-    SharedModule
+    SharedModule,
+    ThemeModule
   ]
 })
 export class SalesModule { }
