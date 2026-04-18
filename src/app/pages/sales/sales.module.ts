@@ -9,7 +9,6 @@ import { RouterModule } from '@angular/router';
 import { NbAccordionModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
-import { CustomersButtonComponent } from './customers-list/customers-btn.component';
 import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { SharedModule } from '../shared/shared.module';
@@ -21,9 +20,8 @@ import { ThemeModule } from '../../@theme/theme.module';
     SalesComponent,
     AddCustomersComponent,
     CustomersListComponent,
-    CustomersButtonComponent,
     AddItemComponent,
-    ItemListComponent
+    ItemListComponent,
   ],
   imports: [
     CommonModule,

@@ -1,3 +1,111 @@
+<!-- Customer View Popup Overlay -->
+<div *ngIf="showCustomerPopup" class="customer-dialog-overlay" (click)="closeCustomerPopup()">
+  <div class="customer-dialog-wrapper" (click)="$event.stopPropagation()">
+    <div class="customer-dialog-shell">
+      <div class="dialog-header">
+        <div class="dialog-header-copy">
+          <span class="customer-code-badge">
+            {{ selectedCustomer?.display_name || selectedCustomer?.company_name || ((selectedCustomer?.primary_contact_f_name || '') + ' ' + (selectedCustomer?.primary_contact_l_name || '')) || 'Customer' }}
+          </span>
+          <div class="customer-title">
+            {{ selectedCustomer?.company_name || selectedCustomer?.display_name || ((selectedCustomer?.primary_contact_f_name || '') + ' ' + (selectedCustomer?.primary_contact_l_name || '')) }}
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeCustomerPopup()">×</button>
+      </div>
+
+      <div class="popup-scroll-body">
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Customer Snapshot</div>
+          <div class="info-card-grid three-columns">
+            <div class="info-card" *ngFor="let field of [
+              { label: 'Customer Type', value: selectedCustomer?.customer_type || '-' },
+              { label: 'Customer Group', value: selectedCustomer?.customer_group || '-' },
+              { label: 'Source of Supply', value: selectedCustomer?.source_of_supply || '-' }
+            ]">
+              <div class="section-label">{{ field.label }}</div>
+              <div class="section-value">{{ field.value }}</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="dialog-split-grid">
+          <section class="dialog-group">
+            <div class="dialog-group-title">Contact</div>
+            <div class="info-card-grid two-columns">
+              <div class="info-card" *ngFor="let field of [
+                { label: 'Primary Contact', value: ((selectedCustomer?.primary_contact_f_name || '') + ' ' + (selectedCustomer?.primary_contact_l_name || '')).trim() || '-' },
+                { label: 'Email', value: selectedCustomer?.email || '-' },
+                { label: 'Phone', value: selectedCustomer?.mobile_no || '-' },
+                { label: 'Work Phone', value: selectedCustomer?.work_phone || '-' },
+                { label: 'Department', value: selectedCustomer?.department || '-' },
+                { label: 'Designation', value: selectedCustomer?.designation || '-' }
+              ]">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value">{{ field.value }}</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dialog-group">
+            <div class="dialog-group-title">Business Details</div>
+            <div class="dialog-chip-row single-tone">
+              <span class="dialog-chip warm-chip">{{ selectedCustomer?.gst_treatment || 'GST Treatment Not Available' }}</span>
+            </div>
+            <div class="info-card-grid two-columns compact-top">
+              <div class="info-card" *ngFor="let field of [
+                { label: 'GST No', value: selectedCustomer?.custom_field?.gst_no || '-' },
+                { label: 'PAN', value: selectedCustomer?.pan || '-' },
+                { label: 'Payment Terms', value: selectedCustomer?.payment_terms || '-' },
+                { label: 'Opening Balance', value: selectedCustomer?.opening_balance || '-' }
+              ]">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value">{{ field.value }}</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Addresses</div>
+          <div class="address-blocks-grid">
+            <div class="address-block">
+              <div class="address-block-title">Billing Address</div>
+              <div class="info-card-grid two-columns">
+                <div class="info-card" [class.full-width-card]="field.label === 'Address'" *ngFor="let field of [
+                  { label: 'Address', value: selectedCustomer?.billing_address || '-' },
+                  { label: 'Country', value: selectedCustomer?.billing_country || '-' },
+                  { label: 'City', value: selectedCustomer?.billing_city || '-' },
+                  { label: 'State', value: selectedCustomer?.billing_state || '-' },
+                  { label: 'Pin', value: selectedCustomer?.billing_pin || '-' }
+                ]">
+                  <div class="section-label">{{ field.label }}</div>
+                  <div class="section-value multiline-value">{{ field.value }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="address-block">
+              <div class="address-block-title">Shipping Address</div>
+              <div class="info-card-grid two-columns">
+                <div class="info-card" [class.full-width-card]="field.label === 'Address'" *ngFor="let field of [
+                  { label: 'Address', value: selectedCustomer?.shipping_address || '-' },
+                  { label: 'Country', value: selectedCustomer?.shipping_country || '-' },
+                  { label: 'City', value: selectedCustomer?.shipping_city || '-' },
+                  { label: 'State', value: selectedCustomer?.shipping_state || '-' },
+                  { label: 'Pin', value: selectedCustomer?.shipping_pin || '-' }
+                ]">
+                  <div class="section-label">{{ field.label }}</div>
+                  <div class="section-value multiline-value">{{ field.value }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="asset-list-container">
   <div class="row">
     <div class="col-lg-12">
@@ -36,14 +144,42 @@
                   shape="semi-round"
                   #search
                   class="search"
-                  placeholder="Search Brand..." (keydown.enter)="onSearch(search.value)"/>
+                  placeholder="Search Customer..."
+                  (input)="onSearch(search.value)"
+                  (keydown.enter)="onSearch(search.value)"/>
               </div>
 
               <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
-                <ng2-smart-table
-                  [settings]="settings"
-                  [source]="source">
-                </ng2-smart-table>
+                <div class="custom-table-wrapper">
+                  <div class="table-responsive">
+                    <table class="custom-table">
+                      <thead>
+                        <tr>
+                          <th>Customer Name</th>
+                          <th>Customer Type</th>
+                          <th>Email</th>
+                          <th>Mobile No</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of apiData">
+                          <td>{{ item.display_name || (item.primary_contact_f_name + ' ' + item.primary_contact_l_name) }}</td>
+                          <td>{{ item.customer_type || '-' }}</td>
+                          <td>{{ item.email }}</td>
+                          <td>{{ item.mobile_no }}</td>
+                          <td>
+                            <button nbButton size="small" status="success" class="action-btn" (click)="openCustomerPopup(item)"><nb-icon icon="eye"></nb-icon> VIEW</button>
+                            <button nbButton size="small" status="primary" class="action-btn" (click)="onEdit(item)"><nb-icon icon="edit-2"></nb-icon> EDIT</button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="!apiData || apiData.length === 0">
+                          <td colspan="5" class="text-center">No data found.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

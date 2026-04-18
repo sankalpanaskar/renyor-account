@@ -1,9 +1,8 @@
+// ...existing code...
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { DatePipe } from '@angular/common';
-import { LocalDataSource } from 'ng2-smart-table';
-import { CustomersButtonComponent } from './customers-btn.component';
 import { Router } from '@angular/router';
 
 @Component({
@@ -12,97 +11,26 @@ import { Router } from '@angular/router';
   styleUrls: ['./customers-list.component.scss']
 })
 export class CustomersListComponent implements OnInit{
- source: LocalDataSource = new LocalDataSource();
 
-  settings = {
-    pager: {
-      display: true,
-      perPage: 10
-    },
-    actions: false, // disable default actions
-    columns: {
-      ID: {
-        title: 'ID',
-        width: '5%',
-        type: 'string',
-        filter: false,
-        editable: false
-      },
-      name: {
-        title: 'Name',
-        width: '15%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      companyName: {
-        title: 'Comany Name',
-        width: '25%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      email: {
-        title: 'Email',
-        width: '10%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      phone: {
-        title: 'Phone',
-        width: '5%',
-        type: 'string',
-        filter: false,
-        editable: false
-      },
-      date: {
-        title: 'Date',
-        width: '5%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      Status: {
-        title: 'Status',
-        width: '5%',
-        filter: false,
-        editable: false,
-        type: 'html',
-        valuePrepareFunction: (cell: any) => {
-          console.log("cell value---", cell);
-          if (cell === 1) {
-            return `<h6><span class="badge rounded-pill bg-success text-white pl-2 pr-2 custom-badge">Active</span></h6>`;
-          }
-          else if(cell === 0){
-            return `<h6><span class="badge rounded-pill bg-danger text-white pl-2 pr-2 custom-badge">Not Active</span></h6>`;
-          }
-        }
-      },
+  showCustomerPopup = false;
+  selectedCustomer: any = null;
+  allCustomers: any[] = [];
 
-        Action: {
-          title: 'Action',
-          width: '10%',
-          type: 'custom',
-          filter: false,
-          renderComponent: CustomersButtonComponent,
-          onComponentInitFunction: (instance: any) => {
-            instance.delete.subscribe((rowData: any) => {
-              //this.onDelete(rowData);
-            });
-            instance.edit.subscribe((rowData: any) => {
-              this.onEdit(rowData);
-            });
-          },
-        },
+  openCustomerPopup(customer: any) {
+    this.selectedCustomer = customer;
+    this.showCustomerPopup = true;
+  }
 
-    },
-  };
+  closeCustomerPopup() {
+    this.showCustomerPopup = false;
+    this.selectedCustomer = null;
+  }
+
   model: any = [];
   isSubmitting: boolean = false;
   loading: boolean = false; // <-- Add this to your class
   apiData: any = [];
-  lastSearchForm: any; // add this variable on top of your component
+  lastSearchForm: string = '';
 
   constructor(
     private globalService: GlobalService,
@@ -117,81 +45,63 @@ export class CustomersListComponent implements OnInit{
     this.getCustomerList();
   }
 
-  // onDelete(rowData: any) {
-  //   const brandData = rowData.fullData; // ✅ full object from API
-  //   console.log("asset data delete",brandData);
-  //   var data = {
-  //     id : brandData.id
-  //   }
-  //   this.loading = true;
-  //   this.globalService.changeBrandStatus(data).subscribe({
-  //     next:(res:any) => {
-  //       this.loadPendingList();
-  //         this.toastrService.success(res.message,'Brand Status Change');
-  //         this.loading = false;
-  //     },
-  //     error:(error:any) => {
-  //         this.toastrService.danger(error.message, 'Brand Status Change Failed');
-  //         this.loading = false;
-  //     }
-  //   })
-  // }
-
-  onEdit(rowData: any) {
-    const brandData = rowData.fullData;
-
-    // const dialogRef = this.dialogService.open(AddBrandComponent, {
-    //   context: { brandData: brandData },   // 👈 pass data to dialog
-    //   closeOnBackdropClick: true,
-    //   hasScroll: true,
-    // });
-
-    // dialogRef.onClose.subscribe(() => {
-    //   this.loadPendingList();              // 👈 refresh list on close
-    // });
-  }
-
   getCustomerList() {
-      this.loading = true;
-      this.globalService.geCompanyListByTenant(34).subscribe({
-        next: (res: any) => {
-          console.log("customer list response", res);
-          this.apiData = res?.data?.brands || []; // ✅ Store API data here first
-           const mappedData = this.apiData.map((item: any, index: number) => ({
-            slNo: index + 1,
-            Id: item.id,
-            BrandName: item.brand_name,
-            Status : item.status,
-            fullData: item, // ✅ include full object
+    this.loading = true;
+    this.globalService.geCompanyListByTenant(34).subscribe({
+      next: (res: any) => {
+        console.log("customer list response", res);
+        this.allCustomers = res?.data || [];
+        this.apiData = [...this.allCustomers];
+        this.onSearch(this.lastSearchForm);
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Submit error:', err);
+        const errorMessage =
+          err?.error?.message ||
+          err?.message ||
+          'Customer List Failed. Please try again.';
 
-          }));
-          this.source.load(mappedData);
-          this.loading = false;
-        },
-        error: (err) => {
-          console.error('Submit error:', err);
-          const errorMessage =
-            err?.error?.message ||
-            err?.message ||
-            'Brand List Failed. Please try again.';
-
-          this.toastrService.danger(errorMessage, 'Brand List Failed');
-          this.loading = false;
-        },
-      });
+        this.toastrService.danger(errorMessage, 'Customer List Failed');
+        this.loading = false;
+      },
+    });
   }
-    onSearch(query: string = ''): void {
-    this.source.setFilter([
-      { field: 'BrandName', search: query },
-    ], false);
+  onSearch(query: string = ''): void {
+    this.lastSearchForm = query || '';
+    const searchText = this.lastSearchForm.trim().toLowerCase();
 
-    if (this.source.count() === 0) {
-      this.source.reset();
+    if (!searchText) {
+      this.apiData = [...this.allCustomers];
+      return;
     }
+
+    this.apiData = this.allCustomers.filter((customer: any) => {
+      const searchableValues = [
+        customer?.display_name,
+        customer?.company_name,
+        customer?.primary_contact_f_name,
+        customer?.primary_contact_l_name,
+        `${customer?.primary_contact_f_name || ''} ${customer?.primary_contact_l_name || ''}`.trim(),
+        customer?.customer_type,
+        customer?.customer_group,
+        customer?.email,
+        customer?.mobile_no,
+        customer?.work_phone,
+        customer?.department,
+        customer?.designation,
+        customer?.source_of_supply,
+        customer?.billing_city,
+        customer?.shipping_city
+      ];
+
+      return searchableValues.some((value: any) =>
+        String(value || '').toLowerCase().includes(searchText)
+      );
+    });
   }
 
   gotoAddCustomerPage() {
     this.router.navigate(['pages/sales/add-customer']);
   }
 }
-
