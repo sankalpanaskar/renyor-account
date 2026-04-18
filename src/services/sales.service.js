@@ -314,7 +314,8 @@ exports.createCustomer = async (
       shipping_state,
       shipping_pin,
       custom_field,
-      module_id
+      module_id,
+      gst_no
     } = data;
 
     const [result] = await connection.query(
@@ -386,7 +387,7 @@ exports.createCustomer = async (
         shipping_city,
         shipping_state,
         shipping_pin,
-        custom_field?.gst_no || null
+        gst_no 
       ]
     );
 
@@ -394,7 +395,7 @@ exports.createCustomer = async (
       `SELECT * FROM customers WHERE id = ?`,
       [result.insertId]
     );
-
+     return custom_field;
     if (custom_field) {
       for (const key in custom_field) {
         const [field] = await connection.query(
