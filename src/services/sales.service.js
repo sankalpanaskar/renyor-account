@@ -1,6 +1,6 @@
 // services/menu.service.js
 const db = require('../config/db');
-
+const handleCustomFields= require('../utils/custom_field');
 // exports.fetchMenu = async (packageId, roleId = null) => {
 //   let rows;
 
@@ -122,7 +122,14 @@ exports.fetchAllCustomers = async (tenant_id, module_id) => {
 
 
 
-exports.createCustomer1 = async (data, tenant_id) => {
+
+
+exports.createCustomer = async (
+  data,
+  tenant_id,
+  uploaded_file_name_1 = null,
+  uploaded_file_name_2 = null
+) => {
   const connection = await db.getConnection();
 
   try {
@@ -195,9 +202,8 @@ exports.createCustomer1 = async (data, tenant_id) => {
         shipping_country,
         shipping_city,
         shipping_state,
-        shipping_pin,
-        gst_no
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        shipping_pin
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         tenant_id,
         customer_type,
@@ -230,200 +236,56 @@ exports.createCustomer1 = async (data, tenant_id) => {
         shipping_country,
         shipping_city,
         shipping_state,
-        shipping_pin,
-        custom_field?.gst_no || null
-      ]
-    );
-
-    const [rows] = await connection.query(
-      `SELECT * FROM customers WHERE id = ?`,
-      [result.insertId]
-    );
-
-    if (custom_field) {
-      for (const key in custom_field) {
-        const [field] = await connection.query(
-          `SELECT id FROM custom_fields WHERE field_name = ? AND module_id = ?`,
-          [key, module_id]
-        );
-
-        if (field.length) {
-          const fieldId = field[0].id;
-          const value = custom_field[key];
-
-          await connection.query(
-            `INSERT INTO custom_field_values
-             (module_id, tenant_id, record_id, field_id, field_value)
-             VALUES (?, ?, ?, ?, ?)`,
-            [module_id, tenant_id, result.insertId, fieldId, value]
-          );
-        }
-      }
-    }
-
-    await connection.commit();
-
-    return rows[0];
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
-};
-
-exports.createCustomer = async (
-  data,
-  tenant_id,
-  uploaded_file_name_1 = null,
-  uploaded_file_name_2 = null
-) => {
-  const connection = await db.getConnection();
-
-  try {
-    await connection.beginTransaction();
-
-    const {
-      customer_type,
-      primary_contact_f_name,
-      primary_contact_l_name,
-      company_name,
-      display_name,
-      email,
-      work_phone,
-      mobile_no,
-      website,
-      group: customer_group,
-      gst_treatment,
-      source_of_supply,
-      pan,
-      tax_preference,
-      payment_terms,
-      department,
-      designation,
-      exemption_reason,
-      opening_balance,
-      billing_address,
-      billing_country,
-      billing_city,
-      billing_state,
-      billing_pin,
-      shipping_address,
-      shipping_country,
-      shipping_city,
-      shipping_state,
-      shipping_pin,
-      custom_field,
-      module_id
-    } = data;
-
-    const [result] = await connection.query(
-      `INSERT INTO customers (
-        tenant_id,
-        customer_type,
-        primary_contact_f_name,
-        primary_contact_l_name,
-        company_name,
-        display_name,
-        email,
-        work_phone,
-        mobile_no,
-        website,
-        customer_group,
-        gst_treatment,
-        source_of_supply,
-        pan,
-        tax_preference,
-        payment_terms,
-        department,
-        designation,
-        document_1_name,
-        document_2_name,
-        exemption_reason,
-        opening_balance,
-        billing_address,
-        billing_country,
-        billing_city,
-        billing_state,
-        billing_pin,
-        shipping_address,
-        shipping_country,
-        shipping_city,
-        shipping_state,
-        shipping_pin
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        tenant_id,
-        customer_type,
-        primary_contact_f_name,
-        primary_contact_l_name,
-        company_name,
-        display_name,
-        email,
-        work_phone,
-        mobile_no,
-        website,
-        customer_group,
-        gst_treatment,
-        source_of_supply,
-        pan,
-        tax_preference,
-        payment_terms,
-        department,
-        designation,
-        uploaded_file_name_1 || null,
-        uploaded_file_name_2 || null,
-        exemption_reason,
-        opening_balance,
-        billing_address,
-        billing_country,
-        billing_city,
-        billing_state,
-        billing_pin,
-        shipping_address,
-        shipping_country,
-        shipping_city,
-        shipping_state,
         shipping_pin
       ]
     );
 
-    let customFieldObj = {};
+    // let customFieldObj = {};
+
+    // if (custom_field) {
+    //   try {
+    //     customFieldObj =
+    //       typeof custom_field === "string"
+    //         ? JSON.parse(custom_field)
+    //         : custom_field;
+    //   } catch (err) {
+    //     throw new Error("Invalid custom_field JSON");
+    //   }
+    // }
+
+    // if (Object.keys(customFieldObj).length > 0) {
+    //   if (!module_id) {
+    //     throw new Error("module_id is required when custom_field is provided");
+    //   }
+
+    //   for (const key of Object.keys(customFieldObj)) {
+    //     const [fieldRows] = await connection.query(
+    //       `SELECT id FROM custom_fields WHERE field_name = ? AND module_id = ?`,
+    //       [key, module_id]
+    //     );
+
+    //     if (fieldRows.length > 0) {
+    //       const fieldId = fieldRows[0].id;
+    //       const value = customFieldObj[key];
+
+    //       await connection.query(
+    //         `INSERT INTO custom_field_values
+    //          (module_id, tenant_id, record_id, field_id, field_value)
+    //          VALUES (?, ?, ?, ?, ?)`,
+    //         [module_id, tenant_id, result.insertId, fieldId, value]
+    //       );
+    //     }
+    //   }
+    // }
 
     if (custom_field) {
-      try {
-        customFieldObj =
-          typeof custom_field === "string"
-            ? JSON.parse(custom_field)
-            : custom_field;
-      } catch (err) {
-        throw new Error("Invalid custom_field JSON");
-      }
-    }
-
-    if (Object.keys(customFieldObj).length > 0) {
-      if (!module_id) {
-        throw new Error("module_id is required when custom_field is provided");
-      }
-
-      for (const key of Object.keys(customFieldObj)) {
-        const [fieldRows] = await connection.query(
-          `SELECT id FROM custom_fields WHERE field_name = ? AND module_id = ?`,
-          [key, module_id]
-        );
-
-        if (fieldRows.length > 0) {
-          const fieldId = fieldRows[0].id;
-          const value = customFieldObj[key];
-
-          await connection.query(
-            `INSERT INTO custom_field_values
-             (module_id, tenant_id, record_id, field_id, field_value)
-             VALUES (?, ?, ?, ?, ?)`,
-            [module_id, tenant_id, result.insertId, fieldId, value]
-          );
-        }
-      }
+      await handleCustomFields({
+        connection,
+        custom_field,
+        module_id,
+        tenant_id,
+        record_id: result.insertId,
+      });
     }
 
     const [rows] = await connection.query(
