@@ -13,6 +13,8 @@ import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { SharedModule } from '../shared/shared.module';
 import { ThemeModule } from '../../@theme/theme.module';
+import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
+import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 
 
 @NgModule({
@@ -22,6 +24,8 @@ import { ThemeModule } from '../../@theme/theme.module';
     CustomersListComponent,
     AddItemComponent,
     ItemListComponent,
+    AddEstimatesComponent,
+    AddSalesOrderComponent,
   ],
   imports: [
     CommonModule,

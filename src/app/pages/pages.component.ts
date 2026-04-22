@@ -30,7 +30,7 @@ export class PagesComponent implements OnInit, OnDestroy {
     },
     {
       groupTitle: 'Sales',
-      parentTitles: ['Customers'],
+      parentTitles: ['Customers','Estimates','Sales Order','Invoices'] ,
       linkPrefixes: ['/pages/sales/'],
     },
     {

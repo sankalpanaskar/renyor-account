@@ -1,10 +1,11 @@
-<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
-    <nb-card>
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" class="customer-form-shell">      
+    <nb-card class="customer-form-card">
         <nb-card-header>Add Customer</nb-card-header>
+        <nb-card-body class="customer-form-body">
         <nb-tabset fullWidth>
             <nb-tab tabTitle="Customers Details">
                 <div class="row">
-                    <div class="col-lg-4 mb-10">
+                    <div class="col-lg-12 mb-10">
                         <label class="small-label" id="label-category">
                             Customer Type <span style="color:#d32f2f">*</span>
                         </label>
@@ -17,7 +18,7 @@
                             Customer Type is required
                         </div>
                     </div>
-                    <div class="col-lg-4 mb-10">
+                    <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Primary Contact <span
                                 style="color:#d32f2f">*</span></label>
                         <input type="text" nbInput fullWidth shape="semi-round"
@@ -27,7 +28,7 @@
                             First Name is required
                         </div>
                     </div>
-                    <div class="col-lg-4 mb-10">
+                    <div class="col-lg-6 mb-10">
                         <input type="text" nbInput fullWidth shape="semi-round" style="margin-top: 24px;"
                             placeholder="Last Name" name="primary_contact_l_name" required #primary_contact_l_name="ngModel"
                             [(ngModel)]="model.primary_contact_l_name">
@@ -439,8 +440,9 @@
                 </div>
             </nb-tab>
         </nb-tabset>
+        </nb-card-body>
         <nb-card-footer>
-            <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
                 <button nbButton status="primary" shape="semi-round" hero type="submit"
                     [disabled]="isSubmitting">
                     Save
@@ -449,5 +451,4 @@
         </nb-card-footer>
     </nb-card>
 </form>
-
 

@@ -1,0 +1,290 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate class="estimate-form-shell">
+  <nb-card class="estimate-form-card">
+    <nb-card-header>New Estimate</nb-card-header>
+
+    <nb-card-body class="estimate-form-body" [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+      <section class="form-section">
+        <div class="row">
+          <div class="col-lg-12 mb-10">
+            <label class="small-label">Customer Name <span class="required">*</span></label>
+            <ngx-search-select
+              name="customer_id"
+              [placeholder]="'Select or add a customer'"
+              [options]="customerOptions"
+              [(ngModel)]="model.customer_id"
+              displayKey="label"
+              valueKey="id"
+              [required]="true"
+            ></ngx-search-select>
+            <div *ngIf="fm.submitted && !model.customer_id" class="error-message">
+              Customer name is required
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Estimate# <span class="required">*</span></label>
+            <div class="input-with-icon">
+              <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter estimate number"
+                name="estimate_no" required #estimate_no="ngModel" [(ngModel)]="model.estimate_no">
+              <button type="button" class="field-icon-btn" (click)="openEstimateNumberPopup()" aria-label="Configure estimate number preferences">
+                <nb-icon icon="settings-2-outline"></nb-icon>
+              </button>
+            </div>
+            <div *ngIf="fm.submitted && estimate_no.invalid" class="error-message">
+              Estimate number is required
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Reference#</label>
+            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter reference number"
+              name="reference_no" [(ngModel)]="model.reference_no">
+          </div>
+
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Estimate Date <span class="required">*</span></label>
+            <input type="date" nbInput fullWidth shape="semi-round"
+              name="estimate_date" required #estimate_date="ngModel" [(ngModel)]="model.estimate_date">
+            <div *ngIf="fm.submitted && estimate_date.invalid" class="error-message">
+              Estimate date is required
+            </div>
+          </div>
+
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Expiry Date</label>
+            <input type="date" nbInput fullWidth shape="semi-round"
+              name="expiry_date" [(ngModel)]="model.expiry_date">
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="row">
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Salesperson</label>
+            <nb-select fullWidth shape="semi-round" placeholder="Select or Add Salesperson"
+              name="salesperson" [(ngModel)]="model.salesperson">
+              <nb-option *ngFor="let salesperson of salespersonOptions" [value]="salesperson">{{ salesperson }}</nb-option>
+            </nb-select>
+          </div>
+
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Project Name</label>
+            <nb-select fullWidth shape="semi-round" placeholder="Select a project"
+              name="project_name" [(ngModel)]="model.project_name">
+              <nb-option *ngFor="let project of projectOptions" [value]="project">{{ project }}</nb-option>
+            </nb-select>
+            <div class="helper-text">Select a customer to associate a project.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="row">
+          <div class="col-lg-6 mb-10">
+            <label class="small-label">Subject</label>
+            <textarea nbInput fullWidth shape="semi-round" rows="2"
+              placeholder="Let your customer know what this Estimate is for"
+              name="subject" [(ngModel)]="model.subject"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="form-section">
+        <div class="table-card">
+          <div class="table-card-header">
+            <span>Item Table</span>
+            <!-- <button type="button" nbButton ghost status="primary" size="small">Bulk Actions</button> -->
+          </div>
+
+          <div class="item-table-wrapper">
+            <table class="item-table">
+              <thead>
+                <tr>
+                  <th>Item Details</th>
+                  <th>Quantity</th>
+                  <th>Rate</th>
+                  <th>Tax</th>
+                  <th>Amount</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of itemRows; let i = index; trackBy: trackByIndex">
+                  <td>
+                    <input type="text" nbInput fullWidth shape="semi-round"
+                      placeholder="Type or click to select an item."
+                      [name]="'item_details_' + i"
+                      [(ngModel)]="row.item_details">
+                  </td>
+                  <td>
+                    <input type="number" nbInput fullWidth shape="semi-round" min="1" step="1"
+                      [name]="'quantity_' + i"
+                      [(ngModel)]="row.quantity">
+                  </td>
+                  <td>
+                    <input type="number" nbInput fullWidth shape="semi-round" min="0" step="0.01"
+                      [name]="'rate_' + i"
+                      [(ngModel)]="row.rate">
+                  </td>
+                  <td>
+                    <nb-select fullWidth shape="semi-round"
+                      [name]="'tax_' + i"
+                      [(ngModel)]="row.tax">
+                      <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ tax.label }}</nb-option>
+                    </nb-select>
+                  </td>
+                  <td class="amount-cell">{{ getRowAmount(row) | number:'1.2-2' }}</td>
+                  <td class="action-cell">
+                    <button type="button" nbButton ghost status="danger" size="small"
+                      (click)="removeRow(i)" aria-label="Remove row">
+                      <nb-icon icon="trash-2-outline"></nb-icon>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-actions">
+            <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
+              <nb-icon icon="plus-outline"></nb-icon>
+              Add New Row
+            </button>
+            <!-- <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
+              <nb-icon icon="copy-outline"></nb-icon>
+              Add Items in Bulk
+            </button> -->
+          </div>
+        </div>
+      </section>
+
+      <section class="summary-layout">
+        <div class="notes-panel">
+          <label class="small-label">Customer Notes</label>
+          <textarea nbInput fullWidth shape="semi-round" rows="4"
+            name="customer_notes" [(ngModel)]="model.customer_notes"></textarea>
+        </div>
+
+        <div class="summary-card">
+          <div class="summary-row strong">
+            <span>Sub Total</span>
+            <span>{{ getSubTotal() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="tax-mode-row">
+            <nb-radio-group name="tax_mode" [(ngModel)]="model.tax_mode" class="d-flex flex-row">
+              <nb-radio *ngFor="let mode of taxModes" [value]="mode">{{ mode }}</nb-radio>
+            </nb-radio-group>
+            <nb-select shape="semi-round" placeholder="Select a Tax"
+              name="additional_tax" [(ngModel)]="model.additional_tax">
+              <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ tax.label }}</nb-option>
+            </nb-select>
+          </div>
+
+          <div class="summary-row muted">
+            <span>{{ model.tax_mode }}</span>
+            <span>{{ getAdditionalTaxAmount() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="adjustment-row">
+            <input type="text" nbInput shape="semi-round" placeholder="Adjustment"
+              name="adjustment_label" [(ngModel)]="model.adjustment_label">
+            <input type="number" nbInput shape="semi-round" placeholder="0.00" step="0.01"
+              name="adjustment_value" [(ngModel)]="model.adjustment_value">
+          </div>
+
+          <div class="summary-row">
+            <span>{{ model.adjustment_label || 'Adjustment' }}</span>
+            <span>{{ getAdjustmentValue() | number:'1.2-2' }}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Round Off</span>
+            <span>0.00</span>
+          </div>
+
+          <div class="summary-row total-row">
+            <span>Total ( Rs )</span>
+            <span>{{ getTotal() | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </section>
+    </nb-card-body>
+
+    <nb-card-footer>
+      <div class="footer-actions">
+        <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+          Save Estimate
+        </button>
+      </div>
+    </nb-card-footer>
+  </nb-card>
+</form>
+
+<div class="estimate-number-overlay" *ngIf="showEstimateNumberPopup" (click)="closeEstimateNumberPopup()">
+  <div class="estimate-number-modal" (click)="$event.stopPropagation()">
+    <div class="estimate-number-header">
+      <h2>Configure Estimate Number Preferences</h2>
+      <button type="button" class="estimate-number-close" (click)="closeEstimateNumberPopup()" aria-label="Close">
+        <nb-icon icon="close-outline"></nb-icon>
+      </button>
+    </div>
+
+    <form #estimateNumberForm="ngForm" (ngSubmit)="saveEstimateNumberPreference()" novalidate class="estimate-number-form">
+    <div class="estimate-number-body">
+      <p class="estimate-number-copy">
+        Your estimate numbers are set on auto-generate mode to save your time. Are you sure about changing this setting?
+      </p>
+
+      <div class="estimate-number-radio-group">
+        <div class="preference-option">
+          <label class="plain-radio-row">
+            <input
+              type="radio"
+              name="estimate_number_mode"
+              value="auto"
+              [(ngModel)]="estimateNumberPreference.mode">
+            <span class="plain-radio-indicator"></span>
+            <span class="plain-radio-text">Continue auto-generating estimate numbers</span>
+            <span class="preference-info">i</span>
+          </label>
+
+          <div class="preference-grid" *ngIf="estimateNumberPreference.mode === 'auto'">
+            <div class="preference-field">
+              <label class="preference-field-label">Prefix</label>
+              <input type="text" nbInput fullWidth shape="semi-round"
+                name="estimate_prefix" [(ngModel)]="estimateNumberPreference.prefix">
+            </div>
+
+            <div class="preference-field">
+              <label class="preference-field-label">Next Number</label>
+              <input type="text" nbInput fullWidth shape="semi-round"
+                name="estimate_next_number" [(ngModel)]="estimateNumberPreference.nextNumber">
+            </div>
+          </div>
+        </div>
+
+        <div class="preference-option manual-option">
+          <label class="plain-radio-row">
+            <input
+              type="radio"
+              name="estimate_number_mode"
+              value="manual"
+              [(ngModel)]="estimateNumberPreference.mode">
+            <span class="plain-radio-indicator"></span>
+            <span class="plain-radio-text">Enter estimate numbers manually</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="estimate-number-footer">
+      <button type="submit" nbButton status="success" shape="semi-round">Save</button>
+      <button type="button" nbButton status="basic" shape="semi-round" (click)="closeEstimateNumberPopup()">Cancel</button>
+    </div>
+    </form>
+  </div>
+</div>

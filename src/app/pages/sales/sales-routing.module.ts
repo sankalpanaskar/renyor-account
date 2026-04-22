@@ -6,6 +6,8 @@ import { authGuard } from '../../auth/auth.guard';
 import { CustomersListComponent } from './customers-list/customers-list.component';
 import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
+import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
+import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 
 const routes: Routes = [
   {
@@ -30,6 +32,16 @@ const routes: Routes = [
       {
         path:'item-list',
         component:ItemListComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'add-estimate',
+        component:AddEstimatesComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'add-sales-order',
+        component:AddSalesOrderComponent,
         canActivate: [authGuard]
       }
     ]
