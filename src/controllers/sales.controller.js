@@ -49,6 +49,7 @@ exports.createCustomer1 = async (req, res) => {
 exports.createCustomer = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
 
     const uploaded_file_name_1 = req.files?.document_1?.[0]?.filename || null;
     const uploaded_file_name_2 = req.files?.document_2?.[0]?.filename || null;
@@ -56,12 +57,34 @@ exports.createCustomer = async (req, res) => {
     const customers = await sales.createCustomer(
       req.body,   // no parsing here
       tenant_id,
+      user_id,
       uploaded_file_name_1,
       uploaded_file_name_2
     );
     return res.success(200, "Customer created successfully", customers);
 
-    return res.success(200, "Customer created successfully", customers);
+    
+  } catch (err) {
+    return res.error(500, err.message);
+  }
+};
+
+exports.createVendor = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const uploaded_file_name_1 = req.files?.document_1?.[0]?.filename || null;
+    const uploaded_file_name_2 = req.files?.document_2?.[0]?.filename || null;
+
+    const vendors = await sales.createVendor(
+      req.body,   // no parsing here
+      tenant_id,
+      user_id,
+      uploaded_file_name_1,
+      uploaded_file_name_2
+    );
+    return res.success(200, "Vendor created successfully", vendors);
   } catch (err) {
     return res.error(500, err.message);
   }

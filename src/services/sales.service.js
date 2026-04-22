@@ -127,6 +127,7 @@ exports.fetchAllCustomers = async (tenant_id, module_id) => {
 exports.createCustomer = async (
   data,
   tenant_id,
+  user_id,
   uploaded_file_name_1 = null,
   uploaded_file_name_2 = null
 ) => {
@@ -172,6 +173,7 @@ exports.createCustomer = async (
     const [result] = await connection.query(
       `INSERT INTO customers (
         tenant_id,
+        user_id,
         customer_type,
         primary_contact_f_name,
         primary_contact_l_name,
@@ -203,9 +205,10 @@ exports.createCustomer = async (
         shipping_city,
         shipping_state,
         shipping_pin
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         tenant_id,
+        user_id,
         customer_type,
         primary_contact_f_name,
         primary_contact_l_name,
@@ -304,6 +307,217 @@ exports.createCustomer = async (
   }
 };
 
+
+exports.createVendor = async (
+  data,
+  tenant_id,
+  user_id,
+  uploaded_file_name_1 = null,
+  uploaded_file_name_2 = null
+) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    let {
+      module_id,
+      primary_contact_f_name,
+      primary_contact_l_name,
+      company_name,
+      display_name,
+      email,
+      work_phone,
+      mobile_no,
+      group,
+      gst_treatment,
+      source_of_supply,
+      pan,
+      opening_balance,
+      payment_terms,
+      tds,
+      website,
+      department,
+      designation,
+      document_1_name,
+      document_2_name,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      msme_registration_type,
+      msme_registration_number,
+      bank_accounts = [],
+      custom_field
+    } = data;
+
+    if (!module_id) {
+      throw new Error("module_id is required");
+    }
+
+    if (typeof bank_accounts === "string") {
+      bank_accounts = JSON.parse(bank_accounts);
+    }
+
+    if (typeof custom_field === "string") {
+      custom_field = JSON.parse(custom_field);
+    }
+
+    if (!Array.isArray(bank_accounts)) {
+      bank_accounts = [];
+    }
+
+    const gst_no = custom_field?.gst_no || null;
+
+    const [result] = await connection.query(
+      `INSERT INTO vendor_master (
+        tenant_id,
+        user_id,
+        primary_contact_f_name,
+        primary_contact_l_name,
+        company_name,
+        display_name,
+        email,
+        work_phone,
+        mobile_no,
+        group_name,
+        gst_treatment,
+        source_of_supply,
+        pan,
+        opening_balance,
+        payment_terms,
+        tds,
+        website,
+        department,
+        designation,
+        document_1_name,
+        document_2_name,
+        billing_address,
+        billing_country,
+        billing_city,
+        billing_state,
+        billing_pin,
+        shipping_address,
+        shipping_country,
+        shipping_city,
+        shipping_state,
+        shipping_pin,
+        msme_registration_type,
+        msme_registration_number
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        tenant_id,
+        user_id,
+        primary_contact_f_name || null,
+        primary_contact_l_name || null,
+        company_name || null,
+        display_name || null,
+        email || null,
+        work_phone || null,
+        mobile_no || null,
+        group || null,
+        gst_treatment || null,
+        source_of_supply || null,
+        pan || null,
+        opening_balance || 0,
+        payment_terms || null,
+        tds || null,
+        website || null,
+        department || null,
+        designation || null,
+        document_1_name || null,
+        document_2_name || null,
+        billing_address || null,
+        billing_country || null,
+        billing_city || null,
+        billing_state || null,
+        billing_pin || null,
+        shipping_address || null,
+        shipping_country || null,
+        shipping_city || null,
+        shipping_state || null,
+        shipping_pin || null,
+        msme_registration_type || null,
+        msme_registration_number || null,
+      ]
+    );
+
+    const vendor_master_id = result.insertId;
+
+    if (bank_accounts.length > 0) {
+      for (const bank of bank_accounts) {
+        if (
+          bank.account_number &&
+          bank.re_enter_account_number &&
+          bank.account_number !== bank.re_enter_account_number
+        ) {
+          throw new Error("Bank account number mismatch");
+        }
+      }
+
+      const bankValues = bank_accounts.map((bank) => [
+        vendor_master_id,
+        bank.account_holder_name || null,
+        bank.bank_name || null,
+        bank.account_number || null,
+        bank.re_enter_account_number || null,
+        bank.ifsc || null
+      ]);
+
+      await connection.query(
+        `INSERT INTO vendor_bank_accounts (
+          vendor_master_id,
+          account_holder_name,
+          bank_name,
+          account_number,
+          re_enter_account_number,
+          ifsc
+        ) VALUES ?`,
+        [bankValues]
+      );
+    }
+
+    if (custom_field) {
+      await handleCustomFields({
+        connection,
+        custom_field,
+        module_id,
+        tenant_id,
+        record_id: vendor_master_id
+      });
+    }
+
+    const [vendorRows] = await connection.query(
+      `SELECT * FROM vendor_master WHERE id = ? AND tenant_id = ?`,
+      [vendor_master_id, tenant_id]
+    );
+
+    const [bankRows] = await connection.query(
+      `SELECT * FROM vendor_bank_accounts WHERE vendor_master_id = ?`,
+      [vendor_master_id]
+    );
+
+    await connection.commit();
+
+    return {
+      ...vendorRows[0],
+      bank_accounts: bankRows,
+      uploaded_file_name_1,
+      uploaded_file_name_2
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
 
 
 

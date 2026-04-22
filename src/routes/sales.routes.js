@@ -22,6 +22,22 @@ router.post(
   salesController.createCustomer
 );
 
+router.post(
+  '/create-vendor',
+  auth,
+  (req, res, next) => {
+    const tenant_id = req.user?.tenant_id || 'common';
+
+    const upload = createUpload(`../uploads/vendors/${tenant_id}`);
+
+    upload.fields([
+      { name: 'document_1', maxCount: 1 },
+      { name: 'document_2', maxCount: 1 }
+    ])(req, res, next);
+  },
+  salesController.createVendor
+);
+
 
 router.get('/fetch-customers', auth, salesController.fetchCustomers);
 //router.post('/create-customer', auth, upload.none(),salesController.createCustomer);
