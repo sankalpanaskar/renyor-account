@@ -40,6 +40,7 @@ router.post(
 
 
 router.get('/fetch-customers', auth, salesController.fetchCustomers);
+router.get('/fetch-vendors', auth, salesController.fetchVendors);
 //router.post('/create-customer', auth, upload.none(),salesController.createCustomer);
 router.get('/fetch-chartofaccounts-head-type', auth, salesController.getchartofaccountsHeadType);
 router.post('/create-chartofaccounts', auth, upload.none(),salesController.createchartofaccounts);

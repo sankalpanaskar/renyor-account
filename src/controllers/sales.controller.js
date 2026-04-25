@@ -24,6 +24,29 @@ exports.fetchCustomers = async (req, res) => {
   }
 };
 
+exports.fetchVendors = async (req, res) => {
+  try {
+    const { module_id } = req.query;   // <-- changed here
+
+    if (!module_id) {
+      return res.status(400).json({ message: "module_id is required" });
+    }
+    const tenant_id = req.user.tenant_id;
+    const vendors = await sales.fetchAllVendors(tenant_id, module_id);
+
+    return res.success(
+      200,
+      "Vendors fetched successfully",
+      vendors
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch vendors"
+    );
+  }
+};
+
     
 
 exports.createCustomer1 = async (req, res) => {

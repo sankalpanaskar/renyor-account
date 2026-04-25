@@ -120,6 +120,48 @@ exports.fetchAllCustomers = async (tenant_id, module_id) => {
   }));
 };
 
+exports.fetchAllVendors = async (tenant_id, module_id) => {
+  const [vendors] = await db.query(
+    "SELECT * FROM vendor_master WHERE tenant_id = ? ORDER BY id DESC",
+    [tenant_id]
+  );
+
+  if (!vendors.length) {
+    return [];
+  }
+
+  const vendorIds = vendors.map((v) => v.id);
+
+  const [vendorRows] = await db.query(
+    `SELECT 
+        cfv.record_id,
+        cf.field_name,
+        cfv.field_value
+     FROM custom_field_values cfv
+     INNER JOIN custom_fields cf 
+       ON cf.id = cfv.field_id
+     WHERE cfv.module_id = ?
+     AND cfv.tenant_id = ?
+       AND cfv.record_id IN (?)`,
+    [module_id, tenant_id, vendorIds]
+  );
+  console.log(vendorRows,module_id, vendorIds);
+
+  const customFieldMap = {};
+
+  for (const row of vendorRows) {
+    if (!customFieldMap[row.record_id]) {
+      customFieldMap[row.record_id] = {};
+    }
+    customFieldMap[row.record_id][row.field_name] = row.field_value;
+  }
+
+  return vendors.map((vendor) => ({
+    ...vendor,
+    custom_field: customFieldMap[vendor.id] || {}
+  }));
+};
+
 
 
 
