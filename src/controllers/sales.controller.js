@@ -199,7 +199,7 @@ exports.createAccountsheadtype = async (req, res) => {
     
     
     console.log(req.body);
-    const chartOfAccountsName = await sales.chartofaccountsheadtype(req.body);
+    const chartOfAccountsName = await sales.createAccountsheadtype(req.body);
 
     return res.success(
       200,
