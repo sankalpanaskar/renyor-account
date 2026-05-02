@@ -237,5 +237,48 @@ exports.createAccountsheadtype = async (req, res) => {
     }
   }
 };
+exports.createTaxRate = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+    
+    console.log(req.body);
+    const taxRate = await sales.createTaxRate(req.body,tenant_id,user_id);
 
+    return res.success(
+      200,
+      "Tax Rate created successfully",
+      taxRate
+    );
+  } catch (err) {
+     if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "this tax rate already exists. Please use a different name."
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+  }
+};
 
+exports.fetchTaxRates = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const taxRates = await sales.fetchTaxRates(tenant_id);
+
+    return res.success(
+      200,
+      "Tax Rates fetched successfully",
+      taxRates
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch Tax Rates"
+    );
+  }
+};

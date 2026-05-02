@@ -53,6 +53,9 @@ router.get('/fetch-chartofaccounts-item', auth, salesController.getchartofaccoun
 router.get('/fetch-tds', auth, salesController.fetchTds);
 
 router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
+router.post('/create-tax-rate', auth, upload.none(), salesController.createTaxRate);
+
+router.get('/fetch-tax-rates', auth, salesController.fetchTaxRates);
 
 
 module.exports = router;

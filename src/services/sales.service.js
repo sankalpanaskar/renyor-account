@@ -808,6 +808,52 @@ exports.getchartofaccountsItem = async (tenant_id) => {
   }
 };
 
+exports.createTaxRate = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const { name, value_in_percentage } = data;
+
+    if (!name) {
+      throw new Error('name is required');
+    }
+
+    if (value_in_percentage === undefined || value_in_percentage === null) {
+      throw new Error('value_in_percentage is required');
+    }
+
+    const [result] = await connection.query(
+      `INSERT INTO tax_rate (name, value_in_percentage, tenant_id, user_id, status)
+       VALUES (?, ?, ?, ?, 1)`,
+      [name, value_in_percentage, tenant_id, user_id]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT * FROM tax_rate WHERE id = ?`,
+      [result.insertId]
+    );
+
+    await connection.commit();
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.fetchTaxRates = async (tenant_id) => {
+  const [rows] = await db.query(
+    "SELECT * FROM tax_rate WHERE tenant_id = ? ORDER BY id DESC",
+    [tenant_id]
+  );
+
+  return rows;
+};
+
 
 
 
