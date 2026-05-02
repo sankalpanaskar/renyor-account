@@ -721,7 +721,7 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
   }
 };
 
-exports.chartofaccountsheadtype = async (data, tenant_id, user_id) => {
+exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
   const connection = await db.getConnection();
 
   try {
