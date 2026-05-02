@@ -130,6 +130,23 @@ exports.getchartofaccountsHeadType = async (req, res) => {
     );
   }
 };
+exports.getchartofaccountsItem = async (req, res) => {
+  try {
+    
+    const groups = await sales.getchartofaccountsItem(req.user.tenant_id);
+
+    return res.success(
+      200,
+      "Accounts Item fetched successfully",
+      groups
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch Accounts Item"
+    );
+  }
+};
 
 exports.fetchTds = async (req, res) => {
   try {

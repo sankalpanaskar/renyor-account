@@ -789,6 +789,25 @@ exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
   }
 };
 
+exports.getchartofaccountsItem = async (tenant_id) => {
+  try {
+
+    const [rows] = await db.query(`
+    SELECT id, account_name, account_item
+    FROM chartofaccounts_name
+    WHERE status = 1 AND tenant_id = ?
+    ORDER BY id
+  `,[tenant_id]);
+    //const groups = await exports.fetchGroups();
+    //const tree = buildTree(rows, null); // root = NULL
+
+    return rows
+
+  } catch (error) {
+    
+  }
+};
+
 
 
 

@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const salesController = require('../controllers/sales.controller');
 const auth = require('../middleware/auth');
+const authSuperadmin = require('../middleware/authSuperAdmin');
 const multer = require('multer');
 const upload = multer();
 
@@ -44,7 +45,10 @@ router.get('/fetch-vendors', auth, salesController.fetchVendors);
 //router.post('/create-customer', auth, upload.none(),salesController.createCustomer);
 router.get('/fetch-chartofaccounts-head-type', auth, salesController.getchartofaccountsHeadType);
 router.post('/create-chartofaccounts', auth, upload.none(),salesController.createchartofaccounts);
-router.post('/create-accounts-head-type', auth, upload.none(),salesController.createAccountsheadtype);
+router.post('/create-accounts-head-type', authSuperadmin, upload.none(),salesController.createAccountsheadtype);
+
+
+router.get('/fetch-chartofaccounts-item', auth, salesController.getchartofaccountsItem);
 
 router.get('/fetch-tds', auth, salesController.fetchTds);
 
