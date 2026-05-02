@@ -633,30 +633,7 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
       module_id,
     } = data;
 
-    // Check if account_name already exists for this tenant
-    const [existingRows] = await connection.query(
-      `SELECT id
-       FROM chartofaccounts_name
-       WHERE account_name = ? AND tenant_id = ?
-       LIMIT 1`,
-      [account_name, tenant_id]
-    );
-
-    let recordId;
-
-    if (existingRows.length > 0) {
-      // If exists, update account_item
-      recordId = existingRows[0].id;
-
-      await connection.query(
-        `UPDATE chartofaccounts_name
-         SET account_item = ?
-         WHERE id = ?`,
-        [account_item, recordId]
-      );
-    } else {
-      // If not exists, insert new row
-      const [result] = await connection.query(
+    const [result] = await connection.query(
         `INSERT INTO chartofaccounts_name (
           account_name,
           account_item,
@@ -674,7 +651,6 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
       );
 
       recordId = result.insertId;
-    }
 
     // Handle custom fields
     if (custom_field && module_id) {
