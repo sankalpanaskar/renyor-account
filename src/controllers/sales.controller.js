@@ -194,5 +194,31 @@ exports.createchartofaccounts = async (req, res) => {
     }
   }
 };
+exports.createAccountsheadtype = async (req, res) => {
+  try {
+    
+    
+    console.log(req.body);
+    const chartOfAccountsName = await sales.chartofaccountsheadtype(req.body);
+
+    return res.success(
+      200,
+      "Chart of Accounts Name created successfully",
+      chartOfAccountsName
+    );
+  } catch (err) {
+     if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "this account name already exists under the same head type. Please use a different name."
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+  }
+};
 
 
