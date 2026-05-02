@@ -15,7 +15,6 @@ export class AddItemComponent implements OnInit {
     id: number;
     account_name: string;
     account_item: string;
-    label: string;
   }> = [];
 
   constructor(
@@ -39,8 +38,7 @@ export class AddItemComponent implements OnInit {
             return {
               id: Number(item?.id || 0),
               account_name: accountName,
-              account_item: accountItem,
-              label: accountName && accountItem ? `${accountName} - ${accountItem}` : accountName || accountItem,
+              account_item: accountItem
             };
           })
           .filter((item: any) => item.id > 0 && !!item.account_item);

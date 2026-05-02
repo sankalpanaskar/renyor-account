@@ -49,8 +49,8 @@ export class AddEstimatesComponent implements OnInit {
     customer_id: '',
     estimate_no: '',
     reference_no: '',
-    estimate_date: '',
-    expiry_date: '',
+    estimate_date: null,
+    expiry_date: null,
     salesperson: '',
     project_name: '',
     subject: '',
@@ -77,7 +77,7 @@ export class AddEstimatesComponent implements OnInit {
   ngOnInit(): void {
     this.fetchCustomers();
     this.applyEstimateNumber();
-    this.model.estimate_date = this.getTodayAsInputDate();
+    this.model.estimate_date = this.getToday();
     this.addRow();
     this.addRow();
   }
@@ -108,12 +108,8 @@ export class AddEstimatesComponent implements OnInit {
     return `${this.estimateNumberPreference.prefix}${this.estimateNumberPreference.nextNumber}`;
   }
 
-  getTodayAsInputDate(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = `${today.getMonth() + 1}`.padStart(2, '0');
-    const day = `${today.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  getToday(): Date {
+    return new Date();
   }
 
   addRow(): void {

@@ -53,8 +53,8 @@ export class AddSalesOrderComponent implements OnInit {
     customer_id: '',
     sales_order_no: '',
     reference_no: '',
-    sales_order_date: '',
-    expected_shipment_date: '',
+    sales_order_date: null,
+    expected_shipment_date: null,
     payment_terms: '',
     delivery_method: '',
     salesperson: '',
@@ -83,7 +83,7 @@ export class AddSalesOrderComponent implements OnInit {
     this.fetchCustomers();
     this.fetchPaymentTerms();
     this.applyOrderNumber();
-    this.model.sales_order_date = this.getTodayAsInputDate();
+    this.model.sales_order_date = this.getToday();
     this.addRow();
   }
 
@@ -133,12 +133,8 @@ export class AddSalesOrderComponent implements OnInit {
     return `${this.orderNumberPreference.prefix}${this.orderNumberPreference.nextNumber}`;
   }
 
-  getTodayAsInputDate(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = `${today.getMonth() + 1}`.padStart(2, '0');
-    const day = `${today.getDate()}`.padStart(2, '0');
-    return `${year}-${month}-${day}`;
+  getToday(): Date {
+    return new Date();
   }
 
   addRow(): void {

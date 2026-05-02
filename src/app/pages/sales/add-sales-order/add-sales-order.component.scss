@@ -22,26 +22,8 @@
   background: #f8fafc;
 }
 
-.form-section,
-.summary-layout {
+.sales-order-form-body > .row {
   margin-top: 0.75rem;
-  border: 1px solid #edf1f7;
-  border-radius: 10px;
-  background: #ffffff;
-  padding: 1.25rem;
-}
-
-.summary-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 32rem;
-  gap: 1.25rem;
-  align-items: start;
-}
-
-.notes-stack,
-.summary-stack {
-  display: grid;
-  gap: 1rem;
 }
 
 .table-card {
@@ -117,6 +99,11 @@
   border-radius: 12px;
   background: #fff;
   padding: 1rem;
+}
+
+.notes-panel + .notes-panel,
+.summary-card + .notes-panel {
+  margin-top: 1rem;
 }
 
 .summary-card {
@@ -403,10 +390,6 @@ nb-select {
 }
 
 @media (max-width: 991px) {
-  .summary-layout {
-    grid-template-columns: 1fr;
-  }
-
   .tax-mode-row,
   .adjustment-row {
     grid-template-columns: 1fr;
@@ -436,11 +419,6 @@ nb-select {
 @media (max-width: 767px) {
   .sales-order-form-shell {
     min-height: calc(100vh - 7.5rem);
-  }
-
-  .form-section,
-  .summary-layout {
-    padding: 1rem;
   }
 
   .table-card-header {

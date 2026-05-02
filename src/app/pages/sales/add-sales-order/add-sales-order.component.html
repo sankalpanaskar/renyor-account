@@ -3,174 +3,168 @@
     <nb-card-header>New Sales Order</nb-card-header>
 
     <nb-card-body class="sales-order-form-body" [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
-      <section class="form-section">
-        <div class="row">
-          <div class="col-lg-12 mb-10">
-            <label class="small-label">Customer Name <span class="required">*</span></label>
-            <div class="customer-select-row">
-              <div class="customer-select-main">
-                <ngx-search-select
-                  name="customer_id"
-                  [placeholder]="'Select or add a customer'"
-                  [options]="customerOptions"
-                  [(ngModel)]="model.customer_id"
-                  displayKey="label"
-                  valueKey="id"
-                  [required]="true"
-                ></ngx-search-select>
-              </div>
-            </div>
-            <div *ngIf="fm.submitted && !model.customer_id" class="error-message">
-              Customer name is required
+      <div class="row">
+        <div class="col-lg-12 mb-10">
+          <label class="small-label">Customer Name <span class="required">*</span></label>
+          <div class="customer-select-row">
+            <div class="customer-select-main">
+              <ngx-search-select
+                name="customer_id"
+                [placeholder]="'Select or add a customer'"
+                [options]="customerOptions"
+                [(ngModel)]="model.customer_id"
+                displayKey="label"
+                valueKey="id"
+                [required]="true"
+              ></ngx-search-select>
             </div>
           </div>
+          <div *ngIf="fm.submitted && !model.customer_id" class="error-message">
+            Customer name is required
+          </div>
         </div>
-      </section>
 
-      <section class="form-section">
-        <div class="row">
-          <div class="col-lg-6 mb-10">
-            <label class="small-label">Sales Order# <span class="required">*</span></label>
-            <div class="input-with-icon">
-              <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter sales order number"
-                name="sales_order_no" required #sales_order_no="ngModel" [(ngModel)]="model.sales_order_no">
-              <button type="button" class="field-icon-btn" (click)="openOrderNumberPopup()" aria-label="Configure sales order number preferences">
-                <nb-icon icon="settings-2-outline"></nb-icon>
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Sales Order# <span class="required">*</span></label>
+          <div class="input-with-icon">
+            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter sales order number"
+              name="sales_order_no" required #sales_order_no="ngModel" [(ngModel)]="model.sales_order_no">
+            <button type="button" class="field-icon-btn" (click)="openOrderNumberPopup()" aria-label="Configure sales order number preferences">
+              <nb-icon icon="settings-2-outline"></nb-icon>
+            </button>
+          </div>
+          <div *ngIf="fm.submitted && sales_order_no.invalid" class="error-message">
+            Sales order number is required
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Reference#</label>
+          <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter reference number"
+            name="reference_no" [(ngModel)]="model.reference_no">
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Sales Order Date <span class="required">*</span></label>
+          <input nbInput fullWidth shape="semi-round" placeholder="Select sales order date"
+            [nbDatepicker]="salesOrderDatePicker"
+            name="sales_order_date" required #sales_order_date="ngModel" [(ngModel)]="model.sales_order_date">
+          <nb-datepicker #salesOrderDatePicker></nb-datepicker>
+          <div *ngIf="fm.submitted && sales_order_date.invalid" class="error-message">
+            Sales order date is required
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Expected Shipment Date</label>
+          <input nbInput fullWidth shape="semi-round" placeholder="Select expected shipment date"
+            [nbDatepicker]="expectedShipmentDatePicker"
+            name="expected_shipment_date" [(ngModel)]="model.expected_shipment_date">
+          <nb-datepicker #expectedShipmentDatePicker></nb-datepicker>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Payment Terms</label>
+          <ngx-search-select
+            name="payment_terms"
+            [placeholder]="'Select payment terms'"
+            [options]="paymentTerms"
+            [(ngModel)]="model.payment_terms"
+            displayKey="termName"
+            valueKey="termName"
+          ></ngx-search-select>
+        </div>
+      
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Delivery Method</label>
+          <ngx-search-select
+            name="delivery_method"
+            [placeholder]="'Select a delivery method or type to add'"
+            [options]="deliveryMethodOptions"
+            [(ngModel)]="model.delivery_method"
+          ></ngx-search-select>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Salesperson</label>
+          <input type="text" nbInput fullWidth shape="semi-round" placeholder="Type to select or add a salesperson"
+            name="salesperson" [(ngModel)]="model.salesperson">
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-12 mb-10">
+          <div class="table-card">
+            <div class="table-card-header">
+              <span>Item Table</span>
+              <button type="button" nbButton ghost status="primary" size="small">Bulk Actions</button>
+            </div>
+
+            <div class="item-table-wrapper">
+              <table class="item-table">
+                <thead>
+                  <tr>
+                    <th>Item Details</th>
+                    <th>Quantity</th>
+                    <th>Rate</th>
+                    <th>Tax</th>
+                    <th>Amount</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of itemRows; let i = index; trackBy: trackByIndex">
+                    <td>
+                      <input type="text" nbInput fullWidth shape="semi-round"
+                        placeholder="Type or click to select an item."
+                        [name]="'item_details_' + i"
+                        [(ngModel)]="row.item_details">
+                    </td>
+                    <td>
+                      <input type="number" nbInput fullWidth shape="semi-round" min="1" step="1"
+                        [name]="'quantity_' + i"
+                        [(ngModel)]="row.quantity">
+                    </td>
+                    <td>
+                      <input type="number" nbInput fullWidth shape="semi-round" min="0" step="0.01"
+                        [name]="'rate_' + i"
+                        [(ngModel)]="row.rate">
+                    </td>
+                    <td>
+                      <nb-select fullWidth shape="semi-round" placeholder="Select a Tax"
+                        [name]="'tax_' + i"
+                        [(ngModel)]="row.tax">
+                        <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ tax.label }}</nb-option>
+                      </nb-select>
+                    </td>
+                    <td class="amount-cell">{{ getRowAmount(row) | number:'1.2-2' }}</td>
+                    <td class="action-cell">
+                      <button type="button" nbButton ghost status="danger" size="small"
+                        (click)="removeRow(i)" aria-label="Remove row">
+                        <nb-icon icon="trash-2-outline"></nb-icon>
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-actions">
+              <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
+                <nb-icon icon="plus-outline"></nb-icon>
+                Add New Row
+              </button>
+              <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
+                <nb-icon icon="copy-outline"></nb-icon>
+                Add Items in Bulk
               </button>
             </div>
-            <div *ngIf="fm.submitted && sales_order_no.invalid" class="error-message">
-              Sales order number is required
-            </div>
-          </div>
-
-          <div class="col-lg-6 mb-10">
-            <label class="small-label">Reference#</label>
-            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter reference number"
-              name="reference_no" [(ngModel)]="model.reference_no">
-          </div>
-
-          <div class="col-lg-6 mb-10">
-            <label class="small-label">Sales Order Date <span class="required">*</span></label>
-            <input type="date" nbInput fullWidth shape="semi-round"
-              name="sales_order_date" required #sales_order_date="ngModel" [(ngModel)]="model.sales_order_date">
-            <div *ngIf="fm.submitted && sales_order_date.invalid" class="error-message">
-              Sales order date is required
-            </div>
-          </div>
-
-          <div class="col-lg-6 mb-10">
-            <label class="small-label">Expected Shipment Date</label>
-            <input type="date" nbInput fullWidth shape="semi-round"
-              name="expected_shipment_date" [(ngModel)]="model.expected_shipment_date">
-          </div>
-
-          <div class="col-lg-6 mb-10">
-            <label class="small-label">Payment Terms</label>
-            <ngx-search-select
-              name="payment_terms"
-              [placeholder]="'Select payment terms'"
-              [options]="paymentTerms"
-              [(ngModel)]="model.payment_terms"
-              displayKey="termName"
-              valueKey="termName"
-            ></ngx-search-select>
           </div>
         </div>
-      </section>
+      </div>
 
-      <section class="form-section">
-        <div class="row">
-          <div class="col-lg-6 mb-10">
-            <label class="small-label">Delivery Method</label>
-            <ngx-search-select
-              name="delivery_method"
-              [placeholder]="'Select a delivery method or type to add'"
-              [options]="deliveryMethodOptions"
-              [(ngModel)]="model.delivery_method"
-            ></ngx-search-select>
-          </div>
-
-          <div class="col-lg-6 mb-10">
-            <label class="small-label">Salesperson</label>
-            <nb-select fullWidth shape="semi-round" placeholder="Select or Add Salesperson"
-              name="salesperson" [(ngModel)]="model.salesperson">
-              <nb-option *ngFor="let salesperson of salespersonOptions" [value]="salesperson">{{ salesperson }}</nb-option>
-            </nb-select>
-          </div>
-        </div>
-      </section>
-
-      <section class="form-section">
-        <div class="table-card">
-          <div class="table-card-header">
-            <span>Item Table</span>
-            <button type="button" nbButton ghost status="primary" size="small">Bulk Actions</button>
-          </div>
-
-          <div class="item-table-wrapper">
-            <table class="item-table">
-              <thead>
-                <tr>
-                  <th>Item Details</th>
-                  <th>Quantity</th>
-                  <th>Rate</th>
-                  <th>Tax</th>
-                  <th>Amount</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let row of itemRows; let i = index; trackBy: trackByIndex">
-                  <td>
-                    <input type="text" nbInput fullWidth shape="semi-round"
-                      placeholder="Type or click to select an item."
-                      [name]="'item_details_' + i"
-                      [(ngModel)]="row.item_details">
-                  </td>
-                  <td>
-                    <input type="number" nbInput fullWidth shape="semi-round" min="1" step="1"
-                      [name]="'quantity_' + i"
-                      [(ngModel)]="row.quantity">
-                  </td>
-                  <td>
-                    <input type="number" nbInput fullWidth shape="semi-round" min="0" step="0.01"
-                      [name]="'rate_' + i"
-                      [(ngModel)]="row.rate">
-                  </td>
-                  <td>
-                    <nb-select fullWidth shape="semi-round" placeholder="Select a Tax"
-                      [name]="'tax_' + i"
-                      [(ngModel)]="row.tax">
-                      <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ tax.label }}</nb-option>
-                    </nb-select>
-                  </td>
-                  <td class="amount-cell">{{ getRowAmount(row) | number:'1.2-2' }}</td>
-                  <td class="action-cell">
-                    <button type="button" nbButton ghost status="danger" size="small"
-                      (click)="removeRow(i)" aria-label="Remove row">
-                      <nb-icon icon="trash-2-outline"></nb-icon>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-
-          <div class="table-actions">
-            <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
-              <nb-icon icon="plus-outline"></nb-icon>
-              Add New Row
-            </button>
-            <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
-              <nb-icon icon="copy-outline"></nb-icon>
-              Add Items in Bulk
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section class="summary-layout">
-        <div class="notes-stack">
+      <div class="row">
+        <div class="col-lg-6 mb-10">
           <div class="notes-panel">
             <label class="small-label">Customer Notes</label>
             <textarea nbInput fullWidth shape="semi-round" rows="3"
@@ -186,7 +180,7 @@
           </div>
         </div>
 
-        <div class="summary-stack">
+        <div class="col-lg-6 mb-10">
           <div class="summary-card">
             <div class="summary-row strong">
               <span>Sub Total</span>
@@ -241,7 +235,7 @@
             </ngx-file-upload>
           </div>
         </div>
-      </section>
+      </div>
     </nb-card-body>
 
     <nb-card-footer>
