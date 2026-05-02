@@ -1,34 +1,189 @@
+<!-- Vendor View Popup Overlay -->
+<div *ngIf="showVendorPopup" class="vendor-dialog-overlay" (click)="closeVendorPopup()">
+  <div class="vendor-dialog-wrapper" (click)="$event.stopPropagation()">
+    <div class="vendor-dialog-shell">
+      <div class="dialog-header">
+        <div class="dialog-header-copy">
+          <span class="vendor-code-badge">
+            {{ selectedVendor?.display_name || getVendorName(selectedVendor) }}
+          </span>
+          <div class="vendor-title">
+            {{ getVendorName(selectedVendor) }}
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeVendorPopup()" aria-label="Close vendor details">&times;</button>
+      </div>
+
+      <div class="popup-scroll-body">
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Vendor Snapshot</div>
+          <div class="info-card-grid three-columns">
+            <div class="info-card" *ngFor="let field of [
+              { label: 'Display Name', value: selectedVendor?.display_name || '-' },
+              { label: 'Vendor Group', value: getVendorGroupName(selectedVendor) },
+              { label: 'Source of Supply', value: selectedVendor?.source_of_supply || '-' },
+              { label: 'MSME Registered', value: isMsmeRegistered(selectedVendor) ? 'Yes' : 'No' }
+            ]">
+              <div class="section-label">{{ field.label }}</div>
+              <div class="section-value">{{ field.value }}</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="dialog-split-grid">
+          <section class="dialog-group">
+            <div class="dialog-group-title">Contact</div>
+            <div class="info-card-grid two-columns">
+              <div class="info-card" *ngFor="let field of [
+                { label: 'Primary Contact', value: getPrimaryContact(selectedVendor) || '-' },
+                { label: 'Email', value: selectedVendor?.email || '-' },
+                { label: 'Mobile No', value: selectedVendor?.mobile_no || '-' },
+                { label: 'Work Phone', value: selectedVendor?.work_phone || '-' },
+                { label: 'Department', value: selectedVendor?.department || '-' },
+                { label: 'Designation', value: selectedVendor?.designation || '-' }
+              ]">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value">{{ field.value }}</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dialog-group">
+            <div class="dialog-group-title">Business Details</div>
+            <div class="dialog-chip-row single-tone">
+              <span class="dialog-chip warm-chip">{{ selectedVendor?.gst_treatment || 'GST Treatment Not Available' }}</span>
+            </div>
+            <div class="info-card-grid two-columns compact-top">
+              <div class="info-card" *ngFor="let field of [
+                { label: 'PAN', value: selectedVendor?.pan || '-' },
+                { label: 'GST No', value: getGstNumber(selectedVendor) },
+                { label: 'Payment Terms', value: selectedVendor?.payment_terms || '-' },
+                { label: 'TDS', value: selectedVendor?.tds || '-' },
+                { label: 'Opening Balance', value: selectedVendor?.opening_balance || '-' },
+                { label: 'Website', value: selectedVendor?.website || '-' },
+                { label: 'MSME Type', value: selectedVendor?.msme_registration_type || '-' },
+                { label: 'MSME No', value: selectedVendor?.msme_registration_number || '-' }
+              ]">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value">{{ field.value }}</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Documents</div>
+          <div class="info-card-grid two-columns">
+            <div class="info-card" *ngFor="let field of [
+              { label: 'Document 1 Name', value: selectedVendor?.document_1_name || '-' },
+              { label: 'Document 2 Name', value: selectedVendor?.document_2_name || '-' }
+            ]">
+              <div class="section-label">{{ field.label }}</div>
+              <div class="section-value">{{ field.value }}</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Addresses</div>
+          <div class="address-blocks-grid">
+            <div class="address-block">
+              <div class="address-block-title">Billing Address</div>
+              <div class="info-card-grid two-columns">
+                <div class="info-card" [class.full-width-card]="field.label === 'Address'" *ngFor="let field of [
+                  { label: 'Address', value: selectedVendor?.billing_address || '-' },
+                  { label: 'Country', value: selectedVendor?.billing_country || '-' },
+                  { label: 'City', value: selectedVendor?.billing_city || '-' },
+                  { label: 'State', value: selectedVendor?.billing_state || '-' },
+                  { label: 'Pin', value: selectedVendor?.billing_pin || '-' }
+                ]">
+                  <div class="section-label">{{ field.label }}</div>
+                  <div class="section-value multiline-value">{{ field.value }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="address-block">
+              <div class="address-block-title">Shipping Address</div>
+              <div class="info-card-grid two-columns">
+                <div class="info-card" [class.full-width-card]="field.label === 'Address'" *ngFor="let field of [
+                  { label: 'Address', value: selectedVendor?.shipping_address || '-' },
+                  { label: 'Country', value: selectedVendor?.shipping_country || '-' },
+                  { label: 'City', value: selectedVendor?.shipping_city || '-' },
+                  { label: 'State', value: selectedVendor?.shipping_state || '-' },
+                  { label: 'Pin', value: selectedVendor?.shipping_pin || '-' }
+                ]">
+                  <div class="section-label">{{ field.label }}</div>
+                  <div class="section-value multiline-value">{{ field.value }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Bank Accounts</div>
+          <div class="bank-blocks-grid" *ngIf="getVendorBankAccounts(selectedVendor).length > 0; else noBankAccounts">
+            <div class="bank-block" *ngFor="let bank of getVendorBankAccounts(selectedVendor); let i = index">
+              <div class="address-block-title">Bank Account {{ i + 1 }}</div>
+              <div class="info-card-grid two-columns">
+                <div class="info-card" *ngFor="let field of [
+                  { label: 'Account Holder', value: bank?.account_holder_name || '-' },
+                  { label: 'Bank Name', value: bank?.bank_name || '-' },
+                  { label: 'Account Number', value: getMaskedAccountNumber(bank?.account_number) },
+                  { label: 'IFSC', value: bank?.ifsc || '-' }
+                ]">
+                  <div class="section-label">{{ field.label }}</div>
+                  <div class="section-value">{{ field.value }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noBankAccounts>
+            <div class="empty-popup-message">No bank accounts found.</div>
+          </ng-template>
+        </section>
+
+        <section class="dialog-group dialog-group-full" *ngIf="getCustomFieldEntries(selectedVendor).length > 0">
+          <div class="dialog-group-title">Custom Fields</div>
+          <div class="info-card-grid three-columns">
+            <div class="info-card" *ngFor="let field of getCustomFieldEntries(selectedVendor)">
+              <div class="section-label">{{ field.key }}</div>
+              <div class="section-value">{{ field.value || '-' }}</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="asset-list-container">
   <div class="row">
     <div class="col-lg-12">
       <nb-card>
-        
-            <nb-card-header class="section-header d-flex justify-content-between align-items-center">
-            <span>Customer List</span>
+        <nb-card-header class="section-header d-flex justify-content-between align-items-center">
+          <span>Vendor List</span>
 
-            <!-- Right-side button -->
-            <button
-                nbButton
-                status="primary"
-                size="small"
-                shape="semi-round"
-                (click)="gotoAddCustomerPage()"
-            >
-              Add Vendor
-            </button>
-            </nb-card-header>
+          <button
+            nbButton
+            status="primary"
+            size="small"
+            shape="semi-round"
+            (click)="gotoAddVendorPage()"
+          >
+            Add Vendor
+          </button>
+        </nb-card-header>
 
         <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary" class="asset-list-body">
-        
-          <!-- 🔹 Loading Spinner Overlay -->
           <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
             <nb-spinner size="large" status="primary"></nb-spinner>
           </div>
 
-          <!-- 🔹 Table Section -->
           <div [class.content-blur]="loading">
             <div class="row mt-3">
-              <div class="col-12" style="padding-left: 30px;padding-right: 30px;">
+              <div class="col-12 table-gutter">
                 <input
                   type="text"
                   nbInput
@@ -36,18 +191,49 @@
                   shape="semi-round"
                   #search
                   class="search"
-                  placeholder="Search Brand..." (keydown.enter)="onSearch(search.value)"/>
+                  placeholder="Search Vendor..."
+                  (input)="onSearch(search.value)"
+                  (keydown.enter)="onSearch(search.value)"/>
               </div>
 
-              <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
-                <ng2-smart-table
-                  [settings]="settings"
-                  [source]="source">
-                </ng2-smart-table>
+              <div class="col-12 mt-2 table-gutter">
+                <div class="custom-table-wrapper">
+                  <div class="table-responsive">
+                    <table class="custom-table">
+                      <thead>
+                        <tr>
+                          <th class="company-column">Company Name</th>
+                          <th class="contact-column">Primary Contact</th>
+                          <th class="email-column">Email</th>
+                          <th class="phone-column">Mobile No</th>
+                          <th class="actions-column">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of apiData">
+                          <td class="company-cell">{{ item.company_name || '-' }}</td>
+                          <td>{{ getPrimaryContact(item) || '-' }}</td>
+                          <td>{{ item.email || '-' }}</td>
+                          <td>{{ item.mobile_no || '-' }}</td>
+                          <td class="actions-cell">
+                            <button nbButton size="small" status="success" class="action-btn" (click)="openVendorPopup(item)">
+                              <nb-icon icon="eye"></nb-icon> VIEW
+                            </button>
+                            <button nbButton size="small" status="primary" class="action-btn" (click)="onEdit(item)">
+                              <nb-icon icon="edit-2"></nb-icon> EDIT
+                            </button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="!apiData || apiData.length === 0">
+                          <td colspan="5" class="text-center">No data found.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-
         </nb-card-body>
       </nb-card>
     </div>

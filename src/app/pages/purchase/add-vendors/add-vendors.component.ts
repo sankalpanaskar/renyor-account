@@ -9,7 +9,7 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./add-vendors.component.scss']
 })
 export class AddVendorsComponent implements OnInit {
-  model: any = [];
+  model: any = { bank_accounts: [] };
   isSubmitting: boolean = false;
   showAccountNumber: boolean[] = [];
   stateList : any = [];
@@ -78,6 +78,14 @@ export class AddVendorsComponent implements OnInit {
       re_enter_account_number: '',
       ifsc: '',
     };
+  }
+
+  private getBankAccount(index: number): any | null {
+    if (!Array.isArray(this.model?.bank_accounts)) {
+      return null;
+    }
+
+    return this.model.bank_accounts[index] ?? null;
   }
 
   addBankAccount(): void {
@@ -339,13 +347,6 @@ export class AddVendorsComponent implements OnInit {
     this.model.shipping_city    = this.model.billing_city;
     this.model.shipping_state   = this.model.billing_state;
     this.model.shipping_pin     = this.model.billing_pin;
-
-    // Optional: if you want errors to disappear/appear immediately
-    // this.fm?.form?.controls?.['shipping_address']?.markAsTouched();
-    // this.fm?.form?.controls?.['shipping_country']?.markAsTouched();
-    // this.fm?.form?.controls?.['shipping_city']?.markAsTouched();
-    // this.fm?.form?.controls?.['shipping_state']?.markAsTouched();
-    // this.fm?.form?.controls?.['shipping_pin']?.markAsTouched();
   }
 
   onPhoneInputChange(field: 'work_phone' | 'mobile_no'): void {
@@ -354,8 +355,14 @@ export class AddVendorsComponent implements OnInit {
   }
 
   onAccountNumberInputChange(index: number, field: 'account_number' | 're_enter_account_number'): void {
-    const digitsOnly = `${this.model?.bank_accounts?.[index]?.[field] ?? ''}`.replace(/\D/g, '');
-    this.model.bank_accounts[index][field] = digitsOnly;
+    const bankAccount = this.getBankAccount(index);
+
+    if (!bankAccount) {
+      return;
+    }
+
+    const digitsOnly = `${bankAccount[field] ?? ''}`.replace(/\D/g, '');
+    bankAccount[field] = digitsOnly;
   }
 
   allowOnlyDigits(event: KeyboardEvent): void {
@@ -372,9 +379,15 @@ export class AddVendorsComponent implements OnInit {
 
   onAccountNumberPaste(event: ClipboardEvent, index: number, field: 'account_number' | 're_enter_account_number'): void {
     event.preventDefault();
+    const bankAccount = this.getBankAccount(index);
+
+    if (!bankAccount) {
+      return;
+    }
+
     const pasted = event.clipboardData?.getData('text') ?? '';
     const digitsOnly = pasted.replace(/\D/g, '');
-    this.model.bank_accounts[index][field] = `${this.model?.bank_accounts?.[index]?.[field] ?? ''}${digitsOnly}`;
+    bankAccount[field] = `${bankAccount[field] ?? ''}${digitsOnly}`;
   }
 
   toggleAccountNumberVisibility(index: number): void {
@@ -458,7 +471,7 @@ export class AddVendorsComponent implements OnInit {
         }
       });
 
-      payload.module_id = 34;
+      payload.module_id = 46;
 
       // Extract custom fields from payload
       customFieldNames.forEach((fieldName: string) => {

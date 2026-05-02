@@ -1,7 +1,6 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
-import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'ngx-add-item',
@@ -9,24 +8,36 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./add-item.component.scss']
 })
 export class AddItemComponent implements OnInit {
-  model: any = {
-    customer_type: 'Goods',
-    unit: '',
-    hsn_code: '',
-    sac: '',
-    tax_preference: ''
-  };
+  model: any = this.getEmptyModel();
   isSubmitting: boolean = false;
-  stateList : any = [];
+  itemImageFile: File | null = null;
   
 
   constructor(
     private globalService: GlobalService,
-    private toastrService: NbToastrService,
-    private http: HttpClient
+    private toastrService: NbToastrService
   ) { }
 
   ngOnInit(): void {
+  }
+
+  private getEmptyModel(): any {
+    return {
+      customer_type: 'Goods',
+      unit: '',
+      hsn_code: '',
+      sac: '',
+      tax_preference: '',
+      enable_sales_information: false,
+      enable_purchase_information: false,
+      selling_price: '',
+      sales_account: '',
+      sales_account_description: '',
+      cost_price: '',
+      purchase_account: '',
+      purchase_account_description: '',
+      prefered_vendor: ''
+    };
   }
   
   typeChange(value: string) {
@@ -39,30 +50,120 @@ export class AddItemComponent implements OnInit {
     this.model.tax_preference = '';
   }
 
-  onSubmit(fm: any) {
-    if (fm.valid) {
-      // this.globalService.submitAssetData(fm.value).subscribe({
-      //   next: (res) => {
-      //     this.model = '';
-      //     fm.resetForm();
-      //     this.toastrService.success(res.message, 'Added');
-      //     this.isSubmitting = false;
-      //   },
-      //   error: (err) => {
-      //     console.error('Submit error:', err);
-      //     const errorMessage =
-      //       err?.error?.message ||
-      //       err?.message ||
-      //       'Add Lead Failed. Please try again.';
+  onSalesInformationToggle(checked: boolean): void {
+    this.model.enable_sales_information = checked;
+    if (!checked) {
+      this.model.selling_price = '';
+      this.model.sales_account = '';
+      this.model.sales_account_description = '';
+    }
+  }
 
-      //     this.toastrService.danger(errorMessage, 'Add Asset Failed');
-      //     this.isSubmitting = false;
-      //   },
-      // });
+  onPurchaseInformationToggle(checked: boolean): void {
+    this.model.enable_purchase_information = checked;
+    if (!checked) {
+      this.model.cost_price = '';
+      this.model.purchase_account = '';
+      this.model.purchase_account_description = '';
+      this.model.prefered_vendor = '';
+    }
+  }
 
+  hasSalesOrPurchaseInformationSelected(): boolean {
+    return !!this.model.enable_sales_information || !!this.model.enable_purchase_information;
+  }
 
+  private normalizeSalesPurchaseModel(): void {
+    this.model.selling_price = this.model.enable_sales_information ? (this.model.selling_price ?? '') : '';
+    this.model.sales_account = this.model.enable_sales_information ? (this.model.sales_account ?? '') : '';
+    this.model.sales_account_description = this.model.enable_sales_information ? (this.model.sales_account_description ?? '') : '';
+
+    this.model.cost_price = this.model.enable_purchase_information ? (this.model.cost_price ?? '') : '';
+    this.model.purchase_account = this.model.enable_purchase_information ? (this.model.purchase_account ?? '') : '';
+    this.model.purchase_account_description = this.model.enable_purchase_information ? (this.model.purchase_account_description ?? '') : '';
+    this.model.prefered_vendor = this.model.enable_purchase_information ? (this.model.prefered_vendor ?? '') : '';
+  }
+
+  onFileChange(files: File[], field: 'item_image'): void {
+    if (field === 'item_image') {
+      this.itemImageFile = files && files.length > 0 ? files[0] : null;
+    }
+  }
+
+  private appendFormDataValue(formData: FormData, key: string, value: any): void {
+    if (value === undefined || value === null) {
+      formData.append(key, '');
+      return;
     }
 
+    if (value instanceof File) {
+      formData.append(key, value);
+      return;
+    }
+
+    if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+      return;
+    }
+
+    formData.append(key, `${value}`);
+  }
+
+  onSubmit(fm: any) {
+    if (!this.hasSalesOrPurchaseInformationSelected()) {
+      this.toastrService.danger(
+        'Select at least one option from Sales Information, Purchase Information.',
+        'Validation Failed'
+      );
+      return;
+    }
+
+    if (fm.valid) {
+      this.isSubmitting = true;
+      this.normalizeSalesPurchaseModel();
+      const payload = { ...this.model };
+
+      if (payload.customer_type === 'Goods') {
+        delete payload.sac;
+      }
+
+      if (payload.customer_type === 'Service') {
+        delete payload.hsn_code;
+      }
+
+      if (payload.tax_preference !== 'Non-taxable') {
+        delete payload.exemption_reason;
+      }
+
+      const formData = new FormData();
+      Object.keys(payload).forEach((key: string) => {
+        this.appendFormDataValue(formData, key, payload[key]);
+      });
+
+      if (this.itemImageFile) {
+        formData.append('item_image', this.itemImageFile, this.itemImageFile.name);
+      }
+
+      this.globalService.addItem(formData).subscribe({
+        next: (res: any) => {
+          this.model = this.getEmptyModel();
+          this.itemImageFile = null;
+          fm.resetForm(this.model);
+          this.toastrService.success(res?.message || 'Item added successfully.', 'Added');
+          this.isSubmitting = false;
+        },
+        error: (err: any) => {
+          console.error('Submit error:', err);
+          const errorMessage =
+            err?.error?.message ||
+            err?.message ||
+            'Add item failed. Please try again.';
+
+          this.toastrService.danger(errorMessage, 'Add Item Failed');
+          this.isSubmitting = false;
+        },
+      });
+    }
   }
 
 }

@@ -47,7 +47,7 @@ export class CustomersListComponent implements OnInit{
 
   getCustomerList() {
     this.loading = true;
-    this.globalService.geCompanyListByTenant(34).subscribe({
+    this.globalService.getCustomerListByTenant(34).subscribe({
       next: (res: any) => {
         console.log("customer list response", res);
         this.allCustomers = res?.data || [];

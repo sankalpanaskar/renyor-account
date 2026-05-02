@@ -32,6 +32,12 @@ nb-card-body {
   display: flex;
 }
 
+:host ::ng-deep nb-checkbox,
+:host ::ng-deep nb-checkbox label,
+:host ::ng-deep nb-checkbox .custom-checkbox {
+  cursor: pointer;
+}
+
 .demo-items {
   flex: 1 0 33%;
 }

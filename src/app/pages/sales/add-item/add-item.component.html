@@ -91,20 +91,49 @@
                             Tax Preference is required
                         </div>
                     </div>
+                    <div class="col-lg-6 mb-10" *ngIf="model.tax_preference === 'Non-taxable'">
+                        <label class="small-label" id="label-exemption-reason">
+                            Exemption Reason <span style="color:#d32f2f">*</span>
+                        </label>
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Exemption Reason"
+                            name="exemption_reason" required #exemption_reason="ngModel" [(ngModel)]="model.exemption_reason">
+                        <div *ngIf="fm.submitted && exemption_reason.invalid" class="error-message">
+                            Exemption Reason is required for Non-taxable items
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-tax-preference">
+                            GST Rates <span style="color:#d32f2f">*</span>
+                        </label>
+                        <nb-select shape="semi-round" placeholder="Select GST Rates" name="gst_rates"
+                            required #gst_rates="ngModel" [(ngModel)]="model.gst_rates">
+                            <nb-option value="Taxable">Taxable</nb-option>
+                        </nb-select>
+                        <div *ngIf="fm.submitted && gst_rates.invalid" class="error-message">
+                            GST Rates is required
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-lg-6 mb-10" style="padding: 0;">
-                        <div class="col-md-12 mb-10">
+                        <div class="col-md-12 mb-10 d-flex justify-content-between align-items-center">
                             <label class="small-label" style="font-weight: bold;font-size: 14px;">Sales Information</label>
-                            
+                            <nb-checkbox
+                                name="enable_sales_information"
+                                [(ngModel)]="model.enable_sales_information"
+                                (checkedChange)="onSalesInformationToggle($event)">
+                                Enable Sales
+                            </nb-checkbox>
                         </div>
                         <div class="col-md-12 mb-10">
                             <label class="small-label" id="label-sac">
                                 Selling Price <span style="color:#d32f2f">*</span>
                             </label>
                             <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Selling Price"
-                                name="selling_price" required #selling_price="ngModel" [(ngModel)]="model.selling_price">
-                            <div *ngIf="fm.submitted && selling_price.invalid" class="error-message">
+                                name="selling_price" [required]="model.enable_sales_information"
+                                [disabled]="!model.enable_sales_information"
+                                #selling_price="ngModel" [(ngModel)]="model.selling_price">
+                            <div *ngIf="fm.submitted && model.enable_sales_information && selling_price.invalid" class="error-message">
                                 Selling Price is required
                             </div>
                         </div>
@@ -113,10 +142,12 @@
                                 Account <span style="color:#d32f2f">*</span>
                             </label>
                             <nb-select shape="semi-round" placeholder="Select Account" name="sales_account"
-                                required #sales_account="ngModel" [(ngModel)]="model.sales_account">
+                                [required]="model.enable_sales_information"
+                                [disabled]="!model.enable_sales_information"
+                                #sales_account="ngModel" [(ngModel)]="model.sales_account">
                                 <nb-option value="Taxable">Taxable</nb-option>
                             </nb-select>
-                            <div *ngIf="fm.submitted && sales_account.invalid" class="error-message">
+                            <div *ngIf="fm.submitted && model.enable_sales_information && sales_account.invalid" class="error-message">
                                 Account is required
                             </div>
                         </div>
@@ -124,23 +155,35 @@
                             <label class="small-label" id="label-account">
                                 Description 
                             </label>
-                            <textarea nbInput fullWidth shape="semi-round" name="sales_account_description" [(ngModel)]="model.sales_account_description" required #sales_account_description="ngModel"></textarea>
-                            <div *ngIf="fm.submitted && sales_account_description.invalid" class="error-message">
+                            <textarea nbInput fullWidth shape="semi-round" name="sales_account_description"
+                                [(ngModel)]="model.sales_account_description"
+                                [required]="model.enable_sales_information"
+                                [disabled]="!model.enable_sales_information"
+                                #sales_account_description="ngModel"></textarea>
+                            <div *ngIf="fm.submitted && model.enable_sales_information && sales_account_description.invalid" class="error-message">
                                 Description is required
                             </div>
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10" style="padding: 0;">
-                        <div class="col-md-12 mb-10">
+                        <div class="col-md-12 mb-10 d-flex justify-content-between align-items-center">
                             <label class="small-label" style="font-weight: bold;font-size: 14px;">Purchase Information</label>
+                            <nb-checkbox
+                                name="enable_purchase_information"
+                                [(ngModel)]="model.enable_purchase_information"
+                                (checkedChange)="onPurchaseInformationToggle($event)">
+                                Enable Purchase
+                            </nb-checkbox>
                         </div>
                         <div class="col-md-12 mb-10">
                             <label class="small-label" id="label-sac">
                                 Cost Price <span style="color:#d32f2f">*</span>
                             </label>
                             <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Cost Price"
-                                name="cost_price" required #cost_price="ngModel" [(ngModel)]="model.cost_price">
-                            <div *ngIf="fm.submitted && cost_price.invalid" class="error-message">
+                                name="cost_price" [required]="model.enable_purchase_information"
+                                [disabled]="!model.enable_purchase_information"
+                                #cost_price="ngModel" [(ngModel)]="model.cost_price">
+                            <div *ngIf="fm.submitted && model.enable_purchase_information && cost_price.invalid" class="error-message">
                                 Cost Price is required
                             </div>
                         </div>
@@ -149,10 +192,12 @@
                                 Account <span style="color:#d32f2f">*</span>
                             </label>
                             <nb-select shape="semi-round" placeholder="Select Account" name="purchase_account"
-                                required #purchase_account="ngModel" [(ngModel)]="model.purchase_account">
+                                [required]="model.enable_purchase_information"
+                                [disabled]="!model.enable_purchase_information"
+                                #purchase_account="ngModel" [(ngModel)]="model.purchase_account">
                                 <nb-option value="Taxable">Taxable</nb-option>
                             </nb-select>
-                            <div *ngIf="fm.submitted && purchase_account.invalid" class="error-message">
+                            <div *ngIf="fm.submitted && model.enable_purchase_information && purchase_account.invalid" class="error-message">
                                 Account is required
                             </div>
                         </div>
@@ -160,8 +205,12 @@
                             <label class="small-label" id="label-account">
                                 Description 
                             </label>
-                            <textarea nbInput fullWidth shape="semi-round" name="purchase_account_description" [(ngModel)]="model.purchase_account_description" required #purchase_account_description="ngModel"></textarea>
-                            <div *ngIf="fm.submitted && purchase_account_description.invalid" class="error-message">
+                            <textarea nbInput fullWidth shape="semi-round" name="purchase_account_description"
+                                [(ngModel)]="model.purchase_account_description"
+                                [required]="model.enable_purchase_information"
+                                [disabled]="!model.enable_purchase_information"
+                                #purchase_account_description="ngModel"></textarea>
+                            <div *ngIf="fm.submitted && model.enable_purchase_information && purchase_account_description.invalid" class="error-message">
                                 Description is required
                             </div>
                         </div>
@@ -170,42 +219,31 @@
                                 Prefered Vendor <span style="color:#d32f2f">*</span>
                             </label>
                             <nb-select shape="semi-round" placeholder="Select Vendor" name="prefered_vendor"
-                                required #prefered_vendor="ngModel" [(ngModel)]="model.prefered_vendor">
+                                [required]="model.enable_purchase_information"
+                                [disabled]="!model.enable_purchase_information"
+                                #prefered_vendor="ngModel" [(ngModel)]="model.prefered_vendor">
                                 <nb-option value="Vendor1">Vendor1</nb-option>
                             </nb-select>
-                            <div *ngIf="fm.submitted && prefered_vendor.invalid" class="error-message">
+                            <div *ngIf="fm.submitted && model.enable_purchase_information && prefered_vendor.invalid" class="error-message">
                                 Prefered Vendor is required
                             </div>
                         </div>
                     </div>
+                    <div class="col-lg-12 mb-10" *ngIf="fm.submitted && !hasSalesOrPurchaseInformationSelected()">
+                        <div class="error-message">
+                            Select at least one option from Sales Information, Purchase Information.
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
-                    <div class="col-md-12 mb-10">
-                        <label class="small-label" style="font-weight: bold;font-size: 14px;">Default Tax Rates</label>
-                    </div>
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-tax-preference">
-                            Intra State Tax Rates <span style="color:#d32f2f">*</span>
-                        </label>
-                        <nb-select shape="semi-round" placeholder="Select Intra State Tax Rates" name="intra_state_tax_rates"
-                            required #intra_state_tax_rates="ngModel" [(ngModel)]="model.intra_state_tax_rates">
-                            <nb-option value="Taxable">Taxable</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && intra_state_tax_rates.invalid" class="error-message">
-                            Intra State Tax Rates is required
-                        </div>
-                    </div>
-                    <div class="col-lg-6 mb-10">
-                        <label class="small-label" id="label-tax-preference">
-                            Inter State Tax Rates <span style="color:#d32f2f">*</span>
-                        </label>
-                        <nb-select shape="semi-round" placeholder="Select Inter State Tax Rates" name="inter_state_tax_rates"
-                            required #inter_state_tax_rates="ngModel" [(ngModel)]="model.inter_state_tax_rates">
-                            <nb-option value="Taxable">Taxable</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && inter_state_tax_rates.invalid" class="error-message">
-                            Inter State Tax Rates is required
-                        </div>
+                        <label class="small-label" id="label-category">Item Image</label>
+                        <ngx-file-upload
+                            inputName="item_image"
+                            helperText="PDF, Excel, Images (Max 10MB total)"
+                            [required]="false"
+                            (filesChange)="onFileChange($event, 'item_image')"
+                        ></ngx-file-upload>
                     </div>
                 </div>
             </nb-card-body>

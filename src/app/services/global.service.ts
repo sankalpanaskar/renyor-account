@@ -68,6 +68,7 @@ export class GlobalService {
     private tenantsUrl = environment.apiBaseUrl+ 'api' + '/tenants';
     private usersUrl = environment.apiBaseUrl+ 'api' + '/users';
     private salesUrl = environment.apiBaseUrl+ 'api' + '/sales';
+
     
     // constructor(private http: HttpClient) {}
     
@@ -151,8 +152,12 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/create-customer`,data);
     }
 
-    public geCompanyListByTenant(moduleId?: number): Observable<any> {
+    public getCustomerListByTenant(moduleId?: number): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-customers?module_id=${moduleId}`);
+    }
+
+    public addItem(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-item`,data);
     }
 
     public getAccountHeadType(): Observable<any> {
@@ -174,5 +179,7 @@ export class GlobalService {
     public addVendor(data:any): Observable<any> {
       return this.http.post(`${this.salesUrl}/create-vendor`,data);
     }
-  
+    public getVendorListByTenant(moduleId?: number): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-vendors?module_id=${moduleId}`);
+    }
 }

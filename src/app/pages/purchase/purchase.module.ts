@@ -8,8 +8,6 @@ import { PurchaseComponent } from './purchase.component';
 import { RouterModule } from '@angular/router';
 import { NbAccordionModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
-import { Ng2SmartTableModule } from 'ng2-smart-table';
-import { VendorsButtonComponent } from './vendors-list/vendors-btn.component';
 import { SharedModule } from '../shared/shared.module';
 import { ThemeModule } from '../../@theme/theme.module';
 
@@ -18,8 +16,7 @@ import { ThemeModule } from '../../@theme/theme.module';
   declarations: [
     PurchaseComponent,
     AddVendorsComponent,
-    VendorsListComponent,
-    VendorsButtonComponent
+    VendorsListComponent
   ],
   imports: [
     CommonModule,
@@ -37,7 +34,6 @@ import { ThemeModule } from '../../@theme/theme.module';
     NbAccordionModule,
     NbTabsetModule,
     FormsModule,
-    Ng2SmartTableModule,
     NbSpinnerModule,
     NbDatepickerModule,
     NbCheckboxModule,

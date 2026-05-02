@@ -88,7 +88,7 @@ export class AddSalesOrderComponent implements OnInit {
   }
 
   fetchCustomers(): void {
-    this.globalService.geCompanyListByTenant(34).subscribe({
+    this.globalService.getCustomerListByTenant(34).subscribe({
       next: (res: any) => {
         const customers = Array.isArray(res?.data) ? res.data : [];
         this.customerOptions = customers
