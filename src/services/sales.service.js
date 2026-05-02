@@ -721,7 +721,7 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
   }
 };
 
-exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
+exports.chartofaccountsheadtype = async (data, tenant_id, user_id) => {
   const connection = await db.getConnection();
 
   try {
@@ -729,18 +729,18 @@ exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
 
     const { account_type, account_head } = data;
 
-    if (!account_type) {
-      throw new Error('account_type is required');
-    }
-
     if (!account_head) {
       throw new Error('account_head is required');
     }
 
-    // Find or create the parent account type in chartofaccounts_head_type
+    if (!account_type) {
+      throw new Error('account_type is required');
+    }
+
+    // Find or create the parent account head in chartofaccounts_head_type
     const [parentRows] = await connection.query(
       `SELECT id FROM chartofaccounts_head_type WHERE group_name = ? LIMIT 1`,
-      [account_type]
+      [account_head]
     );
 
     let parentId;
@@ -751,33 +751,32 @@ exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
       const [parentResult] = await connection.query(
         `INSERT INTO chartofaccounts_head_type (group_name, parent_id, status)
          VALUES (?, 0, 1)`,
-        [account_type]
+        [account_head]
       );
       parentId = parentResult.insertId;
     }
 
-    // Find or create the account head under the resolved parent_id
-    const [headRows] = await connection.query(
+    // Find duplicate account type under the same parent account head
+    const [typeRows] = await connection.query(
       `SELECT id FROM chartofaccounts_head_type WHERE group_name = ? AND parent_id = ? LIMIT 1`,
-      [account_head, parentId]
+      [account_type, parentId]
     );
 
-    let headId;
-
-    if (headRows.length > 0) {
-      headId = headRows[0].id;
-    } else {
-      const [headResult] = await connection.query(
-        `INSERT INTO chartofaccounts_head_type (group_name, parent_id, status)
-         VALUES (?, ?, 1)`,
-        [account_head, parentId]
-      );
-      headId = headResult.insertId;
+    if (typeRows.length > 0) {
+      throw new Error('account_type already exists under this account_head');
     }
+
+    const [typeResult] = await connection.query(
+      `INSERT INTO chartofaccounts_head_type (group_name, parent_id, status)
+       VALUES (?, ?, 1)`,
+      [account_type, parentId]
+    );
+
+    const typeId = typeResult.insertId;
 
     const [rows] = await connection.query(
       `SELECT id, group_name, parent_id, status FROM chartofaccounts_head_type WHERE id = ?`,
-      [headId]
+      [typeId]
     );
 
     await connection.commit();
