@@ -756,23 +756,24 @@ exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
       parentId = parentResult.insertId;
     }
 
-    // Find duplicate account head under the same parent account type
+    // Find or create the account head under the resolved parent_id
     const [headRows] = await connection.query(
       `SELECT id FROM chartofaccounts_head_type WHERE group_name = ? AND parent_id = ? LIMIT 1`,
       [account_head, parentId]
     );
 
+    let headId;
+
     if (headRows.length > 0) {
-      throw new Error('account_head already exists under this account_type');
+      headId = headRows[0].id;
+    } else {
+      const [headResult] = await connection.query(
+        `INSERT INTO chartofaccounts_head_type (group_name, parent_id, status)
+         VALUES (?, ?, 1)`,
+        [account_head, parentId]
+      );
+      headId = headResult.insertId;
     }
-
-    const [headResult] = await connection.query(
-      `INSERT INTO chartofaccounts_head_type (group_name, parent_id, status)
-       VALUES (?, ?, 1)`,
-      [account_head, parentId]
-    );
-
-    const headId = headResult.insertId;
 
     const [rows] = await connection.query(
       `SELECT id, group_name, parent_id, status FROM chartofaccounts_head_type WHERE id = ?`,
