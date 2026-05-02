@@ -26,11 +26,11 @@ export class SearchSelectComponent {
   @Input() valueKey = 'id';
   @Input() noResultsText = 'No results found';
   @Input() required = false;
+  @Input() disabled = false;
 
   searchText = '';
   selectedValue: any = '';
   isOpen = false;
-  disabled = false;
   @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
 
   private onChange: (value: any) => void = () => {};

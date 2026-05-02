@@ -182,4 +182,13 @@ export class GlobalService {
     public getVendorListByTenant(moduleId?: number): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-vendors?module_id=${moduleId}`);
     }
+
+    public addAccountHeadType(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-accounts-head-type`,data);
+    }
+
+    public getAccountItem(): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-chartofaccounts-item`);
+    }
+
 }

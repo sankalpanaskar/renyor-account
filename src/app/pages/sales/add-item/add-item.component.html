@@ -141,12 +141,17 @@
                             <label class="small-label" id="label-account">
                                 Account <span style="color:#d32f2f">*</span>
                             </label>
-                            <nb-select shape="semi-round" placeholder="Select Account" name="sales_account"
+                            <ngx-search-select
+                                name="sales_account"
+                                [placeholder]="'Select Account'"
+                                [options]="accountItemOptions"
+                                [(ngModel)]="model.sales_account"
+                                displayKey="label"
+                                valueKey="id"
                                 [required]="model.enable_sales_information"
                                 [disabled]="!model.enable_sales_information"
-                                #sales_account="ngModel" [(ngModel)]="model.sales_account">
-                                <nb-option value="Taxable">Taxable</nb-option>
-                            </nb-select>
+                                #sales_account="ngModel"
+                            ></ngx-search-select>
                             <div *ngIf="fm.submitted && model.enable_sales_information && sales_account.invalid" class="error-message">
                                 Account is required
                             </div>
@@ -191,12 +196,17 @@
                             <label class="small-label" id="label-account">
                                 Account <span style="color:#d32f2f">*</span>
                             </label>
-                            <nb-select shape="semi-round" placeholder="Select Account" name="purchase_account"
+                            <ngx-search-select
+                                name="purchase_account"
+                                [placeholder]="'Select Account'"
+                                [options]="accountItemOptions"
+                                [(ngModel)]="model.purchase_account"
+                                displayKey="label"
+                                valueKey="account_item"
                                 [required]="model.enable_purchase_information"
                                 [disabled]="!model.enable_purchase_information"
-                                #purchase_account="ngModel" [(ngModel)]="model.purchase_account">
-                                <nb-option value="Taxable">Taxable</nb-option>
-                            </nb-select>
+                                #purchase_account="ngModel"
+                            ></ngx-search-select>
                             <div *ngIf="fm.submitted && model.enable_purchase_information && purchase_account.invalid" class="error-message">
                                 Account is required
                             </div>

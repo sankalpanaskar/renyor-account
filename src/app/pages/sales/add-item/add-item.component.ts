@@ -11,7 +11,12 @@ export class AddItemComponent implements OnInit {
   model: any = this.getEmptyModel();
   isSubmitting: boolean = false;
   itemImageFile: File | null = null;
-  
+  accountItemOptions: Array<{
+    id: number;
+    account_name: string;
+    account_item: string;
+    label: string;
+  }> = [];
 
   constructor(
     private globalService: GlobalService,
@@ -19,6 +24,32 @@ export class AddItemComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.getAccountItem();
+  }
+
+  getAccountItem(): void {
+    this.globalService.getAccountItem().subscribe({
+      next: (res: any) => {
+        const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        this.accountItemOptions = rows
+          .map((item: any) => {
+            const accountName = `${item?.account_name ?? ''}`.trim();
+            const accountItem = `${item?.account_item ?? ''}`.trim();
+
+            return {
+              id: Number(item?.id || 0),
+              account_name: accountName,
+              account_item: accountItem,
+              label: accountName && accountItem ? `${accountName} - ${accountItem}` : accountName || accountItem,
+            };
+          })
+          .filter((item: any) => item.id > 0 && !!item.account_item);
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch account items:', error);
+        this.accountItemOptions = [];
+      },
+    });
   }
 
   private getEmptyModel(): any {
