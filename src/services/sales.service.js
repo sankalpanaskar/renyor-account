@@ -790,20 +790,20 @@ exports.createTaxRate = async (data, tenant_id, user_id) => {
   try {
     await connection.beginTransaction();
 
-    const { name, value_in_percentage } = data;
+    const { name, tax_rate_percentage } = data;
 
     if (!name) {
       throw new Error('name is required');
     }
 
-    if (value_in_percentage === undefined || value_in_percentage === null) {
-      throw new Error('value_in_percentage is required');
+    if (tax_rate_percentage === undefined || tax_rate_percentage === null) {
+      throw new Error('tax_rate_percentage is required');
     }
 
     const [result] = await connection.query(
-      `INSERT INTO tax_rate (name, value_in_percentage, tenant_id, user_id, status)
+      `INSERT INTO tax_rate (name, tax_rate_percentage, tenant_id, user_id, status)
        VALUES (?, ?, ?, ?, 1)`,
-      [name, value_in_percentage, tenant_id, user_id]
+      [name, tax_rate_percentage, tenant_id, user_id]
     );
 
     const [rows] = await connection.query(
