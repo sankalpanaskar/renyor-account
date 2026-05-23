@@ -801,8 +801,8 @@ exports.createTaxRate = async (data, tenant_id, user_id) => {
     }
 
     const [result] = await connection.query(
-      `INSERT INTO tax_rate (tax_rate_name, tax_rate_percentage, tenant_id, user_id, status)
-       VALUES (?, ?, ?, ?, 1)`,
+      `INSERT INTO tax_rate (tax_rate_name, tax_rate_percentage, tenant_id, user_id)
+       VALUES (?, ?, ?, ?)`,
       [name, tax_rate_percentage, tenant_id, user_id]
     );
 
