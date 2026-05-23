@@ -194,6 +194,34 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
+exports.createPaymentTerms = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+    
+    console.log(req.body);
+    const paymentTerms = await sales.createPaymentTerms(req.body,tenant_id,user_id);
+
+    return res.success(
+      200,
+      "Payment Terms created successfully",
+      paymentTerms 
+    );
+  } catch (err) {
+     if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "this payment term already exists. Please use a different name."
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+  }
+};
+
 exports.fetchPaymentTerms = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;

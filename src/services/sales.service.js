@@ -639,6 +639,45 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
+exports.createPaymentTerms = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const { name, no_of_days } = data;
+
+    
+
+    if (name === undefined || name === null) {
+      throw new Error('term_name is required');
+    }
+
+    if (no_of_days === undefined || no_of_days === null) {
+      throw new Error('no_of_days is required');
+    }
+
+    const [result] = await connection.query(
+      `INSERT INTO payment_terms (term_name, no_of_days, tenant_id, user_id)
+       VALUES (?, ?, ?, ?)`,
+      [name, no_of_days, tenant_id, user_id]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT * FROM payment_terms WHERE id = ?`,
+      [result.insertId]
+    );
+
+    await connection.commit();
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 
 exports.fetchPaymentTerms = async (tenant_id) => {
  

@@ -51,7 +51,8 @@ router.post('/create-accounts-head-type', authSuperadmin, upload.none(),salesCon
 router.get('/fetch-chartofaccounts-item', auth, salesController.getchartofaccountsItem);
 router.post('/create-tds', auth, upload.none(), salesController.createTds);
 router.get('/fetch-tds', auth, salesController.fetchTds);
-
+router.post('/create-tds', auth, upload.none(), salesController.createTds);
+router.post('/create-payment-terms', auth, upload.none(), salesController.createPaymentTerms);
 router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
 router.post('/create-tax-rate', auth, upload.none(), salesController.createTaxRate);
 
