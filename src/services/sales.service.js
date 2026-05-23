@@ -821,7 +821,7 @@ exports.createTaxRate = async (data, tenant_id, user_id) => {
   }
 };
 
-exports.fetchTaxRates = async (tenant_id) => {
+exports.fetchTaxRate = async (tenant_id) => {
   const [rows] = await db.query(
     "SELECT * FROM tax_rate WHERE tenant_id = ? ORDER BY id DESC",
     [tenant_id]

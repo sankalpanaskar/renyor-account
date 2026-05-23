@@ -265,10 +265,10 @@ exports.createTaxRate = async (req, res) => {
   }
 };
 
-exports.fetchTaxRates = async (req, res) => {
+exports.fetchTaxRate = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
-    const taxRates = await sales.fetchTaxRates(tenant_id);
+    const taxRates = await sales.fetchTaxRate(tenant_id);
 
     return res.success(
       200,
