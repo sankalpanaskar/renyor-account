@@ -52,7 +52,7 @@ router.get('/fetch-chartofaccounts-item', auth, salesController.getchartofaccoun
 router.post('/create-tds', auth, upload.none(), salesController.createTds);
 router.get('/fetch-tds', auth, salesController.fetchTds);
 router.post('/create-tds', auth, upload.none(), salesController.createTds);
-router.post('/create-payment-terms', auth, upload.none(), salesController.createPaymentTerms);
+router.post('/create-payment-terms', auth, upload.none(), salesController.createPaymentTerm);
 router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
 router.post('/create-tax-rate', auth, upload.none(), salesController.createTaxRate);
 

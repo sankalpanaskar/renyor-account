@@ -194,13 +194,13 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
-exports.createPaymentTerms = async (req, res) => {
+exports.createPaymentTerm = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
     
     console.log(req.body);
-    const paymentTerms = await sales.createPaymentTerms(req.body,tenant_id,user_id);
+    const paymentTerms = await sales.createPaymentTerm(req.body,tenant_id,user_id);
 
     return res.success(
       200,
