@@ -148,6 +148,34 @@ exports.getchartofaccountsItem = async (req, res) => {
   }
 };
 
+exports.createTds = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+    
+    console.log(req.body);
+    const tds = await sales.createTds(req.body,tenant_id,user_id);
+
+    return res.success(
+      200,
+      "TDS created successfully",
+      tds 
+    );
+  } catch (err) {
+     if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "this tds name already exists. Please use a different name."
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+  }
+};
+
 exports.fetchTds = async (req, res) => {
   try {
     

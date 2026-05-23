@@ -583,6 +583,43 @@ exports.getchartofaccountsHeadType = async (req, res) => {
   }
 };
 
+exports.createTaxRate = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const { name, tds_percentage } = data;
+
+    if (!name) {
+      throw new Error('name is required');
+    }
+
+    if (tds_percentage === undefined || tds_percentage === null) {
+      throw new Error('tds_percentage is required');
+    }
+
+    const [result] = await connection.query(
+      `INSERT INTO tds (name, tds_percentage, tenant_id, user_id)
+       VALUES (?, ?, ?, ?)`,
+      [name, tds_percentage, tenant_id, user_id]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT * FROM tds WHERE id = ?`,
+      [result.insertId]
+    );
+
+    await connection.commit();
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 exports.fetchTds = async (req, res) => {
   try {
 

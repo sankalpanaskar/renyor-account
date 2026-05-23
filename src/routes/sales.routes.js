@@ -49,7 +49,7 @@ router.post('/create-accounts-head-type', authSuperadmin, upload.none(),salesCon
 
 
 router.get('/fetch-chartofaccounts-item', auth, salesController.getchartofaccountsItem);
-
+router.post('/create-tds', auth, upload.none(), salesController.createTds);
 router.get('/fetch-tds', auth, salesController.fetchTds);
 
 router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
