@@ -113,6 +113,46 @@ exports.createVendor = async (req, res) => {
   }
 };
 
+exports.createVendor = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const uploaded_file_name_1 = req.files?.document_1?.[0]?.filename || null;
+    const uploaded_file_name_2 = req.files?.document_2?.[0]?.filename || null;
+
+    const vendors = await sales.createVendor(
+      req.body,   // no parsing here
+      tenant_id,
+      user_id,
+      uploaded_file_name_1,
+      uploaded_file_name_2
+    );
+    return res.success(200, "Vendor created successfully", vendors);
+  } catch (err) {
+    return res.error(500, err.message);
+  }
+};
+
+exports.createItem = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const item_image = req.files?.item_image?.[0]?.filename || null;
+
+    const items = await sales.createItem(
+      req.body,   // no parsing here
+      tenant_id,
+      user_id,
+      item_image
+    );
+    return res.success(200, "Item created successfully", items);
+  } catch (err) {
+    return res.error(500, err.message);
+  }
+};
+
 exports.getchartofaccountsHeadType = async (req, res) => {
   try {
     

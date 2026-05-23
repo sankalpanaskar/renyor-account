@@ -39,6 +39,23 @@ router.post(
   salesController.createVendor
 );
 
+router.post(
+  '/create-item',
+  auth,
+  (req, res, next) => {
+    const tenant_id = req.user?.tenant_id || 'common';
+
+    const upload = createUpload(`../uploads/items/${tenant_id}`);
+
+    upload.fields([
+      { name: 'item_image', maxCount: 1 },
+    ])(req, res, next);
+  },
+  salesController.createItem
+);
+
+
+
 
 router.get('/fetch-customers', auth, salesController.fetchCustomers);
 router.get('/fetch-vendors', auth, salesController.fetchVendors);
