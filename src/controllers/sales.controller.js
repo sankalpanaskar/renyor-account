@@ -32,7 +32,7 @@ exports.fetchVendors = async (req, res) => {
       return res.status(400).json({ message: "module_id is required" });
     }
     const tenant_id = req.user.tenant_id;
-    const vendors = await sales.fetchAllVendors(tenant_id, module_id);
+    const vendors = await sales.fetchVendors(tenant_id, module_id);
 
     return res.success(
       200,
@@ -113,26 +113,7 @@ exports.createVendor = async (req, res) => {
   }
 };
 
-exports.createVendor = async (req, res) => {
-  try {
-    const tenant_id = req.user.tenant_id;
-    const user_id = req.user.userId;
 
-    const uploaded_file_name_1 = req.files?.document_1?.[0]?.filename || null;
-    const uploaded_file_name_2 = req.files?.document_2?.[0]?.filename || null;
-
-    const vendors = await sales.createVendor(
-      req.body,   // no parsing here
-      tenant_id,
-      user_id,
-      uploaded_file_name_1,
-      uploaded_file_name_2
-    );
-    return res.success(200, "Vendor created successfully", vendors);
-  } catch (err) {
-    return res.error(500, err.message);
-  }
-};
 
 exports.createItem = async (req, res) => {
   try {
@@ -150,6 +131,18 @@ exports.createItem = async (req, res) => {
     return res.success(200, "Item created successfully", items);
   } catch (err) {
     return res.error(500, err.message);
+  }
+};
+
+exports.fetchItems = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const { module_id, id } = req.query;
+
+    const items = await sales.fetchItems(tenant_id, id, module_id);
+    return res.success(200, "Items fetched successfully", items);
+  } catch (err) {
+    return res.error(500, err.message || "Failed to fetch items");
   }
 };
 
