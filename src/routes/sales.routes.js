@@ -59,8 +59,8 @@ router.post(
 
 router.get('/fetch-customers', auth, salesController.fetchCustomers);
 router.get('/fetch-vendors', auth, salesController.fetchVendors);
+router.post('/document-number-settings', auth, upload.none(),salesController.documentNumberSettings);
 
-router.get('/create-items', auth, salesController.createItem);
 router.get('/fetch-items', auth, salesController.fetchItems);
 //router.post('/create-customer', auth, upload.none(),salesController.createCustomer);
 router.get('/fetch-chartofaccounts-head-type', auth, salesController.getchartofaccountsHeadType);

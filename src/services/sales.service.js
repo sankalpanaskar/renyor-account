@@ -574,26 +574,53 @@ exports.createItem = async (
   try {
     await connection.beginTransaction();
 
+    const {
+      type,
+      unit,
+      hsn_code,
+      sac,
+      tax_preference,
+      gst_rates_id,
+      tax_rate_id,
+      selling_price,
+      sales_account_id,
+      chartofaccounts_name_id_sales,
+      sales_account_description,
+      cost_price,
+      purchase_account_id,
+      chartofaccounts_name_id_purchase,
+      purchase_account_description,
+      prefered_vendor_id,
+      vendor_master_id,
+      name,
+      enable_sales_information,
+      enable_purchase_information,
+      item_image,
+      custom_field,
+      module_id
+    } = data || {};
+
     const normalizedData = {
-      type: data.type ?? null,
-      unit: data.unit ?? null,
-      hsn_code: data.hsn_code ?? null,
-      sac: data.sac ?? null,
-      tax_preference: data.tax_preference ?? null,
-      tax_rate_id: data.gst_rates_id ?? data.tax_rate_id ?? null,
-      selling_price: data.selling_price ?? 0,
-      chartofaccounts_name_id_sales: data.sales_account_id ?? data.chartofaccounts_name_id_sales ?? null,
-      sales_account_description: data.sales_account_description ?? null,
-      cost_price: data.cost_price ?? 0,
-      chartofaccounts_name_id_purchase: data.purchase_account_id ?? data.chartofaccounts_name_id_purchase ?? null,
-      purchase_account_description: data.purchase_account_description ?? null,
-      vendor_master_id: data.prefered_vendor_id ?? data.vendor_master_id ?? null,
-      name: data.name ?? null,
-      enable_sales_information: data.enable_sales_information ? 1 : 0,
-      enable_purchase_information: data.enable_purchase_information ? 1 : 0,
-      item_image: item_image ?? data.item_image ?? null,
+      type: type ?? null,
+      unit: unit ?? null,
+      hsn_code: hsn_code ?? null,
+      sac: sac ?? null,
+      tax_preference: tax_preference ?? null,
+      tax_rate_id: gst_rates_id ?? tax_rate_id ?? null,
+      selling_price: selling_price ?? 0,
+      chartofaccounts_name_id_sales: sales_account_id ?? chartofaccounts_name_id_sales ?? null,
+      sales_account_description: sales_account_description ?? null,
+      cost_price: cost_price ?? 0,
+      chartofaccounts_name_id_purchase: purchase_account_id ?? chartofaccounts_name_id_purchase ?? null,
+      purchase_account_description: purchase_account_description ?? null,
+      vendor_master_id: prefered_vendor_id ?? vendor_master_id ?? null,
+      name: name ?? null,
+      enable_sales_information: enable_sales_information ? 1 : 0,
+      enable_purchase_information: enable_purchase_information ? 1 : 0,
+      item_image: item_image ?? item_image ?? null,
       tenant_id,
-      user_id
+      user_id,
+      custom_field
     };
 
     if (!normalizedData.name) {
@@ -631,10 +658,13 @@ exports.createItem = async (
 
     const recordId = result.insertId;
 
-    if (custom_field) {
+    const customFieldValues =
+      typeof custom_field === 'string' ? JSON.parse(custom_field) : custom_field;
+
+    if (customFieldValues) {
       await handleCustomFields({
         connection,
-        custom_field,
+        custom_field: customFieldValues,
         module_id,
         tenant_id,
         record_id: recordId
@@ -681,7 +711,7 @@ exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
       LEFT JOIN chartofaccounts_name coa
         ON coa.id = i.chartofaccounts_name_id_sales
       LEFT JOIN chartofaccounts_name cop
-        ON cop.id = i.chartofaccounts_name_purchase
+        ON cop.id = i.chartofaccounts_name_id_purchase
       WHERE ${conditions.join(' AND ')}
       ORDER BY i.id DESC`,
     params
@@ -1063,6 +1093,64 @@ exports.fetchTaxRate = async (tenant_id) => {
   const [rows] = await db.query(
     "SELECT * FROM tax_rate WHERE tenant_id = ? ORDER BY id DESC",
     [tenant_id]
+  );
+
+  return rows;
+};
+
+exports.documentNumberSettings = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const { document_type, prefix, current_number, suffix, increment_by } = data;
+
+    if (!document_type) {
+      throw new Error('document_type is required');
+    }
+
+    if (prefix === undefined || prefix === null) {
+      throw new Error('prefix is required');
+    }
+
+    if (current_number === undefined || current_number === null) {
+      throw new Error('current_number is required');
+    }
+
+    if (suffix === undefined || suffix === null) {
+      throw new Error('suffix is required');
+    }
+
+    if (increment_by === undefined || increment_by === null) {
+      throw new Error('increment_by is required');
+    }
+
+    const [result] = await connection.query(
+      `INSERT INTO document_number_settings (document_type, prefix, current_number, suffix, increment_by, tenant_id, user_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?)` ,
+      [document_type, prefix, current_number, suffix, increment_by, tenant_id, user_id]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT * FROM document_number_settings WHERE id = ?`,
+      [result.insertId]
+    );
+
+    await connection.commit();
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.fetchDocumentNumberSettings = async (tenant_id, document_type) => {
+  const [rows] = await db.query(
+    "SELECT * FROM document_number_settings WHERE tenant_id = ? AND document_type = ? ORDER BY id DESC",
+    [tenant_id, document_type]
   );
 
   return rows;

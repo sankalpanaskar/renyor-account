@@ -371,3 +371,50 @@ exports.fetchTaxRate = async (req, res) => {
     );
   }
 };
+
+exports.documentNumberSettings = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+    
+    console.log(req.body);
+    const taxRate = await sales.documentNumberSettings(req.body,tenant_id,user_id);
+
+    return res.success(
+      200,
+      "Document Configuration created successfully",
+      taxRate
+    );
+  } catch (err) {
+     
+      return res.error(
+      400,
+      err.message
+       );
+    
+  }
+};
+
+
+exports.fetchDocumentNumberSettings = async (req, res) => {
+  try {
+    const { document_type } = req.query;   // <-- changed here
+
+    if (!document_type) {
+      return res.status(400).json({ message: "document_type is required" });
+    }
+    const tenant_id = req.user.tenant_id;
+    const documents = await sales.fetchDocumentNumberSettings(tenant_id, document_type);
+
+    return res.success(
+      200,
+      "Documents fetched successfully",
+      documents
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch documents"
+    );
+  }
+};
