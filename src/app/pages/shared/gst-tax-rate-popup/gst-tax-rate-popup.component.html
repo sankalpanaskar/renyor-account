@@ -1,0 +1,78 @@
+<div class="payment-terms-modal-overlay" *ngIf="open">
+  <nb-card class="payment-terms-modal">
+    <nb-card-header class="payment-terms-modal-header">
+      <span>{{ title }}</span>
+      <button type="button" class="modal-close-btn" (click)="closePopup()" aria-label="Close" [disabled]="isSubmitting">
+        ×
+      </button>
+    </nb-card-header>
+
+    <nb-card-body class="payment-terms-modal-body">
+      <table class="payment-terms-table">
+        <thead>
+          <tr>
+            <th>Tax Name</th>
+            <th>Rate (%)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rate of rates" (click)="selectRate(rate)" class="term-row">
+            <td>{{ rate.taxName }}</td>
+            <td>{{ rate.rate }}%</td>
+          </tr>
+          <tr *ngIf="!rates || rates.length === 0">
+            <td colspan="2" class="empty-state">No tax rates added yet.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" class="add-new-link" (click)="startAddRate()">
+        <nb-icon icon="plus-circle"></nb-icon>
+        Add New
+      </button>
+
+      <div class="payment-term-new-row" *ngIf="showAddForm">
+        <div class="row">
+          <div class="col-md-8 mb-10">
+            <input
+              type="text"
+              nbInput
+              fullWidth
+              shape="semi-round"
+              placeholder="Tax Name"
+              [(ngModel)]="newTaxName"
+              [ngModelOptions]="{standalone: true}"
+              [disabled]="isSubmitting"
+            >
+          </div>
+          <div class="col-md-4 mb-10">
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              nbInput
+              fullWidth
+              shape="semi-round"
+              placeholder="Rate (%)"
+              [(ngModel)]="newRate"
+              [ngModelOptions]="{standalone: true}"
+              [disabled]="isSubmitting"
+            >
+          </div>
+        </div>
+        <div class="payment-term-new-actions">
+          <button type="button" nbButton status="success" size="small" (click)="saveRate()" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Submit' }}
+          </button>
+          <button type="button" nbButton status="basic" size="small" (click)="cancelAddRate()" [disabled]="isSubmitting">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </nb-card-body>
+
+    <nb-card-footer class="payment-terms-modal-footer">
+      <button type="button" nbButton status="basic" (click)="closePopup()" [disabled]="isSubmitting">Close</button>
+    </nb-card-footer>
+  </nb-card>
+</div>
