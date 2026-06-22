@@ -4,10 +4,11 @@ import { FormsModule } from '@angular/forms';
 import { NbButtonModule, NbCardModule, NbIconModule, NbInputModule } from '@nebular/theme';
 import { PaymentTermsPopupComponent } from './payment-terms-popup/payment-terms-popup.component';
 import { TdsPopupComponent } from './tds-popup/tds-popup.component';
+import { GstTaxRatePopupComponent } from './gst-tax-rate-popup/gst-tax-rate-popup.component';
 
 @NgModule({
-  declarations: [PaymentTermsPopupComponent, TdsPopupComponent],
+  declarations: [PaymentTermsPopupComponent, TdsPopupComponent, GstTaxRatePopupComponent],
   imports: [CommonModule, FormsModule, NbCardModule, NbButtonModule, NbInputModule, NbIconModule],
-  exports: [PaymentTermsPopupComponent, TdsPopupComponent],
+  exports: [PaymentTermsPopupComponent, TdsPopupComponent, GstTaxRatePopupComponent],
 })
 export class SharedModule {}

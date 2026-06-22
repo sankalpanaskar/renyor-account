@@ -1,3 +1,149 @@
+.coa-page {
+  padding: 6px 0 12px;
+}
+
+.coa-card {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.section-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #e3eaf6;
+}
+
+.header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-copy span {
+  font-size: 18px;
+  font-weight: 800;
+  color: #22304f;
+}
+
+.header-copy small {
+  font-size: 12px;
+  color: #8a96b4;
+}
+
+.coa-body {
+  padding: 20px 24px 24px;
+}
+
+.table-shell {
+  border: 1px solid #e3eaf6;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.coa-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.coa-table thead th {
+  text-align: left;
+  padding: 16px 18px;
+  background: #f8fbff;
+  color: #7b88a8;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid #e3eaf6;
+  white-space: nowrap;
+}
+
+.coa-table tbody td {
+  padding: 16px 18px;
+  border-bottom: 1px solid #edf2fa;
+  color: #2d3958;
+  vertical-align: middle;
+  font-size: 14px;
+}
+
+.coa-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.account-head-name {
+  font-weight: 700;
+  color: #22304f;
+  font-size: 14px;
+}
+
+.account-head-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: #8a96b4;
+}
+
+.type-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.type-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #edf3ff;
+  color: #3969f5;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #f4f7fc;
+  color: #2e3a59;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-pill.active {
+  background: #e8f7ec;
+  color: #177245;
+}
+
+.empty-inline {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  color: #8a96b4;
+  font-size: 13px;
+}
+
+.empty-state {
+  text-align: center;
+  color: #8a96b4;
+  font-weight: 600;
+  padding: 28px 18px;
+}
+
 .small-label {
   font-size: 13px;
   margin-bottom: 4px;
@@ -53,6 +199,24 @@
 :host ::ng-deep .coa-modal nb-card-body {
   overflow: visible;
 }
-.row{
-    padding: 0px 20px;
+
+.coa-page .row {
+  padding: 0 20px;
+}
+
+@media (max-width: 767px) {
+  .section-header,
+  .coa-body {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .coa-table thead th,
+  .coa-table tbody td {
+    padding: 14px 12px;
+  }
+
+  .type-chip-list {
+    min-width: 240px;
+  }
 }

@@ -1,4 +1,4 @@
-<div class="searchable-select">
+<div class="searchable-select" [class.is-open]="isOpen">
   <div class="input-wrap">
     <input
       class="searchable-input"
@@ -6,10 +6,14 @@
       fullWidth
       type="text"
       [placeholder]="placeholder"
-      [value]="displayText"
-      readonly
+      [value]="inputText"
+      [readonly]="!editable"
       [disabled]="disabled"
-      (click)="toggleDropdown($event)" />
+      (click)="toggleDropdown($event)"
+      (focus)="onInputFocus($event)"
+      (input)="onMainInput($event)"
+      (keydown.enter)="selectExactMatch()"
+      (blur)="selectExactMatch()" />
 
     <nb-icon class="toggle-icon" [icon]="isOpen ? 'chevron-up-outline' : 'chevron-down-outline'"></nb-icon>
   </div>

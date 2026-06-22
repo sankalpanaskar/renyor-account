@@ -7,6 +7,7 @@ import { CustomersListComponent } from './customers-list/customers-list.componen
 import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
+import { AddInvoiceComponent } from './add-invoice/add-invoice.component';
 import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 
 const routes: Routes = [
@@ -37,6 +38,11 @@ const routes: Routes = [
       {
         path:'add-estimate',
         component:AddEstimatesComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'add-invoice',
+        component:AddInvoiceComponent,
         canActivate: [authGuard]
       },
       {

@@ -27,6 +27,7 @@ export class SearchSelectComponent {
   @Input() noResultsText = 'No results found';
   @Input() required = false;
   @Input() disabled = false;
+  @Input() editable = false;
 
   searchText = '';
   selectedValue: any = '';
@@ -40,6 +41,18 @@ export class SearchSelectComponent {
 
   get displayText(): string {
     return this.getLabelFromValue(this.selectedValue);
+  }
+
+  get inputText(): string {
+    if (this.editable && this.isOpen) {
+      return this.searchText;
+    }
+
+    if (this.editable && (this.searchText || !this.selectedValue)) {
+      return this.searchText || this.displayText;
+    }
+
+    return this.displayText;
   }
 
   get filteredOptions(): any[] {
@@ -97,6 +110,36 @@ export class SearchSelectComponent {
     }
   }
 
+  onInputFocus(event: Event): void {
+    if (this.disabled) {
+      return;
+    }
+
+    this.isOpen = true;
+    if (this.editable) {
+      const target = event.target as HTMLInputElement;
+      this.searchText = target.value || this.searchText || this.displayText;
+      setTimeout(() => {
+        this.searchInput?.nativeElement.setSelectionRange(
+          this.searchInput.nativeElement.value.length,
+          this.searchInput.nativeElement.value.length
+        );
+      }, 0);
+    }
+  }
+
+  onMainInput(event: Event): void {
+    if (!this.editable) {
+      return;
+    }
+
+    const input = event.target as HTMLInputElement;
+    this.searchText = input.value || '';
+    this.isOpen = true;
+    this.selectedValue = '';
+    this.onChange(this.selectedValue);
+  }
+
   onSearchInput(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.searchText = input.value || '';
@@ -114,12 +157,35 @@ export class SearchSelectComponent {
     this.searchText = '';
   }
 
+  selectExactMatch(): void {
+    if (!this.editable) {
+      return;
+    }
+
+    const exactMatch = (this.options || []).find(
+      (option) => this.getOptionLabel(option).toLowerCase() === this.searchText.trim().toLowerCase()
+    );
+
+    if (exactMatch) {
+      this.selectedValue = this.getOptionValue(exactMatch);
+      this.onChange(this.selectedValue);
+      this.onTouched();
+      this.isOpen = false;
+      this.searchText = '';
+      return;
+    }
+
+    this.onTouched();
+  }
+
   @HostListener('document:click', ['$event'])
   onOutsideClick(event: MouseEvent): void {
     if (!this.hostElement.nativeElement.contains(event.target as Node)) {
       if (this.isOpen) {
         this.isOpen = false;
-        this.searchText = '';
+        if (!this.editable) {
+          this.searchText = '';
+        }
         this.onTouched();
       }
     }

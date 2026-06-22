@@ -3,26 +3,26 @@
         <nb-card-header>Add Item</nb-card-header>
             <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
                 <div class="row">
-                    <div class="col-lg-3 mb-10">
+                    <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">
                             Type <span style="color:#d32f2f">*</span>
                         </label>
-                        <nb-radio-group (valueChange)="typeChange($event)" name="customer_type" [(ngModel)]="model.customer_type"
-                            #customer_type="ngModel" required class="d-flex flex-row">
+                        <nb-radio-group (valueChange)="typeChange($event)" name="type" [(ngModel)]="model.type"
+                            #type="ngModel" required class="d-flex flex-row">
                             <nb-radio value="Goods">Goods</nb-radio>
                             <nb-radio value="Service">Service</nb-radio>
                         </nb-radio-group>
-                        <div *ngIf="fm.submitted && customer_type.invalid" class="error-message">
+                        <div *ngIf="fm.submitted && type.invalid" class="error-message">
                             Type is required
                         </div>
                     </div>
 
-                    <div class="col-lg-9 mb-10">
+                    <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Name <span
                                 style="color:#d32f2f">*</span></label>
                         <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Item Name"
-                            name="item_name" required #item_name="ngModel" [(ngModel)]="model.item_name">
-                        <div *ngIf="fm.submitted && item_name.invalid" class="error-message">
+                            name="name" required #name="ngModel" [(ngModel)]="model.name">
+                        <div *ngIf="fm.submitted && name.invalid" class="error-message">
                             Item name is required
                         </div>
                     </div>
@@ -30,10 +30,11 @@
                     <!-- Unit Select -->
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-unit">
-                            Unit <span style="color:#d32f2f">*</span>
+                            Unit 
+                            <!-- <span style="color:#d32f2f">*</span> -->
                         </label>
                         <nb-select shape="semi-round" placeholder="Select Unit" name="unit"
-                            required #unit="ngModel" [(ngModel)]="model.unit">
+                             #unit="ngModel" [(ngModel)]="model.unit">
                             <nb-option value="box">box (Box)</nb-option>
                             <nb-option value="cm">cm (Centimeter)</nb-option>
                             <nb-option value="dz">dz (Dozen)</nb-option>
@@ -48,33 +49,35 @@
                             <nb-option value="m">m (Meter)</nb-option>
                             <nb-option value="pcs">pcs (Pieces)</nb-option>
                         </nb-select>
-                        <div *ngIf="fm.submitted && unit.invalid" class="error-message">
+                        <!-- <div *ngIf="fm.submitted && unit.invalid" class="error-message">
                             Unit is required
-                        </div>
+                        </div> -->
                     </div>
 
                     <!-- HSN Code (for Goods) -->
-                    <div class="col-lg-6 mb-10" *ngIf="model.customer_type === 'Goods'">
+                    <div class="col-lg-6 mb-10" *ngIf="model.type === 'Goods'">
                         <label class="small-label" id="label-hsn-code">
-                            HSN Code <span style="color:#d32f2f">*</span>
+                            HSN Code 
+                            <!-- <span style="color:#d32f2f">*</span> -->
                         </label>
                         <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter HSN Code"
-                            name="hsn_code" required #hsn_code="ngModel" [(ngModel)]="model.hsn_code">
-                        <div *ngIf="fm.submitted && hsn_code.invalid" class="error-message">
+                            name="hsn_code" #hsn_code="ngModel" [(ngModel)]="model.hsn_code">
+                        <!-- <div *ngIf="fm.submitted && hsn_code.invalid" class="error-message">
                             HSN Code is required for Goods
-                        </div>
+                        </div> -->
                     </div>
 
                     <!-- SAC (for Service) -->
-                    <div class="col-lg-6 mb-10" *ngIf="model.customer_type === 'Service'">
+                    <div class="col-lg-6 mb-10" *ngIf="model.type === 'Service'">
                         <label class="small-label" id="label-sac">
-                            SAC <span style="color:#d32f2f">*</span>
+                            SAC 
+                            <!-- <span style="color:#d32f2f">*</span> -->
                         </label>
                         <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter SAC"
-                            name="sac" required #sac="ngModel" [(ngModel)]="model.sac">
-                        <div *ngIf="fm.submitted && sac.invalid" class="error-message">
+                            name="sac" #sac="ngModel" [(ngModel)]="model.sac">
+                        <!-- <div *ngIf="fm.submitted && sac.invalid" class="error-message">
                             SAC is required for Service
-                        </div>
+                        </div> -->
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-tax-preference">
@@ -105,10 +108,22 @@
                         <label class="small-label" id="label-tax-preference">
                             GST Rates <span style="color:#d32f2f">*</span>
                         </label>
-                        <nb-select shape="semi-round" placeholder="Select GST Rates" name="gst_rates"
-                            required #gst_rates="ngModel" [(ngModel)]="model.gst_rates">
-                            <nb-option value="Taxable">Taxable</nb-option>
-                        </nb-select>
+                        <div class="payment-terms-control">
+                            <ngx-search-select
+                                name="gst_rates"
+                                [placeholder]="'Select GST Rates'"
+                                [options]="gstTaxRates"
+                                [(ngModel)]="model.gst_rates"
+                                displayKey="label"
+                                valueKey="id"
+                                [required]="true"
+                                #gst_rates="ngModel"
+                            ></ngx-search-select>
+                            <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
+                                (click)="openGstTaxRatePopup()" aria-label="Add gst tax rate">
+                                <nb-icon icon="plus-circle"></nb-icon>
+                            </button>
+                        </div>
                         <div *ngIf="fm.submitted && gst_rates.invalid" class="error-message">
                             GST Rates is required
                         </div>
@@ -228,13 +243,18 @@
                             <label class="small-label" id="label-prefered-vendor">
                                 Prefered Vendor <span style="color:#d32f2f">*</span>
                             </label>
-                            <nb-select shape="semi-round" placeholder="Select Vendor" name="prefered_vendor"
+                            <ngx-search-select
+                                name="prefered_vendor_id"
+                                [placeholder]="'Select Vendor'"
+                                [options]="vendorOptions"
+                                [(ngModel)]="model.prefered_vendor_id"
+                                displayKey="vendorName"
+                                valueKey="id"
                                 [required]="model.enable_purchase_information"
                                 [disabled]="!model.enable_purchase_information"
-                                #prefered_vendor="ngModel" [(ngModel)]="model.prefered_vendor">
-                                <nb-option value="Vendor1">Vendor1</nb-option>
-                            </nb-select>
-                            <div *ngIf="fm.submitted && model.enable_purchase_information && prefered_vendor.invalid" class="error-message">
+                                #prefered_vendor_id="ngModel"
+                            ></ngx-search-select>
+                            <div *ngIf="fm.submitted && model.enable_purchase_information && prefered_vendor_id.invalid" class="error-message">
                                 Prefered Vendor is required
                             </div>
                         </div>
@@ -267,3 +287,12 @@
         </nb-card-footer>
     </nb-card>
 </form>
+
+<ngx-gst-tax-rate-popup
+    [open]="showGstTaxRatePopup"
+    [title]="'Configure GST Tax Rates'"
+    [rates]="gstTaxRates"
+    (close)="closeGstTaxRatePopup()"
+    (ratesChange)="onGstTaxRatesChanged($event)"
+    (rateSelected)="onGstTaxRateSelected($event)"
+></ngx-gst-tax-rate-popup>

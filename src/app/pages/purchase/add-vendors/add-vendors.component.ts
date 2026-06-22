@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { HttpClient } from '@angular/common/http';
+import { TdsTermOption } from '../../shared/tds-popup/tds-popup.component';
 
 @Component({
   selector: 'ngx-add-vendors',
@@ -19,7 +20,7 @@ export class AddVendorsComponent implements OnInit {
   document2File: File | null = null;
   showTdsPopup: boolean = false;
   paymentTerms: Array<{ termName: string; days: string | number }> = [];
-  tdsTerms: Array<{ termName: string; percentage: string | number }> = [];
+  tdsTerms: TdsTermOption[] = [];
 
   constructor(
     private globalService: GlobalService,
@@ -42,8 +43,8 @@ export class AddVendorsComponent implements OnInit {
         this.tdsTerms = Array.isArray(res?.data)
           ? res.data.map((item: any) => ({
               id: item.id,
-              termName: item.name + ' [' + item.percentage + '%]',
-              percentage: item.percentage
+              termName: item.tds_name + ' [' + item.tds_percentage + '%]',
+              percentage: item.tds_percentage
             }))
           : [];
       },
@@ -130,12 +131,12 @@ export class AddVendorsComponent implements OnInit {
     this.showTdsPopup = false;
   }
 
-  onTdsTermsChanged(terms: Array<{ termName: string; percentage: string | number }>): void {
+  onTdsTermsChanged(terms: TdsTermOption[]): void {
     this.tdsTerms = terms;
   }
 
-  onTdsTermSelected(termName: string): void {
-    this.model.tds = termName;
+  onTdsTermSelected(term: string | number): void {
+    this.model.tds = term;
     this.closeTdsPopup();
   }
 

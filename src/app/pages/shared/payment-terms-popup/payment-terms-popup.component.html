@@ -2,7 +2,7 @@
   <nb-card class="payment-terms-modal">
     <nb-card-header class="payment-terms-modal-header">
       <span>{{ title }}</span>
-      <button type="button" class="modal-close-btn" (click)="closePopup()" aria-label="Close">
+      <button type="button" class="modal-close-btn" (click)="closePopup()" aria-label="Close" [disabled]="isSubmitting">
         ×
       </button>
     </nb-card-header>
@@ -39,6 +39,7 @@
               placeholder="Term Name"
               [(ngModel)]="newTermName"
               [ngModelOptions]="{standalone: true}"
+              [disabled]="isSubmitting"
             >
           </div>
           <div class="col-md-4 mb-10">
@@ -50,18 +51,23 @@
               placeholder="No Of Days"
               [(ngModel)]="newTermDays"
               [ngModelOptions]="{standalone: true}"
+              [disabled]="isSubmitting"
             >
           </div>
         </div>
         <div class="payment-term-new-actions">
-          <button type="button" nbButton status="success" size="small" (click)="saveTerm()">Add</button>
-          <button type="button" nbButton status="basic" size="small" (click)="cancelAddTerm()">Cancel</button>
+          <button type="button" nbButton status="success" size="small" (click)="saveTerm()" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Add' }}
+          </button>
+          <button type="button" nbButton status="basic" size="small" (click)="cancelAddTerm()" [disabled]="isSubmitting">
+            Cancel
+          </button>
         </div>
       </div>
     </nb-card-body>
 
     <nb-card-footer class="payment-terms-modal-footer">
-      <button type="button" nbButton status="basic" (click)="closePopup()">Close</button>
+      <button type="button" nbButton status="basic" (click)="closePopup()" [disabled]="isSubmitting">Close</button>
     </nb-card-footer>
   </nb-card>
 </div>

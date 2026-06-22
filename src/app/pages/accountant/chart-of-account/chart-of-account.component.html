@@ -1,15 +1,71 @@
-<nb-card>
-  <nb-card-header class="d-flex justify-content-between align-items-center">
-    <span>Chart of Account</span>
-    <button nbButton status="primary" size="small" shape="semi-round" (click)="openAddPopup()">
-      Add
-    </button>
-  </nb-card-header>
+<div class="coa-page">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card class="coa-card">
+        <nb-card-header class="section-header d-flex justify-content-between align-items-center">
+          <div class="header-copy">
+            <span>Chart of Account</span>
+            <small>{{ accountTree.length }} Account Head</small>
+          </div>
 
-  <nb-card-body>
-    <ng2-smart-table [settings]="settings" [source]="source"></ng2-smart-table>
-  </nb-card-body>
-</nb-card>
+          <button nbButton status="primary" size="small" shape="semi-round" type="button" (click)="openAddPopup()">
+            Add Account
+          </button>
+        </nb-card-header>
+
+        <nb-card-body class="coa-body">
+          <div class="table-shell">
+            <div class="table-responsive">
+              <table class="coa-table">
+                <thead>
+                  <tr>
+                    <th>Account Head</th>
+                    <th>Account Types</th>
+                    <th>Total Types</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <ng-container *ngFor="let head of accountTree; trackBy: trackByGroupId">
+                    <tr class="head-row">
+                      <td>
+                        <div class="account-head-name">{{ head.group_name }}</div>
+                        <div class="account-head-meta">ID: {{ head.id }}</div>
+                      </td>
+                      <td>
+                        <div class="type-chip-list" *ngIf="head.children.length > 0; else noChildTypes">
+                          <span class="type-chip" *ngFor="let type of head.children; trackBy: trackByGroupId">
+                            {{ type.group_name }}
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="count-badge">{{ head.children.length }}</span>
+                      </td>
+                      <td>
+                        <span class="status-pill active">Active</span>
+                      </td>
+                    </tr>
+                  </ng-container>
+
+                  <tr *ngIf="accountTree.length === 0">
+                    <td colspan="4" class="empty-state">
+                      No account heads found.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</div>
+
+<ng-template #noChildTypes>
+  <span class="empty-inline">No types linked</span>
+</ng-template>
 
 <div class="coa-modal-overlay" *ngIf="showAddPopup">
   <nb-card class="coa-modal">
@@ -28,7 +84,7 @@
             <nb-select fullWidth shape="semi-round" placeholder="Select Account Head"
               name="account_head" required #account_head="ngModel" [(ngModel)]="model.account_head"
               (ngModelChange)="onAccountHeadChange()">
-              <nb-option *ngFor="let head of accountHeads" [value]="head.id">{{ head.group_name }}</nb-option>
+              <nb-option *ngFor="let head of accountHeads; trackBy: trackByGroupId" [value]="head.id">{{ head.group_name }}</nb-option>
             </nb-select>
             <div *ngIf="fm.submitted && account_head.invalid" class="error-message">
               Account Head is required
@@ -39,7 +95,7 @@
             <label class="small-label">Account Type <span class="required">*</span></label>
             <nb-select fullWidth shape="semi-round" placeholder="Select Account Type"
               name="account_type" required #account_type="ngModel" [(ngModel)]="model.account_type">
-              <nb-option *ngFor="let type of accountTypes" [value]="type.id">{{ type.group_name }}</nb-option>
+              <nb-option *ngFor="let type of accountTypes; trackBy: trackByGroupId" [value]="type.id">{{ type.group_name }}</nb-option>
             </nb-select>
             <div *ngIf="fm.submitted && account_type.invalid" class="error-message">
               Account Type is required

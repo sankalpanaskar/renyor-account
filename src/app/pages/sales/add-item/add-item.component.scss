@@ -167,3 +167,18 @@ nb-card-body {
 .mb-10{
     margin-bottom: 10px;
 }
+
+.payment-terms-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.payment-terms-control ngx-search-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.payment-term-add-btn {
+  flex: 0 0 auto;
+}

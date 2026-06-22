@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
+import { GstTaxRateOption } from '../../shared/gst-tax-rate-popup/gst-tax-rate-popup.component';
 
 @Component({
   selector: 'ngx-add-item',
@@ -11,6 +12,12 @@ export class AddItemComponent implements OnInit {
   model: any = this.getEmptyModel();
   isSubmitting: boolean = false;
   itemImageFile: File | null = null;
+  showGstTaxRatePopup: boolean = false;
+  gstTaxRates: GstTaxRateOption[] = this.getDefaultGstTaxRates();
+  vendorOptions: Array<{
+    id: number;
+    vendorName: string;
+  }> = [];
   accountItemOptions: Array<{
     id: number;
     account_name: string;
@@ -24,6 +31,8 @@ export class AddItemComponent implements OnInit {
 
   ngOnInit(): void {
     this.getAccountItem();
+    this.fetchGstTaxRates();
+    this.getVendorList();
   }
 
   getAccountItem(): void {
@@ -50,13 +59,53 @@ export class AddItemComponent implements OnInit {
     });
   }
 
+  fetchGstTaxRates(): void {
+    this.globalService.getTaxRates().subscribe({
+      next: (res: any) => {
+        this.gstTaxRates = Array.isArray(res?.data)
+          ? res.data.map((item: any) => ({
+              id: item.id,
+              taxName: item.tax_rate_name,
+              rate: item.tax_rate_percentage,
+              label: item.tax_rate_name + ' [' + item.tax_rate_percentage + '%]'
+            }))
+          : this.getDefaultGstTaxRates();
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch GST tax rates:', error);
+        this.gstTaxRates = this.getDefaultGstTaxRates();
+      },
+    });
+  }
+
+  getVendorList(): void {
+    this.globalService.getVendorListByTenant(46).subscribe({
+      next: (res: any) => {
+        this.vendorOptions = Array.isArray(res?.data)
+          ? res.data.map((item: any) => ({
+              id: item.id,
+              vendorName:
+                item.company_name ||
+                item.display_name ||
+                `${item.primary_contact_f_name || ''} ${item.primary_contact_l_name || ''}`.trim()
+            }))
+          : [];
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch vendors:', error);
+        this.vendorOptions = [];
+      },
+    });
+  }
+
   private getEmptyModel(): any {
     return {
-      customer_type: 'Goods',
+      type: 'Goods',
       unit: '',
       hsn_code: '',
       sac: '',
       tax_preference: '',
+      gst_rates: '',
       enable_sales_information: false,
       enable_purchase_information: false,
       selling_price: '',
@@ -65,8 +114,29 @@ export class AddItemComponent implements OnInit {
       cost_price: '',
       purchase_account: '',
       purchase_account_description: '',
-      prefered_vendor: ''
+      prefered_vendor_id: ''
     };
+  }
+
+  private getDefaultGstTaxRates(): GstTaxRateOption[] {
+    return [];
+  }
+
+  openGstTaxRatePopup(): void {
+    this.showGstTaxRatePopup = true;
+  }
+
+  closeGstTaxRatePopup(): void {
+    this.showGstTaxRatePopup = false;
+  }
+
+  onGstTaxRatesChanged(rates: GstTaxRateOption[]): void {
+    this.gstTaxRates = rates;
+  }
+
+  onGstTaxRateSelected(rateId: string | number): void {
+    this.model.gst_rates = rateId;
+    this.closeGstTaxRatePopup();
   }
   
   typeChange(value: string) {
@@ -94,23 +164,12 @@ export class AddItemComponent implements OnInit {
       this.model.cost_price = '';
       this.model.purchase_account = '';
       this.model.purchase_account_description = '';
-      this.model.prefered_vendor = '';
+      this.model.prefered_vendor_id = '';
     }
   }
 
   hasSalesOrPurchaseInformationSelected(): boolean {
     return !!this.model.enable_sales_information || !!this.model.enable_purchase_information;
-  }
-
-  private normalizeSalesPurchaseModel(): void {
-    this.model.selling_price = this.model.enable_sales_information ? (this.model.selling_price ?? '') : '';
-    this.model.sales_account = this.model.enable_sales_information ? (this.model.sales_account ?? '') : '';
-    this.model.sales_account_description = this.model.enable_sales_information ? (this.model.sales_account_description ?? '') : '';
-
-    this.model.cost_price = this.model.enable_purchase_information ? (this.model.cost_price ?? '') : '';
-    this.model.purchase_account = this.model.enable_purchase_information ? (this.model.purchase_account ?? '') : '';
-    this.model.purchase_account_description = this.model.enable_purchase_information ? (this.model.purchase_account_description ?? '') : '';
-    this.model.prefered_vendor = this.model.enable_purchase_information ? (this.model.prefered_vendor ?? '') : '';
   }
 
   onFileChange(files: File[], field: 'item_image'): void {
@@ -149,19 +208,34 @@ export class AddItemComponent implements OnInit {
 
     if (fm.valid) {
       this.isSubmitting = true;
-      this.normalizeSalesPurchaseModel();
       const payload = { ...this.model };
 
-      if (payload.customer_type === 'Goods') {
+      if (payload.type === 'Goods') {
         delete payload.sac;
       }
 
-      if (payload.customer_type === 'Service') {
+      if (payload.type === 'Service') {
         delete payload.hsn_code;
       }
 
       if (payload.tax_preference !== 'Non-taxable') {
         delete payload.exemption_reason;
+      }
+
+      // Map form field keys to backend-expected keys
+      if (payload.hasOwnProperty('gst_rates')) {
+        payload.gst_rates_id = payload.gst_rates;
+        delete payload.gst_rates;
+      }
+
+      if (payload.hasOwnProperty('sales_account')) {
+        payload.sales_account_id = payload.sales_account;
+        delete payload.sales_account;
+      }
+
+      if (payload.hasOwnProperty('purchase_account')) {
+        payload.purchase_account_id = payload.purchase_account;
+        delete payload.purchase_account;
       }
 
       const formData = new FormData();

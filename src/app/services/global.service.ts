@@ -160,6 +160,10 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/create-item`,data);
     }
 
+    public fetchItems(): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-items`);
+    }
+
     public getAccountHeadType(): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-chartofaccounts-head-type`);
     }
@@ -172,8 +176,28 @@ export class GlobalService {
       return this.http.get(`${this.salesUrl}/fetch-tds`);
     }
 
+    public createTDS(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-tds`,data);
+    }
+
+    public getTaxRates(): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-tax-rate`);
+    }
+
+    public createTaxRate(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-tax-rate`,data);
+    }
+
     public getPaymentTerms(): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-payment-terms`);
+    }
+
+    public createPaymentTerm(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-payment-term`,data);
+    }
+
+    public insertInvoice(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/insert-invoice`, data);
     }
 
     public addVendor(data:any): Observable<any> {

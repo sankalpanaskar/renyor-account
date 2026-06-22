@@ -6,9 +6,14 @@
 .searchable-select {
   position: relative;
   width: 100%;
+  z-index: 1;
   box-shadow: 0 2px 12px 0 rgba(0,0,0,0.04);
   padding: 0;
   transition: box-shadow 0.2s, border 0.2s;
+}
+
+.searchable-select.is-open {
+  z-index: 5000;
 }
 
 .input-wrap {
@@ -21,10 +26,14 @@
     padding-right: 2.25rem;
     padding-left: 15px;
     border-color: #e4e9f2 !important;
-    cursor: pointer;
+    cursor: text;
     height: 40px;
     border-radius: 10px;
     background: #f7f9fc;
+}
+
+.searchable-input[readonly] {
+  cursor: pointer;
 }
 
 .searchable-input::placeholder {
@@ -45,7 +54,7 @@
   top: calc(100% + 0.25rem);
   left: 0;
   right: 0;
-  z-index: 1100;
+  z-index: 6000;
   max-height: 220px;
   overflow-y: auto;
   border: 1px solid #e4e9f2;

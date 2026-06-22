@@ -452,3 +452,11 @@
     </nb-card>
 </form>
 
+<ngx-payment-terms-popup
+    [open]="showPaymentTermsPopup"
+    [title]="'Configure Payment Terms'"
+    [terms]="paymentTerms"
+    (close)="closePaymentTermsPopup()"
+    (termsChange)="onPaymentTermsChanged($event)"
+    (termSelected)="onPaymentTermSelected($event)"
+></ngx-payment-terms-popup>

@@ -1,1 +1,166 @@
-<p>item-list works!</p>
+<div class="item-list-container">
+  <div *ngIf="showItemPopup" class="customer-dialog-overlay" (click)="closeItemPopup()">
+    <div class="customer-dialog-wrapper" (click)="$event.stopPropagation()">
+      <div class="customer-dialog-shell">
+        <div class="dialog-header">
+          <div class="dialog-header-copy">
+            <span class="customer-code-badge">
+              {{ selectedItem?.name || 'Item' }}
+            </span>
+            <div class="customer-title">
+              {{ selectedItem?.name || 'Item Details' }}
+            </div>
+          </div>
+          <button type="button" class="close-btn" (click)="closeItemPopup()">×</button>
+        </div>
+
+        <div class="popup-scroll-body">
+          <section class="dialog-group dialog-group-full">
+            <div class="dialog-group-title">Basic Details</div>
+            <div class="info-card-grid three-columns">
+              <div class="info-card" *ngFor="let field of getBasicItemFields(selectedItem)">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value">{{ formatValue(field.value) }}</div>
+              </div>
+            </div>
+          </section>
+
+          <div class="dialog-split-grid">
+            <section class="dialog-group">
+              <div class="dialog-group-title">Sales Information</div>
+              <div class="info-card-grid two-columns compact-top">
+                <div class="info-card">
+                  <div class="section-label">Selling Price</div>
+                  <div class="section-value multiline-value">{{ formatValue(selectedItem?.selling_price) }}</div>
+                </div>
+                <div class="info-card">
+                  <div class="section-label">Sales Chart Item</div>
+                  <div class="section-value multiline-value">{{ formatValue(selectedItem?.sales_chartofaccounts_item) }}</div>
+                </div>
+              </div>
+
+              <div class="info-card-grid two-columns full-width-row">
+                <div class="info-card full-span-card">
+                  <div class="section-label">Sales Account</div>
+                  <div class="section-value multiline-value">{{ formatValue(selectedItem?.sales_account_description) }}</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="dialog-group">
+              <div class="dialog-group-title">Purchase Information</div>
+              <div class="info-card-grid two-columns compact-top">
+                <div class="info-card">
+                  <div class="section-label">Cost Price</div>
+                  <div class="section-value multiline-value">{{ formatValue(selectedItem?.cost_price) }}</div>
+                </div>
+                <div class="info-card">
+                  <div class="section-label">Purchase Chart Item</div>
+                  <div class="section-value multiline-value">{{ formatValue(selectedItem?.purchase_chartofaccounts_item) }}</div>
+                </div>
+              </div>
+
+              <div class="info-card-grid two-columns full-width-row">
+                <div class="info-card full-span-card">
+                  <div class="section-label">Purchase Account</div>
+                  <div class="section-value multiline-value">{{ formatValue(selectedItem?.purchase_account_description) }}</div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <section class="dialog-group dialog-group-full">
+            <div class="dialog-group-title">Audit</div>
+            <div class="info-card-grid two-columns">
+              <div class="info-card" *ngFor="let field of getAuditItemFields(selectedItem)">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value multiline-value">{{ formatValue(field.value) }}</div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card class="item-list-card">
+        <nb-card-header class="section-header d-flex justify-content-between align-items-center">
+          <span>Item List</span>
+
+          <button nbButton status="primary" size="small" shape="semi-round" type="button">
+            Add Item
+          </button>
+        </nb-card-header>
+
+        <nb-card-body class="item-list-body" [nbSpinner]="loading" nbSpinnerStatus="primary">
+          <div class="toolbar-row">
+            <div class="search-wrap">
+              <input
+                type="text"
+                nbInput
+                fullWidth
+                shape="semi-round"
+                class="search-input"
+                placeholder="Search items..."
+                [ngModel]="searchText"
+                (ngModelChange)="onSearch($event)"
+              />
+            </div>
+          </div>
+
+          <div class="table-shell">
+            <div class="table-responsive">
+              <table class="item-table">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Purchase Rate</th>
+                    <th>Rate</th>
+                    <th>HSN/SAC</th>
+                    <th>Unit</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let item of apiData">
+                    <td>
+                      <div class="item-name">{{ getItemName(item) }}</div>
+                    </td>
+                    <td>{{ getPurchaseRate(item) }}</td>
+                    <td>{{ getRate(item) }}</td>
+                    <td>{{ getHsnSac(item) }}</td>
+                    <td>{{ getUnit(item) }}</td>
+                    <td>
+                      <div class="action-group">
+                        <button nbButton size="small" status="success" class="action-btn" type="button" (click)="viewItem(item)">
+                          <nb-icon icon="eye"></nb-icon>
+                          VIEW
+                        </button>
+                        <button nbButton size="small" status="primary" class="action-btn" type="button" (click)="editItem(item)">
+                          <nb-icon icon="edit-2"></nb-icon>
+                          EDIT
+                        </button>
+                        <button nbButton size="small" status="danger" class="action-btn" type="button" (click)="deleteItem(item)">
+                          <nb-icon icon="trash-2-outline"></nb-icon>
+                          DELETE
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr *ngIf="!apiData || apiData.length === 0">
+                    <td colspan="6" class="empty-state">
+                      No items found.
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</div>
