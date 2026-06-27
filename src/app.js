@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(responseMiddleware);
 app.use('/api',routes);
-app.use('/uploads', express.static('/var/www/html/api.msmeaccounts.com/uploads'));
+app.use('/uploads', express.static('/var/www/html/api.msmeaccounts.com/public/uploads'));
 
 
 app.use((err, req, res, next) => {
