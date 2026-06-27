@@ -255,11 +255,7 @@ exports.customFieldCreate = async (req, res) => {
 
 exports.getCustomFields = async (req, res) => {
   try {
-    const { module_id } = req.query;   // <-- changed here
-
-    if (!module_id) {
-      return res.status(400).json({ message: "module_id is required" });
-    }
+    const { module_id } = req.query;
 
     // Call service
     const fields = await SuperadminService.fetchFieldsByTable(module_id);

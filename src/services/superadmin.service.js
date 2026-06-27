@@ -310,14 +310,34 @@ exports.fetchChildMenu = async () => {
   return rows; // array (can be empty)
 };
 
-exports.fetchFieldsByTable = async (module_id) => {   // <-- parameter name updated
+exports.fetchFieldsByTable = async (module_id) => {
   try {
+    const hasModuleId =
+      module_id !== undefined && module_id !== null && module_id !== "";
+
+    if (hasModuleId) {
+      const query = `
+        SELECT * FROM custom_fields
+        WHERE module_id = ? AND show_in_form = 1 AND status = 1
+        ORDER BY field_order ASC
+      `;
+      const [rows] = await db.query(query, [module_id]);
+      return rows;
+    }
+
     const query = `
-      SELECT * FROM custom_fields
-      WHERE module_id = ? AND show_in_form = 1 AND status = 1
-      ORDER BY field_order ASC
+      SELECT
+        cf.*,
+        GROUP_CONCAT(DISTINCT mm.menu_name ORDER BY mm.menu_name SEPARATOR ', ') AS menu_name
+      FROM custom_fields cf
+      LEFT JOIN menu_modules mm
+        ON FIND_IN_SET(CAST(mm.id AS CHAR), CAST(cf.module_id AS CHAR)) > 0
+      WHERE cf.show_in_form = 1
+        AND cf.status = 1
+      GROUP BY cf.id
+      ORDER BY cf.module_id ASC, cf.field_order ASC
     `;
-    const [rows] = await db.query(query, [module_id]);
+    const [rows] = await db.query(query);
     return rows;
   } catch (err) {
     throw new Error(err.message || "Error fetching fields from DB");
