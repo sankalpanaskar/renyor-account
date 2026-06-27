@@ -1,5 +1,29 @@
 const sales = require('../services/sales.service');
 
+const buildCustomerUploadPath = (tenant_id, file) => {
+  if (!file?.filename) {
+    return null;
+  }
+
+  return `uploads/customers/${tenant_id}/${file.filename}`;
+};
+
+const buildVendorUploadPath = (tenant_id, file) => {
+  if (!file?.filename) {
+    return null;
+  }
+
+  return `uploads/vendors/${tenant_id}/${file.filename}`;
+};
+
+const buildItemUploadPath = (tenant_id, file) => {
+  if (!file?.filename) {
+    return null;
+  }
+
+  return `uploads/items/${tenant_id}/${file.filename}`;
+};
+
 
 exports.fetchCustomers = async (req, res) => {
   try {
@@ -74,8 +98,14 @@ exports.createCustomer = async (req, res) => {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
 
-    const uploaded_file_name_1 = req.files?.document_1?.[0]?.filename || null;
-    const uploaded_file_name_2 = req.files?.document_2?.[0]?.filename || null;
+    const uploaded_file_name_1 = buildCustomerUploadPath(
+      tenant_id,
+      req.files?.document_1?.[0]
+    );
+    const uploaded_file_name_2 = buildCustomerUploadPath(
+      tenant_id,
+      req.files?.document_2?.[0]
+    );
 
     const customers = await sales.createCustomer(
       req.body,   // no parsing here
@@ -97,8 +127,14 @@ exports.createVendor = async (req, res) => {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
 
-    const uploaded_file_name_1 = req.files?.document_1?.[0]?.filename || null;
-    const uploaded_file_name_2 = req.files?.document_2?.[0]?.filename || null;
+    const uploaded_file_name_1 = buildVendorUploadPath(
+      tenant_id,
+      req.files?.document_1?.[0]
+    );
+    const uploaded_file_name_2 = buildVendorUploadPath(
+      tenant_id,
+      req.files?.document_2?.[0]
+    );
 
     const vendors = await sales.createVendor(
       req.body,   // no parsing here
@@ -120,7 +156,10 @@ exports.createItem = async (req, res) => {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
 
-    const item_image = req.files?.item_image?.[0]?.filename || null;
+    const item_image = buildItemUploadPath(
+      tenant_id,
+      req.files?.item_image?.[0]
+    );
 
     const items = await sales.createItem(
       req.body,   // no parsing here

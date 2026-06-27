@@ -477,6 +477,8 @@ exports.createVendor = async (
         website,
         department,
         designation,
+        document_1,
+        document_2,
         document_1_name,
         document_2_name,
         billing_address,
@@ -491,7 +493,7 @@ exports.createVendor = async (
         shipping_pin,
         msme_registration_type,
         msme_registration_number
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         tenant_id,
         user_id,
@@ -512,6 +514,8 @@ exports.createVendor = async (
         website || null,
         department || null,
         designation || null,
+        uploaded_file_name_1 || null,
+        uploaded_file_name_2 || null,
         document_1_name || null,
         document_2_name || null,
         billing_address || null,
@@ -604,7 +608,7 @@ exports.createItem = async (
   data,
   tenant_id,
   user_id,
-  item_image = null
+  uploaded_item_image = null
 ) => {
   const connection = await db.getConnection();
 
@@ -632,7 +636,7 @@ exports.createItem = async (
       name,
       enable_sales_information,
       enable_purchase_information,
-      item_image,
+      item_image: body_item_image,
       custom_field,
       module_id
     } = data || {};
@@ -654,7 +658,7 @@ exports.createItem = async (
       name: name ?? null,
       enable_sales_information: enable_sales_information ? 1 : 0,
       enable_purchase_information: enable_purchase_information ? 1 : 0,
-      item_image: item_image ?? item_image ?? null,
+      item_image: uploaded_item_image ?? body_item_image ?? null,
       tenant_id,
       user_id,
       custom_field
