@@ -1,6 +1,31 @@
 // services/menu.service.js
 const db = require('../config/db');
 const handleCustomFields= require('../utils/custom_field');
+
+const formatDateForDb = (dateValue) => {
+  if (!dateValue) {
+    return null;
+  }
+
+  const value = String(dateValue).trim();
+
+  if (!value) {
+    return null;
+  }
+
+  const isoMatch = value.match(/^\d{4}-\d{2}-\d{2}$/);
+  if (isoMatch) {
+    return value;
+  }
+
+  const dmyMatch = value.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (dmyMatch) {
+    const [, day, month, year] = dmyMatch;
+    return `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;
+  }
+
+  return value;
+};
 // exports.fetchMenu = async (packageId, roleId = null) => {
 //   let rows;
 
@@ -265,8 +290,8 @@ exports.createCustomer = async (
         email,
         work_phone,
         mobile_no,
-        dob || null,
-        doi || null,
+        formatDateForDb(dob),
+        formatDateForDb(doi),
         website,
         group,
         gst_treatment,
