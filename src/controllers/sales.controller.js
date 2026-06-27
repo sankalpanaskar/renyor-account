@@ -122,6 +122,34 @@ exports.createCustomer = async (req, res) => {
   }
 };
 
+exports.editCustomer = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const uploaded_file_name_1 = buildCustomerUploadPath(
+      tenant_id,
+      req.files?.document_1?.[0]
+    );
+    const uploaded_file_name_2 = buildCustomerUploadPath(
+      tenant_id,
+      req.files?.document_2?.[0]
+    );
+
+    const customers = await sales.editCustomer(
+      req.body,
+      tenant_id,
+      user_id,
+      uploaded_file_name_1,
+      uploaded_file_name_2
+    );
+
+    return res.success(200, "Customer updated successfully", customers);
+  } catch (err) {
+    return res.error(500, err.message);
+  }
+};
+
 exports.createVendor = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;

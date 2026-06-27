@@ -2,6 +2,9 @@
 const db = require('../config/db');
 const handleCustomFields= require('../utils/custom_field');
 
+const hasOwn = (object, key) =>
+  Object.prototype.hasOwnProperty.call(object || {}, key);
+
 const formatDateForDb = (dateValue) => {
   if (!dateValue) {
     return null;
@@ -25,6 +28,22 @@ const formatDateForDb = (dateValue) => {
   }
 
   return value;
+};
+
+const parseCustomFieldForUpdate = (custom_field) => {
+  if (custom_field === undefined || custom_field === null || custom_field === "") {
+    return undefined;
+  }
+
+  if (typeof custom_field === "string") {
+    try {
+      return JSON.parse(custom_field);
+    } catch (err) {
+      throw new Error("Invalid custom_field JSON");
+    }
+  }
+
+  return custom_field;
 };
 // exports.fetchMenu = async (packageId, roleId = null) => {
 //   let rows;
@@ -375,6 +394,175 @@ exports.createCustomer = async (
     const [rows] = await connection.query(
       `SELECT * FROM customers WHERE id = ? AND tenant_id = ?`,
       [result.insertId, tenant_id]
+    );
+
+    await connection.commit();
+
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.editCustomer = async (
+  data,
+  tenant_id,
+  user_id,
+  uploaded_file_name_1 = null,
+  uploaded_file_name_2 = null
+) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      customer_id,
+      customer_type,
+      primary_contact_f_name,
+      primary_contact_l_name,
+      company_name,
+      display_name,
+      email,
+      work_phone,
+      mobile_no,
+      dob,
+      doi,
+      website,
+      group,
+      gst_treatment,
+      source_of_supply,
+      pan,
+      tax_preference,
+      payment_terms,
+      department,
+      designation,
+      document_1,
+      document_2,
+      document_1_name,
+      document_2_name,
+      exemption_reason,
+      opening_balance,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      custom_field,
+      module_id
+    } = data || {};
+
+    if (!customer_id) {
+      throw new Error("customer_id is required");
+    }
+
+    const [existingRows] = await connection.query(
+      `SELECT id FROM customers WHERE id = ? AND tenant_id = ? FOR UPDATE`,
+      [customer_id, tenant_id]
+    );
+
+    if (!existingRows.length) {
+      throw new Error("Customer not found");
+    }
+
+    const updates = [];
+    const values = [];
+
+    const addUpdate = (column, value, shouldUpdate) => {
+      if (!shouldUpdate) {
+        return;
+      }
+
+      updates.push(`${column} = ?`);
+      values.push(value ?? null);
+    };
+
+    addUpdate("customer_type", customer_type, hasOwn(data, "customer_type"));
+    addUpdate("primary_contact_f_name", primary_contact_f_name, hasOwn(data, "primary_contact_f_name"));
+    addUpdate("primary_contact_l_name", primary_contact_l_name, hasOwn(data, "primary_contact_l_name"));
+    addUpdate("company_name", company_name, hasOwn(data, "company_name"));
+    addUpdate("display_name", display_name, hasOwn(data, "display_name"));
+    addUpdate("email", email, hasOwn(data, "email"));
+    addUpdate("work_phone", work_phone, hasOwn(data, "work_phone"));
+    addUpdate("mobile_no", mobile_no, hasOwn(data, "mobile_no"));
+    addUpdate("dob", formatDateForDb(dob), hasOwn(data, "dob"));
+    addUpdate("doi", formatDateForDb(doi), hasOwn(data, "doi"));
+    addUpdate("website", website, hasOwn(data, "website"));
+    addUpdate("customer_group", group, hasOwn(data, "group"));
+    addUpdate("gst_treatment", gst_treatment, hasOwn(data, "gst_treatment"));
+    addUpdate("source_of_supply", source_of_supply, hasOwn(data, "source_of_supply"));
+    addUpdate("pan", pan, hasOwn(data, "pan"));
+    addUpdate("tax_preference", tax_preference, hasOwn(data, "tax_preference"));
+    addUpdate("payment_terms", payment_terms, hasOwn(data, "payment_terms"));
+    addUpdate("department", department, hasOwn(data, "department"));
+    addUpdate("designation", designation, hasOwn(data, "designation"));
+    addUpdate(
+      "document_1",
+      uploaded_file_name_1 ?? document_1,
+      uploaded_file_name_1 !== null || hasOwn(data, "document_1")
+    );
+    addUpdate(
+      "document_2",
+      uploaded_file_name_2 ?? document_2,
+      uploaded_file_name_2 !== null || hasOwn(data, "document_2")
+    );
+    addUpdate("document_1_name", document_1_name, hasOwn(data, "document_1_name"));
+    addUpdate("document_2_name", document_2_name, hasOwn(data, "document_2_name"));
+    addUpdate("exemption_reason", exemption_reason, hasOwn(data, "exemption_reason"));
+    addUpdate("opening_balance", opening_balance, hasOwn(data, "opening_balance"));
+    addUpdate("billing_address", billing_address, hasOwn(data, "billing_address"));
+    addUpdate("billing_country", billing_country, hasOwn(data, "billing_country"));
+    addUpdate("billing_city", billing_city, hasOwn(data, "billing_city"));
+    addUpdate("billing_state", billing_state, hasOwn(data, "billing_state"));
+    addUpdate("billing_pin", billing_pin, hasOwn(data, "billing_pin"));
+    addUpdate("shipping_address", shipping_address, hasOwn(data, "shipping_address"));
+    addUpdate("shipping_country", shipping_country, hasOwn(data, "shipping_country"));
+    addUpdate("shipping_city", shipping_city, hasOwn(data, "shipping_city"));
+    addUpdate("shipping_state", shipping_state, hasOwn(data, "shipping_state"));
+    addUpdate("shipping_pin", shipping_pin, hasOwn(data, "shipping_pin"));
+
+    if (updates.length > 0) {
+      await connection.query(
+        `UPDATE customers
+         SET ${updates.join(", ")}
+         WHERE id = ? AND tenant_id = ?`,
+        [...values, customer_id, tenant_id]
+      );
+    }
+
+    if (hasOwn(data, "custom_field") && custom_field !== undefined && custom_field !== null && custom_field !== "") {
+      const customFieldValues = parseCustomFieldForUpdate(custom_field);
+
+      if (!module_id) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      await connection.query(
+        `DELETE FROM custom_field_values
+         WHERE module_id = ? AND tenant_id = ? AND record_id = ?`,
+        [module_id, tenant_id, customer_id]
+      );
+
+      await handleCustomFields({
+        connection,
+        custom_field: customFieldValues,
+        module_id,
+        tenant_id,
+        record_id: customer_id,
+      });
+    }
+
+    const [rows] = await connection.query(
+      `SELECT * FROM customers WHERE id = ? AND tenant_id = ?`,
+      [customer_id, tenant_id]
     );
 
     await connection.commit();
