@@ -5,7 +5,21 @@ const handleCustomFields= require('../utils/custom_field');
 const hasOwn = (object, key) =>
   Object.prototype.hasOwnProperty.call(object || {}, key);
 
+const normalizeFormValue = (value) => {
+  if (!Array.isArray(value)) {
+    return value;
+  }
+
+  const nonEmptyValues = value.filter(
+    (item) => item !== undefined && item !== null && String(item).trim() !== ""
+  );
+
+  return nonEmptyValues.length ? nonEmptyValues[nonEmptyValues.length - 1] : "";
+};
+
 const formatDateForDb = (dateValue) => {
+  dateValue = normalizeFormValue(dateValue);
+
   if (!dateValue) {
     return null;
   }
@@ -31,6 +45,8 @@ const formatDateForDb = (dateValue) => {
 };
 
 const parseCustomFieldForUpdate = (custom_field) => {
+  custom_field = normalizeFormValue(custom_field);
+
   if (custom_field === undefined || custom_field === null || custom_field === "") {
     return undefined;
   }
@@ -460,13 +476,16 @@ exports.editCustomer = async (
       module_id
     } = data || {};
 
-    if (!customer_id) {
+    const customerId = normalizeFormValue(customer_id);
+    const moduleId = normalizeFormValue(module_id);
+
+    if (!customerId) {
       throw new Error("customer_id is required");
     }
 
     const [existingRows] = await connection.query(
       `SELECT id FROM customers WHERE id = ? AND tenant_id = ? FOR UPDATE`,
-      [customer_id, tenant_id]
+      [customerId, tenant_id]
     );
 
     if (!existingRows.length) {
@@ -482,7 +501,7 @@ exports.editCustomer = async (
       }
 
       updates.push(`${column} = ?`);
-      values.push(value ?? null);
+      values.push(normalizeFormValue(value) ?? null);
     };
 
     addUpdate("customer_type", customer_type, hasOwn(data, "customer_type"));
@@ -534,35 +553,35 @@ exports.editCustomer = async (
         `UPDATE customers
          SET ${updates.join(", ")}
          WHERE id = ? AND tenant_id = ?`,
-        [...values, customer_id, tenant_id]
+        [...values, customerId, tenant_id]
       );
     }
 
     if (hasOwn(data, "custom_field") && custom_field !== undefined && custom_field !== null && custom_field !== "") {
       const customFieldValues = parseCustomFieldForUpdate(custom_field);
 
-      if (!module_id) {
+      if (!moduleId) {
         throw new Error("module_id is required when custom_field is provided");
       }
 
       await connection.query(
         `DELETE FROM custom_field_values
          WHERE module_id = ? AND tenant_id = ? AND record_id = ?`,
-        [module_id, tenant_id, customer_id]
+        [moduleId, tenant_id, customerId]
       );
 
       await handleCustomFields({
         connection,
         custom_field: customFieldValues,
-        module_id,
+        module_id: moduleId,
         tenant_id,
-        record_id: customer_id,
+        record_id: customerId,
       });
     }
 
     const [rows] = await connection.query(
       `SELECT * FROM customers WHERE id = ? AND tenant_id = ?`,
-      [customer_id, tenant_id]
+      [customerId, tenant_id]
     );
 
     await connection.commit();
