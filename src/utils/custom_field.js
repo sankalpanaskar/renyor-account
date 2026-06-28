@@ -26,7 +26,14 @@ async function handleCustomFields({
 
   for (const key of Object.keys(customFieldObj)) {
     const [fieldRows] = await connection.query(
-      `SELECT id FROM custom_fields WHERE field_name = ? AND module_id = ?`,
+      `SELECT cf.id
+       FROM custom_fields cf
+       INNER JOIN custom_field_module_assignment cfma
+         ON cfma.custome_field_id = cf.id
+       WHERE cf.field_name = ?
+         AND cfma.module_id = ?
+         AND cf.status = 1
+         AND cfma.status = 1`,
       [key, module_id]
     );
 

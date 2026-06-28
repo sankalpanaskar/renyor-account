@@ -1,6 +1,39 @@
 const db = require('../config/db');
 const bcrypt = require("bcryptjs");
 
+const normalizeScalar = (value) => {
+  if (!Array.isArray(value)) {
+    return value;
+  }
+
+  const nonEmptyValues = value.filter(
+    (item) => item !== undefined && item !== null && String(item).trim() !== ""
+  );
+
+  return nonEmptyValues.length ? nonEmptyValues[nonEmptyValues.length - 1] : "";
+};
+
+const normalizeModuleIds = (module_id) => {
+  let value = module_id;
+
+  if (typeof value === "string" && value.trim().startsWith("[")) {
+    try {
+      value = JSON.parse(value);
+    } catch (err) {
+      value = module_id;
+    }
+  }
+
+  const rawIds = Array.isArray(value)
+    ? value
+    : String(value ?? "")
+        .split(",");
+
+  return [...new Set(rawIds
+    .map((id) => String(id).trim())
+    .filter(Boolean))];
+};
+
 exports.create = async (data) => {
   const { name, email, password } = data;
 
@@ -156,8 +189,10 @@ exports.customFieldCreate = async (data) => {
     status
   } = data;
 
+  const moduleIds = normalizeModuleIds(module_id);
+
   // Validation
-  if (!module_id) throw new Error("Table name is required");
+  if (!moduleIds.length) throw new Error("module_id is required");
   if (!field_name) throw new Error("Field name is required");
   if (!field_label) throw new Error("Field label is required");
 
@@ -193,7 +228,6 @@ exports.customFieldCreate = async (data) => {
   const [result] = await db.query(
     `INSERT INTO custom_fields
     (
-      module_id,
       field_name,
       field_label,
       field_type,
@@ -209,9 +243,8 @@ exports.customFieldCreate = async (data) => {
       show_in_list,
       status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
-      module_id,
       field_name,
       field_label,
       finalFieldType,
@@ -229,10 +262,23 @@ exports.customFieldCreate = async (data) => {
     ]
   );
 
+  const assignmentValues = moduleIds.map((moduleId) => [
+    moduleId,
+    result.insertId,
+    finalStatus
+  ]);
+
+  await db.query(
+    `INSERT INTO custom_field_module_assignment
+     (module_id, custome_field_id, status)
+     VALUES ?`,
+    [assignmentValues]
+  );
+
   // Return created record
   return {
     id: result.insertId,
-    module_id,
+    module_id: moduleIds,
     field_name,
     field_label,
     field_type: finalFieldType,
@@ -248,6 +294,88 @@ exports.customFieldCreate = async (data) => {
     show_in_list: finalShowList,
     status: finalStatus
   };
+};
+
+exports.assignCustomFieldModules = async (data) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const customeFieldId = normalizeScalar(
+      data?.custome_field_id ?? data?.custom_field_id
+    );
+    const moduleIds = normalizeModuleIds(data?.module_id);
+    const statusValue = normalizeScalar(data?.status);
+    const status =
+      statusValue === undefined || statusValue === null || statusValue === ""
+        ? 1
+        : statusValue;
+
+    if (!customeFieldId) {
+      throw new Error("custome_field_id is required");
+    }
+
+    if (!moduleIds.length) {
+      throw new Error("module_id is required");
+    }
+
+    const [fieldRows] = await connection.query(
+      `SELECT id FROM custom_fields WHERE id = ?`,
+      [customeFieldId]
+    );
+
+    if (!fieldRows.length) {
+      throw new Error("Custom field not found");
+    }
+
+    await connection.query(
+      `DELETE FROM custom_field_module_assignment
+       WHERE custome_field_id = ?`,
+      [customeFieldId]
+    );
+
+    const assignmentValues = moduleIds.map((moduleId) => [
+      moduleId,
+      customeFieldId,
+      status
+    ]);
+
+    await connection.query(
+      `INSERT INTO custom_field_module_assignment
+       (module_id, custome_field_id, status)
+       VALUES ?`,
+      [assignmentValues]
+    );
+
+    const [assignments] = await connection.query(
+      `SELECT
+          cfma.id,
+          cfma.custome_field_id,
+          cfma.module_id,
+          mm.menu_name,
+          cfma.status
+       FROM custom_field_module_assignment cfma
+       LEFT JOIN menu_modules mm
+         ON mm.id = cfma.module_id
+       WHERE cfma.custome_field_id = ?
+       ORDER BY cfma.module_id ASC`,
+      [customeFieldId]
+    );
+
+    await connection.commit();
+
+    return {
+      custome_field_id: customeFieldId,
+      module_id: moduleIds,
+      assignments
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
 };
 
 
@@ -312,32 +440,38 @@ exports.fetchChildMenu = async () => {
 
 exports.fetchFieldsByTable = async (module_id) => {
   try {
-    const hasModuleId =
-      module_id !== undefined && module_id !== null && module_id !== "";
+    const moduleIds = normalizeModuleIds(module_id);
+    const hasModuleId = moduleIds.length > 0;
+    const params = [];
 
+    const assignmentFilter = hasModuleId ? "WHERE cfma.module_id IN (?)" : "";
     if (hasModuleId) {
-      const query = `
-        SELECT * FROM custom_fields
-        WHERE module_id = ? AND show_in_form = 1 AND status = 1
-        ORDER BY field_order ASC
-      `;
-      const [rows] = await db.query(query, [module_id]);
-      return rows;
+      params.push(moduleIds);
     }
 
     const query = `
       SELECT
         cf.*,
-        GROUP_CONCAT(DISTINCT mm.menu_name ORDER BY mm.menu_name SEPARATOR ', ') AS menu_name
+        assignments.module_id,
+        assignments.menu_name
       FROM custom_fields cf
-      LEFT JOIN menu_modules mm
-        ON FIND_IN_SET(CAST(mm.id AS CHAR), CAST(cf.module_id AS CHAR)) > 0
+      ${hasModuleId ? "INNER" : "LEFT"} JOIN (
+        SELECT
+          cfma.custome_field_id,
+          GROUP_CONCAT(DISTINCT cfma.module_id ORDER BY cfma.module_id SEPARATOR ',') AS module_id,
+          GROUP_CONCAT(DISTINCT mm.menu_name ORDER BY mm.menu_name SEPARATOR ', ') AS menu_name
+        FROM custom_field_module_assignment cfma
+        LEFT JOIN menu_modules mm
+          ON mm.id = cfma.module_id
+        ${assignmentFilter}
+        GROUP BY cfma.custome_field_id
+      ) assignments
+        ON assignments.custome_field_id = cf.id
       WHERE cf.show_in_form = 1
         AND cf.status = 1
-      GROUP BY cf.id
-      ORDER BY cf.module_id ASC, cf.field_order ASC
+      ORDER BY assignments.module_id ASC, cf.field_order ASC
     `;
-    const [rows] = await db.query(query);
+    const [rows] = await db.query(query, params);
     return rows;
   } catch (err) {
     throw new Error(err.message || "Error fetching fields from DB");

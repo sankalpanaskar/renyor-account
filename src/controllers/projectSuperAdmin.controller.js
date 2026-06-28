@@ -253,6 +253,23 @@ exports.customFieldCreate = async (req, res) => {
   }
 };
 
+exports.assignCustomFieldModules = async (req, res) => {
+  try {
+    const assignment = await SuperadminService.assignCustomFieldModules(req.body);
+
+    return res.success(
+      200,
+      "Custom field modules assigned successfully",
+      assignment
+    );
+  } catch (err) {
+    return res.error(
+      400,
+      err.message || "Failed to assign custom field modules"
+    );
+  }
+};
+
 exports.getCustomFields = async (req, res) => {
   try {
     const { module_id } = req.query;
