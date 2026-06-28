@@ -172,7 +172,6 @@ exports.createMenuSubmenu = async (data) => {
 };
 exports.customFieldCreate = async (data) => {
   const {
-    module_id,
     field_name,
     field_label,
     field_type,
@@ -189,10 +188,7 @@ exports.customFieldCreate = async (data) => {
     status
   } = data;
 
-  const moduleIds = normalizeModuleIds(module_id);
-
   // Validation
-  if (!moduleIds.length) throw new Error("module_id is required");
   if (!field_name) throw new Error("Field name is required");
   if (!field_label) throw new Error("Field label is required");
 
@@ -262,23 +258,9 @@ exports.customFieldCreate = async (data) => {
     ]
   );
 
-  const assignmentValues = moduleIds.map((moduleId) => [
-    moduleId,
-    result.insertId,
-    finalStatus
-  ]);
-
-  await db.query(
-    `INSERT INTO custom_field_module_assignment
-     (module_id, custome_field_id, status)
-     VALUES ?`,
-    [assignmentValues]
-  );
-
   // Return created record
   return {
     id: result.insertId,
-    module_id: moduleIds,
     field_name,
     field_label,
     field_type: finalFieldType,
