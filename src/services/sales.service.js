@@ -224,9 +224,18 @@ exports.fetchVendors = async (tenant_id, module_id) => {
        AND cfv.record_id IN (?)`,
     [module_id, tenant_id, vendorIds]
   );
+
+  const [bankAccountRows] = await db.query(
+    `SELECT *
+     FROM vendor_bank_accounts
+     WHERE vendor_master_id IN (?)`,
+    [vendorIds]
+  );
+
   console.log(vendorRows,module_id, vendorIds);
 
   const customFieldMap = {};
+  const bankAccountMap = {};
 
   for (const row of vendorRows) {
     if (!customFieldMap[row.record_id]) {
@@ -235,9 +244,17 @@ exports.fetchVendors = async (tenant_id, module_id) => {
     customFieldMap[row.record_id][row.field_name] = row.field_value;
   }
 
+  for (const row of bankAccountRows) {
+    if (!bankAccountMap[row.vendor_master_id]) {
+      bankAccountMap[row.vendor_master_id] = [];
+    }
+    bankAccountMap[row.vendor_master_id].push(row);
+  }
+
   return vendors.map((vendor) => ({
     ...vendor,
-    custom_field: customFieldMap[vendor.id] || {}
+    custom_field: customFieldMap[vendor.id] || {},
+    bank_accounts: bankAccountMap[vendor.id] || []
   }));
 };
 
