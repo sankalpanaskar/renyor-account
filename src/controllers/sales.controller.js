@@ -177,6 +177,34 @@ exports.createVendor = async (req, res) => {
   }
 };
 
+exports.updateVendor = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const uploaded_file_name_1 = buildVendorUploadPath(
+      tenant_id,
+      req.files?.document_1?.[0]
+    );
+    const uploaded_file_name_2 = buildVendorUploadPath(
+      tenant_id,
+      req.files?.document_2?.[0]
+    );
+
+    const vendors = await sales.updateVendor(
+      req.body,
+      tenant_id,
+      user_id,
+      uploaded_file_name_1,
+      uploaded_file_name_2
+    );
+
+    return res.success(200, "Vendor updated successfully", vendors);
+  } catch (err) {
+    return res.error(500, err.message);
+  }
+};
+
 
 
 exports.createItem = async (req, res) => {

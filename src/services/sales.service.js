@@ -61,6 +61,25 @@ const parseCustomFieldForUpdate = (custom_field) => {
 
   return custom_field;
 };
+
+const parseBankAccountsForUpdate = (bank_accounts) => {
+  const normalized = normalizeFormValue(bank_accounts);
+
+  if (normalized === undefined || normalized === null || normalized === "") {
+    return [];
+  }
+
+  if (typeof normalized === "string") {
+    try {
+      const parsed = JSON.parse(normalized);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      throw new Error("Invalid bank_accounts JSON");
+    }
+  }
+
+  return Array.isArray(normalized) ? normalized : [];
+};
 // exports.fetchMenu = async (packageId, roleId = null) => {
 //   let rows;
 
@@ -793,6 +812,230 @@ exports.createVendor = async (
     const [bankRows] = await connection.query(
       `SELECT * FROM vendor_bank_accounts WHERE vendor_master_id = ?`,
       [vendor_master_id]
+    );
+
+    await connection.commit();
+
+    return {
+      ...vendorRows[0],
+      bank_accounts: bankRows,
+      uploaded_file_name_1,
+      uploaded_file_name_2
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.updateVendor = async (
+  data,
+  tenant_id,
+  user_id,
+  uploaded_file_name_1 = null,
+  uploaded_file_name_2 = null
+) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    let {
+      vendor_id,
+      vendor_master_id,
+      module_id,
+      primary_contact_f_name,
+      primary_contact_l_name,
+      company_name,
+      display_name,
+      email,
+      work_phone,
+      mobile_no,
+      group,
+      gst_treatment,
+      source_of_supply,
+      pan,
+      opening_balance,
+      payment_terms,
+      tds,
+      website,
+      department,
+      designation,
+      document_1,
+      document_2,
+      document_1_name,
+      document_2_name,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      msme_registration_type,
+      msme_registration_number,
+      bank_accounts,
+      custom_field
+    } = data || {};
+
+    const vendorId = normalizeFormValue(
+      vendor_id ?? vendor_master_id ?? data?.id
+    );
+    const moduleId = normalizeFormValue(module_id);
+
+    if (!vendorId) {
+      throw new Error("vendor_id is required");
+    }
+
+    const [existingRows] = await connection.query(
+      `SELECT id FROM vendor_master WHERE id = ? AND tenant_id = ? FOR UPDATE`,
+      [vendorId, tenant_id]
+    );
+
+    if (!existingRows.length) {
+      throw new Error("Vendor not found");
+    }
+
+    const updates = [];
+    const values = [];
+
+    const addUpdate = (column, value, shouldUpdate) => {
+      if (!shouldUpdate) {
+        return;
+      }
+
+      updates.push(`${column} = ?`);
+      values.push(normalizeFormValue(value) ?? null);
+    };
+
+    addUpdate("primary_contact_f_name", primary_contact_f_name, hasOwn(data, "primary_contact_f_name"));
+    addUpdate("primary_contact_l_name", primary_contact_l_name, hasOwn(data, "primary_contact_l_name"));
+    addUpdate("company_name", company_name, hasOwn(data, "company_name"));
+    addUpdate("display_name", display_name, hasOwn(data, "display_name"));
+    addUpdate("email", email, hasOwn(data, "email"));
+    addUpdate("work_phone", work_phone, hasOwn(data, "work_phone"));
+    addUpdate("mobile_no", mobile_no, hasOwn(data, "mobile_no"));
+    addUpdate("group_name", group, hasOwn(data, "group"));
+    addUpdate("gst_treatment", gst_treatment, hasOwn(data, "gst_treatment"));
+    addUpdate("source_of_supply", source_of_supply, hasOwn(data, "source_of_supply"));
+    addUpdate("pan", pan, hasOwn(data, "pan"));
+    addUpdate("opening_balance", opening_balance, hasOwn(data, "opening_balance"));
+    addUpdate("payment_terms", payment_terms, hasOwn(data, "payment_terms"));
+    addUpdate("tds", tds, hasOwn(data, "tds"));
+    addUpdate("website", website, hasOwn(data, "website"));
+    addUpdate("department", department, hasOwn(data, "department"));
+    addUpdate("designation", designation, hasOwn(data, "designation"));
+    addUpdate(
+      "document_1",
+      uploaded_file_name_1 ?? document_1,
+      uploaded_file_name_1 !== null || hasOwn(data, "document_1")
+    );
+    addUpdate(
+      "document_2",
+      uploaded_file_name_2 ?? document_2,
+      uploaded_file_name_2 !== null || hasOwn(data, "document_2")
+    );
+    addUpdate("document_1_name", document_1_name, hasOwn(data, "document_1_name"));
+    addUpdate("document_2_name", document_2_name, hasOwn(data, "document_2_name"));
+    addUpdate("billing_address", billing_address, hasOwn(data, "billing_address"));
+    addUpdate("billing_country", billing_country, hasOwn(data, "billing_country"));
+    addUpdate("billing_city", billing_city, hasOwn(data, "billing_city"));
+    addUpdate("billing_state", billing_state, hasOwn(data, "billing_state"));
+    addUpdate("billing_pin", billing_pin, hasOwn(data, "billing_pin"));
+    addUpdate("shipping_address", shipping_address, hasOwn(data, "shipping_address"));
+    addUpdate("shipping_country", shipping_country, hasOwn(data, "shipping_country"));
+    addUpdate("shipping_city", shipping_city, hasOwn(data, "shipping_city"));
+    addUpdate("shipping_state", shipping_state, hasOwn(data, "shipping_state"));
+    addUpdate("shipping_pin", shipping_pin, hasOwn(data, "shipping_pin"));
+    addUpdate("msme_registration_type", msme_registration_type, hasOwn(data, "msme_registration_type"));
+    addUpdate("msme_registration_number", msme_registration_number, hasOwn(data, "msme_registration_number"));
+
+    if (updates.length > 0) {
+      await connection.query(
+        `UPDATE vendor_master
+         SET ${updates.join(", ")}, updated_at = CURRENT_TIMESTAMP
+         WHERE id = ? AND tenant_id = ?`,
+        [...values, vendorId, tenant_id]
+      );
+    }
+
+    if (hasOwn(data, "bank_accounts")) {
+      const parsedBankAccounts = parseBankAccountsForUpdate(bank_accounts);
+
+      for (const bank of parsedBankAccounts) {
+        if (
+          bank.account_number &&
+          bank.re_enter_account_number &&
+          bank.account_number !== bank.re_enter_account_number
+        ) {
+          throw new Error("Bank account number mismatch");
+        }
+      }
+
+      await connection.query(
+        `DELETE FROM vendor_bank_accounts WHERE vendor_master_id = ?`,
+        [vendorId]
+      );
+
+      if (parsedBankAccounts.length > 0) {
+        const bankValues = parsedBankAccounts.map((bank) => [
+          vendorId,
+          bank.account_holder_name || null,
+          bank.bank_name || null,
+          bank.account_number || null,
+          bank.re_enter_account_number || null,
+          bank.ifsc || null
+        ]);
+
+        await connection.query(
+          `INSERT INTO vendor_bank_accounts (
+            vendor_master_id,
+            account_holder_name,
+            bank_name,
+            account_number,
+            re_enter_account_number,
+            ifsc
+          ) VALUES ?`,
+          [bankValues]
+        );
+      }
+    }
+
+    if (hasOwn(data, "custom_field") && custom_field !== undefined && custom_field !== null && custom_field !== "") {
+      const customFieldValues = parseCustomFieldForUpdate(custom_field);
+
+      if (!moduleId) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      await connection.query(
+        `DELETE FROM custom_field_values
+         WHERE module_id = ? AND tenant_id = ? AND record_id = ?`,
+        [moduleId, tenant_id, vendorId]
+      );
+
+      await handleCustomFields({
+        connection,
+        custom_field: customFieldValues,
+        module_id: moduleId,
+        tenant_id,
+        record_id: vendorId
+      });
+    }
+
+    const [vendorRows] = await connection.query(
+      `SELECT * FROM vendor_master WHERE id = ? AND tenant_id = ?`,
+      [vendorId, tenant_id]
+    );
+
+    const [bankRows] = await connection.query(
+      `SELECT * FROM vendor_bank_accounts WHERE vendor_master_id = ?`,
+      [vendorId]
     );
 
     await connection.commit();
