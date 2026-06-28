@@ -13,6 +13,50 @@ const normalizeScalar = (value) => {
   return nonEmptyValues.length ? nonEmptyValues[nonEmptyValues.length - 1] : "";
 };
 
+const hasOwn = (object, key) =>
+  Object.prototype.hasOwnProperty.call(object || {}, key);
+
+const normalizeNumberValue = (value) => {
+  const normalized = normalizeScalar(value);
+
+  if (normalized === undefined || normalized === null || normalized === "") {
+    return null;
+  }
+
+  const number = Number(normalized);
+  if (Number.isNaN(number)) {
+    throw new Error("Invalid numeric value");
+  }
+
+  return number;
+};
+
+const normalizeTinyIntValue = (value) => {
+  const normalized = normalizeScalar(value);
+
+  if (normalized === undefined || normalized === null || normalized === "") {
+    return null;
+  }
+
+  return normalized === true ||
+    normalized === 1 ||
+    normalized === "1" ||
+    normalized === "true"
+    ? 1
+    : 0;
+};
+
+const normalizeTextValue = (value) => {
+  const normalized = normalizeScalar(value);
+
+  if (normalized === undefined || normalized === null) {
+    return null;
+  }
+
+  const text = String(normalized).trim();
+  return text === "" ? null : text;
+};
+
 const normalizeModuleIds = (module_id) => {
   let value = module_id;
 
@@ -278,6 +322,136 @@ exports.customFieldCreate = async (data) => {
   };
 };
 
+exports.customFieldUpdate = async (data) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const customFieldId = normalizeScalar(
+      data?.custom_field_id ?? data?.id
+    );
+
+    if (!customFieldId) {
+      throw new Error("custom_field_id is required");
+    }
+
+    const [existingRows] = await connection.query(
+      `SELECT * FROM custom_fields WHERE id = ? FOR UPDATE`,
+      [customFieldId]
+    );
+
+    if (!existingRows.length) {
+      throw new Error("Custom field not found");
+    }
+
+    const updates = [];
+    const values = [];
+
+    const addUpdate = (column, value, shouldUpdate) => {
+      if (!shouldUpdate) {
+        return;
+      }
+
+      updates.push(`${column} = ?`);
+      values.push(value);
+    };
+
+    if (hasOwn(data, "field_name")) {
+      const fieldName = normalizeTextValue(data.field_name);
+      if (!fieldName) {
+        throw new Error("Field name is required");
+      }
+      addUpdate("field_name", fieldName, true);
+    }
+
+    if (hasOwn(data, "field_label")) {
+      const fieldLabel = normalizeTextValue(data.field_label);
+      if (!fieldLabel) {
+        throw new Error("Field label is required");
+      }
+      addUpdate("field_label", fieldLabel, true);
+    }
+
+    if (hasOwn(data, "field_type")) {
+      const fieldType = normalizeTextValue(data.field_type);
+      if (!fieldType) {
+        throw new Error("Field type is required");
+      }
+      addUpdate("field_type", fieldType, true);
+    }
+
+    if (hasOwn(data, "field_options")) {
+      addUpdate("field_options", normalizeTextValue(data.field_options), true);
+    }
+
+    if (hasOwn(data, "placeholder")) {
+      addUpdate("placeholder", normalizeTextValue(data.placeholder), true);
+    }
+
+    if (hasOwn(data, "default_value")) {
+      addUpdate("default_value", normalizeTextValue(data.default_value), true);
+    }
+
+    if (hasOwn(data, "validation_type")) {
+      addUpdate("validation_type", normalizeTextValue(data.validation_type), true);
+    }
+
+    if (hasOwn(data, "min_length")) {
+      addUpdate("min_length", normalizeNumberValue(data.min_length), true);
+    }
+
+    if (hasOwn(data, "max_length")) {
+      addUpdate("max_length", normalizeNumberValue(data.max_length), true);
+    }
+
+    if (hasOwn(data, "field_order")) {
+      addUpdate("field_order", normalizeNumberValue(data.field_order), true);
+    }
+
+    if (hasOwn(data, "is_required")) {
+      addUpdate("is_required", normalizeTinyIntValue(data.is_required), true);
+    }
+
+    if (hasOwn(data, "show_in_form")) {
+      addUpdate("show_in_form", normalizeTinyIntValue(data.show_in_form), true);
+    }
+
+    if (hasOwn(data, "show_in_list")) {
+      addUpdate("show_in_list", normalizeTinyIntValue(data.show_in_list), true);
+    }
+
+    if (hasOwn(data, "status")) {
+      addUpdate("status", normalizeTinyIntValue(data.status), true);
+    }
+
+    if (updates.length > 0) {
+      updates.push("updated_at = CURRENT_TIMESTAMP");
+
+      await connection.query(
+        `UPDATE custom_fields
+         SET ${updates.join(", ")}
+         WHERE id = ?`,
+        [...values, customFieldId]
+      );
+    }
+
+    const [rows] = await connection.query(
+      `SELECT * FROM custom_fields WHERE id = ?`,
+      [customFieldId]
+    );
+
+    await connection.commit();
+
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 exports.assignCustomFieldModules = async (data) => {
   const connection = await db.getConnection();
 
@@ -288,11 +462,10 @@ exports.assignCustomFieldModules = async (data) => {
       data?.custome_field_id ?? data?.custom_field_id
     );
     const moduleIds = normalizeModuleIds(data?.module_id);
-    const statusValue = normalizeScalar(data?.status);
-    const status =
-      statusValue === undefined || statusValue === null || statusValue === ""
-        ? 1
-        : statusValue;
+    const statusValue = normalizeTinyIntValue(
+      hasOwn(data, "status") ? data.status : 1
+    );
+    const status = statusValue === null ? 1 : statusValue;
 
     if (!customeFieldId) {
       throw new Error("custome_field_id is required");
@@ -311,24 +484,31 @@ exports.assignCustomFieldModules = async (data) => {
       throw new Error("Custom field not found");
     }
 
-    await connection.query(
-      `DELETE FROM custom_field_module_assignment
-       WHERE custome_field_id = ?`,
-      [customeFieldId]
-    );
+    for (const moduleId of moduleIds) {
+      const [assignmentRows] = await connection.query(
+        `SELECT id
+         FROM custom_field_module_assignment
+         WHERE custome_field_id = ? AND module_id = ?
+         LIMIT 1`,
+        [customeFieldId, moduleId]
+      );
 
-    const assignmentValues = moduleIds.map((moduleId) => [
-      moduleId,
-      customeFieldId,
-      status
-    ]);
-
-    await connection.query(
-      `INSERT INTO custom_field_module_assignment
-       (module_id, custome_field_id, status)
-       VALUES ?`,
-      [assignmentValues]
-    );
+      if (assignmentRows.length > 0) {
+        await connection.query(
+          `UPDATE custom_field_module_assignment
+           SET status = ?, updated_at = CURRENT_TIMESTAMP
+           WHERE id = ?`,
+          [status, assignmentRows[0].id]
+        );
+      } else {
+        await connection.query(
+          `INSERT INTO custom_field_module_assignment
+           (module_id, custome_field_id, status)
+           VALUES (?, ?, ?)`,
+          [moduleId, customeFieldId, status]
+        );
+      }
+    }
 
     const [assignments] = await connection.query(
       `SELECT
@@ -358,6 +538,13 @@ exports.assignCustomFieldModules = async (data) => {
   } finally {
     connection.release();
   }
+};
+
+exports.deassignCustomFieldModules = async (data) => {
+  return exports.assignCustomFieldModules({
+    ...data,
+    status: 0,
+  });
 };
 
 
@@ -426,7 +613,9 @@ exports.fetchFieldsByTable = async (module_id) => {
     const hasModuleId = moduleIds.length > 0;
     const params = [];
 
-    const assignmentFilter = hasModuleId ? "WHERE cfma.module_id IN (?)" : "";
+    const assignmentFilter = hasModuleId
+      ? "WHERE cfma.module_id IN (?) AND cfma.status = 1"
+      : "WHERE cfma.status = 1";
     if (hasModuleId) {
       params.push(moduleIds);
     }

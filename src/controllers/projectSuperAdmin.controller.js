@@ -253,6 +253,23 @@ exports.customFieldCreate = async (req, res) => {
   }
 };
 
+exports.customFieldUpdate = async (req, res) => {
+  try {
+    const fields = await SuperadminService.customFieldUpdate(req.body);
+
+    return res.success(
+      200,
+      "Custom field updated successfully",
+      fields
+    );
+
+  } catch (err) {
+    return res.status(400).json({
+      error: err.message
+    });
+  }
+};
+
 exports.assignCustomFieldModules = async (req, res) => {
   try {
     const assignment = await SuperadminService.assignCustomFieldModules(req.body);
@@ -266,6 +283,23 @@ exports.assignCustomFieldModules = async (req, res) => {
     return res.error(
       400,
       err.message || "Failed to assign custom field modules"
+    );
+  }
+};
+
+exports.deassignCustomFieldModules = async (req, res) => {
+  try {
+    const assignment = await SuperadminService.deassignCustomFieldModules(req.body);
+
+    return res.success(
+      200,
+      "Custom field module deassigned successfully",
+      assignment
+    );
+  } catch (err) {
+    return res.error(
+      400,
+      err.message || "Failed to deassign custom field module"
     );
   }
 };
