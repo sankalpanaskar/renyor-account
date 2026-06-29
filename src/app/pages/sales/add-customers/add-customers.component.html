@@ -1,11 +1,11 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" class="customer-form-shell">      
     <nb-card class="customer-form-card">
-        <nb-card-header>Add Customer</nb-card-header>
+        <nb-card-header>{{ pageTitle }}</nb-card-header>
         <nb-card-body class="customer-form-body">
         <nb-tabset fullWidth>
             <nb-tab tabTitle="Customers Details">
                 <div class="row">
-                    <div class="col-lg-12 mb-10">
+                    <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">
                             Customer Type <span style="color:#d32f2f">*</span>
                         </label>
@@ -16,6 +16,26 @@
                         </nb-radio-group>
                         <div *ngIf="fm.submitted && customer_type.invalid" class="error-message">
                             Customer Type is required
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">
+                            {{ model.customer_type === 'Business' ? 'Date of Incorporation' : 'Date of Birth' }}
+                            <span style="color:#d32f2f">*</span>
+                        </label>
+                        <input
+                            nbInput
+                            fullWidth
+                            shape="semi-round"
+                            [placeholder]="model.customer_type === 'Business' ? 'Select date of incorporation' : 'Select date of birth'"
+                            [nbDatepicker]="dobDoiPicker"
+                            name="dob_doi"
+                            required
+                            #dob_doi="ngModel"
+                            [(ngModel)]="model.dob_doi">
+                        <nb-datepicker #dobDoiPicker></nb-datepicker>
+                        <div *ngIf="fm.submitted && dob_doi.invalid" class="error-message">
+                            {{ model.customer_type === 'Business' ? 'Date of incorporation is required' : 'Date of birth is required' }}
                         </div>
                     </div>
                     <div class="col-lg-6 mb-10">
@@ -64,25 +84,20 @@
                         </div>
                     </div>
                     <div class="col-lg-3 mb-10">
-                        <label class="small-label" id="label-category">Phone <span
-                                style="color:#d32f2f">*</span></label>
+                        <label class="small-label" id="label-category">Phone</label>
                         <div class="phone-input-group">
                             <span class="country-code">+91</span>
                             <input type="tel" nbInput shape="semi-round" class="phone-input" placeholder="Enter Work Phone"
-                                name="work_phone" required minlength="10" maxlength="10" pattern="^[0-9]{10}$"
+                                name="work_phone" minlength="10" maxlength="10" pattern="^[0-9]{10}$"
                                 inputmode="numeric" #work_phone="ngModel" [(ngModel)]="model.work_phone"
                                 (ngModelChange)="onPhoneInputChange('work_phone')">
                         </div>
-                        <div *ngIf="fm.submitted && work_phone.errors?.required" class="error-message">
-                            Work phone is required
-                        </div>
-                        <div *ngIf="fm.submitted && !work_phone.errors?.required && work_phone.invalid" class="error-message">
+                        <div *ngIf="fm.submitted && work_phone.invalid" class="error-message">
                             Enter valid 10 digit phone number
                         </div>
                     </div>
                     <div class="col-lg-3 mb-10">
-                        <label class="small-label" id="label-category">Mobile No <span
-                                style="color:#d32f2f">*</span></label>
+                        <label class="small-label" id="label-category">Mobile No</label>
                         <div class="phone-input-group">
                             <span class="country-code">+91</span>
                             <input type="tel" nbInput shape="semi-round" class="phone-input" placeholder="Enter Mobile No"
@@ -256,6 +271,9 @@
 							[required]="true"
 							(filesChange)="onFileChange($event,'document_1')">
 						</ngx-file-upload>
+                        <div *ngIf="isDocumentInvalid('document_1', fm)" class="error-message">
+                            Document 1 is required
+                        </div>
                     </div>
 
                     <div class="col-lg-6 mb-10">
@@ -270,6 +288,9 @@
 							[required]="true"
 							(filesChange)="onFileChange($event,'document_2')">
 						</ngx-file-upload>
+                        <div *ngIf="isDocumentInvalid('document_2', fm)" class="error-message">
+                            Document 2 is required
+                        </div>
                     </div>
                 </div>
             </nb-tab>
@@ -445,7 +466,7 @@
             <div style="display:flex; justify-content:flex-end; gap:8px;">
                 <button nbButton status="primary" shape="semi-round" hero type="submit"
                     [disabled]="isSubmitting">
-                    Save
+                    {{ submitButtonLabel }}
                 </button>
             </div>
         </nb-card-footer>

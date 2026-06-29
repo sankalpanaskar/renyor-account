@@ -3,6 +3,7 @@ import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { HttpClient } from '@angular/common/http';
 import { TdsTermOption } from '../../shared/tds-popup/tds-popup.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'ngx-add-vendors',
@@ -21,11 +22,15 @@ export class AddVendorsComponent implements OnInit {
   showTdsPopup: boolean = false;
   paymentTerms: Array<{ termName: string; days: string | number }> = [];
   tdsTerms: TdsTermOption[] = [];
+  isEditMode = false;
+  vendorId: number | null = null;
 
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private http: HttpClient
+    private http: HttpClient,
+    private route: ActivatedRoute,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -35,6 +40,75 @@ export class AddVendorsComponent implements OnInit {
     this.getCustomFields();
     this.fetchTdsTerms();
     this.fetchPaymentTerms();
+    this.route.queryParams.subscribe((params: any) => {
+      const vendorId = Number(params?.vendor_id);
+      this.vendorId = Number.isNaN(vendorId) || !vendorId ? null : vendorId;
+      this.isEditMode = !!this.vendorId;
+
+      if (this.isEditMode && this.vendorId) {
+        this.loadVendorForEdit(this.vendorId);
+      }
+    });
+  }
+
+  private loadVendorForEdit(vendorId: number): void {
+    this.isSubmitting = true;
+    this.globalService.getVendorListByTenant(46).subscribe({
+      next: (res: any) => {
+        const vendors = Array.isArray(res?.data) ? res.data : [];
+        const matchedVendor = vendors.find((vendor: any) => Number(vendor?.id) === Number(vendorId));
+
+        if (!matchedVendor) {
+          this.toastrService.danger('Vendor not found.', 'Edit Vendor');
+          this.isSubmitting = false;
+          return;
+        }
+
+        const bankAccounts = Array.isArray(matchedVendor?.bank_accounts) && matchedVendor.bank_accounts.length
+          ? matchedVendor.bank_accounts.map((bank: any) => ({
+              id: bank?.id,
+              vendor_master_id: bank?.vendor_master_id,
+              account_holder_name: bank?.account_holder_name || '',
+              bank_name: bank?.bank_name || '',
+              account_number: bank?.account_number || '',
+              re_enter_account_number: bank?.account_number || bank?.re_enter_account_number || '',
+              ifsc: bank?.ifsc || '',
+            }))
+          : [this.getEmptyBankAccount()];
+
+        this.model = {
+          ...this.model,
+          ...matchedVendor,
+          bank_accounts: bankAccounts,
+          group: matchedVendor?.group_name || matchedVendor?.group || '',
+          source_of_supply: matchedVendor?.source_of_supply || '',
+          billing_state: matchedVendor?.billing_state || '',
+          shipping_state: matchedVendor?.shipping_state || '',
+          payment_terms: matchedVendor?.payment_terms || '',
+          tds: matchedVendor?.tds || '',
+          is_msme_registered: matchedVendor?.is_msme_registered === true
+            || matchedVendor?.is_msme_registered === 1
+            || matchedVendor?.is_msme_registered === '1',
+        };
+
+        if (matchedVendor?.custom_field && typeof matchedVendor.custom_field === 'object') {
+          Object.keys(matchedVendor.custom_field).forEach((key: string) => {
+            this.model[key] = matchedVendor.custom_field[key];
+          });
+        }
+
+        if (this.tdsTerms.length > 0 && this.model.tds !== undefined && this.model.tds !== null && `${this.model.tds}`.trim() !== '') {
+          this.model.tds = this.resolveTdsSelection(this.model.tds);
+        }
+
+        this.showAccountNumber = bankAccounts.map(() => false);
+        this.isSubmitting = false;
+      },
+      error: (err: any) => {
+        this.toastrService.danger(err?.error?.message || 'Failed to load vendor.', 'Edit Vendor');
+        this.isSubmitting = false;
+      }
+    });
   }
 
   fetchTdsTerms(): void {
@@ -47,6 +121,10 @@ export class AddVendorsComponent implements OnInit {
               percentage: item.tds_percentage
             }))
           : [];
+
+        if (this.isEditMode && this.model.tds !== undefined && this.model.tds !== null && `${this.model.tds}`.trim() !== '') {
+          this.model.tds = this.resolveTdsSelection(this.model.tds);
+        }
       },
       error: () => {
         this.tdsTerms = [];
@@ -138,6 +216,28 @@ export class AddVendorsComponent implements OnInit {
   onTdsTermSelected(term: string | number): void {
     this.model.tds = term;
     this.closeTdsPopup();
+  }
+
+  private resolveTdsSelection(rawValue: any): any {
+    const normalizedValue = `${rawValue ?? ''}`.trim();
+    if (!normalizedValue || !Array.isArray(this.tdsTerms) || this.tdsTerms.length === 0) {
+      return rawValue;
+    }
+
+    const numericRawValue = Number(normalizedValue);
+    const matchedTerm = this.tdsTerms.find((term: any) => {
+      const termId = `${term?.id ?? ''}`.trim();
+      const termPercentage = `${term?.percentage ?? ''}`.trim();
+      const termName = `${term?.termName ?? ''}`.trim();
+
+      return termId === normalizedValue
+        || termPercentage === normalizedValue
+        || (!Number.isNaN(numericRawValue) && Number(term?.id) === numericRawValue)
+        || (!Number.isNaN(numericRawValue) && Number(term?.percentage) === numericRawValue)
+        || termName.toLowerCase().includes(normalizedValue.toLowerCase());
+    });
+
+    return matchedTerm?.id ?? rawValue;
   }
 
   getState(){
@@ -452,6 +552,11 @@ export class AddVendorsComponent implements OnInit {
       return;
     }
 
+    if (!this.isDocumentValid()) {
+      this.toastrService.danger('Document 1 and Document 2 name and file are required.', 'Validation Failed');
+      return;
+    }
+
     if (fm.valid) {
       this.isSubmitting = true;
       const customFieldNames = this.customFields.map((field: any) => field?.field_name);
@@ -459,6 +564,8 @@ export class AddVendorsComponent implements OnInit {
       const customFieldData: any = {};
 
       payload.bank_accounts = (this.model.bank_accounts || []).map((bank: any) => ({
+        ...(bank?.id ? { id: bank.id } : {}),
+        ...(bank?.vendor_master_id ? { vendor_master_id: bank.vendor_master_id } : {}),
         account_holder_name: bank?.account_holder_name ?? '',
         bank_name: bank?.bank_name ?? '',
         account_number: bank?.account_number ?? '',
@@ -500,14 +607,27 @@ export class AddVendorsComponent implements OnInit {
         formData.append('document_2', this.document2File, this.document2File.name);
       }
 
-      this.globalService.addVendor(formData).subscribe({
+      if (this.isEditMode && this.vendorId) {
+        formData.append('vendor_id', `${this.vendorId}`);
+      }
+
+      const request$ = this.isEditMode
+        ? this.globalService.updateVendor(formData)
+        : this.globalService.addVendor(formData);
+
+      request$.subscribe({
         next: (res) => {
-          this.model = { bank_accounts: [this.getEmptyBankAccount()] };
-          this.showAccountNumber = [false];
-          this.document1File = null;
-          this.document2File = null;
-          fm.resetForm(this.model);
-          this.toastrService.success(res.message, 'Added');
+          if (this.isEditMode) {
+            this.toastrService.success(res.message, 'Updated');
+            this.router.navigate(['pages/purchase/vendor-list']);
+          } else {
+            this.model = { bank_accounts: [this.getEmptyBankAccount()] };
+            this.showAccountNumber = [false];
+            this.document1File = null;
+            this.document2File = null;
+            fm.resetForm(this.model);
+            this.toastrService.success(res.message, 'Added');
+          }
           this.isSubmitting = false;
         },
         error: (err) => {
@@ -525,5 +645,14 @@ export class AddVendorsComponent implements OnInit {
 
     }
 
+  }
+
+  isDocumentValid(): boolean {
+    const doc1Name = `${this.model?.document_1_name || ''}`.trim();
+    const doc2Name = `${this.model?.document_2_name || ''}`.trim();
+    const hasDocument1 = !!this.document1File || !!`${this.model?.document_1 || ''}`.trim();
+    const hasDocument2 = !!this.document2File || !!`${this.model?.document_2 || ''}`.trim();
+
+    return !!doc1Name && !!doc2Name && hasDocument1 && hasDocument2;
   }
 }

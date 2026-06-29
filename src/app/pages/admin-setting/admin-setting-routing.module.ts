@@ -11,7 +11,7 @@ import { AssignModuleIntoPackageComponent } from './assign-module-into-package/a
 import { AddCompanyComponent } from './add-company/add-company.component';
 import { CompanyListComponent } from './company-list/company-list.component';
 import { AddCustomFieldComponent } from './add-custom-field/add-custom-field.component';
-import { CustomFieldComponent } from './custom-field/custom-field.component';
+import { CustomFieldListComponent } from './custom-field-list/custom-field-list.component';
 
 const routes: Routes = [
   {
@@ -59,8 +59,8 @@ const routes: Routes = [
           canActivate: [authGuard]
         },
         {
-          path:'custom-field',
-          component:CustomFieldComponent,
+          path:'custom-field-list',
+          component:CustomFieldListComponent,
           canActivate: [authGuard]
         },
       ]

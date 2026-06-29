@@ -1,23 +1,12 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="uploadFile" style="width: 100%;margin: 0 auto;">      
     <nb-card>
-        <nb-card-header>Add Custom Field</nb-card-header>
+        <nb-card-header>{{ isEditMode ? 'Update Custom Field' : 'Add Custom Field' }}</nb-card-header>
             <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
                 <div class="row">
                     <div class="col-lg-6 mb-10">
-                        <label class="small-label">Field Belongs to <span
-                                style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select Module" name="module_id"
-                            required #module_id="ngModel" [(ngModel)]="model.module_id">
-                            <nb-option  *ngFor="let module of moduleList" [value]="module.id">{{module.menu_name}}</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && module_id.invalid" class="error-message">
-                            Module is required
-                        </div>
-                    </div>
-                    <div class="col-lg-6 mb-10">
                         <label class="small-label">Field Name <span
                                 style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Name"
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Name. Ex. gst_no"
                             name="field_name" required #field_name="ngModel" [(ngModel)]="model.field_name">
                         <div *ngIf="fm.submitted && field_name.invalid" class="error-message">
                             Field name is required
@@ -26,7 +15,7 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Field Label<span
                                 style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Label"
+                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Label. Ex. GST No"
                             name="field_label" required #field_label="ngModel" [(ngModel)]="model.field_label">
                         <div *ngIf="fm.submitted && field_label.invalid" class="error-message">
                             Field label is required
@@ -65,10 +54,7 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Default Value</label>
                         <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Default Value"
-                            name="default_value" required #default_value="ngModel" [(ngModel)]="model.default_value">
-                        <div *ngIf="fm.submitted && default_value.invalid" class="error-message">
-                            Default value is required
-                        </div>
+                            name="default_value" #default_value="ngModel" [(ngModel)]="model.default_value">
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Is Required<span
@@ -85,18 +71,12 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Min Length</label>
                         <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Min Length"
-                            name="min_length" required #min_length="ngModel" [(ngModel)]="model.min_length">
-                        <div *ngIf="fm.submitted && min_length.invalid" class="error-message">
-                            Enter the minimum length.
-                        </div>
+                            name="min_length" #min_length="ngModel" [(ngModel)]="model.min_length">
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Max Length</label>
                         <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Max Length"
-                            name="max_length" required #max_length="ngModel" [(ngModel)]="model.max_length">
-                        <div *ngIf="fm.submitted && max_length.invalid" class="error-message">
-                            Enter the maximum length.
-                        </div>
+                            name="max_length" #max_length="ngModel" [(ngModel)]="model.max_length">
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Show in Form <span
@@ -128,7 +108,7 @@
             <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
                 <button nbButton status="primary" shape="semi-round" hero type="submit"
                     [disabled]="isSubmitting">
-                    Submit
+                    {{ isEditMode ? 'Update' : 'Submit' }}
                 </button>
             </div>
         </nb-card-footer>

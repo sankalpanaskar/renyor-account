@@ -1,6 +1,11 @@
 @import './themes';
 
 @mixin nb-overrides() {
+  nb-card-body {
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+
   nb-select.size-medium button {
     padding: 0.4375rem 2.2rem 0.4375rem 1.125rem !important;
 

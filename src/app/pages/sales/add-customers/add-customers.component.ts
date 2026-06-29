@@ -10,7 +10,12 @@ import { HttpClient } from '@angular/common/http';
   styleUrls: ['./add-customers.component.scss']
 })
 export class AddCustomersComponent implements OnInit {
-  model: any = {};
+  isEditMode = false;
+  pageTitle = 'Add Customer';
+  submitButtonLabel = 'Save';
+  model: any = {
+    customer_type: 'Individual'
+  };
   isSubmitting: boolean = false;
   stateList : Array<{ name: string; code: string }> = [];
   customFields: any[] = [];
@@ -40,9 +45,46 @@ export class AddCustomersComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.restoreEditState();
+    this.setDefaultCustomerValues();
+    this.configureModeLabels();
     this.getState();
     this.getCustomFields();
     this.fetchPaymentTerms();
+  }
+
+  private restoreEditState(): void {
+    const navigationState = history.state || {};
+    const customerData = navigationState?.customerData;
+
+    if (navigationState?.isEditMode && customerData) {
+      this.isEditMode = true;
+      this.model = {
+        ...this.model,
+        ...customerData,
+        customer_id: customerData?.id,
+        customer_type: customerData?.customer_type || this.model.customer_type,
+        dob_doi: customerData?.dob_doi || customerData?.dob || customerData?.doi || '',
+      };
+    }
+  }
+
+  private setDefaultCustomerValues(): void {
+    this.model = {
+      customer_type: 'Individual',
+      ...this.model,
+    };
+  }
+
+  private configureModeLabels(): void {
+    if (this.isEditMode) {
+      this.pageTitle = 'Update Customer';
+      this.submitButtonLabel = 'Update';
+      return;
+    }
+
+    this.pageTitle = 'Add Customer';
+    this.submitButtonLabel = 'Save';
   }
 
   fetchPaymentTerms(): void {
@@ -291,6 +333,43 @@ export class AddCustomersComponent implements OnInit {
     }
   }
 
+  private formatDateForPayload(value: any): string {
+    if (!value) {
+      return '';
+    }
+
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return '';
+      }
+
+      const ddMMyyyyMatch = trimmed.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (ddMMyyyyMatch) {
+        return trimmed;
+      }
+
+      const parsedFromString = new Date(trimmed);
+      if (!Number.isNaN(parsedFromString.getTime())) {
+        const day = `${parsedFromString.getDate()}`.padStart(2, '0');
+        const month = `${parsedFromString.getMonth() + 1}`.padStart(2, '0');
+        const year = parsedFromString.getFullYear();
+        return `${day}/${month}/${year}`;
+      }
+
+      return trimmed;
+    }
+
+    if (value instanceof Date && !Number.isNaN(value.getTime())) {
+      const day = `${value.getDate()}`.padStart(2, '0');
+      const month = `${value.getMonth() + 1}`.padStart(2, '0');
+      const year = value.getFullYear();
+      return `${day}/${month}/${year}`;
+    }
+
+    return `${value}`;
+  }
+
   openPaymentTermsPopup(): void {
     this.showPaymentTermsPopup = true;
   }
@@ -328,6 +407,18 @@ export class AddCustomersComponent implements OnInit {
     }
   }
 
+  hasSelectedDocument(field: 'document_1' | 'document_2'): boolean {
+    if (field === 'document_1') {
+      return !!(this.document1File || `${this.model?.document_1_name || ''}`.trim());
+    }
+
+    return !!(this.document2File || `${this.model?.document_2_name || ''}`.trim());
+  }
+
+  isDocumentInvalid(field: 'document_1' | 'document_2', fm: any): boolean {
+    return !!fm?.submitted && !this.hasSelectedDocument(field);
+  }
+
   onDocumentFileSelected(file: File, docField: 'document_1' | 'document_2') {
     if (docField === 'document_1') {
       this.document1File = file;
@@ -360,12 +451,27 @@ export class AddCustomersComponent implements OnInit {
 
   onSubmit(fm: any) {
     if (fm.valid) {
+      if (!this.hasSelectedDocument('document_1') || !this.hasSelectedDocument('document_2')) {
+        this.toastrService.danger('Please upload both documents before submitting.', 'Validation');
+        return;
+      }
+
       this.isSubmitting = true;
       const customFieldNames = this.customFields.map((field: any) => field?.field_name);
       const payload = { ...fm.value };
       const customFieldData: any = {};
+      const customerType = `${payload.customer_type || ''}`.trim();
+      const dateKey = customerType === 'Business' ? 'doi' : 'dob';
+      const formattedDate = this.formatDateForPayload(payload.dob_doi);
 
       payload.module_id = 34;
+      if (this.isEditMode && this.model.customer_id) {
+        payload.customer_id = this.model.customer_id;
+      }
+      delete payload.dob_doi;
+      if (formattedDate) {
+        payload[dateKey] = formattedDate;
+      }
 
       // Extract custom fields from payload
       customFieldNames.forEach((fieldName: string) => {
@@ -393,13 +499,27 @@ export class AddCustomersComponent implements OnInit {
         formData.append('document_2', this.document2File, this.document2File.name);
       }
 
-      this.globalService.addCustomer(formData).subscribe({
+      if (this.isEditMode && payload.customer_id) {
+        formData.append('customer_id', `${payload.customer_id}`);
+      }
+
+      const customerRequest$ = this.isEditMode
+        ? this.globalService.updateCustomer(formData)
+        : this.globalService.addCustomer(formData);
+
+      customerRequest$.subscribe({
         next: (res) => {
-          this.model = {};
+          const toastTitle = this.isEditMode ? 'Updated' : 'Added';
+          this.model = {
+            customer_type: 'Individual'
+          };
           this.document1File = null;
           this.document2File = null;
+          this.isEditMode = false;
+          this.configureModeLabels();
           fm.resetForm();
-          this.toastrService.success(res.message, 'Added');
+          this.setDefaultCustomerValues();
+          this.toastrService.success(res.message, toastTitle);
           this.isSubmitting = false;
         },
         error: (err) => {

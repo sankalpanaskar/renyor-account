@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'ngx-add-custom-field',
@@ -10,38 +11,30 @@ import { NbToastrService } from '@nebular/theme';
 export class AddCustomFieldComponent implements OnInit {
   model: any = [];
   isSubmitting: boolean = false;
-  moduleList : any = [];
   stateList : any = [];
   selectedFile: File | null = null;
+  isEditMode = false;
+  customFieldId: number | null = null;
 
 
   constructor(
     private globalService: GlobalService,
-    private toastrService: NbToastrService
+    private toastrService: NbToastrService,
+    private route: ActivatedRoute,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
     this.getState();
-    this.getAllModule();
-  }
+    this.route.queryParams.subscribe((params: any) => {
+      const fieldId = Number(params?.field_id);
+      this.customFieldId = Number.isNaN(fieldId) || !fieldId ? null : fieldId;
+      this.isEditMode = !!this.customFieldId;
 
-  getAllModule() {
-      this.isSubmitting = true;
-      this.globalService.getAllModule().subscribe({
-        next: (res:any) => {
-          console.log(res);
-          const modules = Array.isArray(res?.data) ? res.data : [];
-          this.moduleList = modules.filter((item: any) => {
-            const menuName = (item?.menu_name || '').toString().trim().toLowerCase();
-            return menuName.startsWith('add');
-          });
-          this.isSubmitting = false;
-        },
-        error: (err) => {
-          this.toastrService.danger(err, 'Failed');
-          this.isSubmitting = false;
-        },
-      });
+      if (this.isEditMode && this.customFieldId) {
+        this.loadCustomFieldForEdit(this.customFieldId);
+      }
+    });
   }
 
   getState(){
@@ -63,16 +56,68 @@ export class AddCustomFieldComponent implements OnInit {
   }
 }
 
+  private loadCustomFieldForEdit(fieldId: number): void {
+    this.isSubmitting = true;
+    this.globalService.fetchCustomFieldsByModule().subscribe({
+      next: (res: any) => {
+        const fields = Array.isArray(res?.data)
+          ? res.data
+          : Array.isArray(res)
+            ? res
+            : [];
+
+        const matchedField = fields.find((field: any) => Number(field?.id) === Number(fieldId));
+        if (!matchedField) {
+          this.toastrService.danger('Custom field not found.', 'Edit Custom Field');
+          this.isSubmitting = false;
+          return;
+        }
+
+        this.model = {
+          field_name: matchedField?.field_name || '',
+          field_label: matchedField?.field_label || '',
+          field_type: matchedField?.field_type || '',
+          field_options: matchedField?.field_options || '',
+          placeholder: matchedField?.placeholder || '',
+          default_value: matchedField?.default_value || '',
+          is_required: matchedField?.is_required != null ? String(matchedField.is_required) : '',
+          min_length: matchedField?.min_length,
+          max_length: matchedField?.max_length,
+          show_in_form: matchedField?.show_in_form != null ? String(matchedField.show_in_form) : '',
+          show_in_list: matchedField?.show_in_list != null ? String(matchedField.show_in_list) : '',
+        };
+        this.isSubmitting = false;
+      },
+      error: (err: any) => {
+        this.toastrService.danger(err?.error?.message || 'Failed to load custom field.', 'Edit Custom Field');
+        this.isSubmitting = false;
+      }
+    });
+  }
+
 
   onSubmit(fm: any) {
   if (fm.invalid) return;
 
+  const payload = { ...fm.value };
+  delete payload.module_id;
+  if (this.isEditMode && this.customFieldId) {
+    payload.custom_field_id = this.customFieldId;
+  }
+
   this.isSubmitting = true;
-console.log(fm.value);
-  this.globalService.addCustomField(fm.value).subscribe({
+  const request$ = this.isEditMode
+    ? this.globalService.updateCustomField(payload)
+    : this.globalService.addCustomField(payload);
+
+  request$.subscribe({
     next: (res) => { 
       this.toastrService.success(res.message, 'Success!');
-      fm.resetForm(); 
+      if (this.isEditMode) {
+        this.router.navigate(['pages/admin-setting/custom-field-list']);
+      } else {
+        fm.resetForm();
+      }
       this.isSubmitting = false; 
     },
     error: (err) => { 
@@ -96,4 +141,3 @@ console.log(fm.value);
 
 
 }
-

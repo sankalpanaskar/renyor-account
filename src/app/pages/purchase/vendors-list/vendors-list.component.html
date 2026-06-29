@@ -73,15 +73,26 @@
 
         <section class="dialog-group dialog-group-full">
           <div class="dialog-group-title">Documents</div>
-          <div class="info-card-grid two-columns">
-            <div class="info-card" *ngFor="let field of [
-              { label: 'Document 1 Name', value: selectedVendor?.document_1_name || '-' },
-              { label: 'Document 2 Name', value: selectedVendor?.document_2_name || '-' }
-            ]">
-              <div class="section-label">{{ field.label }}</div>
-              <div class="section-value">{{ field.value }}</div>
+          <div class="info-card-grid two-columns" *ngIf="getVendorDocuments(selectedVendor).length > 0; else noVendorDocuments">
+            <div class="info-card" *ngFor="let document of getVendorDocuments(selectedVendor)">
+              <div class="section-label">{{ document.name }}</div>
+              <div class="section-value document-action-row">
+                <button
+                  type="button"
+                  nbButton
+                  size="small"
+                  status="primary"
+                  class="action-btn"
+                  (click)="openDocumentViewer(document)"
+                >
+                  VIEW DOCUMENT
+                </button>
+              </div>
             </div>
           </div>
+          <ng-template #noVendorDocuments>
+            <div class="empty-popup-message">No documents found.</div>
+          </ng-template>
         </section>
 
         <section class="dialog-group dialog-group-full">
@@ -154,6 +165,24 @@
           </div>
         </section>
       </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showDocumentViewer" class="document-viewer-overlay" (click)="closeDocumentViewer()">
+  <div class="document-viewer-shell" (click)="$event.stopPropagation()">
+    <div class="document-viewer-header">
+      <div class="document-viewer-title">{{ selectedDocumentName }}</div>
+      <button type="button" class="document-viewer-close" (click)="closeDocumentViewer()">Close</button>
+    </div>
+    <div class="document-viewer-body">
+      <img *ngIf="!selectedDocumentUrl.toLowerCase().endsWith('.pdf')" [src]="selectedDocumentUrl" [alt]="selectedDocumentName" class="document-viewer-image">
+      <iframe
+        *ngIf="selectedDocumentUrl.toLowerCase().endsWith('.pdf')"
+        [src]="selectedDocumentViewerUrl"
+        class="document-viewer-frame"
+        title="PDF document preview"
+      ></iframe>
     </div>
   </div>
 </div>

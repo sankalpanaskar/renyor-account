@@ -115,7 +115,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           },
           {
             title: 'Custom Field List',
-            link: '/pages/admin-setting/custom-field',
+            link: '/pages/admin-setting/custom-field-list',
           }
         ],
       },

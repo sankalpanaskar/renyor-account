@@ -16,6 +16,11 @@ const routes: Routes = [
         canActivate: [authGuard]
       },
       {
+        path:'update-vendor',
+        component:AddVendorsComponent,
+        canActivate: [authGuard]
+      },
+      {
         path:'vendor-list',
         component:VendorsListComponent,
         canActivate: [authGuard]

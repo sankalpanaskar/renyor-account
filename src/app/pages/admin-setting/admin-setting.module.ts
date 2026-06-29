@@ -5,6 +5,7 @@ import { RouterModule } from '@angular/router';
 import { NbAccordionModule, NbAlertModule, NbButtonModule, NbCardModule, NbCheckboxComponent, NbCheckboxModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbListModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
+import { ThemeModule } from '../../@theme/theme.module';
 import { AdminSettingComponent } from './admin-setting.component';
 import { AddPackageComponent } from './add-package/add-package.component';
 import { PackageListComponent } from './package-list/package-list.component';
@@ -19,7 +20,7 @@ import { AddCompanyComponent } from './add-company/add-company.component';
 import { CompanyListComponent } from './company-list/company-list.component';
 import { CompanyButtonComponent } from './company-list/custom-btn.component';
 import { AddCustomFieldComponent } from './add-custom-field/add-custom-field.component';
-import { CustomFieldComponent } from './custom-field/custom-field.component';
+import { CustomFieldListComponent } from './custom-field-list/custom-field-list.component';
 
 @NgModule({
   declarations: [
@@ -37,10 +38,11 @@ import { CustomFieldComponent } from './custom-field/custom-field.component';
     CompanyListComponent,
     CompanyButtonComponent,
     AddCustomFieldComponent,
-    CustomFieldComponent
+    CustomFieldListComponent
   ],
   imports: [
     CommonModule,
+    ThemeModule,
     AdminSettingRoutingModule,
     RouterModule, // ✅ Add this
     NbCardModule,

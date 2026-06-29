@@ -11,7 +11,7 @@
             {{ selectedCustomer?.company_name || selectedCustomer?.display_name || ((selectedCustomer?.primary_contact_f_name || '') + ' ' + (selectedCustomer?.primary_contact_l_name || '')) }}
           </div>
         </div>
-        <button type="button" class="close-btn" (click)="closeCustomerPopup()">×</button>
+        <button type="button" class="close-btn" (click)="closeCustomerPopup()">Close</button>
       </div>
 
       <div class="popup-scroll-body">
@@ -54,6 +54,7 @@
             </div>
             <div class="info-card-grid two-columns compact-top">
               <div class="info-card" *ngFor="let field of [
+                { label: getCustomerDateLabel(selectedCustomer), value: getCustomerDateValue(selectedCustomer) },
                 { label: 'GST No', value: selectedCustomer?.custom_field?.gst_no || '-' },
                 { label: 'PAN', value: selectedCustomer?.pan || '-' },
                 { label: 'Payment Terms', value: selectedCustomer?.payment_terms || '-' },
@@ -65,6 +66,27 @@
             </div>
           </section>
         </div>
+
+        <section class="dialog-group dialog-group-full" *ngIf="getCustomerDocuments(selectedCustomer).length > 0">
+          <div class="dialog-group-title">Documents</div>
+          <div class="info-card-grid two-columns">
+            <div class="info-card" *ngFor="let document of getCustomerDocuments(selectedCustomer)">
+              <div class="section-label">{{ document.name }}</div>
+              <div class="section-value document-action-row">
+                <button
+                  type="button"
+                  nbButton
+                  size="small"
+                  status="primary"
+                  class="action-btn"
+                  (click)="openDocumentViewer(document)"
+                >
+                  VIEW DOCUMENT
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
 
         <section class="dialog-group dialog-group-full">
           <div class="dialog-group-title">Addresses</div>
@@ -103,6 +125,24 @@
           </div>
         </section>
       </div>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showDocumentViewer" class="document-viewer-overlay" (click)="closeDocumentViewer()">
+  <div class="document-viewer-shell" (click)="$event.stopPropagation()">
+    <div class="document-viewer-header">
+      <div class="document-viewer-title">{{ selectedDocumentName }}</div>
+      <button type="button" class="document-viewer-close" (click)="closeDocumentViewer()">Close</button>
+    </div>
+    <div class="document-viewer-body">
+      <img *ngIf="!selectedDocumentUrl.toLowerCase().endsWith('.pdf')" [src]="selectedDocumentUrl" [alt]="selectedDocumentName" class="document-viewer-image">
+      <iframe
+        *ngIf="selectedDocumentUrl.toLowerCase().endsWith('.pdf')"
+        [src]="selectedDocumentViewerUrl"
+        class="document-viewer-frame"
+        title="PDF document preview"
+      ></iframe>
     </div>
   </div>
 </div>

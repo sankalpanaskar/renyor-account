@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ngx-vendors-list',
@@ -10,6 +12,10 @@ import { Router } from '@angular/router';
 })
 export class VendorsListComponent implements OnInit {
   showVendorPopup = false;
+  showDocumentViewer = false;
+  selectedDocumentUrl = '';
+  selectedDocumentViewerUrl: SafeResourceUrl | string = '';
+  selectedDocumentName = '';
   selectedVendor: any = null;
   allVendors: any[] = [];
   model: any = [];
@@ -21,7 +27,8 @@ export class VendorsListComponent implements OnInit {
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private router : Router
+    private router : Router,
+    private sanitizer: DomSanitizer,
   ) { }
 
 
@@ -37,10 +44,21 @@ export class VendorsListComponent implements OnInit {
   closeVendorPopup(): void {
     this.showVendorPopup = false;
     this.selectedVendor = null;
+    this.closeDocumentViewer();
   }
 
-  onEdit(_vendor: any): void {
-    this.toastrService.info('Vendor edit is not configured yet.', 'Edit Vendor');
+  onEdit(vendor: any): void {
+    const vendorId = vendor?.id;
+    if (!vendorId) {
+      this.toastrService.danger('Vendor id is missing.', 'Edit Vendor');
+      return;
+    }
+
+    this.router.navigate(['pages/purchase/update-vendor'], {
+      queryParams: {
+        vendor_id: vendorId,
+      },
+    });
   }
 
   getVendorList(): void {
@@ -167,6 +185,68 @@ export class VendorsListComponent implements OnInit {
       key,
       value: this.formatFieldValue(vendor.custom_field[key]),
     }));
+  }
+
+  getVendorDocuments(vendor: any): Array<{ name: string; path: string; type: 'image' | 'pdf' | 'file' }> {
+    return [
+      {
+        name: vendor?.document_1_name || 'Document 1',
+        path: vendor?.document_1 || '',
+        type: this.getDocumentType(vendor?.document_1 || ''),
+      },
+      {
+        name: vendor?.document_2_name || 'Document 2',
+        path: vendor?.document_2 || '',
+        type: this.getDocumentType(vendor?.document_2 || ''),
+      },
+    ].filter((document: { name: string; path: string; type: 'image' | 'pdf' | 'file' }) => !!document.path);
+  }
+
+  private getDocumentType(path: string): 'image' | 'pdf' | 'file' {
+    const normalizedPath = `${path || ''}`.toLowerCase();
+
+    if (normalizedPath.endsWith('.pdf')) {
+      return 'pdf';
+    }
+
+    if (/\.(png|jpg|jpeg|gif|webp|bmp|svg)$/.test(normalizedPath)) {
+      return 'image';
+    }
+
+    return 'file';
+  }
+
+  getDocumentUrl(path: string): string {
+    if (!path) {
+      return '';
+    }
+
+    if (/^https?:\/\//i.test(path)) {
+      return path;
+    }
+
+    const baseUrl = (environment as any)?.apiBaseUrl || '';
+    return `${baseUrl}${path}`.replace(/([^:]\/)\/+/g, '$1');
+  }
+
+  isPdfDocument(document: { type?: string; path?: string }): boolean {
+    return document?.type === 'pdf' || this.getDocumentType(document?.path || '') === 'pdf';
+  }
+
+  openDocumentViewer(document: { name: string; path: string }): void {
+    this.selectedDocumentName = document?.name || 'Document';
+    this.selectedDocumentUrl = this.getDocumentUrl(document?.path || '');
+    this.selectedDocumentViewerUrl = this.isPdfDocument(document)
+      ? this.sanitizer.bypassSecurityTrustResourceUrl(this.selectedDocumentUrl)
+      : this.selectedDocumentUrl;
+    this.showDocumentViewer = !!this.selectedDocumentUrl;
+  }
+
+  closeDocumentViewer(): void {
+    this.showDocumentViewer = false;
+    this.selectedDocumentUrl = '';
+    this.selectedDocumentViewerUrl = '';
+    this.selectedDocumentName = '';
   }
 
   getMaskedAccountNumber(accountNumber: any): string {

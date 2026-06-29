@@ -140,16 +140,35 @@ export class GlobalService {
       return this.http.get(`${this.usersUrl}/fetch-user`);
     }
 
-    public fetchCustomFieldsByModule(moduleId: any):Observable<any>  {
-      return this.http.get(`${this.systemUrl}/fetch-custom-fields?module_id=${moduleId}`);
+    public fetchCustomFieldsByModule(moduleId?: any):Observable<any>  {
+      const query = moduleId === undefined || moduleId === null || moduleId === ''
+        ? ''
+        : `?module_id=${moduleId}`;
+      return this.http.get(`${this.systemUrl}/fetch-custom-fields${query}`);
     }
 
     public addCustomField(data:any): Observable<any> {
       return this.http.post(`${this.systemUrl}/custom-field-create`,data);
     }
 
+    public updateCustomField(data:any): Observable<any> {
+      return this.http.post(`${this.systemUrl}/custom-field-update`,data);
+    }
+
+    public assignCustomField(data:any): Observable<any> {
+      return this.http.post(`${this.systemUrl}/assign-custom-field-modules`,data);
+    }
+
+    public deassignCustomFieldModules(data:any): Observable<any> {
+      return this.http.post(`${this.systemUrl}/deassign-custom-field-modules`,data);
+    }
+
     public addCustomer(data:any): Observable<any> {
       return this.http.post(`${this.salesUrl}/create-customer`,data);
+    }
+
+    public updateCustomer(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/edit-customer`,data);
     }
 
     public getCustomerListByTenant(moduleId?: number): Observable<any> {
@@ -202,6 +221,9 @@ export class GlobalService {
 
     public addVendor(data:any): Observable<any> {
       return this.http.post(`${this.salesUrl}/create-vendor`,data);
+    }
+    public updateVendor(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/update-vendor`,data);
     }
     public getVendorListByTenant(moduleId?: number): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-vendors?module_id=${moduleId}`);
