@@ -304,6 +304,51 @@ exports.createTds = async (req, res) => {
   }
 };
 
+exports.insertUnit = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const unit = await sales.insertUnit(req.body, tenant_id, user_id);
+
+    return res.success(
+      200,
+      "Unit created successfully",
+      unit
+    );
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.error(
+        409,
+        "this unit already exists. Please use a different unit name."
+      );
+    }
+
+    return res.error(
+      400,
+      err.message
+    );
+  }
+};
+
+exports.fetchUnits = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const units = await sales.fetchUnits(tenant_id);
+
+    return res.success(
+      200,
+      "Units fetched successfully",
+      units
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch units"
+    );
+  }
+};
+
 exports.fetchTds = async (req, res) => {
   try {
     

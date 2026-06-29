@@ -1320,6 +1320,52 @@ exports.createTds = async (data, tenant_id, user_id) => {
   }
 };
 
+exports.insertUnit = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const { unit_name, symbol, status = 1 } = data || {};
+
+    if (!unit_name) {
+      throw new Error('unit_name is required');
+    }
+
+    if (!symbol) {
+      throw new Error('symbol is required');
+    }
+
+    const [result] = await connection.query(
+      `INSERT INTO units (unit_name, symbol, tenant_id, user_id, status)
+       VALUES (?, ?, ?, ?, ?)`,
+      [unit_name, symbol, tenant_id, user_id, status]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT * FROM units WHERE id = ?`,
+      [result.insertId]
+    );
+
+    await connection.commit();
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.fetchUnits = async (tenant_id) => {
+  const [rows] = await db.query(
+    "SELECT * FROM units WHERE tenant_id = ? ORDER BY id DESC",
+    [tenant_id]
+  );
+
+  return rows;
+};
+
 exports.fetchTds = async (req, res) => {
   try {
 

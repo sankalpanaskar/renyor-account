@@ -105,6 +105,8 @@ router.post('/create-tds', auth, upload.none(), salesController.createTds);
 router.get('/fetch-tds', auth, salesController.fetchTds);
 router.post('/create-tds', auth, upload.none(), salesController.createTds);
 
+router.post('/insert-unit', auth, upload.none(), salesController.insertUnit);
+router.get('/fetch-units', auth, salesController.fetchUnits);
 router.post('/insert-payment-term', auth, upload.none(), salesController.insertPaymentTerm);
 router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
 router.post('/create-tax-rate', auth, upload.none(), salesController.createTaxRate);
