@@ -322,17 +322,16 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
-exports.createPaymentTerm = async (req, res) => {
+exports.insertPaymentTerm = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
     
-    console.log(req.body);
-    const paymentTerms = await sales.createPaymentTerm(req.body,tenant_id,user_id);
+    const paymentTerms = await sales.insertPaymentTerm(req.body, tenant_id, user_id);
 
     return res.success(
       200,
-      "Payment Terms created successfully",
+      "Payment Term created successfully",
       paymentTerms 
     );
   } catch (err) {
@@ -345,10 +344,12 @@ exports.createPaymentTerm = async (req, res) => {
       return res.error(
       400,
       err.message
-       );
+      );
     }
   }
 };
+
+
 
 exports.fetchPaymentTerms = async (req, res) => {
   try {

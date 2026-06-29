@@ -1339,17 +1339,16 @@ exports.fetchTds = async (req, res) => {
   }
 };
 
-exports.createPaymentTerm = async (data, tenant_id, user_id) => {
+exports.insertPaymentTerm = async (data, tenant_id, user_id) => {
   const connection = await db.getConnection();
 
   try {
     await connection.beginTransaction();
 
-    const { name, no_of_days } = data;
+    const { term_name, name, no_of_days, status = 1 } = data || {};
+    const paymentTermName = term_name ?? name;
 
-    
-
-    if (name === undefined || name === null) {
+    if (paymentTermName === undefined || paymentTermName === null || paymentTermName === "") {
       throw new Error('term_name is required');
     }
 
@@ -1358,9 +1357,9 @@ exports.createPaymentTerm = async (data, tenant_id, user_id) => {
     }
 
     const [result] = await connection.query(
-      `INSERT INTO payment_terms (term_name, no_of_days, tenant_id, user_id)
-       VALUES (?, ?, ?, ?)`,
-      [name, no_of_days, tenant_id, user_id]
+      `INSERT INTO payment_terms (term_name, no_of_days, tenant_id, user_id, status)
+       VALUES (?, ?, ?, ?, ?)`,
+      [paymentTermName, no_of_days, tenant_id, user_id, status]
     );
 
     const [rows] = await connection.query(
@@ -1376,6 +1375,10 @@ exports.createPaymentTerm = async (data, tenant_id, user_id) => {
   } finally {
     connection.release();
   }
+};
+
+exports.createPaymentTerm = async (data, tenant_id, user_id) => {
+  return exports.insertPaymentTerm(data, tenant_id, user_id);
 };
 
 
