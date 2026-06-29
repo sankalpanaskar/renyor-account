@@ -1620,10 +1620,10 @@ exports.createTaxRate = async (data, tenant_id, user_id) => {
   try {
     await connection.beginTransaction();
 
-    const { name, tax_rate_percentage } = data;
+    const { tax_rate_name, tax_rate_percentage } = data || {};
 
-    if (!name) {
-      throw new Error('name is required');
+    if (!tax_rate_name) {
+      throw new Error('tax_rate_name is required');
     }
 
     if (tax_rate_percentage === undefined || tax_rate_percentage === null) {
@@ -1633,7 +1633,7 @@ exports.createTaxRate = async (data, tenant_id, user_id) => {
     const [result] = await connection.query(
       `INSERT INTO tax_rate (tax_rate_name, tax_rate_percentage, tenant_id, user_id)
        VALUES (?, ?, ?, ?)`,
-      [name, tax_rate_percentage, tenant_id, user_id]
+      [tax_rate_name, tax_rate_percentage, tenant_id, user_id]
     );
 
     const [rows] = await connection.query(

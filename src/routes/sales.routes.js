@@ -115,3 +115,4 @@ router.get('/fetch-tax-rate', auth, salesController.fetchTaxRate);
 
 
 module.exports = router;
+
