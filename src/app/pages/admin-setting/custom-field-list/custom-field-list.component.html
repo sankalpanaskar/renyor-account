@@ -1,0 +1,146 @@
+<div class="asset-list-container">
+  <div class="row">
+    <div class="col-lg-12">
+      <nb-card>
+        <nb-card-header class="section-header d-flex justify-content-between align-items-center">
+          <span>Custom Field List</span>
+
+          <button
+            nbButton
+            status="primary"
+            size="small"
+            shape="semi-round"
+            (click)="gotoAddCustomField()"
+          >
+            Add Custom Field
+          </button>
+        </nb-card-header>
+
+        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary" class="asset-list-body">
+          <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
+            <nb-spinner size="large" status="primary"></nb-spinner>
+          </div>
+
+          <div [class.content-blur]="loading">
+            <div class="row mt-3">
+              <div class="col-12" style="padding-left: 30px;padding-right: 30px;">
+                <input
+                  type="text"
+                  nbInput
+                  fullWidth
+                  shape="semi-round"
+                  #search
+                  class="search"
+                  placeholder="Search Custom Field..."
+                  (input)="onSearch(search.value)"
+                  (keydown.enter)="onSearch(search.value)"
+                />
+              </div>
+
+              <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
+                <div class="custom-table-wrapper">
+                  <div class="table-responsive">
+                    <table class="custom-table">
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Type</th>
+                          <th class="module-column">Module</th>
+                          <th class="status-column">Status</th>
+                          <th class="action-column">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of apiData">
+                          <td>{{ item.name }}</td>
+                          <td>{{ item.type }}</td>
+                          <td class="module-column">{{ item.module }}</td>
+                          <td class="status-column">
+                            <span
+                              class="status-pill"
+                              [class.active]="isActiveStatus(item)"
+                              [class.inactive]="!isActiveStatus(item)"
+                            >
+                              {{ getStatusLabel(item.status) }}
+                            </span>
+                          </td>
+                          <td class="action-cell action-column">
+                            <div class="action-group">
+                              <button type="button" nbButton size="small" status="success" class="action-btn" (click)="onAssign(item, $event)">
+                                <nb-icon icon="person-add-outline"></nb-icon> ASSIGN
+                              </button>
+                              <button type="button" nbButton size="small" status="primary" class="action-btn" (click)="onEdit(item, $event)">
+                                <nb-icon icon="edit-2"></nb-icon> EDIT
+                              </button>
+                              <button type="button" nbButton size="small" status="danger" class="action-btn" (click)="onDeactive(item, $event)">
+                                <nb-icon icon="slash-outline"></nb-icon> DEACTIVE
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        <tr *ngIf="!apiData || apiData.length === 0">
+                          <td colspan="5" class="text-center">No data found.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showAssignPopup" class="assign-popup-overlay" (click)="closeAssignPopup()">
+  <div class="assign-popup-shell" (click)="$event.stopPropagation()">
+    <div class="assign-popup-header">
+      <div>
+        <div class="assign-popup-title">Assign Module</div>
+        <div class="assign-popup-subtitle">{{ selectedFieldForAssign?.name || 'Custom Field' }}</div>
+      </div>
+      <button type="button" class="assign-popup-close" (click)="closeAssignPopup()">Close</button>
+    </div>
+
+    <div class="assign-popup-body">
+      <label class="small-label">Select Module</label>
+      <ngx-search-select
+        name="assign_module_id"
+        class="assign-module-select"
+        [placeholder]="'Search module and select'"
+        [options]="moduleList"
+        [(ngModel)]="selectedAssignModuleId"
+        (ngModelChange)="onAssignModuleSelected($event)"
+        displayKey="menu_name"
+        valueKey="id"
+      ></ngx-search-select>
+
+      <div class="assign-empty-state" *ngIf="!isSubmitting && moduleList.length === 0">
+        No modules available.
+      </div>
+
+      <div class="assign-chip-group" *ngIf="selectedAssignModules.length > 0">
+        <button
+          type="button"
+          class="assign-chip"
+          *ngFor="let module of selectedAssignModules"
+          (click)="removeAssignedModule(module.id)"
+        >
+          <span>{{ module.menu_name }}</span>
+          <span class="assign-chip-close">×</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="assign-popup-footer">
+      <button type="button" nbButton status="basic" shape="semi-round" (click)="closeAssignPopup()">
+        Cancel
+      </button>
+      <button type="button" nbButton status="primary" shape="semi-round" (click)="saveAssignedModules()">
+        Assign
+      </button>
+    </div>
+  </div>
+</div>
