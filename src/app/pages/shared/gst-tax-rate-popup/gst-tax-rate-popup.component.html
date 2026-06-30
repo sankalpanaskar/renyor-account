@@ -3,7 +3,7 @@
     <nb-card-header class="payment-terms-modal-header">
       <span>{{ title }}</span>
       <button type="button" class="modal-close-btn" (click)="closePopup()" aria-label="Close" [disabled]="isSubmitting">
-        ×
+        Close
       </button>
     </nb-card-header>
 
@@ -26,7 +26,7 @@
         </tbody>
       </table>
 
-      <button type="button" class="add-new-link" (click)="startAddRate()">
+      <button type="button" nbButton status="primary" size="small" outline class="add-new-link" (click)="startAddRate()">
         <nb-icon icon="plus-circle"></nb-icon>
         Add New
       </button>
@@ -70,9 +70,5 @@
         </div>
       </div>
     </nb-card-body>
-
-    <nb-card-footer class="payment-terms-modal-footer">
-      <button type="button" nbButton status="basic" (click)="closePopup()" [disabled]="isSubmitting">Close</button>
-    </nb-card-footer>
   </nb-card>
 </div>

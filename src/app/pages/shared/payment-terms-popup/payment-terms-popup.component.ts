@@ -72,12 +72,12 @@ export class PaymentTermsPopupComponent {
 
     const days = Number(rawDays);
     const payload = {
-      name: termName,
+      term_name: termName,
       no_of_days: days,
     };
 
     this.isSubmitting = true;
-    this.globalService.createPaymentTerm(payload).subscribe({
+    this.globalService.insertPaymentTerm(payload).subscribe({
       next: (res: any) => {
         const createdTerm: PaymentTermOption = {
           id: res?.data?.id,

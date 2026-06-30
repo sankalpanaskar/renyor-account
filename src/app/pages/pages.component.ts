@@ -2,7 +2,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { getMenuItems } from './pages-menu';
 import { GlobalService } from '../services/global.service';
+import { NavigationEnd, Router } from '@angular/router';
 import { Subscription, combineLatest } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { NbToastrService } from '@nebular/theme';
 
 @Component({
@@ -20,6 +22,7 @@ export class PagesComponent implements OnInit, OnDestroy {
   menu: any[] = [];
   isSubmitting: boolean = false;
   private subscription?: Subscription;
+  private routerSubscription?: Subscription;
 
   // Manual grouping for API-driven menus. Add more groups or parent menu titles here.
   private dynamicMenuGroups: Array<{ groupTitle: string; parentTitles: string[]; linkPrefixes: string[] }> = [
@@ -48,6 +51,7 @@ export class PagesComponent implements OnInit, OnDestroy {
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -59,14 +63,20 @@ export class PagesComponent implements OnInit, OnDestroy {
       const userCode = this.globalService.user_code;
       this.menu = getMenuItems(roleId, userCode);
       console.log('✅ Static menu loaded for role:', roleId, 'user:', userCode);
+      this.syncMenuSelection();
       
       // Load dynamic menus from API
       this.loadDynamicMenus();
     });
+
+    this.routerSubscription = this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe(() => this.syncMenuSelection());
   }
 
   ngOnDestroy() {
     this.subscription?.unsubscribe();
+    this.routerSubscription?.unsubscribe();
   }
 
   /**
@@ -105,6 +115,7 @@ export class PagesComponent implements OnInit, OnDestroy {
           }
           
           console.log('📋 Final menu with dynamic items:', this.menu);
+          this.syncMenuSelection();
         }
       },
       error: (err: any) => {
@@ -250,5 +261,101 @@ export class PagesComponent implements OnInit, OnDestroy {
     }
 
     return false;
+  }
+
+  private syncMenuSelection(): void {
+    if (!Array.isArray(this.menu) || this.menu.length === 0) {
+      return;
+    }
+
+    const currentUrl = this.normalizeUrl(this.router.url);
+    this.clearMenuState(this.menu);
+
+    const selectedByLink = this.selectByLink(this.menu, currentUrl);
+    if (!selectedByLink) {
+      this.selectByRoutePrefix(this.menu, currentUrl);
+    }
+  }
+
+  private clearMenuState(items: any[]): void {
+    items.forEach((item: any) => {
+      item.selected = false;
+      item.expanded = false;
+
+      if (Array.isArray(item?.children)) {
+        this.clearMenuState(item.children);
+      }
+    });
+  }
+
+  private selectByLink(items: any[], currentUrl: string): boolean {
+    for (const item of items) {
+      const itemLink = this.normalizeUrl(item?.link);
+
+      if (Array.isArray(item?.children) && this.selectByLink(item.children, currentUrl)) {
+        item.selected = true;
+        item.expanded = true;
+        return true;
+      }
+
+      if (itemLink && this.urlMatches(currentUrl, itemLink)) {
+        item.selected = true;
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private selectByRoutePrefix(items: any[], currentUrl: string): boolean {
+    const matchingGroup = this.dynamicMenuGroups.find((groupConfig) =>
+      groupConfig.linkPrefixes.some((prefix) => currentUrl.startsWith(prefix))
+    );
+
+    if (!matchingGroup) {
+      return false;
+    }
+
+    const targetTitle = matchingGroup.parentTitles
+      .map((title) => this.normalizeTitle(title))
+      .find(Boolean);
+
+    if (!targetTitle) {
+      return false;
+    }
+
+    const matchedItem = this.findMenuItemByTitle(items, targetTitle);
+    if (!matchedItem) {
+      return false;
+    }
+
+    matchedItem.selected = true;
+    matchedItem.expanded = true;
+    return true;
+  }
+
+  private findMenuItemByTitle(items: any[], title: string): any | null {
+    for (const item of items) {
+      if (this.normalizeTitle(item?.title) === title) {
+        return item;
+      }
+
+      if (Array.isArray(item?.children)) {
+        const match = this.findMenuItemByTitle(item.children, title);
+        if (match) {
+          return match;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private normalizeUrl(url: any): string {
+    return `${url || ''}`.split('?')[0].split('#')[0].replace(/\/+$/, '');
+  }
+
+  private urlMatches(currentUrl: string, itemUrl: string): boolean {
+    return currentUrl === itemUrl || currentUrl.startsWith(`${itemUrl}/`);
   }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { GstTaxRateOption } from '../../shared/gst-tax-rate-popup/gst-tax-rate-popup.component';
+import { UnitOption } from '../../shared/unit-popup/unit-popup.component';
 
 @Component({
   selector: 'ngx-add-item',
@@ -13,7 +14,9 @@ export class AddItemComponent implements OnInit {
   isSubmitting: boolean = false;
   itemImageFile: File | null = null;
   showGstTaxRatePopup: boolean = false;
+  showUnitPopup: boolean = false;
   gstTaxRates: GstTaxRateOption[] = this.getDefaultGstTaxRates();
+  unitOptions: UnitOption[] = this.getDefaultUnitOptions();
   vendorOptions: Array<{
     id: number;
     vendorName: string;
@@ -32,6 +35,7 @@ export class AddItemComponent implements OnInit {
   ngOnInit(): void {
     this.getAccountItem();
     this.fetchGstTaxRates();
+    this.fetchUnits();
     this.getVendorList();
   }
 
@@ -74,6 +78,20 @@ export class AddItemComponent implements OnInit {
       error: (error: any) => {
         console.error('Failed to fetch GST tax rates:', error);
         this.gstTaxRates = this.getDefaultGstTaxRates();
+      },
+    });
+  }
+
+  fetchUnits(): void {
+    this.globalService.getUnits().subscribe({
+      next: (res: any) => {
+        this.unitOptions = Array.isArray(res?.data)
+          ? res.data.map((item: any) => this.mapUnitOption(item))
+          : this.getDefaultUnitOptions();
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch units:', error);
+        this.unitOptions = this.getDefaultUnitOptions();
       },
     });
   }
@@ -122,12 +140,43 @@ export class AddItemComponent implements OnInit {
     return [];
   }
 
+  private getDefaultUnitOptions(): UnitOption[] {
+    return [
+      { symbol: 'box', unitName: 'Box', label: 'box (Box)' },
+      { symbol: 'cm', unitName: 'Centimeter', label: 'cm (Centimeter)' },
+      { symbol: 'dz', unitName: 'Dozen', label: 'dz (Dozen)' },
+      { symbol: 'ft', unitName: 'Foot', label: 'ft (Foot)' },
+      { symbol: 'g', unitName: 'Grams', label: 'g (Grams)' },
+      { symbol: 'in', unitName: 'Inch', label: 'in (Inch)' },
+      { symbol: 'kg', unitName: 'Kilograms', label: 'kg (Kilograms)' },
+      { symbol: 'km', unitName: 'Kilometer', label: 'km (Kilometer)' },
+      { symbol: 'lb', unitName: 'Pounds', label: 'lb (Pounds)' },
+      { symbol: 'mg', unitName: 'Milligrams', label: 'mg (Milligrams)' },
+      { symbol: 'ml', unitName: 'Milliliter', label: 'ml (Milliliter)' },
+      { symbol: 'm', unitName: 'Meter', label: 'm (Meter)' },
+      { symbol: 'pcs', unitName: 'Pieces', label: 'pcs (Pieces)' },
+    ];
+  }
+
+  private mapUnitOption(item: any): UnitOption {
+    const unitName = `${item?.unit_name ?? item?.name ?? item?.title ?? ''}`.trim();
+    const symbol = `${item?.symbol ?? item?.unit_symbol ?? item?.code ?? ''}`.trim();
+    return {
+      id: item?.id,
+      unitName,
+      symbol,
+      label: `${symbol || unitName}${symbol && unitName ? ' (' + unitName + ')' : ''}`,
+    };
+  }
+
   openGstTaxRatePopup(): void {
+    this.fetchGstTaxRates();
     this.showGstTaxRatePopup = true;
   }
 
   closeGstTaxRatePopup(): void {
     this.showGstTaxRatePopup = false;
+    this.fetchGstTaxRates();
   }
 
   onGstTaxRatesChanged(rates: GstTaxRateOption[]): void {
@@ -137,6 +186,24 @@ export class AddItemComponent implements OnInit {
   onGstTaxRateSelected(rateId: string | number): void {
     this.model.gst_rates = rateId;
     this.closeGstTaxRatePopup();
+  }
+
+  openUnitPopup(): void {
+    this.fetchUnits();
+    this.showUnitPopup = true;
+  }
+
+  closeUnitPopup(): void {
+    this.showUnitPopup = false;
+    this.fetchUnits();
+  }
+
+  onUnitsChanged(units: UnitOption[]): void {
+    this.unitOptions = units;
+  }
+
+  onUnitSelected(symbol: string): void {
+    this.model.unit = symbol;
   }
   
   typeChange(value: string) {

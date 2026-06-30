@@ -30,28 +30,20 @@
                     <!-- Unit Select -->
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-unit">
-                            Unit 
-                            <!-- <span style="color:#d32f2f">*</span> -->
+                            Unit
                         </label>
-                        <nb-select shape="semi-round" placeholder="Select Unit" name="unit"
-                             #unit="ngModel" [(ngModel)]="model.unit">
-                            <nb-option value="box">box (Box)</nb-option>
-                            <nb-option value="cm">cm (Centimeter)</nb-option>
-                            <nb-option value="dz">dz (Dozen)</nb-option>
-                            <nb-option value="ft">ft (Foot)</nb-option>
-                            <nb-option value="g">g (Grams)</nb-option>
-                            <nb-option value="in">in (Inch)</nb-option>
-                            <nb-option value="kg">kg (Kilograms)</nb-option>
-                            <nb-option value="km">km (Kilometer)</nb-option>
-                            <nb-option value="lb">lb (Pounds)</nb-option>
-                            <nb-option value="mg">mg (Milligrams)</nb-option>
-                            <nb-option value="ml">ml (Milliliter)</nb-option>
-                            <nb-option value="m">m (Meter)</nb-option>
-                            <nb-option value="pcs">pcs (Pieces)</nb-option>
-                        </nb-select>
-                        <!-- <div *ngIf="fm.submitted && unit.invalid" class="error-message">
-                            Unit is required
-                        </div> -->
+                        <div class="payment-terms-control">
+                            <nb-select shape="semi-round" placeholder="Select Unit" name="unit"
+                                 #unit="ngModel" [(ngModel)]="model.unit">
+                                <nb-option *ngFor="let option of unitOptions" [value]="option.symbol">
+                                    {{ option.label || (option.symbol + ' (' + option.unitName + ')') }}
+                                </nb-option>
+                            </nb-select>
+                            <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
+                                (click)="openUnitPopup()" aria-label="Add unit">
+                                <nb-icon icon="plus-circle"></nb-icon>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- HSN Code (for Goods) -->
@@ -296,3 +288,12 @@
     (ratesChange)="onGstTaxRatesChanged($event)"
     (rateSelected)="onGstTaxRateSelected($event)"
 ></ngx-gst-tax-rate-popup>
+
+<ngx-unit-popup
+    [open]="showUnitPopup"
+    [title]="'Configure Units'"
+    [units]="unitOptions"
+    (close)="closeUnitPopup()"
+    (unitsChange)="onUnitsChanged($event)"
+    (unitSelected)="onUnitSelected($event)"
+></ngx-unit-popup>

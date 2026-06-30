@@ -241,6 +241,42 @@
   word-break: break-word;
 }
 
+.selected-item-description-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.selected-item-description-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #667085;
+}
+
+.selected-item-description-input {
+  min-height: 78px;
+  resize: none;
+  overflow: hidden;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #31384d;
+  line-height: 1.55;
+  border: 1px solid #e3e8f2;
+}
+
+:host ::ng-deep .selected-item-description-input.nb-input {
+  min-height: 78px;
+  resize: none;
+  overflow: hidden;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: #fafafa;
+  color: #31384d;
+  line-height: 1.55;
+  border: 1px solid #e3e8f2;
+}
+
 .selected-item-meta {
   display: flex;
   align-items: center;

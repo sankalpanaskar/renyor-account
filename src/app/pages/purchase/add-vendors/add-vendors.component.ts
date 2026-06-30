@@ -2,6 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { HttpClient } from '@angular/common/http';
+import { PaymentTermOption } from '../../shared/payment-terms-popup/payment-terms-popup.component';
 import { TdsTermOption } from '../../shared/tds-popup/tds-popup.component';
 import { ActivatedRoute, Router } from '@angular/router';
 
@@ -20,7 +21,7 @@ export class AddVendorsComponent implements OnInit {
   document1File: File | null = null;
   document2File: File | null = null;
   showTdsPopup: boolean = false;
-  paymentTerms: Array<{ termName: string; days: string | number }> = [];
+  paymentTerms: PaymentTermOption[] = [];
   tdsTerms: TdsTermOption[] = [];
   isEditMode = false;
   vendorId: number | null = null;
@@ -185,20 +186,21 @@ export class AddVendorsComponent implements OnInit {
   }
 
   openPaymentTermsPopup(): void {
+    this.fetchPaymentTerms();
     this.showPaymentTermsPopup = true;
   }
 
   closePaymentTermsPopup(): void {
     this.showPaymentTermsPopup = false;
+    this.fetchPaymentTerms();
   }
 
-  onPaymentTermsChanged(terms: Array<{ termName: string; days: string | number }>): void {
+  onPaymentTermsChanged(terms: PaymentTermOption[]): void {
     this.paymentTerms = terms;
   }
 
   onPaymentTermSelected(termName: string): void {
     this.model.payment_terms = termName;
-    this.closePaymentTermsPopup();
   }
 
   openTdsPopup(): void {

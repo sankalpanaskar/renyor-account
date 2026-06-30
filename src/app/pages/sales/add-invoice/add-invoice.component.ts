@@ -142,12 +142,16 @@ export class AddInvoiceComponent implements OnInit {
           const defaultTerm = this.paymentTerms.find((term: InvoicePaymentTermOption) => `${term.termName}`.trim().toLowerCase() === 'due on receipt');
           this.model.term = defaultTerm?.termName || 'Due on Receipt';
         }
+
+        this.updateDueDateFromPaymentTerm();
       },
       error: () => {
         this.paymentTerms = [];
         if (!this.model.term) {
           this.model.term = 'Due on Receipt';
         }
+
+        this.updateDueDateFromPaymentTerm();
       }
     });
   }
@@ -194,6 +198,8 @@ export class AddInvoiceComponent implements OnInit {
     if (this.model.due_date && this.normalizeDate(this.model.due_date).getTime() < normalizedDate.getTime()) {
       this.model.due_date = null;
     }
+
+    this.updateDueDateFromPaymentTerm();
   }
 
   private normalizeDate(value: Date | string | null | undefined): Date {
@@ -542,10 +548,12 @@ export class AddInvoiceComponent implements OnInit {
 
   onPaymentTermsChanged(terms: InvoicePaymentTermOption[]): void {
     this.paymentTerms = terms;
+    this.updateDueDateFromPaymentTerm();
   }
 
   onPaymentTermSelected(termName: string): void {
     this.model.term = termName;
+    this.updateDueDateFromPaymentTerm(termName);
     this.closePaymentTermsPopup();
   }
 
@@ -645,6 +653,63 @@ export class AddInvoiceComponent implements OnInit {
     const day = `${date.getDate()}`.padStart(2, '0');
 
     return `${year}-${month}-${day}`;
+  }
+
+  private updateDueDateFromPaymentTerm(termName: string = `${this.model.term || ''}`.trim()): void {
+    const normalizedTerm = `${termName || ''}`.trim().toLowerCase();
+    const invoiceDate = this.normalizeDate(this.model.invoice_date || new Date());
+
+    if (!normalizedTerm) {
+      this.dueDateMin = invoiceDate;
+      return;
+    }
+
+    if (normalizedTerm === 'due on receipt') {
+      this.model.due_date = invoiceDate;
+      this.dueDateMin = invoiceDate;
+      return;
+    }
+
+    const dueDays = this.getPaymentTermDays(termName);
+    if (dueDays === null) {
+      this.dueDateMin = invoiceDate;
+      return;
+    }
+
+    const dueDate = new Date(invoiceDate);
+    dueDate.setDate(dueDate.getDate() + dueDays);
+    this.model.due_date = dueDate;
+    this.dueDateMin = dueDate;
+  }
+
+  private getPaymentTermDays(termName: string): number | null {
+    const normalizedTerm = `${termName || ''}`.trim().toLowerCase();
+    if (!normalizedTerm) {
+      return null;
+    }
+
+    const matchedTerm = this.paymentTerms.find((term: InvoicePaymentTermOption) =>
+      `${term.termName || ''}`.trim().toLowerCase() === normalizedTerm
+    );
+
+    const daysFromApi = Number(matchedTerm?.days);
+    if (Number.isFinite(daysFromApi)) {
+      return daysFromApi;
+    }
+
+    const netMatch = normalizedTerm.match(/^net\s+(\d+)$/i);
+    if (netMatch) {
+      const netDays = Number(netMatch[1]);
+      return Number.isFinite(netDays) ? netDays : null;
+    }
+
+    const daysMatch = normalizedTerm.match(/^(\d+)\s*days?$/i);
+    if (daysMatch) {
+      const explicitDays = Number(daysMatch[1]);
+      return Number.isFinite(explicitDays) ? explicitDays : null;
+    }
+
+    return null;
   }
 
   private getSubmitRows(): any[] {

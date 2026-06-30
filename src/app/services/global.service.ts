@@ -207,12 +207,28 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/create-tax-rate`,data);
     }
 
+    public getUnits(): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-units`);
+    }
+
+    public createUnit(data:any): Observable<any> {
+      return this.insertUnit(data);
+    }
+
+    public insertUnit(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/insert-unit`, data);
+    }
+
     public getPaymentTerms(): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-payment-terms`);
     }
 
     public createPaymentTerm(data:any): Observable<any> {
-      return this.http.post(`${this.salesUrl}/create-payment-term`,data);
+      return this.insertPaymentTerm(data);
+    }
+
+    public insertPaymentTerm(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/insert-payment-term`, data);
     }
 
     public insertInvoice(data:any): Observable<any> {

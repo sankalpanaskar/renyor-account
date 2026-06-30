@@ -53,7 +53,7 @@
         </div>
 
         <div class="col-lg-6 mb-10">
-          <label class="small-label">Term</label>
+          <label class="small-label">Payment Term</label>
           <div class="payment-terms-control">
             <ngx-search-select
               name="term"
@@ -62,6 +62,7 @@
               [(ngModel)]="model.term"
               displayKey="termName"
               valueKey="termName"
+              (ngModelChange)="onPaymentTermSelected($event)"
             ></ngx-search-select>
             <button
               type="button"
@@ -158,8 +159,19 @@
                               </div>
                             </div>
 
-                            <div class="selected-item-description" *ngIf="row.item_description">
-                              {{ row.item_description }}
+                            <div class="selected-item-description-wrap">
+                              <label class="selected-item-description-label">Description</label>
+                              <textarea
+                                nbInput
+                                fullWidth
+                                class="selected-item-description-input"
+                                rows="2"
+                                wrap="soft"
+                                [name]="'item_description_' + i"
+                                [(ngModel)]="row.item_description"
+                                (input)="autoGrowTextarea($event)"
+                                placeholder="Enter description"
+                              ></textarea>
                             </div>
 
                             <div class="selected-item-meta">
@@ -223,7 +235,7 @@
                           [name]="'quantity_' + i"
                           (keydown)="allowIntegerOnly($event)"
                           [(ngModel)]="row.quantity">
-                        <div class="cell-subtext">{{ row.item_unit || 'pcs' }}</div>
+                        <div class="cell-subtext">{{ row.item_unit || '' }}</div>
                       </div>
                     </td>
                     <td class="rate-cell">
@@ -237,6 +249,7 @@
                     <td class="tax-cell">
                       <nb-select fullWidth shape="semi-round"
                         [name]="'tax_' + i"
+                        [disabled]="!!row.item_id && !row.item_is_manual"
                         [(ngModel)]="row.tax">
                         <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ tax.label }}</nb-option>
                       </nb-select>
