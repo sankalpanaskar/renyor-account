@@ -19,6 +19,9 @@ interface InvoiceItemRow {
 interface InvoiceCustomerOption {
   id: number;
   label: string;
+  billing_state?: string;
+  state?: string;
+  state_name?: string;
 }
 
 interface InvoicePaymentTermOption {
@@ -117,7 +120,10 @@ export class AddInvoiceComponent implements OnInit {
         this.customerOptions = customers
           .map((customer: any) => ({
             id: Number(customer?.id || 0),
-            label: this.getCustomerLabel(customer)
+            label: this.getCustomerLabel(customer),
+            billing_state: `${customer?.billing_state || ''}`.trim(),
+            state: `${customer?.state || ''}`.trim(),
+            state_name: `${customer?.state_name || ''}`.trim()
           }))
           .filter((customer: InvoiceCustomerOption) => customer.id > 0 && !!customer.label);
       },
@@ -270,6 +276,76 @@ export class AddInvoiceComponent implements OnInit {
     }
 
     return item?.tax_preference || 'Non-Taxable';
+  }
+
+  getTaxDisplayLabel(label: string): string {
+    return `${label || 'Non-Taxable'}`
+      .trim()
+      .replace(/\s*\[\s*\d+(?:\.\d+)?%\s*\]\s*$/, '');
+  }
+
+  private getSelectedCustomer(): InvoiceCustomerOption | undefined {
+    return this.customerOptions.find(
+      (customer: InvoiceCustomerOption) => customer.id === Number(this.model.customer_id)
+    );
+  }
+
+  private getBusinessStateCode(): string {
+    const user = this.globalService.currentUser || JSON.parse(localStorage.getItem('user') || '{}');
+
+    const candidates = [
+      user?.state,
+      user?.company_state,
+      user?.billing_state,
+      user?.business_state,
+      user?.member?.state,
+      user?.member?.base_state,
+      user?.organization?.state,
+      user?.tenant?.state,
+      user?.company?.state,
+      user?.centerData?.[0]?.state,
+      user?.assgin_centers?.[0]?.state
+    ];
+
+    const match = candidates.find((value: any) => `${value || ''}`.trim());
+    return `${match || ''}`.trim().toUpperCase();
+  }
+
+  getCustomerStateCode(): string {
+    const selectedCustomer = this.getSelectedCustomer();
+    const stateCode = selectedCustomer?.billing_state || selectedCustomer?.state || '';
+    return `${stateCode || ''}`.trim().toUpperCase();
+  }
+
+  isInterState(): boolean {
+    const customerState = this.getCustomerStateCode();
+    const businessState = this.getBusinessStateCode();
+
+    if (!customerState || !businessState) {
+      return true;
+    }
+
+    return customerState !== businessState;
+  }
+
+  getItemTaxRate(row: InvoiceItemRow): number {
+    return this.getTaxRate(row.tax);
+  }
+
+  getRowTaxAmount(row: InvoiceItemRow): number {
+    return (this.getRowAmount(row) * this.getItemTaxRate(row)) / 100;
+  }
+
+  getTotalItemTaxAmount(): number {
+    return this.itemRows.reduce((total: number, row: InvoiceItemRow) => total + this.getRowTaxAmount(row), 0);
+  }
+
+  getTaxModeLabel(): string {
+    return this.isInterState() ? 'IGST' : 'CGST + SGST';
+  }
+
+  getTaxLabel(): string {
+    return this.getTaxModeLabel();
   }
 
   onItemSelected(row: InvoiceItemRow, selectedId: string | number): void {
@@ -619,19 +695,19 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   getTaxAmount(): number {
-    return (this.getSubTotal() * this.getTaxRate(this.model.additional_tax)) / 100;
+    return this.getTotalItemTaxAmount();
   }
 
   getIGST(): number {
-    return this.getTaxAmount();
+    return this.isInterState() ? this.getTaxAmount() : 0;
   }
 
   getCGST(): number {
-    return this.getTaxAmount() / 2;
+    return this.isInterState() ? 0 : this.getTaxAmount() / 2;
   }
 
   getSGST(): number {
-    return this.getTaxAmount() / 2;
+    return this.isInterState() ? 0 : this.getTaxAmount() / 2;
   }
 
   getAdjustmentValue(): number {
@@ -752,10 +828,13 @@ export class AddInvoiceComponent implements OnInit {
       salesperson: `${this.model.salesperson || ''}`.trim(),
       subject: `${this.model.subject || ''}`.trim(),
       customer_notes: `${this.model.customer_notes || ''}`.trim(),
-      additional_tax: this.model.additional_tax || '',
-      additional_tax_rate: this.getTaxRate(this.model.additional_tax),
+      additional_tax: this.getTaxLabel(),
+      additional_tax_rate: 0,
       sub_total: this.getSubTotal(),
       tax_amount: this.getTaxAmount(),
+      tax_mode: this.getTaxLabel(),
+      customer_state: this.getCustomerStateCode(),
+      business_state: this.getBusinessStateCode(),
       adjustment_label: `${this.model.adjustment_label || 'Adjustment'}`.trim(),
       adjustment_value: this.getAdjustmentValue(),
       total: this.getTotal(),

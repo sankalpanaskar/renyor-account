@@ -247,12 +247,16 @@
                         [(ngModel)]="row.rate">
                     </td>
                     <td class="tax-cell">
-                      <nb-select fullWidth shape="semi-round"
-                        [name]="'tax_' + i"
-                        [disabled]="!!row.item_id && !row.item_is_manual"
-                        [(ngModel)]="row.tax">
-                        <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ tax.label }}</nb-option>
-                      </nb-select>
+                      <ng-container *ngIf="row.item_id; else editableTax">
+                        <span class="tax-label">{{ getTaxDisplayLabel(row.tax) }}</span>
+                      </ng-container>
+                      <ng-template #editableTax>
+                        <nb-select fullWidth shape="semi-round"
+                          [name]="'tax_' + i"
+                          [(ngModel)]="row.tax">
+                          <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ getTaxDisplayLabel(tax.label) }}</nb-option>
+                        </nb-select>
+                      </ng-template>
                     </td>
                     <td class="amount-cell">{{ getRowAmount(row) | number:'1.2-2' }}</td>
                   </tr>
@@ -287,25 +291,22 @@
             </div>
             <div class="summary-row">
               <span>Tax</span>
-              <span>
-                <nb-select size="small" shape="semi-round" placeholder="Select a Tax"
-                  name="additional_tax" [(ngModel)]="model.additional_tax">
-                  <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ tax.label }}</nb-option>
-                </nb-select>
-              </span>
+              <span>{{ getTaxAmount() | number:'1.2-2' }}</span>
             </div>
-            <div class="summary-row">
-              <span>IGST ({{ getTaxRate(model.additional_tax) }}%)</span>
+            <div class="summary-row muted" *ngIf="isInterState()">
+              <span>IGST</span>
               <span>{{ getIGST() | number:'1.2-2' }}</span>
             </div>
-            <div class="summary-row">
-              <span>CGST ({{ getTaxRate(model.additional_tax) / 2 }}%)</span>
-              <span>{{ getCGST() | number:'1.2-2' }}</span>
-            </div>
-            <div class="summary-row">
-              <span>SGST ({{ getTaxRate(model.additional_tax) / 2 }}%)</span>
-              <span>{{ getSGST() | number:'1.2-2' }}</span>
-            </div>
+            <ng-container *ngIf="!isInterState()">
+              <div class="summary-row muted">
+                <span>CGST</span>
+                <span>{{ getCGST() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row muted">
+                <span>SGST</span>
+                <span>{{ getSGST() | number:'1.2-2' }}</span>
+              </div>
+            </ng-container>
             <div class="summary-row adjustment-row">
               <div class="adjustment-label-box">{{ model.adjustment_label || 'Adjustment' }}</div>
               <div class="adjustment-input-box">
