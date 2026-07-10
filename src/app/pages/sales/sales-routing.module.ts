@@ -9,6 +9,7 @@ import { ItemListComponent } from './item-list/item-list.component';
 import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
 import { AddInvoiceComponent } from './add-invoice/add-invoice.component';
 import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
+import { AddQuoteComponent } from './add-quote/add-quote.component';
 
 const routes: Routes = [
   {
@@ -43,6 +44,11 @@ const routes: Routes = [
       {
         path:'add-invoice',
         component:AddInvoiceComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'add-quote',
+        component:AddQuoteComponent,
         canActivate: [authGuard]
       },
       {

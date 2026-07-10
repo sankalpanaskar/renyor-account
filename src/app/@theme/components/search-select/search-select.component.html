@@ -35,9 +35,17 @@
     <button
       type="button"
       class="option-item"
+      [class.selected]="isOptionSelected(option)"
+      [attr.aria-selected]="isOptionSelected(option)"
       *ngFor="let option of filteredOptions"
       (mousedown)="selectOption(option, $event)">
-      {{ getOptionLabel(option) }}
+      <span>{{ getOptionLabel(option) }}</span>
+      <nb-icon
+        *ngIf="isOptionSelected(option)"
+        class="selected-icon"
+        icon="checkmark-outline"
+        aria-hidden="true">
+      </nb-icon>
     </button>
 
     <div class="no-results" *ngIf="!filteredOptions.length">

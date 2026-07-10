@@ -14,7 +14,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       icon: 'home-outline',
       link: '/pages/custom-dashboard',
     },
-    { title: 'FEATURES', group: true },
+    // { title: 'FEATURES', group: true },
   ];
 
   // Add Users & Roles menu - visible to all users

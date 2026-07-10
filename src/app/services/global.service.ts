@@ -235,6 +235,10 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/insert-invoice`, data);
     }
 
+    public insertQuote(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/insert-quote`, data);
+    }
+
     public addVendor(data:any): Observable<any> {
       return this.http.post(`${this.salesUrl}/create-vendor`,data);
     }

@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
 import { GlobalService } from '../../../services/global.service';
 
-interface InvoiceItemRow {
+interface QuoteItemRow {
   item_id: string | number;
   item_details: string;
   item_description: string;
@@ -16,28 +16,46 @@ interface InvoiceItemRow {
   item_is_manual?: boolean;
 }
 
-interface InvoiceCustomerOption {
+interface QuoteCustomerOption {
   id: number;
   label: string;
+  billing_address?: string;
+  billing_city?: string;
+  billing_country?: string;
+  billing_pin?: string;
   billing_state?: string;
+  shipping_address?: string;
+  shipping_city?: string;
+  shipping_country?: string;
+  shipping_pin?: string;
+  shipping_state?: string;
   state?: string;
   state_name?: string;
+  gst_treatment?: string;
+  gstin?: string;
+  source_of_supply?: string;
 }
 
-interface InvoicePaymentTermOption {
+interface QuotePaymentTermOption {
   id?: string | number;
   termName: string;
   days: string | number;
 }
 
-interface InvoiceTaxOption {
+interface QuoteTaxOption {
   id?: string | number;
   taxName: string;
   rate: number;
   label: string;
 }
 
-interface InvoiceItemOption {
+interface QuoteStateOption {
+  code: string;
+  name: string;
+  label: string;
+}
+
+interface QuoteItemOption {
   id: number;
   label: string;
   name?: string;
@@ -56,31 +74,35 @@ interface InvoiceItemOption {
 }
 
 @Component({
-  selector: 'ngx-add-invoice',
-  templateUrl: './add-invoice.component.html',
-  styleUrls: ['./add-invoice.component.scss']
+  selector: 'ngx-add-quote',
+  templateUrl: './add-quote.component.html',
+  styleUrls: ['./add-quote.component.scss']
 })
-export class AddInvoiceComponent implements OnInit {
+export class AddQuoteComponent implements OnInit {
   isSubmitting = false;
-  showInvoiceNumberPopup = false;
+  showQuoteNumberPopup = false;
   showPaymentTermsPopup = false;
   today = this.normalizeDate(new Date());
   dueDateMin = this.today;
-  customerOptions: InvoiceCustomerOption[] = [];
-  itemOptions: InvoiceItemOption[] = [];
-  paymentTerms: InvoicePaymentTermOption[] = [];
-  taxOptions: InvoiceTaxOption[] = [
+  expiryDateMin = this.today;
+  customerOptions: QuoteCustomerOption[] = [];
+  selectedCustomer: QuoteCustomerOption | null = null;
+  stateOptions: QuoteStateOption[] = [];
+  itemOptions: QuoteItemOption[] = [];
+  paymentTerms: QuotePaymentTermOption[] = [];
+  taxOptions: QuoteTaxOption[] = [
     { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' }
   ];
 
   model: any = {
     customer_id: '',
-    invoice_no: '',
-    order_no: '',
-    invoice_date: null,
-    term: 'Due on Receipt',
-    due_date: null,
+    quote_no: '',
+    reference_no: '',
+    quote_date: null,
+    expiry_date: null,
     salesperson: '',
+    project_name: '',
+    place_of_supply: '',
     subject: '',
     customer_notes: 'Looking forward for your business.',
     additional_tax: '',
@@ -88,13 +110,13 @@ export class AddInvoiceComponent implements OnInit {
     adjustment_value: 0
   };
 
-  invoiceNumberPreference = {
+  quoteNumberPreference = {
     mode: 'auto',
-    prefix: 'INV-',
-    nextNumber: '00001'
+    prefix: 'QT-',
+    nextNumber: '000001'
   };
 
-  itemRows: InvoiceItemRow[] = [];
+  itemRows: QuoteItemRow[] = [];
 
   constructor(
     private toastrService: NbToastrService,
@@ -103,13 +125,12 @@ export class AddInvoiceComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchCustomers();
+    this.fetchStates();
     this.fetchItems();
-    this.fetchPaymentTerms();
     this.fetchTaxRates();
-    this.applyInvoiceNumber();
-    this.model.invoice_date = this.normalizeDate(new Date());
-    this.model.due_date = this.normalizeDate(new Date());
-    this.dueDateMin = this.model.invoice_date;
+    this.applyQuoteNumber();
+    this.model.quote_date = this.normalizeDate(new Date());
+    this.expiryDateMin = this.model.quote_date;
     this.addRow();
   }
 
@@ -121,16 +142,82 @@ export class AddInvoiceComponent implements OnInit {
           .map((customer: any) => ({
             id: Number(customer?.id || 0),
             label: this.getCustomerLabel(customer),
+            billing_address: `${customer?.billing_address || ''}`.trim(),
+            billing_city: `${customer?.billing_city || ''}`.trim(),
+            billing_country: `${customer?.billing_country || ''}`.trim(),
+            billing_pin: `${customer?.billing_pin || ''}`.trim(),
             billing_state: `${customer?.billing_state || ''}`.trim(),
+            shipping_address: `${customer?.shipping_address || ''}`.trim(),
+            shipping_city: `${customer?.shipping_city || ''}`.trim(),
+            shipping_country: `${customer?.shipping_country || ''}`.trim(),
+            shipping_pin: `${customer?.shipping_pin || ''}`.trim(),
+            shipping_state: `${customer?.shipping_state || ''}`.trim(),
             state: `${customer?.state || ''}`.trim(),
-            state_name: `${customer?.state_name || ''}`.trim()
+            state_name: `${customer?.state_name || ''}`.trim(),
+            gst_treatment: `${customer?.gst_treatment || ''}`.trim(),
+            gstin: `${customer?.gstin || customer?.gst_no || customer?.custom_field?.gst_no || ''}`.trim(),
+            source_of_supply: `${customer?.source_of_supply || ''}`.trim()
           }))
-          .filter((customer: InvoiceCustomerOption) => customer.id > 0 && !!customer.label);
+          .filter((customer: QuoteCustomerOption) => customer.id > 0 && !!customer.label);
       },
       error: () => {
         this.customerOptions = [];
       }
     });
+  }
+
+  fetchStates(): void {
+    this.globalService.getStates().subscribe({
+      next: (res: any) => {
+        const states = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        this.stateOptions = states
+          .map((state: any) => {
+            const code = `${state?.code || ''}`.trim();
+            const name = `${state?.name || ''}`.trim();
+            return { code, name, label: code ? `[${code}] - ${name}` : name };
+          })
+          .filter((state: QuoteStateOption) => !!state.code && !!state.name);
+      },
+      error: () => {
+        this.stateOptions = [];
+      }
+    });
+  }
+
+  onCustomerSelected(customerId: number | string): void {
+    this.selectedCustomer = this.customerOptions.find(
+      (customer: QuoteCustomerOption) => customer.id === Number(customerId)
+    ) || null;
+
+    this.model.place_of_supply = this.selectedCustomer?.source_of_supply
+      || this.selectedCustomer?.billing_state
+      || this.selectedCustomer?.state
+      || '';
+  }
+
+  getCustomerAddress(type: 'billing' | 'shipping'): string[] {
+    const customer = this.selectedCustomer;
+    if (!customer) {
+      return [];
+    }
+
+    const address = type === 'billing' ? customer.billing_address : customer.shipping_address;
+    const city = type === 'billing' ? customer.billing_city : customer.shipping_city;
+    const stateCode = type === 'billing' ? customer.billing_state : customer.shipping_state;
+    const pin = type === 'billing' ? customer.billing_pin : customer.shipping_pin;
+    const country = type === 'billing' ? customer.billing_country : customer.shipping_country;
+    const state = this.getStateName(stateCode);
+
+    return [address, city, [state, pin].filter(Boolean).join(' '), country]
+      .map((line: string | undefined) => `${line || ''}`.trim())
+      .filter((line: string) => !!line);
+  }
+
+  private getStateName(code: string | undefined): string {
+    const normalizedCode = `${code || ''}`.trim().toUpperCase();
+    return this.stateOptions.find(
+      (state: QuoteStateOption) => state.code.toUpperCase() === normalizedCode
+    )?.name || `${code || ''}`.trim();
   }
 
   fetchPaymentTerms(): void {
@@ -145,7 +232,7 @@ export class AddInvoiceComponent implements OnInit {
           : [];
 
         if (!this.model.term && this.paymentTerms.length > 0) {
-          const defaultTerm = this.paymentTerms.find((term: InvoicePaymentTermOption) => `${term.termName}`.trim().toLowerCase() === 'due on receipt');
+          const defaultTerm = this.paymentTerms.find((term: QuotePaymentTermOption) => `${term.termName}`.trim().toLowerCase() === 'due on receipt');
           this.model.term = defaultTerm?.termName || 'Due on Receipt';
         }
 
@@ -180,13 +267,13 @@ export class AddInvoiceComponent implements OnInit {
               taxName,
               rate,
               label: `${taxName} [${rate}%]`
-            } as InvoiceTaxOption;
+            } as QuoteTaxOption;
           })
-          .filter((item: InvoiceTaxOption | null): item is InvoiceTaxOption => !!item);
+          .filter((item: QuoteTaxOption | null): item is QuoteTaxOption => !!item);
 
         this.taxOptions = [
           { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' },
-          ...mappedRates.filter((option: InvoiceTaxOption) => option.rate > 0)
+          ...mappedRates.filter((option: QuoteTaxOption) => option.rate > 0)
         ];
       },
       error: (error: any) => {
@@ -196,16 +283,14 @@ export class AddInvoiceComponent implements OnInit {
     });
   }
 
-  onInvoiceDateChange(date: Date): void {
+  onQuoteDateChange(date: Date): void {
     const normalizedDate = this.normalizeDate(date);
-    this.model.invoice_date = normalizedDate;
-    this.dueDateMin = normalizedDate;
+    this.model.quote_date = normalizedDate;
+    this.expiryDateMin = normalizedDate;
 
-    if (this.model.due_date && this.normalizeDate(this.model.due_date).getTime() < normalizedDate.getTime()) {
-      this.model.due_date = null;
+    if (this.model.expiry_date && this.normalizeDate(this.model.expiry_date).getTime() < normalizedDate.getTime()) {
+      this.model.expiry_date = null;
     }
-
-    this.updateDueDateFromPaymentTerm();
   }
 
   private normalizeDate(value: Date | string | null | undefined): Date {
@@ -235,7 +320,7 @@ export class AddInvoiceComponent implements OnInit {
             description: item?.description,
             item_description: item?.item_description,
           }))
-          .filter((item: InvoiceItemOption) => item.id > 0 && !!item.label);
+          .filter((item: QuoteItemOption) => item.id > 0 && !!item.label);
       },
       error: () => {
         this.itemOptions = [];
@@ -266,7 +351,7 @@ export class AddInvoiceComponent implements OnInit {
     const rate = Number(item?.tax_rate_percentage);
 
     if (rate > 0) {
-      const match = this.taxOptions.find((option: InvoiceTaxOption) => option.rate === rate);
+      const match = this.taxOptions.find((option: QuoteTaxOption) => option.rate === rate);
       if (match) {
         return match.label;
       }
@@ -284,9 +369,9 @@ export class AddInvoiceComponent implements OnInit {
       .replace(/\s*\[\s*\d+(?:\.\d+)?%\s*\]\s*$/, '');
   }
 
-  private getSelectedCustomer(): InvoiceCustomerOption | undefined {
+  private getSelectedCustomer(): QuoteCustomerOption | undefined {
     return this.customerOptions.find(
-      (customer: InvoiceCustomerOption) => customer.id === Number(this.model.customer_id)
+      (customer: QuoteCustomerOption) => customer.id === Number(this.model.customer_id)
     );
   }
 
@@ -328,16 +413,16 @@ export class AddInvoiceComponent implements OnInit {
     return customerState !== businessState;
   }
 
-  getItemTaxRate(row: InvoiceItemRow): number {
+  getItemTaxRate(row: QuoteItemRow): number {
     return this.getTaxRate(row.tax);
   }
 
-  getRowTaxAmount(row: InvoiceItemRow): number {
+  getRowTaxAmount(row: QuoteItemRow): number {
     return (this.getRowAmount(row) * this.getItemTaxRate(row)) / 100;
   }
 
   getTotalItemTaxAmount(): number {
-    return this.itemRows.reduce((total: number, row: InvoiceItemRow) => total + this.getRowTaxAmount(row), 0);
+    return this.itemRows.reduce((total: number, row: QuoteItemRow) => total + this.getRowTaxAmount(row), 0);
   }
 
   getTaxModeLabel(): string {
@@ -348,8 +433,8 @@ export class AddInvoiceComponent implements OnInit {
     return this.getTaxModeLabel();
   }
 
-  onItemSelected(row: InvoiceItemRow, selectedId: string | number): void {
-    const item = this.itemOptions.find((option: InvoiceItemOption) => option.id === Number(selectedId));
+  onItemSelected(row: QuoteItemRow, selectedId: string | number): void {
+    const item = this.itemOptions.find((option: QuoteItemOption) => option.id === Number(selectedId));
 
     if (!item) {
       return;
@@ -367,7 +452,7 @@ export class AddInvoiceComponent implements OnInit {
     row.item_is_manual = false;
   }
 
-  onItemInputChange(row: InvoiceItemRow, value: string): void {
+  onItemInputChange(row: QuoteItemRow, value: string): void {
     row.item_details = value;
     row.item_id = '';
     row.item_is_manual = false;
@@ -441,7 +526,7 @@ export class AddInvoiceComponent implements OnInit {
     }
   }
 
-  formatRateOnBlur(row: InvoiceItemRow): void {
+  formatRateOnBlur(row: QuoteItemRow): void {
     row.rate = this.formatDecimalValue(row.rate);
   }
 
@@ -450,7 +535,7 @@ export class AddInvoiceComponent implements OnInit {
     return Number.isFinite(numericValue) ? numericValue : 0;
   }
 
-  getRowAmount(row: InvoiceItemRow): number {
+  getRowAmount(row: QuoteItemRow): number {
     return this.getRateNumber(row.rate) * Number(row.quantity || 0);
   }
 
@@ -495,18 +580,18 @@ export class AddInvoiceComponent implements OnInit {
     }
   }
 
-  onItemInputFocus(row: InvoiceItemRow): void {
+  onItemInputFocus(row: QuoteItemRow): void {
     row.item_list_open = true;
   }
 
-  onItemInputBlur(row: InvoiceItemRow): void {
+  onItemInputBlur(row: QuoteItemRow): void {
     setTimeout(() => {
       row.item_list_open = false;
       this.applyExactItemMatch(row);
     }, 150);
   }
 
-  selectItemFromAutocomplete(row: InvoiceItemRow, item: InvoiceItemOption, rowIndex: number): void {
+  selectItemFromAutocomplete(row: QuoteItemRow, item: QuoteItemOption, rowIndex: number): void {
     row.item_id = item.id;
     row.item_details = item.label;
     row.item_description = this.getItemDescription(item);
@@ -525,7 +610,7 @@ export class AddInvoiceComponent implements OnInit {
     }, 0);
   }
 
-  getFilteredItems(query: string): InvoiceItemOption[] {
+  getFilteredItems(query: string): QuoteItemOption[] {
     const searchValue = `${query || ''}`.trim().toLowerCase();
 
     if (!searchValue) {
@@ -533,11 +618,11 @@ export class AddInvoiceComponent implements OnInit {
     }
 
     return this.itemOptions.filter(
-      (item: InvoiceItemOption) => item.label.toLowerCase().includes(searchValue)
+      (item: QuoteItemOption) => item.label.toLowerCase().includes(searchValue)
     );
   }
 
-  private applyExactItemMatch(row: InvoiceItemRow): void {
+  private applyExactItemMatch(row: QuoteItemRow): void {
     const rawValue = `${row.item_details || ''}`.trim().toLowerCase();
 
     if (!rawValue) {
@@ -545,7 +630,7 @@ export class AddInvoiceComponent implements OnInit {
     }
 
     const exactMatch = this.itemOptions.find(
-      (item: InvoiceItemOption) => item.label.toLowerCase() === rawValue
+      (item: QuoteItemOption) => item.label.toLowerCase() === rawValue
     );
 
     if (exactMatch) {
@@ -556,7 +641,7 @@ export class AddInvoiceComponent implements OnInit {
     this.selectManualItem(row, this.itemRows.indexOf(row));
   }
 
-  private selectManualItem(row: InvoiceItemRow, rowIndex: number): void {
+  private selectManualItem(row: QuoteItemRow, rowIndex: number): void {
     const itemLabel = `${row.item_details || ''}`.trim();
 
     if (!itemLabel) {
@@ -576,7 +661,7 @@ export class AddInvoiceComponent implements OnInit {
     row.item_is_manual = true;
   }
 
-  clearItemRow(row: InvoiceItemRow): void {
+  clearItemRow(row: QuoteItemRow): void {
     row.item_id = '';
     row.item_details = '';
     row.item_description = '';
@@ -605,24 +690,24 @@ export class AddInvoiceComponent implements OnInit {
     this.showPaymentTermsPopup = true;
   }
 
-  openInvoiceNumberPopup(): void {
-    this.showInvoiceNumberPopup = true;
+  openQuoteNumberPopup(): void {
+    this.showQuoteNumberPopup = true;
   }
 
-  closeInvoiceNumberPopup(): void {
-    this.showInvoiceNumberPopup = false;
+  closeQuoteNumberPopup(): void {
+    this.showQuoteNumberPopup = false;
   }
 
-  saveInvoiceNumberPreference(): void {
-    this.applyInvoiceNumber();
-    this.closeInvoiceNumberPopup();
+  saveQuoteNumberPreference(): void {
+    this.applyQuoteNumber();
+    this.closeQuoteNumberPopup();
   }
 
   closePaymentTermsPopup(): void {
     this.showPaymentTermsPopup = false;
   }
 
-  onPaymentTermsChanged(terms: InvoicePaymentTermOption[]): void {
+  onPaymentTermsChanged(terms: QuotePaymentTermOption[]): void {
     this.paymentTerms = terms;
     this.updateDueDateFromPaymentTerm();
   }
@@ -633,13 +718,13 @@ export class AddInvoiceComponent implements OnInit {
     this.closePaymentTermsPopup();
   }
 
-  generateInvoiceNumber(): string {
-    return `${this.invoiceNumberPreference.prefix}${this.invoiceNumberPreference.nextNumber}`;
+  generateQuoteNumber(): string {
+    return `${this.quoteNumberPreference.prefix}${this.quoteNumberPreference.nextNumber}`;
   }
 
-  private applyInvoiceNumber(): void {
-    if (this.invoiceNumberPreference.mode === 'auto') {
-      this.model.invoice_no = this.generateInvoiceNumber();
+  private applyQuoteNumber(): void {
+    if (this.quoteNumberPreference.mode === 'auto') {
+      this.model.quote_no = this.generateQuoteNumber();
     }
   }
 
@@ -679,7 +764,7 @@ export class AddInvoiceComponent implements OnInit {
       };
       return;
     }
-    this.itemRows = this.itemRows.filter((_: InvoiceItemRow, rowIndex: number) => rowIndex !== index);
+    this.itemRows = this.itemRows.filter((_: QuoteItemRow, rowIndex: number) => rowIndex !== index);
   }
 
   trackByIndex(index: number): number {
@@ -687,11 +772,11 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   getSubTotal(): number {
-    return this.itemRows.reduce((total: number, row: InvoiceItemRow) => total + this.getRowAmount(row), 0);
+    return this.itemRows.reduce((total: number, row: QuoteItemRow) => total + this.getRowAmount(row), 0);
   }
 
   getTaxRate(label: string): number {
-    return this.taxOptions.find((option: InvoiceTaxOption) => option.label === label)?.rate || 0;
+    return this.taxOptions.find((option: QuoteTaxOption) => option.label === label)?.rate || 0;
   }
 
   getTaxAmount(): number {
@@ -733,26 +818,26 @@ export class AddInvoiceComponent implements OnInit {
 
   private updateDueDateFromPaymentTerm(termName: string = `${this.model.term || ''}`.trim()): void {
     const normalizedTerm = `${termName || ''}`.trim().toLowerCase();
-    const invoiceDate = this.normalizeDate(this.model.invoice_date || new Date());
+    const quoteDate = this.normalizeDate(this.model.quote_date || new Date());
 
     if (!normalizedTerm) {
-      this.dueDateMin = invoiceDate;
+      this.dueDateMin = quoteDate;
       return;
     }
 
     if (normalizedTerm === 'due on receipt') {
-      this.model.due_date = invoiceDate;
-      this.dueDateMin = invoiceDate;
+      this.model.due_date = quoteDate;
+      this.dueDateMin = quoteDate;
       return;
     }
 
     const dueDays = this.getPaymentTermDays(termName);
     if (dueDays === null) {
-      this.dueDateMin = invoiceDate;
+      this.dueDateMin = quoteDate;
       return;
     }
 
-    const dueDate = new Date(invoiceDate);
+    const dueDate = new Date(quoteDate);
     dueDate.setDate(dueDate.getDate() + dueDays);
     this.model.due_date = dueDate;
     this.dueDateMin = dueDate;
@@ -764,7 +849,7 @@ export class AddInvoiceComponent implements OnInit {
       return null;
     }
 
-    const matchedTerm = this.paymentTerms.find((term: InvoicePaymentTermOption) =>
+    const matchedTerm = this.paymentTerms.find((term: QuotePaymentTermOption) =>
       `${term.termName || ''}`.trim().toLowerCase() === normalizedTerm
     );
 
@@ -790,8 +875,8 @@ export class AddInvoiceComponent implements OnInit {
 
   private getSubmitRows(): any[] {
     return this.itemRows
-      .filter((row: InvoiceItemRow) => `${row.item_details || ''}`.trim())
-      .map((row: InvoiceItemRow) => ({
+      .filter((row: QuoteItemRow) => `${row.item_details || ''}`.trim())
+      .map((row: QuoteItemRow) => ({
         item_id: row.item_is_manual ? null : row.item_id,
         item_name: `${row.item_details || ''}`.trim(),
         item_description: `${row.item_description || ''}`.trim(),
@@ -814,18 +899,19 @@ export class AddInvoiceComponent implements OnInit {
     const items = this.getSubmitRows();
 
     if (items.length === 0) {
-      this.toastrService.danger('Add at least one invoice item.', 'Validation Failed');
+      this.toastrService.danger('Add at least one quote item.', 'Validation Failed');
       return;
     }
 
     const payload = {
       customer_id: this.model.customer_id,
-      invoice_no: `${this.model.invoice_no || ''}`.trim(),
-      order_no: `${this.model.order_no || ''}`.trim(),
-      invoice_date: this.formatApiDate(this.model.invoice_date),
-      term: `${this.model.term || ''}`.trim(),
-      due_date: this.formatApiDate(this.model.due_date),
+      quote_no: `${this.model.quote_no || ''}`.trim(),
+      reference_no: `${this.model.reference_no || ''}`.trim(),
+      quote_date: this.formatApiDate(this.model.quote_date),
+      expiry_date: this.formatApiDate(this.model.expiry_date),
       salesperson: `${this.model.salesperson || ''}`.trim(),
+      project_name: `${this.model.project_name || ''}`.trim(),
+      place_of_supply: `${this.model.place_of_supply || ''}`.trim(),
       subject: `${this.model.subject || ''}`.trim(),
       customer_notes: `${this.model.customer_notes || ''}`.trim(),
       additional_tax: this.getTaxLabel(),
@@ -842,15 +928,15 @@ export class AddInvoiceComponent implements OnInit {
     };
 
     this.isSubmitting = true;
-    this.globalService.insertInvoice(payload).subscribe({
+    this.globalService.insertQuote(payload).subscribe({
       next: (res: any) => {
         this.isSubmitting = false;
-        this.toastrService.success(res?.message || 'Invoice saved successfully.', 'Saved');
+        this.toastrService.success(res?.message || 'Quote saved successfully.', 'Saved');
       },
       error: (error: any) => {
         this.isSubmitting = false;
         this.toastrService.danger(
-          error?.error?.message || error?.message || 'Invoice could not be saved.',
+          error?.error?.message || error?.message || 'Quote could not be saved.',
           'Save Failed',
         );
       },

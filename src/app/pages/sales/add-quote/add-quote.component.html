@@ -1,0 +1,449 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate class="quote-form-shell">
+  <nb-card class="quote-form-card">
+    <nb-card-header>New Quote</nb-card-header>
+
+    <nb-card-body class="quote-form-body" [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+      <div class="row">
+        <div class="col-lg-12 mb-10">
+          <label class="small-label">Customer Name <span class="required">*</span></label>
+          <div class="customer-select-row">
+            <ngx-search-select
+              name="customer_id"
+              [placeholder]="'Select or add a customer'"
+              [options]="customerOptions"
+              [(ngModel)]="model.customer_id"
+              (ngModelChange)="onCustomerSelected($event)"
+              displayKey="label"
+              valueKey="id"
+              [required]="true"
+            ></ngx-search-select>
+          </div>
+          <div *ngIf="fm.submitted && !model.customer_id" class="error-message">Customer name is required</div>
+        </div>
+
+        <div class="col-lg-12 mb-10" *ngIf="selectedCustomer">
+          <div class="customer-information-card">
+            <div class="customer-address-grid">
+              <div>
+                <div class="customer-info-heading">Billing Address 
+                  <!-- <nb-icon icon="edit-2-outline"></nb-icon> -->
+                </div>
+                <div class="customer-address-lines">
+                  <span *ngFor="let line of getCustomerAddress('billing'); let first = first" [class.primary-line]="first">{{ line }}</span>
+                  <span *ngIf="!getCustomerAddress('billing').length">Address not available</span>
+                </div>
+              </div>
+              <div>
+                <div class="customer-info-heading">Shipping Address 
+                  <!-- <nb-icon icon="edit-2-outline"></nb-icon> -->
+                </div>
+                <div class="customer-address-lines">
+                  <span *ngFor="let line of getCustomerAddress('shipping'); let first = first" [class.primary-line]="first">{{ line }}</span>
+                  <span *ngIf="!getCustomerAddress('shipping').length">Address not available</span>
+                </div>
+              </div>
+            </div>
+            <div class="customer-gst-grid">
+              <div><span>GST Treatment :</span> <strong> {{ selectedCustomer.gst_treatment || 'Not available' }}</strong></div>
+              <div><span>GSTIN :</span> <strong> {{ selectedCustomer.gstin || 'Not available' }}</strong></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Place of Supply <span class="required">*</span></label>
+          <ngx-search-select name="place_of_supply" [placeholder]="'Select place of supply'"
+            [options]="stateOptions" [(ngModel)]="model.place_of_supply"
+            displayKey="label" valueKey="code" [required]="true">
+          </ngx-search-select>
+        </div>
+        <div class="col-lg-6 mb-10"></div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Quote# <span class="required">*</span></label>
+          <div class="input-with-icon">
+            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter quote number"
+              name="quote_no" required #quote_no="ngModel" [(ngModel)]="model.quote_no">
+            <button type="button" class="field-icon-btn" (click)="openQuoteNumberPopup()" aria-label="Configure quote number preferences">
+              <nb-icon icon="settings-2-outline"></nb-icon>
+            </button>
+          </div>
+          <div *ngIf="fm.submitted && quote_no.invalid" class="error-message">Quote number is required</div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Reference#</label>
+          <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter reference number"
+            name="reference_no" [(ngModel)]="model.reference_no">
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Quote Date <span class="required">*</span></label>
+          <input nbInput fullWidth shape="semi-round" placeholder="Select quote date"
+            [nbDatepicker]="quoteDatePicker" name="quote_date" required #quote_date="ngModel"
+            [(ngModel)]="model.quote_date" (ngModelChange)="onQuoteDateChange($event)">
+          <nb-datepicker #quoteDatePicker></nb-datepicker>
+          <div *ngIf="fm.submitted && quote_date.invalid" class="error-message">Quote date is required</div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Expiry Date</label>
+          <input nbInput fullWidth shape="semi-round" placeholder="Select expiry date"
+            [nbDatepicker]="expiryDatePicker" name="expiry_date" [(ngModel)]="model.expiry_date">
+          <nb-datepicker #expiryDatePicker [min]="expiryDateMin"></nb-datepicker>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Salesperson</label>
+          <input type="text" nbInput fullWidth shape="semi-round" placeholder="Select or add salesperson"
+            name="salesperson" [(ngModel)]="model.salesperson">
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Project Name</label>
+          <input type="text" nbInput fullWidth shape="semi-round" placeholder="Select a project"
+            name="project_name" [(ngModel)]="model.project_name">
+        </div>
+
+        <div class="col-lg-12 mb-10">
+          <label class="small-label">Subject</label>
+          <textarea nbInput fullWidth shape="semi-round" rows="2"
+            placeholder="Let your customer know what this Quote is for"
+            name="subject" [(ngModel)]="model.subject"></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-12 mb-10">
+          <div class="table-card">
+            <div class="table-card-header">
+              <span>Item Table</span>
+            </div>
+
+            <div class="item-table-wrapper">
+              <table class="item-table">
+                <colgroup>
+                  <col class="col-sl-no">
+                  <col class="col-item-details">
+                  <col class="col-quantity">
+                  <col class="col-rate">
+                  <col class="col-tax">
+                  <col class="col-amount">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Sl</th>
+                    <th>Item Details</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Tax</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of itemRows; let i = index; trackBy: trackByIndex">
+                    <td>{{ i + 1 }}</td>
+                    <td>
+                      <div class="item-cell-shell" [class.has-selection]="!!row.item_id">
+                        <ng-container *ngIf="row.item_id; else itemAutocomplete">
+                          <div class="selected-item-card">
+                            <div class="selected-item-head">
+                              <ng-container *ngIf="row.item_is_manual; else selectedItemTitle">
+                                <textarea
+                                  nbInput
+                                  fullWidth
+                                  class="manual-item-title-input"
+                                  rows="1"
+                                  wrap="soft"
+                                  [id]="'manual-item-title-' + i"
+                                  [name]="'manual_item_title_' + i"
+                                  [(ngModel)]="row.item_details"
+                                  (input)="autoGrowTextarea($event)"
+                                  placeholder="Type item name"
+                                ></textarea>
+                              </ng-container>
+                              <ng-template #selectedItemTitle>
+                                <div class="selected-item-title">{{ row.item_details }}</div>
+                              </ng-template>
+                              <div class="selected-item-actions">
+                                <button type="button" class="selected-item-icon-btn" (click)="clearItemRow(row)" aria-label="Clear item">
+                                  <nb-icon icon="close-outline"></nb-icon>
+                                </button>
+                              </div>
+                            </div>
+
+                            <div class="selected-item-description-wrap">
+                              <label class="selected-item-description-label">Description</label>
+                              <textarea
+                                nbInput
+                                fullWidth
+                                class="selected-item-description-input"
+                                rows="2"
+                                wrap="soft"
+                                [name]="'item_description_' + i"
+                                [(ngModel)]="row.item_description"
+                                (input)="autoGrowTextarea($event)"
+                                placeholder="Enter description"
+                              ></textarea>
+                            </div>
+
+                            <div class="selected-item-meta">
+                              <span class="selected-item-type">{{ row.item_type || 'Goods' }}</span>
+                              <span class="selected-item-hsn" *ngIf="!row.item_is_manual">
+                                HSN Code:
+                                <strong>{{ row.hsn_sac || '-' }}</strong>
+                              </span>
+                              <label class="manual-sac-field" *ngIf="row.item_is_manual">
+                                <span>SAC No:</span>
+                                <input
+                                  type="text"
+                                  nbInput
+                                  fullWidth
+                                  [name]="'manual_sac_' + i"
+                                  [(ngModel)]="row.hsn_sac"
+                                  placeholder="Enter SAC No"
+                                >
+                              </label>
+                            </div>
+                          </div>
+                        </ng-container>
+
+                        <ng-template #itemAutocomplete>
+                          <div class="autocomplete-wrap">
+                            <textarea
+                              nbInput
+                              fullWidth
+                              shape="semi-round"
+                              class="autocomplete-input"
+                              [id]="'item-details-' + i"
+                              rows="1"
+                              wrap="soft"
+                              [name]="'item_details_' + i"
+                              placeholder="Type or click to select an item."
+                              [ngModel]="row.item_details"
+                              (ngModelChange)="onItemInputChange(row, $event)"
+                              (input)="autoGrowTextarea($event)"
+                              (focus)="onItemInputFocus(row)"
+                              (blur)="onItemInputBlur(row)"
+                              autocomplete="off"
+                            ></textarea>
+
+                            <div class="autocomplete-panel" *ngIf="row.item_list_open && getFilteredItems(row.item_details).length">
+                              <button
+                                type="button"
+                                class="autocomplete-option"
+                                *ngFor="let item of getFilteredItems(row.item_details)"
+                                (mousedown)="selectItemFromAutocomplete(row, item, i)">
+                                {{ item.label }}
+                              </button>
+                            </div>
+                          </div>
+                        </ng-template>
+                      </div>
+                    </td>
+                    <td class="quantity-cell">
+                      <div class="quantity-cell-inner">
+                        <input type="text" nbInput fullWidth shape="semi-round" inputmode="numeric"
+                          autocomplete="off"
+                          [name]="'quantity_' + i"
+                          (keydown)="allowIntegerOnly($event)"
+                          [(ngModel)]="row.quantity">
+                        <div class="cell-subtext">{{ row.item_unit || '' }}</div>
+                      </div>
+                    </td>
+                    <td class="rate-cell">
+                      <input type="text" nbInput fullWidth shape="semi-round" inputmode="decimal"
+                        autocomplete="off"
+                        [name]="'rate_' + i"
+                        (keydown)="allowDecimalOnly($event)"
+                        (blur)="formatRateOnBlur(row)"
+                        [(ngModel)]="row.rate">
+                    </td>
+                    <td class="tax-cell">
+                      <ng-container *ngIf="row.item_id; else editableTax">
+                        <span class="tax-label">{{ getTaxDisplayLabel(row.tax) }}</span>
+                      </ng-container>
+                      <ng-template #editableTax>
+                        <nb-select fullWidth shape="semi-round"
+                          [name]="'tax_' + i"
+                          [(ngModel)]="row.tax">
+                          <nb-option *ngFor="let tax of taxOptions" [value]="tax.label">{{ getTaxDisplayLabel(tax.label) }}</nb-option>
+                        </nb-select>
+                      </ng-template>
+                    </td>
+                    <td class="amount-cell">{{ getRowAmount(row) | number:'1.2-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-actions">
+              <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
+                <nb-icon icon="plus-outline"></nb-icon>
+                Add New Row
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-6 mb-10">
+          <div class="notes-panel">
+            <label class="small-label">Customer Notes</label>
+            <textarea nbInput fullWidth shape="semi-round" rows="4"
+              name="customer_notes" [(ngModel)]="model.customer_notes"></textarea>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <div class="summary-card">
+            <div class="summary-row strong">
+              <span>Sub Total</span>
+              <span>{{ getSubTotal() | number:'1.2-2' }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax</span>
+              <span>{{ getTaxAmount() | number:'1.2-2' }}</span>
+            </div>
+            <div class="summary-row muted" *ngIf="isInterState()">
+              <span>IGST</span>
+              <span>{{ getIGST() | number:'1.2-2' }}</span>
+            </div>
+            <ng-container *ngIf="!isInterState()">
+              <div class="summary-row muted">
+                <span>CGST</span>
+                <span>{{ getCGST() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row muted">
+                <span>SGST</span>
+                <span>{{ getSGST() | number:'1.2-2' }}</span>
+              </div>
+            </ng-container>
+            <div class="summary-row adjustment-row">
+              <div class="adjustment-label-box">{{ model.adjustment_label || 'Adjustment' }}</div>
+              <div class="adjustment-input-box">
+                <input
+                  type="text"
+                  nbInput
+                  class="summary-amount-input"
+                  inputmode="decimal"
+                  autocomplete="off"
+                  name="adjustment_value"
+                  [(ngModel)]="model.adjustment_value"
+                  (keydown)="allowSignedDecimalOnly($event)"
+                  placeholder="0.00"
+                >
+              </div>
+              <button
+                type="button"
+                class="adjustment-help-btn"
+                aria-label="Adjustment help"
+                nbTooltip="+100 and -100 enter for adjustment."
+                nbTooltipPlacement="top"
+                nbTooltipStatus="basic"
+                nbTooltipTrigger="click"
+              >
+                <nb-icon icon="question-mark-circle-outline"></nb-icon>
+              </button>
+              <div
+                class="adjustment-preview"
+                [class.positive]="getAdjustmentValue() > 0"
+                [class.negative]="getAdjustmentValue() < 0"
+                [class.neutral]="getAdjustmentValue() === 0"
+              >
+                {{ getAdjustmentValue() | number:'1.2-2' }}
+              </div>
+            </div>
+            <div class="summary-row total-row">
+              <span>Total ( Rs )</span>
+              <span>{{ getTotal() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nb-card-body>
+
+    <nb-card-footer>
+      <div class="footer-actions">
+        <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
+          Save Quote
+        </button>
+      </div>
+    </nb-card-footer>
+  </nb-card>
+</form>
+
+<ngx-payment-terms-popup
+  [open]="showPaymentTermsPopup"
+  [title]="'Configure Payment Terms'"
+  [terms]="paymentTerms"
+  (close)="closePaymentTermsPopup()"
+  (termsChange)="onPaymentTermsChanged($event)"
+  (termSelected)="onPaymentTermSelected($event)"
+></ngx-payment-terms-popup>
+
+<div class="quote-number-overlay" *ngIf="showQuoteNumberPopup" (click)="closeQuoteNumberPopup()">
+  <div class="quote-number-modal" (click)="$event.stopPropagation()">
+    <div class="quote-number-header">
+      <h2>Configure Quote Number Preferences</h2>
+      <button type="button" class="quote-number-close" (click)="closeQuoteNumberPopup()" aria-label="Close">
+        <nb-icon icon="close-outline"></nb-icon>
+      </button>
+    </div>
+
+    <form #quoteNumberForm="ngForm" (ngSubmit)="saveQuoteNumberPreference()" novalidate class="quote-number-form">
+      <div class="quote-number-body">
+        <p class="quote-number-copy">
+          Choose whether quote numbers should be generated automatically or entered manually.
+        </p>
+
+        <div class="quote-number-radio-group">
+          <div class="preference-option">
+            <label class="plain-radio-row">
+              <input
+                type="radio"
+                name="quote_number_mode"
+                value="auto"
+                [(ngModel)]="quoteNumberPreference.mode">
+              <span class="plain-radio-indicator"></span>
+              <span class="plain-radio-text">Continue auto-generating quote numbers</span>
+              <span class="preference-info">i</span>
+            </label>
+
+            <div class="preference-grid" *ngIf="quoteNumberPreference.mode === 'auto'">
+              <div class="preference-field">
+                <label class="preference-field-label">Prefix</label>
+                <input type="text" nbInput fullWidth shape="semi-round"
+                  name="quote_prefix" [(ngModel)]="quoteNumberPreference.prefix">
+              </div>
+
+              <div class="preference-field">
+                <label class="preference-field-label">Next Number</label>
+                <input type="text" nbInput fullWidth shape="semi-round"
+                  name="quote_next_number" [(ngModel)]="quoteNumberPreference.nextNumber">
+              </div>
+            </div>
+          </div>
+
+          <div class="preference-option manual-option">
+            <label class="plain-radio-row">
+              <input
+                type="radio"
+                name="quote_number_mode"
+                value="manual"
+                [(ngModel)]="quoteNumberPreference.mode">
+              <span class="plain-radio-indicator"></span>
+              <span class="plain-radio-text">Enter quote numbers manually</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="quote-number-footer">
+        <button type="submit" nbButton status="success" shape="semi-round">Save</button>
+        <button type="button" nbButton status="basic" shape="semi-round" (click)="closeQuoteNumberPopup()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>

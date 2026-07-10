@@ -98,16 +98,12 @@ export class SearchSelectComponent {
       return;
     }
 
-    this.isOpen = !this.isOpen;
-    if (this.isOpen) {
-      setTimeout(() => {
-        this.searchInput?.nativeElement.focus();
-      }, 0);
-      // Do NOT reset searchText when opening
-    } else {
-      this.searchText = '';
-      this.onTouched();
-    }
+    // Focus fires before click on the first interaction and already opens the
+    // dropdown. Toggling here would immediately close it again.
+    this.isOpen = true;
+    setTimeout(() => {
+      this.searchInput?.nativeElement.focus();
+    }, 0);
   }
 
   onInputFocus(event: Event): void {
@@ -202,6 +198,10 @@ export class SearchSelectComponent {
 
     const label = option?.[this.displayKey];
     return label == null ? '' : String(label);
+  }
+
+  isOptionSelected(option: any): boolean {
+    return this.getOptionValue(option) === this.selectedValue;
   }
 
   private getOptionValue(option: any): any {
