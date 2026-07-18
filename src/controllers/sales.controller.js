@@ -495,7 +495,7 @@ exports.createTaxRate = async (req, res) => {
   }
 };
 
-//ivoice
+//invoice create
 exports.createInvoice = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
