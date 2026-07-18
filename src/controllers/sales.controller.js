@@ -509,10 +509,17 @@ exports.createInvoice = async (req, res) => {
       invoice
     );
   } catch (err) {
-    return res.error(
+    if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "Invoice No already Exist."
+            );
+    }else{
+      return res.error(
       400,
       err.message
-    );
+       );
+    }
   }
 };
 
