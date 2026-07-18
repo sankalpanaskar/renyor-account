@@ -495,6 +495,26 @@ exports.createTaxRate = async (req, res) => {
   }
 };
 
+exports.createInvoice = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const invoice = await sales.createInvoice(req.body, tenant_id, user_id);
+
+    return res.success(
+      200,
+      "Invoice created successfully",
+      invoice
+    );
+  } catch (err) {
+    return res.error(
+      400,
+      err.message
+    );
+  }
+};
+
 exports.fetchTaxRate = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;

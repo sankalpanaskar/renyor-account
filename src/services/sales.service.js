@@ -92,6 +92,43 @@ const parseBankAccountsForUpdate = (bank_accounts) => {
   return Array.isArray(normalized) ? normalized : [];
 };
 
+const parseInvoiceItems = (items) => {
+  const normalized = normalizeFormValue(items);
+
+  if (normalized === undefined || normalized === null || normalized === "") {
+    return [];
+  }
+
+  if (typeof normalized === "string") {
+    try {
+      const parsed = JSON.parse(normalized);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err) {
+      throw new Error("Invalid items JSON");
+    }
+  }
+
+  return Array.isArray(normalized) ? normalized : [];
+};
+
+const buildInvoiceItemValues = (invoiceMasterId, item, tenant_id, user_id) => {
+  return [
+    invoiceMasterId,
+    normalizeFormValue(item?.item_id) ?? null,
+    normalizeFormValue(item?.item_name) ?? null,
+    normalizeFormValue(item?.item_description) ?? null,
+    normalizeFormValue(item?.item_type) ?? null,
+    normalizeFormValue(item?.hsn_sac) ?? null,
+    normalizeFormValue(item?.quantity) ?? 0,
+    normalizeFormValue(item?.rate) ?? 0,
+    normalizeFormValue(item?.tax) ?? null,
+    normalizeFormValue(item?.unit) ?? null,
+    normalizeFormValue(item?.amount) ?? 0,
+    tenant_id,
+    user_id
+  ];
+};
+
 
 
 exports.createDocumentPdf = async (tenant_id, user_id, document_type = 'invoice', inputData = null) => {
@@ -241,6 +278,134 @@ exports.createDocumentPdf = async (tenant_id, user_id, document_type = 'invoice'
 
 //   return menu;
 // };
+
+exports.createInvoice = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      customer_id,
+      invoice_no,
+      order_no,
+      invoice_date,
+      term,
+      due_date,
+      salesperson,
+      subject,
+      customer_notes,
+      sub_total,
+      tax_amount,
+      tax_mode,
+      customer_state,
+      total,
+      items
+    } = data || {};
+
+    const invoiceItems = parseInvoiceItems(items);
+
+    if (customer_id === undefined || customer_id === null || customer_id === "") {
+      throw new Error("customer_id is required");
+    }
+
+    if (!invoice_no) {
+      throw new Error("invoice_no is required");
+    }
+
+    if (!invoiceItems.length) {
+      throw new Error("items are required");
+    }
+
+    const invoiceMasterColumns = [
+      "customer_id",
+      "invoice_no",
+      "order_no",
+      "invoice_date",
+      "term",
+      "due_date",
+      "salesperson",
+      "subject",
+      "customer_notes",
+      "sub_total",
+      "tax_amount",
+      "tax_mode",
+      "customer_state",
+      "total",
+      "tenant_id",
+      "user_id"
+    ];
+
+    const invoiceMasterValues = [
+      customer_id,
+      invoice_no,
+      order_no ?? null,
+      formatDateForDb(invoice_date),
+      term ?? null,
+      formatDateForDb(due_date),
+      salesperson ?? null,
+      subject ?? null,
+      customer_notes ?? null,
+      sub_total ?? 0,
+      tax_amount ?? 0,
+      tax_mode ?? null,
+      customer_state ?? null,
+      total ?? 0,
+      tenant_id,
+      user_id
+    ];
+
+    const [masterResult] = await connection.query(
+      `INSERT INTO invoice_master (${invoiceMasterColumns.join(", ")})
+       VALUES (${invoiceMasterColumns.map(() => "?").join(", ")})`,
+      invoiceMasterValues
+    );
+
+    const invoiceMasterId = masterResult.insertId;
+    for (const item of invoiceItems) {
+      await connection.query(
+        `INSERT INTO invoice_items (
+          invoice_master_id,
+          item_id,
+          item_name,
+          item_description,
+          item_type,
+          hsn_sac,
+          quantity,
+          rate,
+          tax,
+          unit,
+          amount,
+          tenant_id,
+          user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        buildInvoiceItemValues(invoiceMasterId, item, tenant_id, user_id)
+      );
+    }
+
+    const [masterRows] = await connection.query(
+      `SELECT * FROM invoice_master WHERE id = ? AND tenant_id = ?`,
+      [invoiceMasterId, tenant_id]
+    );
+
+    const [itemRows] = await connection.query(
+      `SELECT * FROM invoice_items WHERE invoice_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
+      [invoiceMasterId, tenant_id]
+    );
+
+    await connection.commit();
+
+    return {
+      ...masterRows[0],
+      items: itemRows
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
 
 exports.fetchAllCustomers = async (tenant_id, module_id) => {
   const [customers] = await db.query(
