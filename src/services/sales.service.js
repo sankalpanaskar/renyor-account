@@ -410,6 +410,62 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
   }
 };
 
+exports.fetchInvoice = async (tenant_id, invoice_id = null) => {
+  const masterParams = [tenant_id];
+  let masterWhereClause = "WHERE im.tenant_id = ?";
+
+  if (invoice_id !== undefined && invoice_id !== null && invoice_id !== "") {
+    masterWhereClause += " AND im.id = ?";
+    masterParams.push(invoice_id);
+  }
+
+  const [masterRows] = await db.query(
+    `SELECT
+        im.*,
+        c.display_name AS customer_display_name,
+        c.company_name AS customer_company_name,
+        c.primary_contact_f_name AS customer_first_name,
+        c.primary_contact_l_name AS customer_last_name
+     FROM invoice_master im
+     LEFT JOIN customers c
+       ON c.id = im.customer_id
+      AND c.tenant_id = im.tenant_id
+     ${masterWhereClause}
+     ORDER BY im.id DESC`,
+    masterParams
+  );
+
+  if (!masterRows.length) {
+    return invoice_id ? null : [];
+  }
+
+  const invoiceMasterIds = masterRows.map((row) => row.id);
+  const [itemRows] = await db.query(
+    `SELECT *
+     FROM invoice_items
+     WHERE tenant_id = ?
+       AND invoice_master_id IN (?)
+     ORDER BY invoice_master_id ASC, id ASC`,
+    [tenant_id, invoiceMasterIds]
+  );
+
+  const itemsByInvoiceId = itemRows.reduce((acc, item) => {
+    if (!acc[item.invoice_master_id]) {
+      acc[item.invoice_master_id] = [];
+    }
+
+    acc[item.invoice_master_id].push(item);
+    return acc;
+  }, {});
+
+  const invoices = masterRows.map((row) => ({
+    ...row,
+    items: itemsByInvoiceId[row.id] || []
+  }));
+
+  return invoice_id ? invoices[0] : invoices;
+};
+
 exports.fetchAllCustomers = async (tenant_id, module_id) => {
   const [customers] = await db.query(
     "SELECT * FROM customers WHERE tenant_id = ? ORDER BY id DESC",

@@ -523,6 +523,26 @@ exports.createInvoice = async (req, res) => {
   }
 };
 
+exports.fetchInvoice = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const { id } = req.query;
+
+    const invoices = await sales.fetchInvoice(tenant_id, id);
+
+    return res.success(
+      200,
+      id ? "Invoice fetched successfully" : "Invoices fetched successfully",
+      invoices
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch invoice"
+    );
+  }
+};
+
 exports.fetchTaxRate = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
