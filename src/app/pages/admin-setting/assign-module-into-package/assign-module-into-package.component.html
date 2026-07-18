@@ -1,73 +1,170 @@
-<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
-    <nb-card>
-        <nb-card-header>Assign Module Into Package</nb-card-header>
-            <nb-card-body [nbSpinner]="loading" nbSpinnerStatus="primary">
-                <div class="row">
-                    <div class="col-lg-6 mb-10">
-                        <label class="small-label">
-                            Package<span style="color:#d32f2f">*</span>
-                        </label>
-                        <nb-select shape="semi-round" placeholder="Select Package" name="package_id"
-                            required #package_id="ngModel" [(ngModel)]="model.package_id" (selectedChange)="onPackageChange($event)">
-                            <nb-option  *ngFor="let package of packageList" [value]="package.id">{{package.package_name}}</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && package_id.invalid" class="error-message">
-                            Package is required
-                        </div>
-                    </div>
-                    <div class="col-lg-6 mb-10">
-                        <label class="small-label">
-                            Parent Menu<span style="color:#d32f2f">*</span>
-                        </label>
-                        <nb-select shape="semi-round" placeholder="Select Parent Menu" name="parent_id"
-                            required #parent_id="ngModel" [(ngModel)]="model.parent_id" (selectedChange)="onParentMenuChange($event)">
-                            <nb-option  *ngFor="let pm of parentMenuList" [value]="pm.id">{{pm.menu_name}}</nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && parent_id.invalid" class="error-message">
-                            Parent menu is required
-                        </div>
-                    </div>
-                    <div class="col-lg-12 mb-10">
-                        <label class="small-label">
-                            Module<span style="color:#d32f2f">*</span>
-                        </label>
-                        <nb-select shape="semi-round" placeholder="Select Parent Menu" name="module_id" required #module_id="ngModel" [(ngModel)]="model.module_id" multiple (selectedChange)="onModuleChange($event)">
-                            <nb-option [value]="'ALL'" *ngIf="moduleList.length>0">Select All</nb-option>
-                            <nb-option *ngFor="let module of moduleList" [value]="module.id">
-                                {{ module.menu_name }}
-                            </nb-option>
-                        </nb-select>
-                        <div *ngIf="fm.submitted && module_id.invalid" class="error-message">
-                            Module is required
-                        </div>
-                    </div>
-
-                </div>
-            </nb-card-body>
-        <nb-card-footer>
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
-                <button nbButton status="primary" shape="semi-round" hero type="submit"
-                    [disabled]="loading">
-                    Save
-                </button>
-            </div>
-        </nb-card-footer>
-    </nb-card>
-</form>
-
-<nb-card>
-    <nb-card-header class="section-header d-flex justify-content-between align-items-center">
-        <span>Module List</span>
-    </nb-card-header>
-    <nb-card-body [nbSpinner]="loading" nbSpinnerStatus="primary">
-        <div class="row" *ngFor="let menu of apiData">
-            <div class="col-lg-12">
-                <label style="font-weight: bold;color: #a2acc0;">{{menu.title}}</label>
-            </div>
-            <div class="col-lg-3" *ngFor="let children of menu.children">
-                <nb-alert status="info">{{children.title}}</nb-alert>
-            </div>
-            
+<div class="module-assignment-page">
+  <nb-card class="module-list-card">
+    <nb-card-body class="module-list-body" [nbSpinner]="loadingList" nbSpinnerStatus="primary">
+      <div class="module-toolbar">
+        <div class="module-heading">
+          <div class="module-heading-icon"><nb-icon icon="layers-outline"></nb-icon></div>
+          <div>
+            <h2>Assigned Modules</h2>
+            <p>{{ assignedModuleCount }} modules in {{ apiData.length }} menu groups</p>
+          </div>
         </div>
+
+        <div class="module-toolbar-actions">
+          <ngx-search-select
+            class="package-filter-select"
+            [placeholder]="'Search package'"
+            [options]="packageList"
+            [(ngModel)]="selectedPackageId"
+            (ngModelChange)="onPackageChange($event)"
+            displayKey="package_name"
+            valueKey="id"
+            noResultsText="No package found">
+          </ngx-search-select>
+
+          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="assign-module-button"
+            [disabled]="packageList.length === 0" (click)="openAssignPopup()">
+            <nb-icon icon="plus-outline"></nb-icon>
+            Assign Module
+          </button>
+        </div>
+      </div>
+
+      <div class="module-list-scroll">
+        <div *ngIf="apiData.length > 0; else emptyModuleList" class="module-group-list">
+          <section *ngFor="let menu of apiData" class="module-group-card">
+            <header class="module-group-header">
+              <div class="module-group-identity">
+                <span class="module-group-icon"><nb-icon icon="folder-outline"></nb-icon></span>
+                <div>
+                  <strong>{{ menu._title }}</strong>
+                  <span>{{ menu._children.length }} assigned modules</span>
+                </div>
+              </div>
+              <span class="module-group-count">{{ menu._children.length }}</span>
+            </header>
+
+            <div *ngIf="menu._children.length > 0; else emptyGroup" class="assigned-module-grid">
+              <article *ngFor="let child of menu._children" class="assigned-module-item">
+                <span class="assigned-module-icon"><nb-icon icon="file-text-outline"></nb-icon></span>
+                <div>
+                  <strong>{{ child._title }}</strong>
+                  <span>{{ child._link }}</span>
+                </div>
+              </article>
+            </div>
+
+            <ng-template #emptyGroup>
+              <div class="empty-module-group">No modules assigned in this group.</div>
+            </ng-template>
+          </section>
+        </div>
+
+        <ng-template #emptyModuleList>
+          <div *ngIf="!loadingList" class="module-empty-state">
+            <div><nb-icon icon="layers-outline"></nb-icon></div>
+            <h3>{{ selectedPackageId ? 'No modules assigned' : 'Select a package' }}</h3>
+            <p>{{ selectedPackageId ? 'Assign modules to make them available in this package.' : 'Choose a package to view its assigned modules.' }}</p>
+            <button *ngIf="selectedPackageId" nbButton status="primary" size="small" type="button" (click)="openAssignPopup()">Assign Module</button>
+          </div>
+        </ng-template>
+      </div>
     </nb-card-body>
-</nb-card>
+  </nb-card>
+</div>
+
+<div *ngIf="showAssignPopup" class="assignment-overlay" (click)="closeAssignPopup()">
+  <div class="assignment-dialog" role="dialog" aria-modal="true" aria-labelledby="assignment-title" (click)="$event.stopPropagation()">
+    <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate class="assignment-form">
+      <header class="assignment-header">
+        <div>
+          <span class="assignment-eyebrow">Package Access</span>
+          <h2 id="assignment-title">Assign Module Into Package</h2>
+          <p>Select a package, menu group, and one or more modules.</p>
+        </div>
+        <button type="button" class="assignment-close" aria-label="Close assignment form" [disabled]="isSubmitting" (click)="closeAssignPopup(fm)">
+          <nb-icon icon="close-outline"></nb-icon>
+        </button>
+      </header>
+
+      <div class="assignment-body" [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+        <div class="assignment-fields">
+          <div class="assignment-field">
+            <label>Package <span>*</span></label>
+            <ngx-search-select
+              name="package_id"
+              [placeholder]="'Search package'"
+              [options]="packageList"
+              [(ngModel)]="model.package_id"
+              (ngModelChange)="onAssignPackageChange($event)"
+              displayKey="package_name"
+              valueKey="id"
+              [required]="true"
+              noResultsText="No package found">
+            </ngx-search-select>
+            <div *ngIf="fm.submitted && !model.package_id" class="assignment-error">Package is required</div>
+          </div>
+
+          <div class="assignment-field">
+            <label>Parent Menu <span>*</span></label>
+            <ngx-search-select
+              name="parent_id"
+              [placeholder]="'Search parent menu'"
+              [options]="parentMenuList"
+              [(ngModel)]="model.parent_id"
+              (ngModelChange)="onParentMenuChange($event)"
+              displayKey="menu_name"
+              valueKey="id"
+              [required]="true"
+              noResultsText="No parent menu found">
+            </ngx-search-select>
+            <div *ngIf="fm.submitted && !model.parent_id" class="assignment-error">Parent menu is required</div>
+          </div>
+        </div>
+
+        <section class="module-picker" [nbSpinner]="isLoadingModules || isLoadingAssignedModules" nbSpinnerStatus="primary">
+          <div class="module-picker-header">
+            <div>
+              <strong>Modules <span>*</span></strong>
+              <small>{{ model.module_id.length }} selected</small>
+            </div>
+            <button *ngIf="availableModules.length > 0" type="button" class="select-all-modules" (click)="toggleAllModules()">
+              {{ areAllModulesSelected ? 'Clear all' : 'Select all' }}
+            </button>
+          </div>
+
+          <div *ngIf="moduleList.length > 0; else noModules" class="module-picker-grid">
+            <label *ngFor="let module of moduleList" class="module-option"
+              [class.selected]="isModuleSelected(module.id)"
+              [class.already-assigned]="isModuleAlreadyAssigned(module.id)">
+              <nb-checkbox
+                [checked]="isModuleSelected(module.id) || isModuleAlreadyAssigned(module.id)"
+                [disabled]="isModuleAlreadyAssigned(module.id)"
+                (checkedChange)="toggleModule(module.id, $event)">
+              </nb-checkbox>
+              <span class="module-option-icon"><nb-icon icon="file-text-outline"></nb-icon></span>
+              <span class="module-option-name">{{ module.menu_name || module.title || module.name }}</span>
+              <span *ngIf="isModuleAlreadyAssigned(module.id)" class="module-assigned-badge">Assigned</span>
+            </label>
+          </div>
+
+          <ng-template #noModules>
+            <div class="module-picker-empty">
+              {{ getModuleEmptyMessage() }}
+            </div>
+          </ng-template>
+
+          <div *ngIf="fm.submitted && model.module_id.length === 0" class="assignment-error">Select at least one module</div>
+        </section>
+      </div>
+
+      <footer class="assignment-footer">
+        <button nbButton status="basic" size="small" shape="semi-round" type="button" [disabled]="isSubmitting" (click)="closeAssignPopup(fm)">Cancel</button>
+        <button nbButton status="primary" size="small" shape="semi-round" type="submit" [disabled]="isSubmitting || isLoadingModules || isLoadingAssignedModules">
+          <nb-icon icon="save-outline"></nb-icon>
+          {{ isSubmitting ? 'Saving...' : 'Save Assignment' }}
+        </button>
+      </footer>
+    </form>
+  </div>
+</div>

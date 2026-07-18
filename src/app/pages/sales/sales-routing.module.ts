@@ -10,6 +10,7 @@ import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
 import { AddInvoiceComponent } from './add-invoice/add-invoice.component';
 import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 import { AddQuoteComponent } from './add-quote/add-quote.component';
+import { InvoiceListComponent } from './invoice-list/invoice-list.component';
 
 const routes: Routes = [
   {
@@ -18,6 +19,11 @@ const routes: Routes = [
     children: [
       {
         path:'add-customer',
+        component:AddCustomersComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'update-customer',
         component:AddCustomersComponent,
         canActivate: [authGuard]
       },
@@ -44,6 +50,16 @@ const routes: Routes = [
       {
         path:'add-invoice',
         component:AddInvoiceComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'update-invoice',
+        component:AddInvoiceComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'invoice-list',
+        component:InvoiceListComponent,
         canActivate: [authGuard]
       },
       {

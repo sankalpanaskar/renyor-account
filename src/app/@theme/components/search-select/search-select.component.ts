@@ -36,6 +36,7 @@ export class SearchSelectComponent {
 
   private onChange: (value: any) => void = () => {};
   private onTouched: () => void = () => {};
+  private wasOpenOnMouseDown = false;
 
   constructor(private hostElement: ElementRef<HTMLElement>) {}
 
@@ -92,18 +93,28 @@ export class SearchSelectComponent {
       : null;
   }
 
+  onInputMouseDown(): void {
+    this.wasOpenOnMouseDown = this.isOpen;
+  }
+
   toggleDropdown(event: Event): void {
     event.stopPropagation();
     if (this.disabled) {
       return;
     }
 
-    // Focus fires before click on the first interaction and already opens the
-    // dropdown. Toggling here would immediately close it again.
-    this.isOpen = true;
-    setTimeout(() => {
-      this.searchInput?.nativeElement.focus();
-    }, 0);
+    // On the first click, focus opens the dropdown before click fires. Capture
+    // the pre-focus state on mousedown so subsequent clicks can close it.
+    this.isOpen = !this.wasOpenOnMouseDown;
+
+    if (this.isOpen) {
+      setTimeout(() => {
+        this.searchInput?.nativeElement.focus();
+      }, 0);
+    } else {
+      this.searchText = '';
+      this.onTouched();
+    }
   }
 
   onInputFocus(event: Event): void {

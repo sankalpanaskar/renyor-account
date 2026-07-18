@@ -1,17 +1,22 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { HttpClient } from '@angular/common/http';
 import { PaymentTermOption } from '../../shared/payment-terms-popup/payment-terms-popup.component';
 import { TdsTermOption } from '../../shared/tds-popup/tds-popup.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../../environments/environment';
+
+type VendorDocumentField = 'document_1' | 'document_2';
+type VendorDocumentPreviewType = 'image' | 'pdf' | 'file';
 
 @Component({
   selector: 'ngx-add-vendors',
   templateUrl: './add-vendors.component.html',
   styleUrls: ['./add-vendors.component.scss']
 })
-export class AddVendorsComponent implements OnInit {
+export class AddVendorsComponent implements OnInit, OnDestroy {
   model: any = { bank_accounts: [] };
   isSubmitting: boolean = false;
   showAccountNumber: boolean[] = [];
@@ -20,6 +25,12 @@ export class AddVendorsComponent implements OnInit {
   showPaymentTermsPopup: boolean = false;
   document1File: File | null = null;
   document2File: File | null = null;
+  documentObjectUrls: Partial<Record<VendorDocumentField, string>> = {};
+  showDocumentPreview = false;
+  selectedDocumentUrl = '';
+  selectedDocumentViewerUrl: SafeResourceUrl | string = '';
+  selectedDocumentName = '';
+  selectedDocumentType: VendorDocumentPreviewType = 'file';
   showTdsPopup: boolean = false;
   paymentTerms: PaymentTermOption[] = [];
   tdsTerms: TdsTermOption[] = [];
@@ -32,6 +43,7 @@ export class AddVendorsComponent implements OnInit {
     private http: HttpClient,
     private route: ActivatedRoute,
     private router: Router,
+    private sanitizer: DomSanitizer,
   ) { }
 
   ngOnInit(): void {
@@ -50,6 +62,10 @@ export class AddVendorsComponent implements OnInit {
         this.loadVendorForEdit(this.vendorId);
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.revokeAllDocumentObjectUrls();
   }
 
   private loadVendorForEdit(vendorId: number): void {
@@ -513,8 +529,10 @@ export class AddVendorsComponent implements OnInit {
       && this.model.bank_accounts.some((_: any, index: number) => this.hasAccountNumberMismatch(index));
   }
 
-  onFileChange(files: File[], field: 'document_1' | 'document_2'): void {
+  onFileChange(files: File[], field: VendorDocumentField): void {
     const selectedFile = files && files.length > 0 ? files[0] : null;
+    this.setDocumentObjectUrl(field, selectedFile);
+
     if (field === 'document_1') {
       this.document1File = selectedFile;
       if (!this.model.document_1_name || !`${this.model.document_1_name}`.trim()) {
@@ -526,6 +544,113 @@ export class AddVendorsComponent implements OnInit {
     if (!this.model.document_2_name || !`${this.model.document_2_name}`.trim()) {
       this.model.document_2_name = selectedFile ? selectedFile.name : '';
     }
+  }
+
+  hasSelectedDocument(field: VendorDocumentField): boolean {
+    const selectedFile = field === 'document_1' ? this.document1File : this.document2File;
+    return !!(selectedFile || `${this.model?.[field] || ''}`.trim());
+  }
+
+  getDocumentPreviewUrl(field: VendorDocumentField): string {
+    const objectUrl = this.documentObjectUrls[field];
+    if (objectUrl) {
+      return objectUrl;
+    }
+
+    return this.getDocumentUrl(`${this.model?.[field] || ''}`);
+  }
+
+  getDocumentPreviewType(field: VendorDocumentField): VendorDocumentPreviewType {
+    const selectedFile = field === 'document_1' ? this.document1File : this.document2File;
+    return this.resolveDocumentType(selectedFile?.name || `${this.model?.[field] || ''}`, selectedFile?.type);
+  }
+
+  getDocumentDisplayName(field: VendorDocumentField): string {
+    const selectedFile = field === 'document_1' ? this.document1File : this.document2File;
+    const nameField = `${field}_name`;
+    return `${this.model?.[nameField] || selectedFile?.name || (field === 'document_1' ? 'Document 1' : 'Document 2')}`;
+  }
+
+  openDocumentPreview(field: VendorDocumentField): void {
+    const previewUrl = this.getDocumentPreviewUrl(field);
+    if (!previewUrl) {
+      return;
+    }
+
+    this.selectedDocumentUrl = previewUrl;
+    this.selectedDocumentName = this.getDocumentDisplayName(field);
+    this.selectedDocumentType = this.getDocumentPreviewType(field);
+    this.selectedDocumentViewerUrl = this.selectedDocumentType === 'pdf'
+      ? this.sanitizer.bypassSecurityTrustResourceUrl(previewUrl)
+      : previewUrl;
+    this.showDocumentPreview = true;
+  }
+
+  closeDocumentPreview(): void {
+    this.showDocumentPreview = false;
+    this.selectedDocumentUrl = '';
+    this.selectedDocumentViewerUrl = '';
+    this.selectedDocumentName = '';
+    this.selectedDocumentType = 'file';
+  }
+
+  openDocumentInNewTab(): void {
+    if (this.selectedDocumentUrl) {
+      window.open(this.selectedDocumentUrl, '_blank', 'noopener,noreferrer');
+    }
+  }
+
+  private setDocumentObjectUrl(field: VendorDocumentField, file: File | null): void {
+    this.revokeDocumentObjectUrl(field);
+    if (file) {
+      this.documentObjectUrls[field] = URL.createObjectURL(file);
+    }
+  }
+
+  private revokeDocumentObjectUrl(field: VendorDocumentField): void {
+    const objectUrl = this.documentObjectUrls[field];
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      delete this.documentObjectUrls[field];
+    }
+  }
+
+  private revokeAllDocumentObjectUrls(): void {
+    this.revokeDocumentObjectUrl('document_1');
+    this.revokeDocumentObjectUrl('document_2');
+  }
+
+  private getDocumentUrl(path: string): string {
+    if (!path) {
+      return '';
+    }
+
+    if (/^(https?:|blob:|data:)/i.test(path)) {
+      return path;
+    }
+
+    const baseUrl = (environment as any)?.apiBaseUrl || '';
+    return `${baseUrl}${path}`.replace(/([^:]\/)\/+/g, '$1');
+  }
+
+  private resolveDocumentType(pathOrName: string, mimeType = ''): VendorDocumentPreviewType {
+    const normalizedMimeType = `${mimeType || ''}`.toLowerCase();
+    if (normalizedMimeType.startsWith('image/')) {
+      return 'image';
+    }
+    if (normalizedMimeType === 'application/pdf') {
+      return 'pdf';
+    }
+
+    const normalizedPath = `${pathOrName || ''}`.split(/[?#]/)[0].toLowerCase();
+    if (/\.(png|jpg|jpeg|gif|webp|bmp|svg)$/.test(normalizedPath)) {
+      return 'image';
+    }
+    if (normalizedPath.endsWith('.pdf')) {
+      return 'pdf';
+    }
+
+    return 'file';
   }
 
   private appendFormDataValue(formData: FormData, key: string, value: any): void {
@@ -596,6 +721,10 @@ export class AddVendorsComponent implements OnInit {
         payload.custom_field = customFieldData;
       }
 
+      // Keep existing vendor documents unless a replacement File is selected.
+      delete payload.document_1;
+      delete payload.document_2;
+
       const formData = new FormData();
       Object.keys(payload).forEach((key: string) => {
         this.appendFormDataValue(formData, key, payload[key]);
@@ -627,6 +756,8 @@ export class AddVendorsComponent implements OnInit {
             this.showAccountNumber = [false];
             this.document1File = null;
             this.document2File = null;
+            this.closeDocumentPreview();
+            this.revokeAllDocumentObjectUrls();
             fm.resetForm(this.model);
             this.toastrService.success(res.message, 'Added');
           }

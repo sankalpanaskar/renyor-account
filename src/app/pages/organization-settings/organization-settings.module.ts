@@ -10,8 +10,6 @@ import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './profile/profile.component';
 import { AddUserComponent } from './add-user/add-user.component';
 import { UserListComponent } from './user-list/user-list.component';
-import { UserButtonComponent } from './user-list/custom-btn.component';
-import { Ng2SmartTableModule } from 'ng2-smart-table';
 
 
 @NgModule({
@@ -21,8 +19,7 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     AddRolesComponent,
     ProfileComponent,
     AddUserComponent,
-    UserListComponent,
-    UserButtonComponent
+    UserListComponent
   ],
   imports: [
     CommonModule,
@@ -39,8 +36,7 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     NbSpinnerModule,
     NbListModule,
     NbAlertModule,
-    NbCheckboxModule,
-    Ng2SmartTableModule
+    NbCheckboxModule
   ]
 })
 export class OrganizationSettingsModule { }

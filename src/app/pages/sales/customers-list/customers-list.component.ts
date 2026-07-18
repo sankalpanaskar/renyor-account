@@ -140,6 +140,36 @@ export class CustomersListComponent implements OnInit{
     this.getCustomerList();
   }
 
+  get businessCustomersCount(): number {
+    return this.allCustomers.filter((customer: any) =>
+      `${customer?.customer_type || ''}`.trim().toLowerCase() === 'business'
+    ).length;
+  }
+
+  get individualCustomersCount(): number {
+    return this.allCustomers.filter((customer: any) =>
+      `${customer?.customer_type || ''}`.trim().toLowerCase() === 'individual'
+    ).length;
+  }
+
+  getCustomerName(customer: any): string {
+    const contactName = `${customer?.primary_contact_f_name || ''} ${customer?.primary_contact_l_name || ''}`.trim();
+    return customer?.display_name || customer?.company_name || contactName || '-';
+  }
+
+  getCustomerInitials(customer: any): string {
+    return this.getCustomerName(customer)
+      .split(/\s+/)
+      .filter((part: string) => !!part)
+      .slice(0, 2)
+      .map((part: string) => part.charAt(0).toUpperCase())
+      .join('') || 'CU';
+  }
+
+  getCustomerLocation(customer: any): string {
+    return customer?.billing_city || customer?.shipping_city || customer?.source_of_supply || '-';
+  }
+
   getCustomerList() {
     this.loading = true;
     this.globalService.getCustomerListByTenant(34).subscribe({
@@ -196,8 +226,16 @@ export class CustomersListComponent implements OnInit{
     });
   }
 
+  clearSearch(): void {
+    this.onSearch('');
+  }
+
+  trackByCustomer(index: number, customer: any): number | string {
+    return customer?.id ?? index;
+  }
+
   onEdit(customer: any): void {
-    this.router.navigate(['pages/sales/add-customer'], {
+    this.router.navigate(['pages/sales/update-customer'], {
       state: {
         isEditMode: true,
         customerData: customer,

@@ -1,55 +1,187 @@
-<div class="asset-list-container">
-  <div class="row">
-    <div class="col-lg-12">
-      <nb-card>
-        
-            <nb-card-header class="section-header d-flex justify-content-between align-items-center">
-            <span>Company List</span>
-
-            <!-- Right-side button -->
-            <button
-                nbButton
-                status="primary"
-                size="small"
-                shape="semi-round"
-                (click)="gotoAddPackage()"
-            >
-                Add Company
-            </button>
-            </nb-card-header>
-
-        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
-        
-          <!-- 🔹 Loading Spinner Overlay -->
-          <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
-            <nb-spinner size="large" status="primary"></nb-spinner>
-          </div>
-
-          <!-- 🔹 Table Section -->
-          <div [class.content-blur]="loading">
-            <div class="row mt-3">
-              <div class="col-12" style="padding-left: 30px;padding-right: 30px;">
-                <input
-                  type="text"
-                  nbInput
-                  fullWidth
-                  shape="semi-round"
-                  #search
-                  class="search"
-                  placeholder="Search Brand..." (keydown.enter)="onSearch(search.value)"/>
-              </div>
-
-              <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
-                <ng2-smart-table
-                  [settings]="settings"
-                  [source]="source">
-                </ng2-smart-table>
-              </div>
+<div *ngIf="showCompanyPopup" class="customer-dialog-overlay" (click)="closeCompanyPopup()">
+  <div class="customer-dialog-wrapper compact-access-dialog company-details-dialog" role="dialog" aria-modal="true" aria-label="Company details" (click)="$event.stopPropagation()">
+    <div class="customer-dialog-shell">
+      <div class="dialog-header">
+        <div class="entity-dialog-identity">
+          <div class="entity-dialog-avatar company-dialog-avatar">{{ getCompanyInitials(selectedCompany) }}</div>
+          <div class="dialog-header-copy">
+            <span class="customer-code-badge">{{ selectedCompany?.package_name || selectedCompany?.package_type || 'Company' }}</span>
+            <div class="customer-title">{{ selectedCompany?.name || 'Company Details' }}</div>
+            <div class="entity-dialog-meta">
+              <span>{{ selectedCompany?.email || 'No email' }}</span>
+              <span aria-hidden="true">•</span>
+              <span>{{ selectedCompany?.phone || 'No phone' }}</span>
             </div>
           </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeCompanyPopup()" aria-label="Close company details">
+          <nb-icon icon="close-outline"></nb-icon>
+        </button>
+      </div>
 
-        </nb-card-body>
-      </nb-card>
+      <div class="popup-scroll-body">
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Company Overview</div>
+          <div class="info-card-grid three-columns">
+            <div class="info-card" *ngFor="let field of [
+              { label: 'Organization', value: selectedCompany?.name || '-' },
+              { label: 'Package', value: selectedCompany?.package_name || '-' },
+              { label: 'Package Type', value: selectedCompany?.package_type || '-' },
+              { label: 'Industry', value: selectedCompany?.industry || '-' },
+              { label: 'Status', value: getCompanyStatus(selectedCompany) },
+              { label: 'Website', value: selectedCompany?.website || '-' }
+            ]">
+              <div class="section-label">{{ field.label }}</div>
+              <div class="section-value">{{ field.value }}</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="dialog-split-grid">
+          <section class="dialog-group">
+            <div class="dialog-group-title">Contact</div>
+            <div class="info-card-grid two-columns">
+              <div class="info-card" *ngFor="let field of [
+                { label: 'Email', value: selectedCompany?.email || '-' },
+                { label: 'Phone', value: selectedCompany?.phone || '-' },
+                { label: 'PAN', value: selectedCompany?.pan || '-' },
+                { label: 'GST', value: selectedCompany?.gst || '-' }
+              ]">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value">{{ field.value }}</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="dialog-group">
+            <div class="dialog-group-title">Address</div>
+            <div class="info-card-grid two-columns">
+              <div class="info-card" *ngFor="let field of [
+                { label: 'Country', value: selectedCompany?.country || '-' },
+                { label: 'State', value: selectedCompany?.state || '-' },
+                { label: 'City', value: selectedCompany?.city || '-' },
+                { label: 'Pincode', value: selectedCompany?.pin || '-' }
+              ]">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value">{{ field.value }}</div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Registered Address</div>
+          <div class="info-card">
+            <div class="section-value">{{ selectedCompany?.address || 'No address available.' }}</div>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
+</div>
+
+<div class="entity-list-container company-list-page">
+  <section class="entity-summary-grid" aria-label="Company summary">
+    <article class="entity-summary-card summary-blue">
+      <div class="entity-summary-icon"><nb-icon icon="briefcase-outline"></nb-icon></div>
+      <div><span>Total companies</span><strong>{{ allCompanies.length }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-green">
+      <div class="entity-summary-icon"><nb-icon icon="checkmark-circle-2-outline"></nb-icon></div>
+      <div><span>Active</span><strong>{{ activeCompaniesCount }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-orange">
+      <div class="entity-summary-icon"><nb-icon icon="minus-circle-outline"></nb-icon></div>
+      <div><span>Inactive</span><strong>{{ inactiveCompaniesCount }}</strong></div>
+    </article>
+  </section>
+
+  <nb-card class="entity-list-card">
+    <nb-card-body class="entity-list-body" [nbSpinner]="loading" nbSpinnerStatus="primary">
+      <div class="entity-catalog-toolbar">
+        <div class="entity-catalog-heading"><h2>Company List</h2></div>
+        <div class="entity-catalog-actions">
+          <div class="entity-search-wrap">
+            <nb-icon icon="search-outline"></nb-icon>
+            <input type="search" aria-label="Search companies" placeholder="Search name, package, email or location"
+              [ngModel]="searchText" (ngModelChange)="onSearch($event)">
+            <button *ngIf="searchText" type="button" aria-label="Clear search" (click)="clearSearch()">
+              <nb-icon icon="close-outline"></nb-icon>
+            </button>
+          </div>
+          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddCompany()">
+            <nb-icon icon="plus-outline"></nb-icon>
+            Add Company
+          </button>
+        </div>
+      </div>
+
+      <div class="entity-table-shell">
+        <div class="entity-table-responsive">
+          <table class="entity-table company-table">
+            <thead>
+              <tr>
+                <th>Company</th>
+                <th>Package</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Status</th>
+                <th class="entity-actions-heading">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of apiData; trackBy: trackByCompany" class="entity-row" tabindex="0"
+                (click)="openCompanyPopup(item)" (keydown.enter)="openCompanyPopup(item)">
+                <td data-label="Company">
+                  <div class="entity-identity">
+                    <div class="entity-avatar company-avatar">{{ getCompanyInitials(item) }}</div>
+                    <div class="entity-identity-copy">
+                      <strong>{{ item?.name || '-' }}</strong>
+                      <span>{{ item?.industry || item?.package_type || 'Company' }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Package"><span class="entity-badge type-badge">{{ item?.package_name || '-' }}</span></td>
+                <td data-label="Email"><span class="entity-cell-text">{{ item?.email || '-' }}</span></td>
+                <td data-label="Phone"><span class="entity-cell-text">{{ item?.phone || '-' }}</span></td>
+                <td data-label="Status">
+                  <span class="entity-badge company-status-badge" [class.active-status]="isCompanyActive(item)" [class.inactive-status]="!isCompanyActive(item)">
+                    {{ getCompanyStatus(item) }}
+                  </span>
+                </td>
+                <td data-label="Actions" class="entity-actions-cell">
+                  <div class="entity-action-group">
+                    <button type="button" class="entity-action-icon view-action" title="View company" aria-label="View company"
+                      (click)="$event.stopPropagation(); openCompanyPopup(item)">
+                      <nb-icon icon="eye-outline"></nb-icon>
+                    </button>
+                    <button type="button" class="entity-action-icon edit-action" title="Edit company" aria-label="Edit company"
+                      (click)="$event.stopPropagation(); editCompany(item)">
+                      <nb-icon icon="edit-2-outline"></nb-icon>
+                    </button>
+                    <button type="button" class="entity-action-icon deactivate-action" title="Deactivate company" aria-label="Deactivate company"
+                      [disabled]="!isCompanyActive(item)" (click)="$event.stopPropagation(); deactivateCompany(item)">
+                      <nb-icon icon="power-outline"></nb-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr *ngIf="!apiData || apiData.length === 0" class="entity-empty-row">
+                <td colspan="6">
+                  <div class="entity-empty-state">
+                    <div><nb-icon icon="briefcase-outline"></nb-icon></div>
+                    <h3>{{ searchText ? 'No matching companies' : 'No companies yet' }}</h3>
+                    <p>{{ searchText ? 'Try a different search term.' : 'Add your first company to get started.' }}</p>
+                    <button *ngIf="searchText" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
+                    <button *ngIf="!searchText" type="button" nbButton status="primary" (click)="gotoAddCompany()">Add company</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </nb-card-body>
+  </nb-card>
 </div>

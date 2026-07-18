@@ -1,0 +1,208 @@
+@import '../../shared/styles/compact-entity-list';
+
+.invoice-table {
+  min-width: 1120px;
+}
+
+.invoice-table thead tr,
+.invoice-table tbody .entity-row {
+  grid-template-columns:
+    minmax(165px, 0.9fr)
+    minmax(210px, 1.25fr)
+    minmax(125px, 0.7fr)
+    minmax(125px, 0.7fr)
+    minmax(130px, 0.75fr)
+    minmax(105px, 0.6fr)
+    minmax(175px, 0.9fr);
+}
+
+.invoice-avatar,
+.invoice-dialog-avatar {
+  color: #3366ff;
+  background: linear-gradient(145deg, #edf3ff, #dfe9ff);
+}
+
+.invoice-avatar nb-icon,
+.invoice-dialog-avatar nb-icon {
+  font-size: 17px;
+}
+
+.invoice-total,
+.amount-value {
+  color: #168354;
+  font-weight: 800;
+}
+
+.customer-name {
+  color: #2d3958;
+  font-weight: 700;
+}
+
+.summary-currency {
+  font-size: 15px !important;
+}
+
+.invoice-status-badge.paid-status {
+  color: #168354;
+  background: #eaf8f1;
+}
+
+.invoice-status-badge.unpaid-status {
+  color: #a6660e;
+  background: #fff5e6;
+}
+
+.invoice-status-badge.partial-status {
+  color: #265bc2;
+  background: #edf3ff;
+}
+
+.invoice-status-badge.overdue-status {
+  color: #cf4055;
+  background: #fff0f2;
+}
+
+.entity-action-icon.download-action {
+  color: #7850b5;
+  background: #f3edff;
+}
+
+.entity-action-icon.download-action:hover:not(:disabled) {
+  border-color: #d3c0f1;
+  background: #ece2ff;
+}
+
+.entity-action-icon.delete-action {
+  color: #d94359;
+  background: #fff0f2;
+}
+
+.entity-action-icon.delete-action:hover {
+  border-color: #f0b4bd;
+  background: #ffe4e8;
+}
+
+.invoice-details-dialog {
+  width: min(100%, 940px);
+}
+
+.invoice-popup-table-wrap {
+  overflow-x: auto;
+  border: 1px solid #e5eaf2;
+  border-radius: 9px;
+}
+
+.invoice-popup-table {
+  width: 100%;
+  min-width: 620px;
+  border-collapse: collapse;
+}
+
+.invoice-popup-table th,
+.invoice-popup-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #edf1f7;
+  color: #34415e;
+  font-size: 11px;
+  text-align: left;
+}
+
+.invoice-popup-table th {
+  background: #f7f9fc;
+  color: #8491ab;
+  font-size: 9px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.invoice-popup-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.invoice-long-copy {
+  min-height: 48px;
+  color: #4f5c78;
+  font-size: 11px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+.invoice-popup-actions {
+  padding-top: 2px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.invoice-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2100;
+  padding: 16px;
+  background: rgba(25, 35, 58, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invoice-confirm-dialog {
+  width: min(100%, 390px);
+  padding: 24px;
+  border: 1px solid #e1e7f0;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 65px rgba(23, 32, 52, 0.28);
+  text-align: center;
+}
+
+.invoice-confirm-icon {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 13px;
+  border-radius: 14px;
+  background: #fff0f2;
+  color: #d94359;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.invoice-confirm-icon nb-icon {
+  font-size: 22px;
+}
+
+.invoice-confirm-dialog h3 {
+  margin: 0;
+  color: #25324d;
+  font-size: 18px;
+}
+
+.invoice-confirm-dialog p {
+  margin: 8px 0 20px;
+  color: #7f8ba3;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.invoice-confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 767px) {
+  .invoice-table {
+    min-width: 0;
+  }
+
+  .invoice-popup-actions,
+  .invoice-confirm-actions {
+    flex-direction: column-reverse;
+  }
+
+  .invoice-popup-actions button,
+  .invoice-confirm-actions button {
+    width: 100%;
+  }
+}

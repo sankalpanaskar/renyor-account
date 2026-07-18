@@ -36,6 +36,14 @@ export class VendorsListComponent implements OnInit {
     this.getVendorList();
   }
 
+  get msmeVendorsCount(): number {
+    return this.allVendors.filter((vendor: any) => this.isMsmeRegistered(vendor)).length;
+  }
+
+  get vendorsWithDocumentsCount(): number {
+    return this.allVendors.filter((vendor: any) => this.getVendorDocuments(vendor).length > 0).length;
+  }
+
   openVendorPopup(vendor: any): void {
     this.selectedVendor = vendor;
     this.showVendorPopup = true;
@@ -135,6 +143,27 @@ export class VendorsListComponent implements OnInit {
         String(value || '').toLowerCase().includes(searchText)
       );
     });
+  }
+
+  clearSearch(): void {
+    this.onSearch('');
+  }
+
+  getVendorInitials(vendor: any): string {
+    return this.getVendorName(vendor)
+      .split(/\s+/)
+      .filter((part: string) => !!part)
+      .slice(0, 2)
+      .map((part: string) => part.charAt(0).toUpperCase())
+      .join('') || 'VE';
+  }
+
+  getVendorLocation(vendor: any): string {
+    return vendor?.billing_city || vendor?.shipping_city || vendor?.source_of_supply || '-';
+  }
+
+  trackByVendor(index: number, vendor: any): number | string {
+    return vendor?.id ?? index;
   }
 
   gotoAddVendorPage(): void {

@@ -17,6 +17,15 @@
 
 @import './layout';
 @import './overrides';
+@import '../../pages/shared/styles/compact-entity-list';
+
+ngx-setup-menu {
+  @import '../../pages/admin-setting/setup-menu/setup-menu.component';
+}
+
+ngx-assign-module-into-package {
+  @import '../../pages/admin-setting/assign-module-into-package/assign-module-into-package.component';
+}
 
 // install the framework and custom global styles
 @include nb-install() {

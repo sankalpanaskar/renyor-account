@@ -1,6 +1,6 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate class="invoice-form-shell">
-  <nb-card class="invoice-form-card">
-    <nb-card-header>New Invoice</nb-card-header>
+  <nb-card class="invoice-form-card add-form-card">
+    <nb-card-header>{{ isEditMode ? 'Update Invoice' : 'New Invoice' }}</nb-card-header>
 
     <nb-card-body class="invoice-form-body" [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
       <div class="row">
@@ -349,12 +349,35 @@
           </div>
         </div>
       </div>
+
+      <div class="row invoice-additional-details-row">
+        <div class="col-lg-6 mb-10">
+          <div class="notes-panel">
+            <label class="small-label">Terms &amp; Conditions</label>
+            <textarea nbInput fullWidth shape="semi-round" rows="4"
+              placeholder="Enter the terms and conditions to be displayed on the invoice"
+              name="terms_and_conditions" [(ngModel)]="model.terms_and_conditions"></textarea>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <div class="notes-panel">
+            <label class="small-label">Attach File to Invoice</label>
+            <ngx-file-upload
+              inputName="invoice_attachment"
+              helperText="Upload one PDF, Excel file, or image"
+              [multiple]="false"
+              (filesChange)="onInvoiceFilesChange($event)">
+            </ngx-file-upload>
+          </div>
+        </div>
+      </div>
     </nb-card-body>
 
     <nb-card-footer>
       <div class="footer-actions">
         <button nbButton status="primary" shape="semi-round" hero type="submit" [disabled]="isSubmitting">
-          Save Invoice
+          {{ isEditMode ? 'Update Invoice' : 'Save Invoice' }}
         </button>
       </div>
     </nb-card-footer>

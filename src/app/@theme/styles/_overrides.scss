@@ -1,9 +1,46 @@
 @import './themes';
 
 @mixin nb-overrides() {
+  .layout-container .content .columns nb-layout-column {
+    padding: 10px !important;
+  }
+
+  .layout-container .content .columns nb-layout-column nb-card.add-form-card {
+    height: auto !important;
+    max-height: calc(99vh - 6rem) !important;
+    max-height: calc(99dvh - 6rem) !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .layout-container .content .columns nb-layout-column nb-card.add-form-card > nb-card-header,
+  .layout-container .content .columns nb-layout-column nb-card.add-form-card > nb-card-footer {
+    flex: 0 0 auto;
+  }
+
+  .layout-container .content .columns nb-layout-column nb-card.add-form-card > nb-card-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
+  .layout-container .content .columns nb-layout-column nb-card.add-form-card > nb-card-footer {
+    padding: 10px 30px !important;
+  }
+
   nb-card-body {
     overflow-x: hidden;
     overflow-y: auto;
+  }
+
+  .layout-container .content .columns nb-layout-column ng2-smart-table table td {
+    font-size: 14px !important;
+  }
+
+  .layout-container .content .columns nb-layout-column ng2-smart-table table th {
+    font-size: 12px !important;
   }
 
   nb-select.size-medium button {

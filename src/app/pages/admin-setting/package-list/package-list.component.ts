@@ -1,195 +1,129 @@
 import { Component, OnInit } from '@angular/core';
-import { GlobalService } from '../../../services/global.service';
-import { NbDialogService, NbToastrService } from '@nebular/theme';
-import { DatePipe } from '@angular/common';
-import { LocalDataSource } from 'ng2-smart-table';
+import { NbToastrService } from '@nebular/theme';
 import { Router } from '@angular/router';
-import { PackageButtonComponent } from './custom-btn.component';
+import { GlobalService } from '../../../services/global.service';
 
 @Component({
   selector: 'ngx-package-list',
   templateUrl: './package-list.component.html',
   styleUrls: ['./package-list.component.scss']
 })
-export class PackageListComponent implements OnInit{
- source: LocalDataSource = new LocalDataSource();
-
-  settings = {
-    pager: {
-      display: true,
-      perPage: 10
-    },
-    actions: false, // disable default actions
-    columns: {
-      type: {
-        title: 'Type',
-        width: '5%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      name: {
-        title: 'Name',
-        width: '15%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      basePrice: {
-        title: 'Base Price',
-        width: '10%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      offerPrice: {
-        title: 'Offer Price',
-        width: '10%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      finalPrice: {
-        title: 'Final Price',
-        width: '10%',
-        type: 'string',
-        filter: false,
-        editable: false
-      },
-      description: {
-        title: 'Description',
-        width: '25%',
-        type: 'string',
-        filter: false,
-        editable: false
-      }, 
-      status: {
-        title: 'Status',
-        width: '5%',
-        filter: false,
-        editable: false,
-        type: 'html',
-        valuePrepareFunction: (cell: any) => {
-          console.log("cell value---", cell);
-          if (cell === 1) {
-            return `<h6><span class="badge rounded-pill bg-success text-white pl-2 pr-2 custom-badge">Active</span></h6>`;
-          }
-          else if(cell === 0){
-            return `<h6><span class="badge rounded-pill bg-danger text-white pl-2 pr-2 custom-badge">Not Active</span></h6>`;
-          }
-        }
-      },
-      Action: {
-        title: 'Action',
-        width: '10%',
-        type: 'custom',
-        filter: false,
-        renderComponent: PackageButtonComponent,
-        onComponentInitFunction: (instance: any) => {
-          instance.delete.subscribe((rowData: any) => {
-            //this.onDelete(rowData);
-          });
-          instance.edit.subscribe((rowData: any) => {
-            this.onEdit(rowData);
-          });
-        },
-      },
-
-    },
-  };
-  model: any = [];
-  isSubmitting: boolean = false;
-  loading: boolean = false; // <-- Add this to your class
-  apiData: any = [];
-  lastSearchForm: any; // add this variable on top of your component
+export class PackageListComponent implements OnInit {
+  allPackages: any[] = [];
+  apiData: any[] = [];
+  searchText = '';
+  loading = false;
+  showPackagePopup = false;
+  selectedPackage: any = null;
 
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private router : Router,
-    private dialogService: NbDialogService,
-    private datePipe: DatePipe
-  ) { }
+    private router: Router,
+  ) {}
 
+  get activePackagesCount(): number {
+    return this.allPackages.filter((item: any) => this.isPackageActive(item)).length;
+  }
+
+  get inactivePackagesCount(): number {
+    return this.allPackages.length - this.activePackagesCount;
+  }
 
   ngOnInit(): void {
     this.getPackage();
   }
 
-  getPackage() {
-      this.loading = true;
-      this.globalService.gePackageList().subscribe({
-        next: (res:any) => {
-          console.log(res);
-          this.apiData = res.data; // ✅ Store API data here first
-           const mappedData = this.apiData.map((item, index) => ({
-            type        : item.package_type,
-            name        : item.package_name,
-            basePrice   : item.base_price,
-            offerPrice  : item.offer_price,
-            finalPrice  : item.final_price,
-            description : item.package_details,
-            status      : item.status,
-            fullData    : item, // ✅ include full object
-
-          }));
-          this.source.load(mappedData);
-          this.loading = false;
-        },
-        error: (err) => {
-          this.toastrService.danger(err, 'Failed');
-          this.loading = false;
-        },
-      });
+  getPackage(): void {
+    this.loading = true;
+    this.globalService.gePackageList().subscribe({
+      next: (res: any) => {
+        this.allPackages = res?.data || res || [];
+        this.apiData = [...this.allPackages];
+        this.onSearch(this.searchText);
+        this.loading = false;
+      },
+      error: (err: any) => {
+        this.toastrService.danger(err?.message || err, 'Failed');
+        this.loading = false;
+      },
+    });
   }
 
-  // onDelete(rowData: any) {
-  //   const brandData = rowData.fullData; // ✅ full object from API
-  //   console.log("asset data delete",brandData);
-  //   var data = {
-  //     id : brandData.id
-  //   }
-  //   this.loading = true;
-  //   this.globalService.changeBrandStatus(data).subscribe({
-  //     next:(res:any) => {
-  //       this.loadPendingList();
-  //         this.toastrService.success(res.message,'Brand Status Change');
-  //         this.loading = false;
-  //     },
-  //     error:(error:any) => {
-  //         this.toastrService.danger(error.message, 'Brand Status Change Failed');
-  //         this.loading = false;
-  //     }
-  //   })
-  // }
-
-  onEdit(rowData: any) {
-    const brandData = rowData.fullData;
-
-    // const dialogRef = this.dialogService.open(AddBrandComponent, {
-    //   context: { brandData: brandData },   // 👈 pass data to dialog
-    //   closeOnBackdropClick: true,
-    //   hasScroll: true,
-    // });
-
-    // dialogRef.onClose.subscribe(() => {
-    //   this.loadPendingList();              // 👈 refresh list on close
-    // });
-  }
-  
   onSearch(query: string = ''): void {
-    this.source.setFilter([
-      { field: 'name', search: query },
-    ], false);
+    this.searchText = query || '';
+    const searchValue = this.searchText.trim().toLowerCase();
 
-    if (this.source.count() === 0) {
-      this.source.reset();
+    if (!searchValue) {
+      this.apiData = [...this.allPackages];
+      return;
     }
+
+    this.apiData = this.allPackages.filter((item: any) => {
+      const values = [
+        item?.package_name,
+        item?.package_type,
+        item?.package_details,
+        item?.base_price,
+        item?.offer_price,
+        item?.final_price,
+        this.getPackageStatus(item),
+      ];
+
+      return values.some((value: any) => String(value ?? '').toLowerCase().includes(searchValue));
+    });
   }
 
-  gotoAddPackage() {
+  clearSearch(): void {
+    this.onSearch('');
+  }
+
+  isPackageActive(item: any): boolean {
+    const status = item?.status;
+    return status === 1 || status === true || `${status}`.trim().toLowerCase() === 'active';
+  }
+
+  getPackageStatus(item: any): string {
+    return this.isPackageActive(item) ? 'Active' : 'Inactive';
+  }
+
+  getPackageType(item: any): string {
+    return item?.package_type || item?.type || '-';
+  }
+
+  formatCurrency(value: any): string {
+    if (value === null || value === undefined || `${value}`.trim() === '') {
+      return '-';
+    }
+
+    const numericValue = Number(`${value}`.replace(/,/g, ''));
+    if (Number.isNaN(numericValue)) {
+      return String(value);
+    }
+
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(numericValue);
+  }
+
+  trackByPackage(index: number, item: any): number | string {
+    return item?.id ?? item?.package_id ?? index;
+  }
+
+  openPackagePopup(item: any): void {
+    this.selectedPackage = item;
+    this.showPackagePopup = true;
+  }
+
+  closePackagePopup(): void {
+    this.showPackagePopup = false;
+    this.selectedPackage = null;
+  }
+
+  gotoAddPackage(): void {
     this.router.navigate(['pages/admin-setting/add-package']);
   }
 }
-
-

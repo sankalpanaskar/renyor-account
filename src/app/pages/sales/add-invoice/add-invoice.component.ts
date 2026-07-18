@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
 import { GlobalService } from '../../../services/global.service';
+import { Router } from '@angular/router';
 
 interface InvoiceItemRow {
   item_id: string | number;
@@ -62,8 +63,11 @@ interface InvoiceItemOption {
 })
 export class AddInvoiceComponent implements OnInit {
   isSubmitting = false;
+  isEditMode = false;
+  invoiceId: string | number | null = null;
   showInvoiceNumberPopup = false;
   showPaymentTermsPopup = false;
+  uploadedInvoiceFiles: File[] = [];
   today = this.normalizeDate(new Date());
   dueDateMin = this.today;
   customerOptions: InvoiceCustomerOption[] = [];
@@ -83,6 +87,7 @@ export class AddInvoiceComponent implements OnInit {
     salesperson: '',
     subject: '',
     customer_notes: 'Looking forward for your business.',
+    terms_and_conditions: '',
     additional_tax: '',
     adjustment_label: 'Adjustment',
     adjustment_value: 0
@@ -98,7 +103,8 @@ export class AddInvoiceComponent implements OnInit {
 
   constructor(
     private toastrService: NbToastrService,
-    private globalService: GlobalService
+    private globalService: GlobalService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -110,7 +116,72 @@ export class AddInvoiceComponent implements OnInit {
     this.model.invoice_date = this.normalizeDate(new Date());
     this.model.due_date = this.normalizeDate(new Date());
     this.dueDateMin = this.model.invoice_date;
-    this.addRow();
+    this.configureEditMode();
+
+    if (this.itemRows.length === 0) {
+      this.addRow();
+    }
+  }
+
+  private configureEditMode(): void {
+    const navigationState = window.history.state || {};
+    const invoice = navigationState?.invoiceData;
+
+    if (!navigationState?.isEditMode || !invoice) {
+      return;
+    }
+
+    this.isEditMode = true;
+    this.invoiceId = invoice?.invoice_id ?? invoice?.id ?? null;
+    this.model = {
+      ...this.model,
+      customer_id: invoice?.customer_id ?? invoice?.customer?.id ?? '',
+      invoice_no: invoice?.invoice_no ?? invoice?.invoice_number ?? '',
+      order_no: invoice?.order_no ?? invoice?.order_number ?? '',
+      invoice_date: this.normalizeDate(invoice?.invoice_date ?? invoice?.date ?? new Date()),
+      term: invoice?.term ?? invoice?.payment_term ?? 'Due on Receipt',
+      due_date: this.normalizeDate(invoice?.due_date ?? invoice?.invoice_date ?? new Date()),
+      salesperson: invoice?.salesperson ?? invoice?.sales_person ?? '',
+      subject: invoice?.subject ?? '',
+      customer_notes: invoice?.customer_notes ?? '',
+      terms_and_conditions: invoice?.terms_and_conditions ?? invoice?.terms_conditions ?? '',
+      adjustment_label: invoice?.adjustment_label ?? 'Adjustment',
+      adjustment_value: Number(invoice?.adjustment_value ?? invoice?.adjustment ?? 0),
+    };
+
+    this.dueDateMin = this.model.invoice_date;
+    this.itemRows = this.getInvoiceItems(invoice).map((item: any) => ({
+      item_id: item?.item_id ?? item?.id ?? '',
+      item_details: item?.item_name ?? item?.item_details ?? item?.name ?? '',
+      item_description: item?.item_description ?? item?.description ?? '',
+      hsn_sac: item?.hsn_sac ?? item?.hsn_code ?? item?.sac ?? '',
+      quantity: Number(item?.quantity ?? 1),
+      rate: this.formatDecimalValue(item?.rate ?? item?.selling_price ?? 0),
+      tax: item?.tax ?? item?.tax_name ?? 'Non-Taxable',
+      item_unit: item?.unit ?? item?.item_unit ?? '',
+      item_type: item?.item_type ?? item?.type ?? '',
+      item_list_open: false,
+      item_is_manual: !!item?.is_manual,
+    }));
+  }
+
+  private getInvoiceItems(invoice: any): any[] {
+    const rawItems = invoice?.items ?? invoice?.invoice_items ?? invoice?.details ?? [];
+
+    if (Array.isArray(rawItems)) {
+      return rawItems;
+    }
+
+    if (typeof rawItems === 'string') {
+      try {
+        const parsedItems = JSON.parse(rawItems);
+        return Array.isArray(parsedItems) ? parsedItems : [];
+      } catch {
+        return [];
+      }
+    }
+
+    return [];
   }
 
   fetchCustomers(): void {
@@ -188,6 +259,10 @@ export class AddInvoiceComponent implements OnInit {
           { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' },
           ...mappedRates.filter((option: InvoiceTaxOption) => option.rate > 0)
         ];
+        this.itemRows = this.itemRows.map((row: InvoiceItemRow) => ({
+          ...row,
+          tax: this.getTaxFormLabel(row.tax),
+        }));
       },
       error: (error: any) => {
         console.error('Failed to fetch tax rates:', error);
@@ -691,7 +766,17 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   getTaxRate(label: string): number {
-    return this.taxOptions.find((option: InvoiceTaxOption) => option.label === label)?.rate || 0;
+    const normalizedLabel = this.getTaxDisplayLabel(label).toLowerCase();
+    return this.taxOptions.find((option: InvoiceTaxOption) =>
+      this.getTaxDisplayLabel(option.label).toLowerCase() === normalizedLabel
+    )?.rate || 0;
+  }
+
+  private getTaxFormLabel(label: string): string {
+    const normalizedLabel = this.getTaxDisplayLabel(label).toLowerCase();
+    return this.taxOptions.find((option: InvoiceTaxOption) =>
+      this.getTaxDisplayLabel(option.label).toLowerCase() === normalizedLabel
+    )?.label || label || 'Non-Taxable';
   }
 
   getTaxAmount(): number {
@@ -799,11 +884,48 @@ export class AddInvoiceComponent implements OnInit {
         hsn_sac: `${row.hsn_sac || ''}`.trim(),
         quantity: Number(row.quantity || 0),
         rate: this.getRateNumber(row.rate),
-        tax: row.tax || '',
+        tax: this.getTaxDisplayLabel(row.tax),
         unit: `${row.item_unit || ''}`.trim(),
         amount: this.getRowAmount(row),
         is_manual: !!row.item_is_manual,
       }));
+  }
+
+  onInvoiceFilesChange(files: File[]): void {
+    this.uploadedInvoiceFiles = files;
+  }
+
+  private appendFormDataValue(formData: FormData, key: string, value: any): void {
+    if (value === undefined || value === null) {
+      formData.append(key, '');
+      return;
+    }
+
+    if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+      return;
+    }
+
+    formData.append(key, `${value}`);
+  }
+
+  private getInvoiceRequestPayload(payload: any): any {
+    if (this.uploadedInvoiceFiles.length === 0) {
+      return payload;
+    }
+
+    const formData = new FormData();
+    Object.keys(payload).forEach((key: string) => {
+      this.appendFormDataValue(formData, key, payload[key]);
+    });
+
+    formData.append(
+      'invoice_attachment',
+      this.uploadedInvoiceFiles[0],
+      this.uploadedInvoiceFiles[0].name,
+    );
+
+    return formData;
   }
 
   onSubmit(form: any): void {
@@ -819,6 +941,7 @@ export class AddInvoiceComponent implements OnInit {
     }
 
     const payload = {
+      ...(this.isEditMode && this.invoiceId ? { invoice_id: this.invoiceId } : {}),
       customer_id: this.model.customer_id,
       invoice_no: `${this.model.invoice_no || ''}`.trim(),
       order_no: `${this.model.order_no || ''}`.trim(),
@@ -828,6 +951,7 @@ export class AddInvoiceComponent implements OnInit {
       salesperson: `${this.model.salesperson || ''}`.trim(),
       subject: `${this.model.subject || ''}`.trim(),
       customer_notes: `${this.model.customer_notes || ''}`.trim(),
+      terms_and_conditions: `${this.model.terms_and_conditions || ''}`.trim(),
       additional_tax: this.getTaxLabel(),
       additional_tax_rate: 0,
       sub_total: this.getSubTotal(),
@@ -842,10 +966,18 @@ export class AddInvoiceComponent implements OnInit {
     };
 
     this.isSubmitting = true;
-    this.globalService.insertInvoice(payload).subscribe({
+    const invoiceRequest$ = this.isEditMode
+      ? this.globalService.updateInvoice(this.getInvoiceRequestPayload(payload))
+      : this.globalService.insertInvoice(this.getInvoiceRequestPayload(payload));
+
+    invoiceRequest$.subscribe({
       next: (res: any) => {
         this.isSubmitting = false;
-        this.toastrService.success(res?.message || 'Invoice saved successfully.', 'Saved');
+        this.toastrService.success(
+          res?.message || (this.isEditMode ? 'Invoice updated successfully.' : 'Invoice saved successfully.'),
+          this.isEditMode ? 'Updated' : 'Saved',
+        );
+        this.router.navigate(['/pages/sales/invoice-list']);
       },
       error: (error: any) => {
         this.isSubmitting = false;

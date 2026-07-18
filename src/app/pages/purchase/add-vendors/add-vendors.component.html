@@ -1,5 +1,5 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
-    <nb-card>
+    <nb-card class="add-form-card">
         <nb-card-header>{{ isEditMode ? 'Update Vendor' : 'Add Vendor' }}</nb-card-header>
         <nb-tabset fullWidth>
             <nb-tab tabTitle="Vendor Details">
@@ -243,12 +243,32 @@
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 1 Name" name="document_1_name"
                             required #document_1_name="ngModel" [(ngModel)]="model.document_1_name" style="margin-bottom: 8px;">
-                        <ngx-file-upload
-                            inputName="document_1"
-                            helperText="PDF, Excel, Images (Max 10MB total)"
-                            [required]="true"
-                            (filesChange)="onFileChange($event, 'document_1')"
-                        ></ngx-file-upload>
+                        <div class="document-upload-row">
+                            <div class="document-upload-control">
+                                <ngx-file-upload
+                                    inputName="document_1"
+                                    helperText="PDF, Excel, Images (Max 10MB total)"
+                                    [required]="!hasSelectedDocument('document_1')"
+                                    (filesChange)="onFileChange($event, 'document_1')"
+                                ></ngx-file-upload>
+                            </div>
+                            <button
+                                *ngIf="getDocumentPreviewUrl('document_1') as previewUrl"
+                                type="button"
+                                class="document-thumbnail"
+                                (click)="openDocumentPreview('document_1')"
+                                [attr.aria-label]="'Preview ' + getDocumentDisplayName('document_1')">
+                                <img
+                                    *ngIf="getDocumentPreviewType('document_1') === 'image'"
+                                    [src]="previewUrl"
+                                    [alt]="getDocumentDisplayName('document_1')">
+                                <span *ngIf="getDocumentPreviewType('document_1') !== 'image'" class="document-thumbnail-icon">
+                                    <nb-icon [icon]="getDocumentPreviewType('document_1') === 'pdf' ? 'file-text-outline' : 'file-outline'"></nb-icon>
+                                    <small>{{ getDocumentPreviewType('document_1') === 'pdf' ? 'PDF' : 'FILE' }}</small>
+                                </span>
+                                <span class="document-thumbnail-caption">Click to preview</span>
+                            </button>
+                        </div>
                         <div *ngIf="fm.submitted && document_1_name.invalid" class="error-message">
                             Document 1 name is required
                         </div>
@@ -262,12 +282,32 @@
                         <input type="text" nbInput fullWidth shape="semi-round"
                             placeholder="Enter Document 2 Name" name="document_2_name"
                             required #document_2_name="ngModel" [(ngModel)]="model.document_2_name" style="margin-bottom: 8px;">
-                        <ngx-file-upload
-                            inputName="document_2"
-                            helperText="PDF, Excel, Images (Max 10MB total)"
-                            [required]="true"
-                            (filesChange)="onFileChange($event, 'document_2')"
-                        ></ngx-file-upload>
+                        <div class="document-upload-row">
+                            <div class="document-upload-control">
+                                <ngx-file-upload
+                                    inputName="document_2"
+                                    helperText="PDF, Excel, Images (Max 10MB total)"
+                                    [required]="!hasSelectedDocument('document_2')"
+                                    (filesChange)="onFileChange($event, 'document_2')"
+                                ></ngx-file-upload>
+                            </div>
+                            <button
+                                *ngIf="getDocumentPreviewUrl('document_2') as previewUrl"
+                                type="button"
+                                class="document-thumbnail"
+                                (click)="openDocumentPreview('document_2')"
+                                [attr.aria-label]="'Preview ' + getDocumentDisplayName('document_2')">
+                                <img
+                                    *ngIf="getDocumentPreviewType('document_2') === 'image'"
+                                    [src]="previewUrl"
+                                    [alt]="getDocumentDisplayName('document_2')">
+                                <span *ngIf="getDocumentPreviewType('document_2') !== 'image'" class="document-thumbnail-icon">
+                                    <nb-icon [icon]="getDocumentPreviewType('document_2') === 'pdf' ? 'file-text-outline' : 'file-outline'"></nb-icon>
+                                    <small>{{ getDocumentPreviewType('document_2') === 'pdf' ? 'PDF' : 'FILE' }}</small>
+                                </span>
+                                <span class="document-thumbnail-caption">Click to preview</span>
+                            </button>
+                        </div>
                         <div *ngIf="fm.submitted && document_2_name.invalid" class="error-message">
                             Document 2 name is required
                         </div>
@@ -571,3 +611,33 @@
     (termsChange)="onTdsTermsChanged($event)"
     (termSelected)="onTdsTermSelected($event)"
 ></ngx-tds-popup>
+
+<div *ngIf="showDocumentPreview" class="document-preview-overlay" (click)="closeDocumentPreview()">
+    <div class="document-preview-shell" (click)="$event.stopPropagation()">
+        <div class="document-preview-header">
+            <div class="document-preview-title">{{ selectedDocumentName }}</div>
+            <div class="document-preview-actions">
+                <button type="button" class="document-preview-action" (click)="openDocumentInNewTab()">Open file</button>
+                <button type="button" class="document-preview-action" (click)="closeDocumentPreview()">Close</button>
+            </div>
+        </div>
+        <div class="document-preview-body">
+            <img
+                *ngIf="selectedDocumentType === 'image'"
+                [src]="selectedDocumentUrl"
+                [alt]="selectedDocumentName"
+                class="document-preview-image">
+            <iframe
+                *ngIf="selectedDocumentType === 'pdf'"
+                [src]="selectedDocumentViewerUrl"
+                class="document-preview-frame"
+                title="PDF document preview">
+            </iframe>
+            <div *ngIf="selectedDocumentType === 'file'" class="document-preview-unavailable">
+                <nb-icon icon="file-outline"></nb-icon>
+                <p>This file type cannot be previewed in the browser.</p>
+                <button type="button" nbButton status="primary" (click)="openDocumentInNewTab()">Open file</button>
+            </div>
+        </div>
+    </div>
+</div>

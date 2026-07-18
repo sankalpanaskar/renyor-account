@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { GlobalService } from '../../../services/global.service';
 
 @Component({
@@ -14,7 +15,18 @@ export class ItemListComponent implements OnInit {
   showItemPopup = false;
   selectedItem: any = null;
 
-  constructor(private globalService: GlobalService) {}
+  constructor(
+    private globalService: GlobalService,
+    private router: Router,
+  ) {}
+
+  get goodsCount(): number {
+    return this.allItems.filter((item: any) => this.isGoodsItem(item)).length;
+  }
+
+  get servicesCount(): number {
+    return this.allItems.filter((item: any) => this.isServiceItem(item)).length;
+  }
 
   ngOnInit(): void {
     this.fetchItems();
@@ -56,8 +68,29 @@ export class ItemListComponent implements OnInit {
     });
   }
 
+  clearSearch(): void {
+    this.onSearch('');
+  }
+
+  gotoAddItemPage(): void {
+    this.router.navigate(['/pages/sales/add-item']);
+  }
+
   getItemName(item: any): string {
     return item?.name || '-';
+  }
+
+  getItemType(item: any): string {
+    return this.formatValue(item?.type || item?.item_type || 'Item');
+  }
+
+  isServiceItem(item: any): boolean {
+    return `${item?.type || item?.item_type || ''}`.trim().toLowerCase().includes('service');
+  }
+
+  isGoodsItem(item: any): boolean {
+    const type = `${item?.type || item?.item_type || ''}`.trim().toLowerCase();
+    return type.includes('good') || type.includes('product');
   }
 
   getPurchaseRate(item: any): string {
@@ -74,6 +107,38 @@ export class ItemListComponent implements OnInit {
 
   getUnit(item: any): string {
     return this.formatValue(item?.unit);
+  }
+
+  getTaxRate(item: any): string {
+    const percentage = item?.tax_rate_percentage;
+    if (percentage !== null && percentage !== undefined && `${percentage}`.trim() !== '') {
+      const normalizedPercentage = `${percentage}`.trim();
+      return normalizedPercentage.endsWith('%') ? normalizedPercentage : `${normalizedPercentage}%`;
+    }
+
+    return this.formatValue(item?.tax_rate_name || item?.tax_preference);
+  }
+
+  formatCurrency(value: any): string {
+    if (value === null || value === undefined || `${value}`.trim() === '') {
+      return '-';
+    }
+
+    const numericValue = Number(`${value}`.replace(/,/g, ''));
+    if (Number.isNaN(numericValue)) {
+      return this.formatValue(value);
+    }
+
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    }).format(numericValue);
+  }
+
+  trackByItem(index: number, item: any): number | string {
+    return item?.id ?? item?.item_id ?? index;
   }
 
   openItemPopup(item: any): void {

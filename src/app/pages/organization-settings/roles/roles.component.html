@@ -1,33 +1,138 @@
-<div class="roles-list-container">
-  <div class="row">
-    <div class="col-lg-12">
-      <nb-card>
-        <nb-card-header class="section-header d-flex justify-content-between align-items-center">
-          <span>Roles</span>
-          <button
-            nbButton
-            status="primary"
-            size="small"
-            shape="semi-round"
-            (click)="gotoAddRole()"
-          >
-            Add Role
-          </button>
-        </nb-card-header>
-
-        <nb-card-body [nbSpinner]="loading" nbSpinnerStatus="primary">
-          <div [class.content-blur]="loading">
-            <div class="row mt-3">
-              <div class="col-12">
-                <ng2-smart-table
-                  [settings]="settings"
-                  [source]="source">
-                </ng2-smart-table>
-              </div>
+<div *ngIf="showRolePopup" class="customer-dialog-overlay" (click)="closeRolePopup()">
+  <div class="customer-dialog-wrapper compact-access-dialog" role="dialog" aria-modal="true" aria-label="Role details" (click)="$event.stopPropagation()">
+    <div class="customer-dialog-shell">
+      <div class="dialog-header">
+        <div class="entity-dialog-identity">
+          <div class="entity-dialog-avatar"><nb-icon icon="shield-outline"></nb-icon></div>
+          <div class="dialog-header-copy">
+            <span class="customer-code-badge">{{ getRoleStatus(selectedRole) }}</span>
+            <div class="customer-title">{{ selectedRole?.role_name || 'Role Details' }}</div>
+            <div class="entity-dialog-meta">
+              <span>{{ getPermissionCount(selectedRole) }} permissions configured</span>
             </div>
           </div>
-        </nb-card-body>
-      </nb-card>
+        </div>
+        <button type="button" class="close-btn" (click)="closeRolePopup()" aria-label="Close role details">
+          <nb-icon icon="close-outline"></nb-icon>
+        </button>
+      </div>
+
+      <div class="popup-scroll-body">
+        <section class="dialog-group dialog-group-full">
+          <div class="dialog-group-title">Role Information</div>
+          <div class="info-card-grid two-columns">
+            <div class="info-card" *ngFor="let field of [
+              { label: 'Role Name', value: selectedRole?.role_name || '-' },
+              { label: 'Status', value: getRoleStatus(selectedRole) },
+              { label: 'Permissions', value: getPermissionCount(selectedRole) },
+              { label: 'Remarks', value: selectedRole?.remarks || '-' }
+            ]">
+              <div class="section-label">{{ field.label }}</div>
+              <div class="section-value">{{ field.value }}</div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
+</div>
+
+<div class="entity-list-container role-list-page">
+  <section class="entity-summary-grid" aria-label="Role summary">
+    <article class="entity-summary-card summary-blue">
+      <div class="entity-summary-icon"><nb-icon icon="shield-outline"></nb-icon></div>
+      <div><span>Total roles</span><strong>{{ allRoles.length }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-green">
+      <div class="entity-summary-icon"><nb-icon icon="checkmark-circle-2-outline"></nb-icon></div>
+      <div><span>Active</span><strong>{{ activeRolesCount }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-orange">
+      <div class="entity-summary-icon"><nb-icon icon="minus-circle-outline"></nb-icon></div>
+      <div><span>Inactive</span><strong>{{ inactiveRolesCount }}</strong></div>
+    </article>
+  </section>
+
+  <nb-card class="entity-list-card">
+    <nb-card-body class="entity-list-body" [nbSpinner]="loading" nbSpinnerStatus="primary">
+      <div class="entity-catalog-toolbar">
+        <div class="entity-catalog-heading">
+          <h2>Role List</h2>
+        </div>
+        <div class="entity-catalog-actions">
+          <div class="entity-search-wrap">
+            <nb-icon icon="search-outline"></nb-icon>
+            <input
+              type="search"
+              aria-label="Search roles"
+              placeholder="Search role name, remarks or status"
+              [ngModel]="searchText"
+              (ngModelChange)="onSearch($event)">
+            <button *ngIf="searchText" type="button" aria-label="Clear search" (click)="clearSearch()">
+              <nb-icon icon="close-outline"></nb-icon>
+            </button>
+          </div>
+          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddRole()">
+            <nb-icon icon="plus-outline"></nb-icon>
+            Add Role
+          </button>
+        </div>
+      </div>
+
+      <div class="entity-table-shell">
+        <div class="entity-table-responsive">
+          <table class="entity-table role-table">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Remarks</th>
+                <th>Status</th>
+                <th class="entity-actions-heading">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let role of roleList; trackBy: trackByRole" class="entity-row" tabindex="0"
+                (click)="openRolePopup(role)" (keydown.enter)="openRolePopup(role)">
+                <td data-label="Role">
+                  <div class="entity-identity">
+                    <div class="entity-avatar role-avatar"><nb-icon icon="shield-outline"></nb-icon></div>
+                    <div class="entity-identity-copy">
+                      <strong>{{ role?.role_name || '-' }}</strong>
+                      <span>{{ getPermissionCount(role) }} permissions</span>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Remarks"><span class="entity-cell-text">{{ role?.remarks || '-' }}</span></td>
+                <td data-label="Status">
+                  <span class="entity-badge role-status-badge" [class.active-status]="isRoleActive(role)" [class.inactive-status]="!isRoleActive(role)">
+                    {{ getRoleStatus(role) }}
+                  </span>
+                </td>
+                <td data-label="Actions" class="entity-actions-cell">
+                  <div class="entity-action-group">
+                    <button type="button" class="entity-action-icon view-action" title="View role" aria-label="View role"
+                      (click)="$event.stopPropagation(); openRolePopup(role)">
+                      <nb-icon icon="eye-outline"></nb-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr *ngIf="!roleList || roleList.length === 0" class="entity-empty-row">
+                <td colspan="4">
+                  <div class="entity-empty-state">
+                    <div><nb-icon icon="shield-outline"></nb-icon></div>
+                    <h3>{{ searchText ? 'No matching roles' : 'No roles yet' }}</h3>
+                    <p>{{ searchText ? 'Try a different search term.' : 'Add your first role to configure permissions.' }}</p>
+                    <button *ngIf="searchText" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
+                    <button *ngIf="!searchText" type="button" nbButton status="primary" (click)="gotoAddRole()">Add role</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </nb-card-body>
+  </nb-card>
 </div>

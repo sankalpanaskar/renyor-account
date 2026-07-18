@@ -6,7 +6,7 @@ import { AddVendorsComponent } from './add-vendors/add-vendors.component';
 import { VendorsListComponent } from './vendors-list/vendors-list.component';
 import { PurchaseComponent } from './purchase.component';
 import { RouterModule } from '@angular/router';
-import { NbAccordionModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule } from '@nebular/theme';
+import { NbAccordionModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule, NbTooltipModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../shared/shared.module';
 import { ThemeModule } from '../../@theme/theme.module';
@@ -37,6 +37,7 @@ import { ThemeModule } from '../../@theme/theme.module';
     NbSpinnerModule,
     NbDatepickerModule,
     NbCheckboxModule,
+    NbTooltipModule,
     SharedModule,
     ThemeModule
   ]

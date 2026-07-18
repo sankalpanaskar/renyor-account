@@ -3,15 +3,21 @@
   <div class="customer-dialog-wrapper" (click)="$event.stopPropagation()">
     <div class="customer-dialog-shell">
       <div class="dialog-header">
-        <div class="dialog-header-copy">
-          <span class="customer-code-badge">
-            {{ selectedCustomer?.display_name || selectedCustomer?.company_name || ((selectedCustomer?.primary_contact_f_name || '') + ' ' + (selectedCustomer?.primary_contact_l_name || '')) || 'Customer' }}
-          </span>
-          <div class="customer-title">
-            {{ selectedCustomer?.company_name || selectedCustomer?.display_name || ((selectedCustomer?.primary_contact_f_name || '') + ' ' + (selectedCustomer?.primary_contact_l_name || '')) }}
+        <div class="entity-dialog-identity">
+          <div class="entity-dialog-avatar">{{ getCustomerInitials(selectedCustomer) }}</div>
+          <div class="dialog-header-copy">
+            <span class="customer-code-badge">{{ selectedCustomer?.customer_type || 'Customer' }}</span>
+            <div class="customer-title">{{ getCustomerName(selectedCustomer) }}</div>
+            <div class="entity-dialog-meta">
+              <span>{{ selectedCustomer?.email || 'No email' }}</span>
+              <span aria-hidden="true">•</span>
+              <span>{{ selectedCustomer?.mobile_no || 'No mobile' }}</span>
+            </div>
           </div>
         </div>
-        <button type="button" class="close-btn" (click)="closeCustomerPopup()">Close</button>
+        <button type="button" class="close-btn" (click)="closeCustomerPopup()" aria-label="Close customer details">
+          <nb-icon icon="close-outline"></nb-icon>
+        </button>
       </div>
 
       <div class="popup-scroll-body">
@@ -146,86 +152,101 @@
     </div>
   </div>
 </div>
-<div class="asset-list-container">
-  <div class="row">
-    <div class="col-lg-12">
-      <nb-card>
-        
-            <nb-card-header class="section-header d-flex justify-content-between align-items-center">
-            <span>Customer List</span>
+<div class="entity-list-container customer-list-page">
+  <section class="entity-summary-grid" aria-label="Customer summary">
+    <article class="entity-summary-card summary-blue">
+      <div class="entity-summary-icon"><nb-icon icon="people-outline"></nb-icon></div>
+      <div><span>Total customers</span><strong>{{ allCustomers.length }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-green">
+      <div class="entity-summary-icon"><nb-icon icon="briefcase-outline"></nb-icon></div>
+      <div><span>Business</span><strong>{{ businessCustomersCount }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-orange">
+      <div class="entity-summary-icon"><nb-icon icon="person-outline"></nb-icon></div>
+      <div><span>Individual</span><strong>{{ individualCustomersCount }}</strong></div>
+    </article>
+  </section>
 
-            <!-- Right-side button -->
-            <button
-                nbButton
-                status="primary"
-                size="small"
-                shape="semi-round"
-                (click)="gotoAddCustomerPage()"
-            >
-                Add Customer
+  <nb-card class="entity-list-card">
+    <nb-card-body class="entity-list-body" [nbSpinner]="loading" nbSpinnerStatus="primary">
+      <div class="entity-catalog-toolbar">
+        <div class="entity-catalog-heading">
+          <h2>Customer List</h2>
+        </div>
+        <div class="entity-catalog-actions">
+          <div class="entity-search-wrap">
+            <nb-icon icon="search-outline"></nb-icon>
+            <input
+              type="search"
+              aria-label="Search customers"
+              placeholder="Search name, email, mobile or location"
+              [ngModel]="lastSearchForm"
+              (ngModelChange)="onSearch($event)">
+            <button *ngIf="lastSearchForm" type="button" aria-label="Clear search" (click)="clearSearch()">
+              <nb-icon icon="close-outline"></nb-icon>
             </button>
-            </nb-card-header>
-
-        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary" class="asset-list-body">
-        
-          <!-- 🔹 Loading Spinner Overlay -->
-          <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
-            <nb-spinner size="large" status="primary"></nb-spinner>
           </div>
+          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddCustomerPage()">
+            <nb-icon icon="plus-outline"></nb-icon>
+            Add Customer
+          </button>
+        </div>
+      </div>
 
-          <!-- 🔹 Table Section -->
-          <div [class.content-blur]="loading">
-            <div class="row mt-3">
-              <div class="col-12" style="padding-left: 30px;padding-right: 30px;">
-                <input
-                  type="text"
-                  nbInput
-                  fullWidth
-                  shape="semi-round"
-                  #search
-                  class="search"
-                  placeholder="Search Customer..."
-                  (input)="onSearch(search.value)"
-                  (keydown.enter)="onSearch(search.value)"/>
-              </div>
-
-              <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
-                <div class="custom-table-wrapper">
-                  <div class="table-responsive">
-                    <table class="custom-table">
-                      <thead>
-                        <tr>
-                          <th>Customer Name</th>
-                          <th>Customer Type</th>
-                          <th>Email</th>
-                          <th>Mobile No</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let item of apiData">
-                          <td>{{ item.display_name || (item.primary_contact_f_name + ' ' + item.primary_contact_l_name) }}</td>
-                          <td>{{ item.customer_type || '-' }}</td>
-                          <td>{{ item.email }}</td>
-                          <td>{{ item.mobile_no }}</td>
-                          <td>
-                            <button nbButton size="small" status="success" class="action-btn" (click)="openCustomerPopup(item)"><nb-icon icon="eye"></nb-icon> VIEW</button>
-                            <button nbButton size="small" status="primary" class="action-btn" (click)="onEdit(item)"><nb-icon icon="edit-2"></nb-icon> EDIT</button>
-                          </td>
-                        </tr>
-                        <tr *ngIf="!apiData || apiData.length === 0">
-                          <td colspan="5" class="text-center">No data found.</td>
-                        </tr>
-                      </tbody>
-                    </table>
+      <div class="entity-table-shell">
+        <div class="entity-table-responsive">
+          <table class="entity-table customer-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Type</th>
+                <th>Email</th>
+                <th>Mobile</th>
+                <th>Location</th>
+                <th class="entity-actions-heading">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of apiData; trackBy: trackByCustomer" class="entity-row" tabindex="0"
+                (click)="openCustomerPopup(item)" (keydown.enter)="openCustomerPopup(item)">
+                <td data-label="Customer">
+                  <div class="entity-identity">
+                    <div class="entity-avatar">{{ getCustomerInitials(item) }}</div>
+                    <div class="entity-identity-copy">
+                      <strong>{{ getCustomerName(item) }}</strong>
+                      <span>{{ item.company_name || item.customer_group || 'Customer' }}</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-        </nb-card-body>
-      </nb-card>
-    </div>
-  </div>
+                </td>
+                <td data-label="Type"><span class="entity-badge type-badge">{{ item.customer_type || '-' }}</span></td>
+                <td data-label="Email"><span class="entity-cell-text">{{ item.email || '-' }}</span></td>
+                <td data-label="Mobile"><span class="entity-cell-text">{{ item.mobile_no || '-' }}</span></td>
+                <td data-label="Location"><span class="entity-badge location-badge">{{ getCustomerLocation(item) }}</span></td>
+                <td data-label="Actions" class="entity-actions-cell">
+                  <div class="entity-action-group">
+                    <button type="button" class="entity-action-icon view-action" nbTooltip="View customer" aria-label="View customer"
+                      (click)="$event.stopPropagation(); openCustomerPopup(item)"><nb-icon icon="eye-outline"></nb-icon></button>
+                    <button type="button" class="entity-action-icon edit-action" nbTooltip="Edit customer" aria-label="Edit customer"
+                      (click)="$event.stopPropagation(); onEdit(item)"><nb-icon icon="edit-2-outline"></nb-icon></button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="!apiData || apiData.length === 0" class="entity-empty-row">
+                <td colspan="6">
+                  <div class="entity-empty-state">
+                    <div><nb-icon icon="people-outline"></nb-icon></div>
+                    <h3>{{ lastSearchForm ? 'No matching customers' : 'No customers yet' }}</h3>
+                    <p>{{ lastSearchForm ? 'Try a different search term.' : 'Add your first customer to get started.' }}</p>
+                    <button *ngIf="lastSearchForm" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
+                    <button *ngIf="!lastSearchForm" type="button" nbButton status="primary" (click)="gotoAddCustomerPage()">Add customer</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </nb-card-body>
+  </nb-card>
 </div>

@@ -3,16 +3,12 @@ import { NbActionsModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDate
 
 import { ThemeModule } from '../@theme/theme.module';
 import { PagesComponent } from './pages.component';
-import { DashboardModule } from './dashboard/dashboard.module';
-import { ECommerceModule } from './e-commerce/e-commerce.module';
 import { PagesRoutingModule } from './pages-routing.module';
 import { MiscellaneousModule } from './miscellaneous/miscellaneous.module';
-import { TablesRoutingModule } from './tables/tables-routing.module';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
-import { ChartsModule } from './charts/charts.module';
 import { SettingsComponent } from './settings/settings.component';
 import { RouterModule } from '@angular/router';
 
@@ -21,8 +17,6 @@ import { RouterModule } from '@angular/router';
     PagesRoutingModule,
     ThemeModule,
     NbMenuModule,
-    DashboardModule,
-    ECommerceModule,
     MiscellaneousModule,
     NbCardModule,
     NbInputModule,
@@ -35,11 +29,9 @@ import { RouterModule } from '@angular/router';
     NbDatepickerModule,
     NbSelectModule,
     NbIconModule,
-    TablesRoutingModule,
     Ng2SmartTableModule,
     FormsModule,
     NbSpinnerModule,
-    ChartsModule,
     RouterModule
 
   ],

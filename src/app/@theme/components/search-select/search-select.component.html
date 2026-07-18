@@ -9,6 +9,7 @@
       [value]="inputText"
       [readonly]="!editable"
       [disabled]="disabled"
+      (mousedown)="onInputMouseDown()"
       (click)="toggleDropdown($event)"
       (focus)="onInputFocus($event)"
       (input)="onMainInput($event)"

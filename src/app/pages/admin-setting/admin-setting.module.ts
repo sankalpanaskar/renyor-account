@@ -9,7 +9,6 @@ import { ThemeModule } from '../../@theme/theme.module';
 import { AdminSettingComponent } from './admin-setting.component';
 import { AddPackageComponent } from './add-package/add-package.component';
 import { PackageListComponent } from './package-list/package-list.component';
-import { PackageButtonComponent } from './package-list/custom-btn.component';
 import { ModuleListComponent } from './module-list/module-list.component';
 import { AddModuleComponent } from './add-module/add-module.component';
 import { ModuleButtonComponent } from './module-list/custom-btn.component';
@@ -18,7 +17,6 @@ import { SetupMenuComponent } from './setup-menu/setup-menu.component';
 import { AssignModuleIntoPackageComponent } from './assign-module-into-package/assign-module-into-package.component';
 import { AddCompanyComponent } from './add-company/add-company.component';
 import { CompanyListComponent } from './company-list/company-list.component';
-import { CompanyButtonComponent } from './company-list/custom-btn.component';
 import { AddCustomFieldComponent } from './add-custom-field/add-custom-field.component';
 import { CustomFieldListComponent } from './custom-field-list/custom-field-list.component';
 
@@ -27,7 +25,6 @@ import { CustomFieldListComponent } from './custom-field-list/custom-field-list.
     AdminSettingComponent,
     AddPackageComponent,
     PackageListComponent,
-    PackageButtonComponent,
     ModuleListComponent,
     AddModuleComponent,
     ModuleButtonComponent,
@@ -36,7 +33,6 @@ import { CustomFieldListComponent } from './custom-field-list/custom-field-list.
     AssignModuleIntoPackageComponent,
     AddCompanyComponent,
     CompanyListComponent,
-    CompanyButtonComponent,
     AddCustomFieldComponent,
     CustomFieldListComponent
   ],

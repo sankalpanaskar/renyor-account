@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { Router } from '@angular/router';
-import { LocalDataSource } from 'ng2-smart-table';
+import { GlobalService } from '../../../services/global.service';
 
 @Component({
   selector: 'ngx-roles',
@@ -10,87 +9,104 @@ import { LocalDataSource } from 'ng2-smart-table';
   styleUrls: ['./roles.component.scss']
 })
 export class RolesComponent implements OnInit {
-
-  source: LocalDataSource = new LocalDataSource();
-
-  settings = {
-    pager: {
-      display: true,
-      perPage: 10
-    },
-    actions: false,
-    columns: {
-      role_name: {
-        title: 'Role Name',
-        width: '30%',
-        type: 'string',
-        filter: false,
-        editable: false
-      },
-      remarks: {
-        title: 'Remarks',
-        width: '50%',
-        type: 'string',
-        filter: false,
-        editable: false
-      },
-      status: {
-        title: 'Status',
-        width: '20%',
-        type: 'html',
-        filter: false,
-        editable: false,
-        valuePrepareFunction: (cell: any) => {
-          if (cell === 1) {
-            return `<h6><span class="badge rounded-pill bg-success text-white pl-2 pr-2">Active</span></h6>`;
-          } else if (cell === 0) {
-            return `<h6><span class="badge rounded-pill bg-danger text-white pl-2 pr-2">Inactive</span></h6>`;
-          }
-          return cell;
-        }
-      }
-    }
-  };
-
-  model: any = [];
-  roleList: any = [];
-  loading: boolean = false;
+  allRoles: any[] = [];
+  roleList: any[] = [];
+  searchText = '';
+  loading = false;
+  showRolePopup = false;
+  selectedRole: any = null;
 
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private router: Router
-  ) { }
+    private router: Router,
+  ) {}
+
+  get activeRolesCount(): number {
+    return this.allRoles.filter((role: any) => this.isRoleActive(role)).length;
+  }
+
+  get inactiveRolesCount(): number {
+    return this.allRoles.length - this.activeRolesCount;
+  }
 
   ngOnInit(): void {
     this.getRolesByCompany();
   }
 
-  getRolesByCompany() {
+  getRolesByCompany(): void {
     this.loading = true;
     this.globalService.fetchRoles().subscribe({
       next: (res: any) => {
-        console.log(res);
-        this.roleList = res.data;
-        const mappedData = this.roleList.map((item: any) => ({
-          role_name: item.role_name,
-          remarks: item.remarks || '-',
-          status: item.status || 1,
-          fullData: item
-        }));
-        this.source.load(mappedData);
+        this.allRoles = res?.data || res || [];
+        this.roleList = [...this.allRoles];
+        this.onSearch(this.searchText);
         this.loading = false;
       },
-      error: (err) => {
-        this.toastrService.danger(err.message || 'Failed', 'Error');
+      error: (err: any) => {
+        this.toastrService.danger(err?.message || 'Failed', 'Error');
         this.loading = false;
       },
     });
   }
 
-  gotoAddRole(){
-    this.router.navigate(['/pages/organization-setting/add-roles']);
+  onSearch(query: string = ''): void {
+    this.searchText = query || '';
+    const searchValue = this.searchText.trim().toLowerCase();
+
+    if (!searchValue) {
+      this.roleList = [...this.allRoles];
+      return;
+    }
+
+    this.roleList = this.allRoles.filter((role: any) => {
+      const values = [role?.role_name, role?.remarks, this.getRoleStatus(role)];
+      return values.some((value: any) => String(value ?? '').toLowerCase().includes(searchValue));
+    });
   }
 
-}
+  clearSearch(): void {
+    this.onSearch('');
+  }
 
+  isRoleActive(role: any): boolean {
+    const status = role?.status;
+    return status === 1 || status === true || `${status}`.trim().toLowerCase() === 'active';
+  }
+
+  getRoleStatus(role: any): string {
+    return this.isRoleActive(role) ? 'Active' : 'Inactive';
+  }
+
+  getPermissionCount(role: any): number {
+    const permissions = role?.permissions || role?.module_permissions || [];
+
+    if (Array.isArray(permissions)) {
+      return permissions.length;
+    }
+
+    if (permissions && typeof permissions === 'object') {
+      return Object.keys(permissions).length;
+    }
+
+    return 0;
+  }
+
+  trackByRole(index: number, role: any): number | string {
+    return role?.id ?? role?.role_id ?? index;
+  }
+
+  openRolePopup(role: any): void {
+    this.selectedRole = role;
+    this.showRolePopup = true;
+  }
+
+  closeRolePopup(): void {
+    this.showRolePopup = false;
+    this.selectedRole = null;
+  }
+
+  gotoAddRole(): void {
+    this.router.navigate(['/pages/organization-setting/add-roles']);
+  }
+}

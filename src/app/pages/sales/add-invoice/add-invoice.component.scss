@@ -527,6 +527,11 @@
   padding: 1rem;
 }
 
+.notes-panel + .notes-panel,
+.summary-card + .notes-panel {
+  margin-top: 1rem;
+}
+
 .summary-card {
   background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }

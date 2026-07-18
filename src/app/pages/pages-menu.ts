@@ -77,12 +77,12 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
             title: 'Menu/Module',
             link: '/pages/admin-setting/setup-menu',
           },
+          // {
+          //   title: 'Add Package',
+          //   link: '/pages/admin-setting/add-package',
+          // },
           {
-            title: 'Add Package',
-            link: '/pages/admin-setting/add-package',
-          },
-          {
-            title: 'Package List',
+            title: 'Packages',
             link: '/pages/admin-setting/package-list',
           },
           {

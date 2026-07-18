@@ -1,15 +1,21 @@
 // ...existing code up to the end of the first AddCustomersComponent class...
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { environment } from '../../../../environments/environment';
+import { Router } from '@angular/router';
+
+type CustomerDocumentField = 'document_1' | 'document_2';
+type DocumentPreviewType = 'image' | 'pdf' | 'file';
 
 @Component({
   selector: 'ngx-add-customers',
   templateUrl: './add-customers.component.html',
   styleUrls: ['./add-customers.component.scss']
 })
-export class AddCustomersComponent implements OnInit {
+export class AddCustomersComponent implements OnInit, OnDestroy {
   isEditMode = false;
   pageTitle = 'Add Customer';
   submitButtonLabel = 'Save';
@@ -22,6 +28,12 @@ export class AddCustomersComponent implements OnInit {
   showPaymentTermsPopup: boolean = false;
   document1File: File | null = null;
   document2File: File | null = null;
+  documentObjectUrls: Partial<Record<CustomerDocumentField, string>> = {};
+  showDocumentPreview = false;
+  selectedDocumentUrl = '';
+  selectedDocumentViewerUrl: SafeResourceUrl | string = '';
+  selectedDocumentName = '';
+  selectedDocumentType: DocumentPreviewType = 'file';
   paymentTerms: any[] = [];
   tdsTerms: any[] = [];
 
@@ -41,7 +53,9 @@ export class AddCustomersComponent implements OnInit {
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
-    private http: HttpClient
+    private http: HttpClient,
+    private sanitizer: DomSanitizer,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
@@ -53,20 +67,57 @@ export class AddCustomersComponent implements OnInit {
     this.fetchPaymentTerms();
   }
 
+  ngOnDestroy(): void {
+    this.revokeAllDocumentObjectUrls();
+  }
+
   private restoreEditState(): void {
     const navigationState = history.state || {};
     const customerData = navigationState?.customerData;
 
     if (navigationState?.isEditMode && customerData) {
+      const customFieldValues = this.parseCustomFieldValues(customerData?.custom_field);
       this.isEditMode = true;
       this.model = {
         ...this.model,
         ...customerData,
+        ...customFieldValues,
         customer_id: customerData?.id,
+        customer_group: customerData?.customer_group || customerData?.group || '',
         customer_type: customerData?.customer_type || this.model.customer_type,
         dob_doi: customerData?.dob_doi || customerData?.dob || customerData?.doi || '',
       };
     }
+  }
+
+  private parseCustomFieldValues(value: any): Record<string, any> {
+    if (!value) {
+      return {};
+    }
+
+    if (typeof value === 'string') {
+      try {
+        return this.parseCustomFieldValues(JSON.parse(value));
+      } catch {
+        return {};
+      }
+    }
+
+    if (Array.isArray(value)) {
+      return value.reduce((values: Record<string, any>, item: any) => {
+        if (!item || typeof item !== 'object') {
+          return values;
+        }
+
+        const key = item?.field_name ?? item?.name ?? item?.key;
+        if (key) {
+          values[key] = item?.field_value ?? item?.value ?? '';
+        }
+        return values;
+      }, {});
+    }
+
+    return typeof value === 'object' ? { ...value } : {};
   }
 
   private setDefaultCustomerValues(): void {
@@ -137,12 +188,13 @@ export class AddCustomersComponent implements OnInit {
             return;
           }
 
-          if (this.model[key] === undefined || this.model[key] === null) {
-            if (this.getFieldType(field) === 'checkbox') {
-              this.model[key] = this.parseCheckboxDefaultValues(field?.default_value);
-            } else {
-              this.model[key] = field?.default_value ?? '';
-            }
+          const hasSavedValue = this.model[key] !== undefined && this.model[key] !== null;
+          if (this.getFieldType(field) === 'checkbox') {
+            this.model[key] = this.parseCheckboxDefaultValues(
+              hasSavedValue ? this.model[key] : field?.default_value
+            );
+          } else if (!hasSavedValue) {
+            this.model[key] = field?.default_value ?? '';
           }
         });
 
@@ -392,8 +444,10 @@ export class AddCustomersComponent implements OnInit {
     this.model[field] = digitsOnly;
   }
 
-  onFileChange(files: File[], field: 'document_1' | 'document_2'): void {
+  onFileChange(files: File[], field: CustomerDocumentField): void {
     const selectedFile = files && files.length > 0 ? files[0] : null;
+    this.setDocumentObjectUrl(field, selectedFile);
+
     if (field === 'document_1') {
       this.document1File = selectedFile;
       if (!this.model.document_1_name || !`${this.model.document_1_name}`.trim()) {
@@ -407,16 +461,118 @@ export class AddCustomersComponent implements OnInit {
     }
   }
 
-  hasSelectedDocument(field: 'document_1' | 'document_2'): boolean {
+  hasSelectedDocument(field: CustomerDocumentField): boolean {
     if (field === 'document_1') {
-      return !!(this.document1File || `${this.model?.document_1_name || ''}`.trim());
+      return !!(this.document1File || `${this.model?.document_1 || ''}`.trim());
     }
 
-    return !!(this.document2File || `${this.model?.document_2_name || ''}`.trim());
+    return !!(this.document2File || `${this.model?.document_2 || ''}`.trim());
   }
 
-  isDocumentInvalid(field: 'document_1' | 'document_2', fm: any): boolean {
+  isDocumentInvalid(field: CustomerDocumentField, fm: any): boolean {
     return !!fm?.submitted && !this.hasSelectedDocument(field);
+  }
+
+  getDocumentPreviewUrl(field: CustomerDocumentField): string {
+    const objectUrl = this.documentObjectUrls[field];
+    if (objectUrl) {
+      return objectUrl;
+    }
+
+    return this.getDocumentUrl(`${this.model?.[field] || ''}`);
+  }
+
+  getDocumentPreviewType(field: CustomerDocumentField): DocumentPreviewType {
+    const selectedFile = field === 'document_1' ? this.document1File : this.document2File;
+    return this.resolveDocumentType(selectedFile?.name || `${this.model?.[field] || ''}`, selectedFile?.type);
+  }
+
+  getDocumentDisplayName(field: CustomerDocumentField): string {
+    const selectedFile = field === 'document_1' ? this.document1File : this.document2File;
+    const nameField = `${field}_name`;
+    return `${this.model?.[nameField] || selectedFile?.name || (field === 'document_1' ? 'Document 1' : 'Document 2')}`;
+  }
+
+  openDocumentPreview(field: CustomerDocumentField): void {
+    const previewUrl = this.getDocumentPreviewUrl(field);
+    if (!previewUrl) {
+      return;
+    }
+
+    this.selectedDocumentUrl = previewUrl;
+    this.selectedDocumentName = this.getDocumentDisplayName(field);
+    this.selectedDocumentType = this.getDocumentPreviewType(field);
+    this.selectedDocumentViewerUrl = this.selectedDocumentType === 'pdf'
+      ? this.sanitizer.bypassSecurityTrustResourceUrl(previewUrl)
+      : previewUrl;
+    this.showDocumentPreview = true;
+  }
+
+  closeDocumentPreview(): void {
+    this.showDocumentPreview = false;
+    this.selectedDocumentUrl = '';
+    this.selectedDocumentViewerUrl = '';
+    this.selectedDocumentName = '';
+    this.selectedDocumentType = 'file';
+  }
+
+  openDocumentInNewTab(): void {
+    if (this.selectedDocumentUrl) {
+      window.open(this.selectedDocumentUrl, '_blank', 'noopener,noreferrer');
+    }
+  }
+
+  private setDocumentObjectUrl(field: CustomerDocumentField, file: File | null): void {
+    this.revokeDocumentObjectUrl(field);
+    if (file) {
+      this.documentObjectUrls[field] = URL.createObjectURL(file);
+    }
+  }
+
+  private revokeDocumentObjectUrl(field: CustomerDocumentField): void {
+    const objectUrl = this.documentObjectUrls[field];
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      delete this.documentObjectUrls[field];
+    }
+  }
+
+  private revokeAllDocumentObjectUrls(): void {
+    this.revokeDocumentObjectUrl('document_1');
+    this.revokeDocumentObjectUrl('document_2');
+  }
+
+  private getDocumentUrl(path: string): string {
+    if (!path) {
+      return '';
+    }
+
+    if (/^(https?:|blob:|data:)/i.test(path)) {
+      return path;
+    }
+
+    const baseUrl = (environment as any)?.apiBaseUrl || '';
+    return `${baseUrl}${path}`.replace(/([^:]\/)\/+/g, '$1');
+  }
+
+  private resolveDocumentType(pathOrName: string, mimeType = ''): DocumentPreviewType {
+    const normalizedMimeType = `${mimeType || ''}`.toLowerCase();
+    if (normalizedMimeType.startsWith('image/')) {
+      return 'image';
+    }
+    if (normalizedMimeType === 'application/pdf') {
+      return 'pdf';
+    }
+
+    const normalizedPath = `${pathOrName || ''}`.split(/[?#]/)[0].toLowerCase();
+    if (/\.(png|jpg|jpeg|gif|webp|bmp|svg)$/.test(normalizedPath)) {
+      return 'image';
+    }
+    if (normalizedPath.endsWith('.pdf')) {
+      return 'pdf';
+    }
+
+    return 'file';
   }
 
   onDocumentFileSelected(file: File, docField: 'document_1' | 'document_2') {
@@ -478,6 +634,8 @@ export class AddCustomersComponent implements OnInit {
         if (payload.hasOwnProperty(fieldName)) {
           customFieldData[fieldName] = payload[fieldName];
           delete payload[fieldName];
+        } else if (this.model.hasOwnProperty(fieldName)) {
+          customFieldData[fieldName] = this.model[fieldName];
         }
       });
 
@@ -485,6 +643,11 @@ export class AddCustomersComponent implements OnInit {
       if (Object.keys(customFieldData).length > 0) {
         payload.custom_field = customFieldData;
       }
+
+      // Existing document paths must never be sent as replacement files.
+      // Binary fields are appended below only when the user selects a new File.
+      delete payload.document_1;
+      delete payload.document_2;
 
       const formData = new FormData();
       Object.keys(payload).forEach((key: string) => {
@@ -509,18 +672,24 @@ export class AddCustomersComponent implements OnInit {
 
       customerRequest$.subscribe({
         next: (res) => {
-          const toastTitle = this.isEditMode ? 'Updated' : 'Added';
+          const wasEditMode = this.isEditMode;
+          const toastTitle = wasEditMode ? 'Updated' : 'Added';
           this.model = {
             customer_type: 'Individual'
           };
           this.document1File = null;
           this.document2File = null;
+          this.closeDocumentPreview();
+          this.revokeAllDocumentObjectUrls();
           this.isEditMode = false;
           this.configureModeLabels();
           fm.resetForm();
           this.setDefaultCustomerValues();
           this.toastrService.success(res.message, toastTitle);
           this.isSubmitting = false;
+          if (wasEditMode) {
+            this.router.navigate(['/pages/sales/customer-list']);
+          }
         },
         error: (err) => {
           console.error('Submit error:', err);

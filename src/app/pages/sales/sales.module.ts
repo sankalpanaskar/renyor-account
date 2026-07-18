@@ -17,6 +17,7 @@ import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
 import { AddInvoiceComponent } from './add-invoice/add-invoice.component';
 import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 import { AddQuoteComponent } from './add-quote/add-quote.component';
+import { InvoiceListComponent } from './invoice-list/invoice-list.component';
 
 
 @NgModule({
@@ -30,6 +31,7 @@ import { AddQuoteComponent } from './add-quote/add-quote.component';
     AddInvoiceComponent,
     AddSalesOrderComponent,
     AddQuoteComponent,
+    InvoiceListComponent,
   ],
   imports: [
     CommonModule,
