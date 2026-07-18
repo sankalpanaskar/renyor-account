@@ -84,7 +84,7 @@ router.get('/fetch-units', auth, salesController.fetchUnits);
 router.post('/insert-payment-term', auth, formDataUpload.none(), salesController.insertPaymentTerm);
 router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
 router.post('/create-tax-rate', auth, formDataUpload.none(), salesController.createTaxRate);
-router.post('/create-invoice', auth,formDataUpload.none().salesController.createInvoice);
+router.post('/create-invoice', auth,formDataUpload.none(),salesController.createInvoice);
 router.post('/generate-pdf', auth, formDataUpload.none(), salesController.createDocumentPdf);
 router.get('/demo-invoice-pdf', auth, salesController.createDemoInvoicePdf);
 router.get('/demo-quotation-pdf', auth, salesController.createDemoQuotationPdf);
