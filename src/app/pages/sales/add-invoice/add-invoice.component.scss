@@ -26,6 +26,60 @@
   margin-top: 0.75rem;
 }
 
+.invoice-custom-fields {
+  margin: 12px 0 14px;
+  padding: 13px 15px 3px;
+  border: 1px solid #e3e8f2;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.invoice-custom-fields-header {
+  margin-bottom: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.invoice-custom-fields-header h3 {
+  margin: 0;
+  color: #263451;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.invoice-custom-fields-header p {
+  margin: 2px 0 0;
+  color: #8a96ae;
+  font-size: 11px;
+}
+
+.invoice-custom-fields-header > span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #edf3ff;
+  color: #3366ff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.invoice-custom-options {
+  min-height: 40px;
+  padding: 7px 3px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.invoice-custom-checkboxes {
+  padding: 7px 10px;
+  border: 1px solid #e0e6f0;
+  border-radius: 10px;
+  background: #f9fbff;
+}
+
 .table-card {
   border: 1px solid #e3e8f2;
   border-radius: 12px;

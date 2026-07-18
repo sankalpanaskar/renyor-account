@@ -37,6 +37,38 @@ export class AddCustomFieldComponent implements OnInit {
     });
   }
 
+  private normalizeFieldType(fieldType: any = this.model?.field_type): string {
+    return `${fieldType || ''}`.trim().toLowerCase().replace(/[\s_-]+/g, '');
+  }
+
+  supportsFieldOptions(fieldType: any = this.model?.field_type): boolean {
+    return ['checkbox', 'select', 'radio', 'radiobutton'].includes(this.normalizeFieldType(fieldType));
+  }
+
+  supportsPlaceholder(fieldType: any = this.model?.field_type): boolean {
+    const type = this.normalizeFieldType(fieldType);
+    return !!type && !['checkbox', 'radio', 'radiobutton'].includes(type);
+  }
+
+  supportsLengthValidation(fieldType: any = this.model?.field_type): boolean {
+    return ['text', 'textarea'].includes(this.normalizeFieldType(fieldType));
+  }
+
+  onFieldTypeChange(fieldType: any): void {
+    this.model.field_type = fieldType;
+
+    if (!this.supportsFieldOptions(fieldType)) {
+      this.model.field_options = '';
+    }
+    if (!this.supportsPlaceholder(fieldType)) {
+      this.model.placeholder = '';
+    }
+    if (!this.supportsLengthValidation(fieldType)) {
+      this.model.min_length = '';
+      this.model.max_length = '';
+    }
+  }
+
   getState(){
     this.globalService.getStates().subscribe({
       next: (res: any) => {
@@ -99,7 +131,13 @@ export class AddCustomFieldComponent implements OnInit {
   onSubmit(fm: any) {
   if (fm.invalid) return;
 
-  const payload = { ...fm.value };
+  const payload = {
+    ...fm.value,
+    field_options: this.supportsFieldOptions() ? (this.model.field_options || '') : '',
+    placeholder: this.supportsPlaceholder() ? (this.model.placeholder || '') : '',
+    min_length: this.supportsLengthValidation() ? (this.model.min_length ?? '') : '',
+    max_length: this.supportsLengthValidation() ? (this.model.max_length ?? '') : '',
+  };
   delete payload.module_id;
   if (this.isEditMode && this.customFieldId) {
     payload.custom_field_id = this.customFieldId;

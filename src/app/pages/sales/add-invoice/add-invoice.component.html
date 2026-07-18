@@ -2,7 +2,7 @@
   <nb-card class="invoice-form-card add-form-card">
     <nb-card-header>{{ isEditMode ? 'Update Invoice' : 'New Invoice' }}</nb-card-header>
 
-    <nb-card-body class="invoice-form-body" [nbSpinner]="isSubmitting" nbSpinnerStatus="primary">
+    <nb-card-body class="invoice-form-body" [nbSpinner]="isSubmitting || customFieldsLoading" nbSpinnerStatus="primary">
       <div class="row">
         <div class="col-lg-12 mb-10">
           <label class="small-label">Customer Name <span class="required">*</span></label>
@@ -92,15 +92,77 @@
             name="salesperson" [(ngModel)]="model.salesperson">
         </div>
 
+      </div>
+      <section class="invoice-custom-fields" *ngIf="customFields.length > 0">
+        <div class="invoice-custom-fields-header">
+          <div>
+            <h3>Custom Fields</h3>
+            <p>Additional invoice information</p>
+          </div>
+          <span>{{ customFields.length }} field{{ customFields.length === 1 ? '' : 's' }}</span>
+        </div>
+
+        <div class="row">
+          <div class="col-lg-6 mb-10" *ngFor="let field of customFields">
+            <label class="small-label">
+              {{ field.field_label || field.field_name }}
+              <span *ngIf="isFieldRequired(field)" class="required">*</span>
+            </label>
+
+            <ng-container [ngSwitch]="getFieldType(field)">
+              <textarea *ngSwitchCase="'textarea'" nbInput fullWidth shape="semi-round" rows="3"
+                [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                [name]="field.field_name" [required]="isFieldRequired(field)"
+                [attr.minlength]="field.min_length || null" [attr.maxlength]="field.max_length || null"
+                [ngModel]="model[field.field_name]"
+                (ngModelChange)="model[field.field_name] = $event"></textarea>
+
+              <nb-select *ngSwitchCase="'select'" shape="semi-round"
+                [placeholder]="field.placeholder || 'Select ' + (field.field_label || field.field_name)"
+                [name]="field.field_name" [required]="isFieldRequired(field)"
+                [ngModel]="model[field.field_name]"
+                (ngModelChange)="model[field.field_name] = $event">
+                <nb-option *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-option>
+              </nb-select>
+
+              <nb-radio-group *ngSwitchCase="'radio'" class="invoice-custom-options"
+                [name]="field.field_name" [required]="isFieldRequired(field)"
+                [ngModel]="model[field.field_name]"
+                (ngModelChange)="model[field.field_name] = $event">
+                <nb-radio *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-radio>
+              </nb-radio-group>
+
+              <div *ngSwitchCase="'checkbox'" class="invoice-custom-options invoice-custom-checkboxes">
+                <nb-checkbox *ngFor="let option of getFieldOptions(field)"
+                  [checked]="isCheckboxChecked(field.field_name, option)"
+                  (checkedChange)="onCheckboxOptionChange(field.field_name, option, $event)">
+                  {{ option }}
+                </nb-checkbox>
+              </div>
+
+              <input *ngSwitchDefault nbInput fullWidth shape="semi-round"
+                [type]="getFieldType(field)"
+                [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                [name]="field.field_name" [required]="isFieldRequired(field)"
+                [attr.minlength]="field.min_length || null" [attr.maxlength]="field.max_length || null"
+                [ngModel]="model[field.field_name]"
+                (ngModelChange)="model[field.field_name] = $event">
+            </ng-container>
+
+            <div *ngIf="hasFieldError(fm, field)" class="error-message">
+              {{ field.field_label || field.field_name }} is required.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="row">
         <div class="col-lg-12 mb-10">
           <label class="small-label">Subject</label>
           <textarea nbInput fullWidth shape="semi-round" rows="2"
             placeholder="Let your customer know what this Invoice is for"
             name="subject" [(ngModel)]="model.subject"></textarea>
         </div>
-      </div>
-
-      <div class="row">
         <div class="col-lg-12 mb-10">
           <div class="table-card">
             <div class="table-card-header">

@@ -61,6 +61,10 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           title: 'Manage Subscription',
           link: '/pages/organization-setting/package-list',
         },
+        {
+          title: 'Document Formats',
+          link: '/pages/document-format-configuration',
+        },
       ],
     }
   );

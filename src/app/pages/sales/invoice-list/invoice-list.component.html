@@ -1,111 +1,38 @@
-<div *ngIf="showInvoicePopup" class="customer-dialog-overlay" (click)="closeInvoicePopup()">
-  <div class="customer-dialog-wrapper invoice-details-dialog" role="dialog" aria-modal="true"
-    aria-label="Invoice details" (click)="$event.stopPropagation()">
-    <div class="customer-dialog-shell">
-      <div class="dialog-header">
-        <div class="entity-dialog-identity">
-          <div class="entity-dialog-avatar invoice-dialog-avatar"><nb-icon icon="file-text-outline"></nb-icon></div>
-          <div class="dialog-header-copy">
-            <span class="customer-code-badge">{{ getInvoiceStatus(selectedInvoice) }}</span>
-            <div class="customer-title">Invoice {{ getInvoiceNumber(selectedInvoice) }}</div>
-            <div class="entity-dialog-meta">
-              <span>{{ getCustomerName(selectedInvoice) }}</span>
-              <span aria-hidden="true">•</span>
-              <span>{{ formatDate(selectedInvoice?.invoice_date || selectedInvoice?.date) }}</span>
-            </div>
-          </div>
+<div *ngIf="showInvoicePopup" class="invoice-preview-overlay" (click)="closeInvoicePopup()">
+  <aside class="invoice-preview-drawer" role="dialog" aria-modal="true" aria-label="Invoice preview"
+    (click)="$event.stopPropagation()">
+    <header class="invoice-drawer-header">
+      <div class="invoice-drawer-identity">
+        <div class="invoice-drawer-icon"><nb-icon icon="file-text-outline"></nb-icon></div>
+        <div>
+          <span>{{ getInvoiceStatus(selectedInvoice) }}</span>
+          <h2>Invoice {{ getInvoiceNumber(selectedInvoice) }}</h2>
+          <p>{{ getCustomerName(selectedInvoice) }} · {{ formatDate(selectedInvoice?.invoice_date || selectedInvoice?.date) }}</p>
         </div>
-        <button type="button" class="close-btn" (click)="closeInvoicePopup()" aria-label="Close invoice details">
-          <nb-icon icon="close-outline"></nb-icon>
-        </button>
       </div>
+      <div class="invoice-drawer-actions">
+        <button type="button" class="drawer-action-btn" nbTooltip="Edit invoice" aria-label="Edit invoice"
+          (click)="editInvoice(selectedInvoice)"><nb-icon icon="edit-2-outline"></nb-icon></button>
+        <button type="button" class="drawer-action-btn download" nbTooltip="Download PDF" aria-label="Download PDF"
+          [disabled]="isDownloading(selectedInvoice)" (click)="downloadPdf(selectedInvoice)">
+          <nb-icon [icon]="isDownloading(selectedInvoice) ? 'loader-outline' : 'download-outline'"></nb-icon>
+        </button>
+        <button type="button" class="drawer-action-btn close" aria-label="Close invoice preview"
+          (click)="closeInvoicePopup()"><nb-icon icon="close-outline"></nb-icon></button>
+      </div>
+    </header>
 
-      <div class="popup-scroll-body">
-        <section class="dialog-group dialog-group-full">
-          <div class="dialog-group-title">Invoice Overview</div>
-          <div class="info-card-grid three-columns">
-            <div class="info-card" *ngFor="let field of [
-              { label: 'Invoice Number', value: getInvoiceNumber(selectedInvoice) },
-              { label: 'Order Number', value: selectedInvoice?.order_no || '-' },
-              { label: 'Payment Term', value: selectedInvoice?.term || selectedInvoice?.payment_term || '-' },
-              { label: 'Invoice Date', value: formatDate(selectedInvoice?.invoice_date || selectedInvoice?.date) },
-              { label: 'Due Date', value: formatDate(selectedInvoice?.due_date) },
-              { label: 'Salesperson', value: selectedInvoice?.salesperson || selectedInvoice?.sales_person || '-' }
-            ]">
-              <div class="section-label">{{ field.label }}</div>
-              <div class="section-value">{{ field.value }}</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="dialog-group dialog-group-full">
-          <div class="dialog-group-title">Amounts</div>
-          <div class="info-card-grid three-columns">
-            <div class="info-card">
-              <div class="section-label">Sub Total</div>
-              <div class="section-value amount-value">{{ formatCurrency(selectedInvoice?.sub_total) }}</div>
-            </div>
-            <div class="info-card">
-              <div class="section-label">Tax</div>
-              <div class="section-value">{{ formatCurrency(selectedInvoice?.tax_amount) }}</div>
-            </div>
-            <div class="info-card">
-              <div class="section-label">Total</div>
-              <div class="section-value amount-value">{{ formatCurrency(getInvoiceTotal(selectedInvoice)) }}</div>
-            </div>
-          </div>
-        </section>
-
-        <section class="dialog-group dialog-group-full" *ngIf="getInvoiceItems(selectedInvoice).length">
-          <div class="dialog-group-title">Invoice Items</div>
-          <div class="invoice-popup-table-wrap">
-            <table class="invoice-popup-table">
-              <thead>
-                <tr>
-                  <th>Item</th>
-                  <th>Qty</th>
-                  <th>Rate</th>
-                  <th>Tax</th>
-                  <th>Amount</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let item of getInvoiceItems(selectedInvoice)">
-                  <td>{{ item?.item_name || item?.item_details || item?.name || '-' }}</td>
-                  <td>{{ item?.quantity || 0 }}</td>
-                  <td>{{ formatCurrency(item?.rate) }}</td>
-                  <td>{{ item?.tax || '-' }}</td>
-                  <td>{{ formatCurrency(item?.amount) }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <div class="dialog-split-grid" *ngIf="selectedInvoice?.customer_notes || selectedInvoice?.terms_and_conditions || selectedInvoice?.terms_conditions">
-          <section class="dialog-group">
-            <div class="dialog-group-title">Customer Notes</div>
-            <div class="invoice-long-copy">{{ selectedInvoice?.customer_notes || 'No customer notes.' }}</div>
-          </section>
-          <section class="dialog-group">
-            <div class="dialog-group-title">Terms &amp; Conditions</div>
-            <div class="invoice-long-copy">{{ selectedInvoice?.terms_and_conditions || selectedInvoice?.terms_conditions || 'No terms added.' }}</div>
-          </section>
-        </div>
-
-        <div class="invoice-popup-actions">
-          <button type="button" nbButton size="small" status="basic" (click)="editInvoice(selectedInvoice)">
-            <nb-icon icon="edit-2-outline"></nb-icon> Edit
-          </button>
-          <button type="button" nbButton size="small" status="primary" (click)="downloadPdf(selectedInvoice)"
-            [disabled]="isDownloading(selectedInvoice)">
-            <nb-icon icon="download-outline"></nb-icon>
-            {{ isDownloading(selectedInvoice) ? 'Downloading...' : 'Download PDF' }}
-          </button>
-        </div>
+    <div class="invoice-drawer-body" [nbSpinner]="invoicePreviewLoading" nbSpinnerStatus="primary">
+      <div *ngIf="invoicePreviewError" class="invoice-preview-error">
+        <nb-icon icon="alert-triangle-outline"></nb-icon>
+        <strong>Preview unavailable</strong>
+        <span>{{ invoicePreviewError }}</span>
+      </div>
+      <div *ngIf="!invoicePreviewError" class="invoice-preview-stage">
+        <iframe title="Formatted invoice preview" [srcdoc]="invoicePreviewHtml"></iframe>
       </div>
     </div>
-  </div>
+  </aside>
 </div>
 
 <div *ngIf="pendingDeleteInvoice" class="invoice-confirm-overlay" (click)="cancelDeleteInvoice()">

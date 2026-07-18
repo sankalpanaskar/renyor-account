@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{DOCUMENT_TITLE}}</title>
+  <style>
+    @page { size: A4; margin: 38mm 14mm 22mm; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #fff; color: #24304a; font-family: Arial, sans-serif; font-size: 12px; }
+    .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 15mm; display: flex; flex-direction: column; }
+    .header { display: {{HEADER_DISPLAY}}; align-items: flex-start; justify-content: space-between; gap: 24px; padding-bottom: 18px; border-bottom: 3px solid {{ACCENT_COLOR}}; }
+    .brand-wrap { display: flex; align-items: flex-start; gap: 12px; }
+    .document-logo { width: 48px; max-height: 48px; object-fit: contain; }
+    .document-logo-placeholder { width: 46px; height: 46px; border-radius: 12px; background: {{ACCENT_COLOR}}; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 800; }
+    .business-name { margin: 0 0 4px; color: #1d2941; font-size: 18px; font-weight: 800; }
+    .business-address { color: #68748b; font-size: 10px; line-height: 1.5; }
+    .document-meta { text-align: right; }
+    .document-meta h1 { margin: 0 0 7px; color: {{ACCENT_COLOR}}; font-size: 27px; letter-spacing: .05em; text-transform: uppercase; }
+    .document-number { color: #66728a; font-size: 11px; }
+    .document-number strong { color: #263451; }
+    .body { display: {{BODY_DISPLAY}}; flex: 1 0 auto; }
+    .intro { margin: 18px 0 0; color: #65718a; line-height: 1.55; }
+    .info-grid { margin: 22px 0; display: grid; grid-template-columns: 1fr 1fr .9fr; gap: 18px; }
+    .section-label { margin-bottom: 7px; color: {{ACCENT_COLOR}}; font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .customer-card { padding: 12px 14px; border: 1px solid #e4e9f1; border-radius: 9px; background: #fafbfe; line-height: 1.6; }
+    .customer-card strong { color: #25314b; font-size: 13px; }
+    .details { width: 100%; border-collapse: collapse; }
+    .details td { padding: 5px 0; border-bottom: 1px solid #edf0f5; }
+    .details td:first-child { color: #7d889e; }
+    .details td:last-child { color: #263451; font-weight: 700; text-align: right; }
+    .items-wrap { overflow: hidden; border: 1px solid #dde4ee; border-radius: 9px; }
+    .items { width: 100%; border-collapse: collapse; }
+    .items th { padding: 9px 8px; background: {{ACCENT_COLOR}}; color: #fff; font-size: 9px; letter-spacing: .05em; text-align: left; text-transform: uppercase; }
+    .items td { padding: 10px 8px; border-bottom: 1px solid #ebeff5; color: #35415b; font-size: 10px; }
+    .items tbody tr:last-child td { border-bottom: 0; }
+    .align-left { text-align: left !important; } .align-center { text-align: center !important; } .align-right { text-align: right !important; }
+    .summary { width: 285px; margin: 18px 0 24px auto; }
+    .summary-row { padding: 6px 2px; display: flex; justify-content: space-between; border-bottom: 1px solid #edf0f5; }
+    .summary-row span:first-child { color: #78839a; }
+    .summary-row.total { margin-top: 4px; padding: 10px 8px; border: 0; border-radius: 7px; background: #f0f4ff; color: {{ACCENT_COLOR}}; font-size: 14px; font-weight: 800; }
+    .notes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .note { min-height: 82px; padding: 10px; border: 1px solid #e5e9f1; border-radius: 8px; color: #5f6b82; font-size: 10px; line-height: 1.55; }
+    .payment { display: {{PAYMENT_DISPLAY}}; }
+    .footer { display: {{FOOTER_DISPLAY}}; margin-top: auto; padding-top: 12px; border-top: 1px solid #dfe5ee; color: #8a95aa; font-size: 9px; text-align: center; line-height: 1.5; }
+    .page-number { margin-top: 4px; color: {{ACCENT_COLOR}}; font-weight: 700; }
+    @media print {
+      html, body { width: auto; height: auto; overflow: visible; }
+      .page { width: auto; min-height: 0; margin: 0; padding: 0; display: block; }
+      .header {
+        position: fixed;
+        top: -30mm;
+        left: 0;
+        right: 0;
+        height: 25mm;
+        padding-bottom: 8px;
+        background: #fff;
+      }
+      .footer {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: -16mm;
+        height: 12mm;
+        margin: 0;
+        padding-top: 6px;
+        background: #fff;
+      }
+      .intro { margin-top: 0; }
+      .info-grid, .summary, .notes-grid { break-inside: avoid; page-break-inside: avoid; }
+      .items-wrap { overflow: visible; }
+      .items { page-break-inside: auto; }
+      .items thead { display: table-header-group; }
+      .items tbody { display: table-row-group; }
+      .items tr { break-inside: avoid; page-break-inside: avoid; page-break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <div class="brand-wrap">{{LOGO_BLOCK}}<div><div class="business-name">{{BUSINESS_NAME}}</div><div class="business-address">{{BUSINESS_ADDRESS}}</div></div></div>
+      <div class="document-meta"><h1>{{DOCUMENT_TITLE}}</h1><div class="document-number">{{DOCUMENT_NUMBER_LABEL}} <strong>#{{DOCUMENT_NUMBER}}</strong></div></div>
+    </header>
+    <div class="body">
+      <div class="intro">{{BODY_INTRO}}</div>
+      <section class="info-grid">
+        <div><div class="section-label">{{CUSTOMER_LABEL}}</div><div class="customer-card">{{BILL_TO}}</div></div>
+        <div><div class="section-label">Ship To</div><div class="customer-card">{{SHIP_TO}}</div></div>
+        <div><div class="section-label">Invoice Details</div><table class="details">{{DOCUMENT_DETAILS}}</table></div>
+      </section>
+      <div class="items-wrap"><table class="items"><thead><tr>{{TABLE_HEADERS}}</tr></thead><tbody>{{TABLE_ROW}}</tbody></table></div>
+      <div class="summary"><div class="summary-row"><span>Sub Total</span><strong>{{SUB_TOTAL}}</strong></div><div class="summary-row"><span>{{TAX_LABEL}}</span><strong>{{TAX_AMOUNT}}</strong></div><div class="summary-row total"><span>Total</span><span>{{TOTAL}}</span></div></div>
+      <section class="notes-grid">
+        <div class="note payment"><div class="section-label">Payment Details</div>{{PAYMENT_DETAILS}}</div>
+        <div class="note"><div class="section-label">Customer Notes</div>{{NOTES}}</div>
+        <div class="note"><div class="section-label">Terms &amp; Conditions</div>{{TERMS}}</div>
+      </section>
+    </div>
+    <footer class="footer">{{FOOTER_TEXT}}<div class="page-number">{{PAGE_NUMBER}}</div></footer>
+  </main>
+</body>
+</html>

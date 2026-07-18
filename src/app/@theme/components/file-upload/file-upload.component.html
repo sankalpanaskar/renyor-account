@@ -4,6 +4,7 @@
     (dragover)="allowDrop($event)"
     (drop)="onDrop($event)">
     <input
+      #fileInput
       class="upload-input"
       type="file"
       [name]="inputName"
@@ -12,14 +13,26 @@
       [required]="required"
       (change)="onInputChange($event)" />
 
-    <div class="upload-content">
-      <nb-icon icon="cloud-upload-outline"></nb-icon>
-      <div class="upload-title">Click to upload</div>
-      <div class="upload-helper" *ngIf="helperText">{{ helperText }}</div>
+    <div class="upload-layout">
+      <div class="upload-content">
+        <div class="upload-primary">
+          <nb-icon icon="cloud-upload-outline"></nb-icon>
+          <div class="upload-title">Click to upload</div>
+        </div>
+        <div class="upload-helper" *ngIf="helperText">{{ helperText }}</div>
+      </div>
+
+      <div class="upload-previews" *ngIf="selectedFiles.length" aria-label="Selected file previews"
+        (click)="onPreviewAreaClick($event)">
+        <div class="upload-preview" *ngFor="let file of selectedFiles" [title]="file.name">
+          <img *ngIf="isImageFile(file)" [src]="getPreviewUrl(file)" [alt]="file.name">
+          <nb-icon *ngIf="!isImageFile(file)" [icon]="getFileIcon(file)"></nb-icon>
+          <button type="button" class="preview-remove" [attr.aria-label]="'Remove ' + file.name"
+            title="Remove file" (click)="removeFile(file, $event)">
+            <nb-icon icon="close-outline"></nb-icon>
+          </button>
+        </div>
+      </div>
     </div>
   </label>
-
-  <div class="file-list" *ngIf="selectedFiles.length">
-    <span class="file-chip" *ngFor="let file of selectedFiles">{{ file.name }}</span>
-  </div>
 </div>

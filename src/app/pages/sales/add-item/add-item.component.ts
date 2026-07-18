@@ -12,6 +12,8 @@ import { UnitOption } from '../../shared/unit-popup/unit-popup.component';
 export class AddItemComponent implements OnInit {
   model: any = this.getEmptyModel();
   isSubmitting: boolean = false;
+  customFieldsLoading: boolean = false;
+  customFields: any[] = [];
   itemImageFile: File | null = null;
   showGstTaxRatePopup: boolean = false;
   showUnitPopup: boolean = false;
@@ -37,6 +39,193 @@ export class AddItemComponent implements OnInit {
     this.fetchGstTaxRates();
     this.fetchUnits();
     this.getVendorList();
+    this.getCustomFields();
+  }
+
+  getCustomFields(): void {
+    this.customFieldsLoading = true;
+    this.globalService.fetchCustomFieldsByModule(37).subscribe({
+      next: (res: any) => {
+        const fields = Array.isArray(res?.data)
+          ? res.data
+          : (Array.isArray(res) ? res : []);
+
+        this.customFields = fields
+          .filter((field: any) => Number(field?.show_in_form) === 1 && Number(field?.status) === 1)
+          .sort((a: any, b: any) => Number(a?.field_order || 0) - Number(b?.field_order || 0));
+        this.applyCustomFieldDefaults();
+        this.customFieldsLoading = false;
+      },
+      error: (error: any) => {
+        this.customFields = [];
+        this.customFieldsLoading = false;
+        this.toastrService.danger(
+          error?.error?.message || 'Custom fields could not be loaded.',
+          'Custom Fields'
+        );
+      },
+    });
+  }
+
+  private applyCustomFieldDefaults(): void {
+    this.customFields.forEach((field: any) => {
+      const fieldName = `${field?.field_name || ''}`.trim();
+      if (!fieldName) {
+        return;
+      }
+
+      const hasValue = this.model[fieldName] !== undefined && this.model[fieldName] !== null;
+      if (this.getFieldType(field) === 'checkbox') {
+        this.model[fieldName] = this.parseCheckboxDefaultValues(
+          hasValue ? this.model[fieldName] : field?.default_value
+        );
+      } else if (!hasValue) {
+        this.model[fieldName] = field?.default_value ?? '';
+      }
+    });
+  }
+
+  getFieldType(field: any): string {
+    const rawType = `${field?.field_type || 'text'}`.trim().toLowerCase();
+    const type = rawType.replace(/[\s_-]+/g, '');
+
+    if (type === 'radiobutton') {
+      return 'radio';
+    }
+    if (type === 'checkboxes') {
+      return 'checkbox';
+    }
+    if (type === 'datepicker') {
+      return 'date';
+    }
+
+    const allowedTypes = ['text', 'textarea', 'number', 'email', 'date', 'select', 'radio', 'checkbox'];
+    return allowedTypes.includes(type) ? type : 'text';
+  }
+
+  getFieldOptions(field: any): string[] {
+    const rawOptions = field?.field_options;
+    if (!rawOptions) {
+      return [];
+    }
+
+    if (Array.isArray(rawOptions)) {
+      return rawOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+    }
+
+    if (typeof rawOptions === 'string') {
+      const normalizedOptions = rawOptions.trim();
+      if (!normalizedOptions) {
+        return [];
+      }
+
+      try {
+        const parsedOptions = JSON.parse(normalizedOptions);
+        if (Array.isArray(parsedOptions)) {
+          return parsedOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+        if (parsedOptions && typeof parsedOptions === 'object') {
+          return Object.values(parsedOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+      } catch {
+      }
+
+      return normalizedOptions.split(/[\n,|]/).map((option: string) => option.trim()).filter(Boolean);
+    }
+
+    if (typeof rawOptions === 'object') {
+      return Object.values(rawOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+    }
+
+    return [];
+  }
+
+  private normalizeFieldOption(option: any): string {
+    if (option === null || option === undefined) {
+      return '';
+    }
+    if (typeof option === 'object') {
+      return `${option?.label ?? option?.name ?? option?.title ?? option?.value ?? ''}`.trim();
+    }
+    return `${option}`.trim();
+  }
+
+  private parseCheckboxDefaultValues(defaultValue: any): string[] {
+    if (!defaultValue) {
+      return [];
+    }
+    if (Array.isArray(defaultValue)) {
+      return defaultValue.map((value: any) => `${value}`.trim()).filter(Boolean);
+    }
+    if (typeof defaultValue === 'string') {
+      const normalizedValue = defaultValue.trim();
+      if (!normalizedValue) {
+        return [];
+      }
+      try {
+        const parsedValue = JSON.parse(normalizedValue);
+        if (Array.isArray(parsedValue)) {
+          return parsedValue.map((value: any) => `${value}`.trim()).filter(Boolean);
+        }
+      } catch {
+      }
+      return normalizedValue.split(/[\n,|]/).map((value: string) => value.trim()).filter(Boolean);
+    }
+    return [`${defaultValue}`.trim()].filter(Boolean);
+  }
+
+  isFieldRequired(field: any): boolean {
+    return Number(field?.is_required) === 1;
+  }
+
+  isCheckboxChecked(fieldName: string, option: string): boolean {
+    const selectedOptions = this.model?.[fieldName];
+    return Array.isArray(selectedOptions) && selectedOptions.includes(option);
+  }
+
+  onCheckboxOptionChange(fieldName: string, option: string, checkedValue: any): void {
+    const checked = typeof checkedValue === 'boolean' ? checkedValue : !!checkedValue?.checked;
+    const currentValue = this.model?.[fieldName];
+    const selectedOptions = Array.isArray(currentValue) ? [...currentValue] : [];
+
+    if (checked && !selectedOptions.includes(option)) {
+      selectedOptions.push(option);
+    } else if (!checked) {
+      const optionIndex = selectedOptions.indexOf(option);
+      if (optionIndex !== -1) {
+        selectedOptions.splice(optionIndex, 1);
+      }
+    }
+
+    this.model[fieldName] = selectedOptions;
+  }
+
+  hasFieldError(fm: any, field: any): boolean {
+    if (!fm?.submitted || !this.isFieldRequired(field)) {
+      return false;
+    }
+
+    const fieldName = field?.field_name;
+    if (this.getFieldType(field) === 'checkbox') {
+      const selectedOptions = this.model?.[fieldName];
+      return !Array.isArray(selectedOptions) || selectedOptions.length === 0;
+    }
+
+    return !!fm?.controls?.[fieldName]?.invalid;
+  }
+
+  private hasRequiredCustomFieldError(): boolean {
+    return this.customFields.some((field: any) => {
+      if (!this.isFieldRequired(field)) {
+        return false;
+      }
+
+      const value = this.model?.[field?.field_name];
+      if (this.getFieldType(field) === 'checkbox') {
+        return !Array.isArray(value) || value.length === 0;
+      }
+      return value === undefined || value === null || `${value}`.trim() === '';
+    });
   }
 
   getAccountItem(): void {
@@ -124,8 +313,8 @@ export class AddItemComponent implements OnInit {
       sac: '',
       tax_preference: '',
       gst_rates: '',
-      enable_sales_information: false,
-      enable_purchase_information: false,
+      enable_sales_information: true,
+      enable_purchase_information: true,
       selling_price: '',
       sales_account: '',
       sales_account_description: '',
@@ -273,9 +462,29 @@ export class AddItemComponent implements OnInit {
       return;
     }
 
+    if (this.hasRequiredCustomFieldError()) {
+      this.toastrService.danger('Complete all required custom fields.', 'Validation Failed');
+      return;
+    }
+
     if (fm.valid) {
       this.isSubmitting = true;
       const payload = { ...this.model };
+      const customFieldData: any = {};
+
+      this.customFields.forEach((field: any) => {
+        const fieldName = `${field?.field_name || ''}`.trim();
+        if (!fieldName) {
+          return;
+        }
+        customFieldData[fieldName] = payload[fieldName] ?? '';
+        delete payload[fieldName];
+      });
+
+      payload.module_id = 37;
+      if (Object.keys(customFieldData).length > 0) {
+        payload.custom_field = customFieldData;
+      }
 
       if (payload.type === 'Goods') {
         delete payload.sac;
@@ -317,6 +526,7 @@ export class AddItemComponent implements OnInit {
       this.globalService.addItem(formData).subscribe({
         next: (res: any) => {
           this.model = this.getEmptyModel();
+          this.applyCustomFieldDefaults();
           this.itemImageFile = null;
           fm.resetForm(this.model);
           this.toastrService.success(res?.message || 'Item added successfully.', 'Added');

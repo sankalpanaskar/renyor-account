@@ -7,6 +7,7 @@ import { authGuard } from '../auth/auth.guard';
 import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
+import { DocumentFormatConfigComponent } from './shared/document-format-config/document-format-config.component';
 
 
 const routes: Routes = [{
@@ -66,6 +67,11 @@ const routes: Routes = [{
     {
       path: 'settings',
       component: SettingsComponent,
+      canActivate: [authGuard],
+    },
+    {
+      path: 'document-format-configuration',
+      component: DocumentFormatConfigComponent,
       canActivate: [authGuard],
     },
     {

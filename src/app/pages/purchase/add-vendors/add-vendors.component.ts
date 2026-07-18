@@ -314,6 +314,10 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
       return 'checkbox';
     }
 
+    if (type === 'datepicker') {
+      return 'date';
+    }
+
     const allowed = ['text', 'textarea', 'number', 'email', 'date', 'select', 'radio', 'checkbox'];
     return allowed.includes(type) ? type : 'text';
   }

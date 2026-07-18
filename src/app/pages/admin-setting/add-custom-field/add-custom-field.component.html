@@ -24,25 +24,32 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Field Type</label>
                         <nb-select shape="semi-round" placeholder="Select Type" name="field_type"
-                            required #field_type="ngModel" [(ngModel)]="model.field_type">
+                            required #field_type="ngModel" [(ngModel)]="model.field_type"
+                            (selectedChange)="onFieldTypeChange($event)">
                             <nb-option value="Text">Text</nb-option>
+                            <nb-option value="Textarea">Textarea</nb-option>
                             <nb-option value="Number">Number</nb-option>
                             <nb-option value="Date">Date</nb-option>
+                            <nb-option value="Datepicker">Datepicker</nb-option>
+                            <nb-option value="Checkbox">Checkbox</nb-option>
                         </nb-select>
                         <div *ngIf="fm.submitted && field_type.invalid" class="error-message">
                             Select Field Type
                         </div>
                     </div>
-                    <div class="col-lg-6 mb-10">
+                    <div class="col-lg-6 mb-10" *ngIf="supportsFieldOptions()">
                         <label class="small-label">Field Options<span
                                 style="color:#d32f2f">*</span></label>
-                        <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Field Options"
-                            name="field_options" required #field_options="ngModel" [(ngModel)]="model.field_options">
+                        <textarea nbInput fullWidth shape="semi-round"
+                            placeholder="Enter options separated by comma or new line"
+                            name="field_options" required #field_options="ngModel"
+                            [(ngModel)]="model.field_options" rows="3"></textarea>
                         <div *ngIf="fm.submitted && field_options.invalid" class="error-message">
                             Field options are required
                         </div>
+                        <div class="field-hint">Example: Option 1, Option 2, Option 3</div>
                     </div>
-                    <div class="col-lg-6 mb-10">
+                    <div class="col-lg-6 mb-10" *ngIf="supportsPlaceholder()">
                         <label class="small-label">Placeholder<span
                                 style="color:#d32f2f">*</span></label>
                         <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Placeholder"
@@ -68,14 +75,14 @@
                             Select if the field is required
                         </div>
                     </div>
-                    <div class="col-lg-6 mb-10">
+                    <div class="col-lg-6 mb-10" *ngIf="supportsLengthValidation()">
                         <label class="small-label">Min Length</label>
-                        <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Min Length"
+                        <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Min Length" min="0"
                             name="min_length" #min_length="ngModel" [(ngModel)]="model.min_length">
                     </div>
-                    <div class="col-lg-6 mb-10">
+                    <div class="col-lg-6 mb-10" *ngIf="supportsLengthValidation()">
                         <label class="small-label">Max Length</label>
-                        <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Max Length"
+                        <input type="number" nbInput fullWidth shape="semi-round" placeholder="Enter Max Length" min="0"
                             name="max_length" #max_length="ngModel" [(ngModel)]="model.max_length">
                     </div>
                     <div class="col-lg-6 mb-10">

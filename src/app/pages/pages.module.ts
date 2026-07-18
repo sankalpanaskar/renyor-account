@@ -11,6 +11,7 @@ import { ProfileComponent } from './profile/profile.component';
 import { CustomDashboardComponent } from './custom-dashboard/custom-dashboard.component';
 import { SettingsComponent } from './settings/settings.component';
 import { RouterModule } from '@angular/router';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   imports: [
@@ -32,7 +33,8 @@ import { RouterModule } from '@angular/router';
     Ng2SmartTableModule,
     FormsModule,
     NbSpinnerModule,
-    RouterModule
+    RouterModule,
+    SharedModule
 
   ],
   declarations: [

@@ -63,6 +63,7 @@ interface InvoiceItemOption {
 })
 export class AddInvoiceComponent implements OnInit {
   isSubmitting = false;
+  customFieldsLoading = false;
   isEditMode = false;
   invoiceId: string | number | null = null;
   showInvoiceNumberPopup = false;
@@ -76,6 +77,8 @@ export class AddInvoiceComponent implements OnInit {
   taxOptions: InvoiceTaxOption[] = [
     { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' }
   ];
+  customFields: any[] = [];
+  private readonly invoiceModuleId = 54;
 
   model: any = {
     customer_id: '',
@@ -112,6 +115,7 @@ export class AddInvoiceComponent implements OnInit {
     this.fetchItems();
     this.fetchPaymentTerms();
     this.fetchTaxRates();
+    this.fetchCustomFields();
     this.applyInvoiceNumber();
     this.model.invoice_date = this.normalizeDate(new Date());
     this.model.due_date = this.normalizeDate(new Date());
@@ -135,6 +139,7 @@ export class AddInvoiceComponent implements OnInit {
     this.invoiceId = invoice?.invoice_id ?? invoice?.id ?? null;
     this.model = {
       ...this.model,
+      ...this.parseCustomFieldValues(invoice?.custom_field),
       customer_id: invoice?.customer_id ?? invoice?.customer?.id ?? '',
       invoice_no: invoice?.invoice_no ?? invoice?.invoice_number ?? '',
       order_no: invoice?.order_no ?? invoice?.order_number ?? '',
@@ -163,6 +168,184 @@ export class AddInvoiceComponent implements OnInit {
       item_list_open: false,
       item_is_manual: !!item?.is_manual,
     }));
+  }
+
+  private parseCustomFieldValues(value: any): any {
+    if (!value) {
+      return {};
+    }
+    if (typeof value === 'string') {
+      try {
+        const parsedValue = JSON.parse(value);
+        return parsedValue && typeof parsedValue === 'object' ? parsedValue : {};
+      } catch {
+        return {};
+      }
+    }
+    return typeof value === 'object' ? { ...value } : {};
+  }
+
+  fetchCustomFields(): void {
+    this.customFieldsLoading = true;
+    this.globalService.fetchCustomFieldsByModule(this.invoiceModuleId).subscribe({
+      next: (res: any) => {
+        const fields = Array.isArray(res?.data)
+          ? res.data
+          : (Array.isArray(res) ? res : []);
+        this.customFields = fields
+          .filter((field: any) => Number(field?.show_in_form) === 1 && Number(field?.status) === 1)
+          .sort((a: any, b: any) => Number(a?.field_order || 0) - Number(b?.field_order || 0));
+        this.applyCustomFieldDefaults();
+        this.customFieldsLoading = false;
+      },
+      error: (error: any) => {
+        this.customFields = [];
+        this.customFieldsLoading = false;
+        this.toastrService.danger(
+          error?.error?.message || 'Invoice custom fields could not be loaded.',
+          'Custom Fields',
+        );
+      },
+    });
+  }
+
+  private applyCustomFieldDefaults(): void {
+    this.customFields.forEach((field: any) => {
+      const fieldName = `${field?.field_name || ''}`.trim();
+      if (!fieldName) {
+        return;
+      }
+      const hasValue = this.model[fieldName] !== undefined && this.model[fieldName] !== null;
+      if (this.getFieldType(field) === 'checkbox') {
+        this.model[fieldName] = this.parseCheckboxValues(hasValue ? this.model[fieldName] : field?.default_value);
+      } else if (!hasValue) {
+        this.model[fieldName] = field?.default_value ?? '';
+      }
+    });
+  }
+
+  getFieldType(field: any): string {
+    const type = `${field?.field_type || 'text'}`.trim().toLowerCase().replace(/[\s_-]+/g, '');
+    if (type === 'radiobutton') {
+      return 'radio';
+    }
+    if (type === 'checkboxes') {
+      return 'checkbox';
+    }
+    if (type === 'datepicker') {
+      return 'date';
+    }
+    const allowedTypes = ['text', 'textarea', 'number', 'email', 'date', 'select', 'radio', 'checkbox'];
+    return allowedTypes.includes(type) ? type : 'text';
+  }
+
+  getFieldOptions(field: any): string[] {
+    const rawOptions = field?.field_options;
+    if (!rawOptions) {
+      return [];
+    }
+    if (Array.isArray(rawOptions)) {
+      return rawOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+    }
+    if (typeof rawOptions === 'string') {
+      const normalizedOptions = rawOptions.trim();
+      if (!normalizedOptions) {
+        return [];
+      }
+      try {
+        const parsedOptions = JSON.parse(normalizedOptions);
+        if (Array.isArray(parsedOptions)) {
+          return parsedOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+        if (parsedOptions && typeof parsedOptions === 'object') {
+          return Object.values(parsedOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+      } catch {
+      }
+      return normalizedOptions.split(/[\n,|]/).map((option: string) => option.trim()).filter(Boolean);
+    }
+    return typeof rawOptions === 'object'
+      ? Object.values(rawOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean)
+      : [];
+  }
+
+  private normalizeFieldOption(option: any): string {
+    if (option === null || option === undefined) {
+      return '';
+    }
+    if (typeof option === 'object') {
+      return `${option?.label ?? option?.name ?? option?.title ?? option?.value ?? ''}`.trim();
+    }
+    return `${option}`.trim();
+  }
+
+  private parseCheckboxValues(value: any): string[] {
+    if (!value) {
+      return [];
+    }
+    if (Array.isArray(value)) {
+      return value.map((item: any) => `${item}`.trim()).filter(Boolean);
+    }
+    if (typeof value === 'string') {
+      const normalizedValue = value.trim();
+      if (!normalizedValue) {
+        return [];
+      }
+      try {
+        const parsedValue = JSON.parse(normalizedValue);
+        if (Array.isArray(parsedValue)) {
+          return parsedValue.map((item: any) => `${item}`.trim()).filter(Boolean);
+        }
+      } catch {
+      }
+      return normalizedValue.split(/[\n,|]/).map((item: string) => item.trim()).filter(Boolean);
+    }
+    return [`${value}`.trim()].filter(Boolean);
+  }
+
+  isFieldRequired(field: any): boolean {
+    return Number(field?.is_required) === 1;
+  }
+
+  isCheckboxChecked(fieldName: string, option: string): boolean {
+    return Array.isArray(this.model?.[fieldName]) && this.model[fieldName].includes(option);
+  }
+
+  onCheckboxOptionChange(fieldName: string, option: string, checkedValue: any): void {
+    const checked = typeof checkedValue === 'boolean' ? checkedValue : !!checkedValue?.checked;
+    const selectedOptions = Array.isArray(this.model?.[fieldName]) ? [...this.model[fieldName]] : [];
+    if (checked && !selectedOptions.includes(option)) {
+      selectedOptions.push(option);
+    } else if (!checked) {
+      const optionIndex = selectedOptions.indexOf(option);
+      if (optionIndex !== -1) {
+        selectedOptions.splice(optionIndex, 1);
+      }
+    }
+    this.model[fieldName] = selectedOptions;
+  }
+
+  hasFieldError(form: any, field: any): boolean {
+    if (!form?.submitted || !this.isFieldRequired(field)) {
+      return false;
+    }
+    const fieldName = field?.field_name;
+    if (this.getFieldType(field) === 'checkbox') {
+      return !Array.isArray(this.model?.[fieldName]) || this.model[fieldName].length === 0;
+    }
+    return !!form?.controls?.[fieldName]?.invalid;
+  }
+
+  private hasRequiredCustomFieldError(): boolean {
+    return this.customFields.some((field: any) => {
+      if (!this.isFieldRequired(field)) {
+        return false;
+      }
+      const value = this.model?.[field?.field_name];
+      return this.getFieldType(field) === 'checkbox'
+        ? !Array.isArray(value) || value.length === 0
+        : value === undefined || value === null || `${value}`.trim() === '';
+    });
   }
 
   private getInvoiceItems(invoice: any): any[] {
@@ -929,6 +1112,11 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   onSubmit(form: any): void {
+    if (this.hasRequiredCustomFieldError()) {
+      this.toastrService.danger('Complete all required custom fields.', 'Validation Failed');
+      return;
+    }
+
     if (!form.valid) {
       return;
     }
@@ -940,8 +1128,18 @@ export class AddInvoiceComponent implements OnInit {
       return;
     }
 
+    const customFieldData = this.customFields.reduce((values: any, field: any) => {
+      const fieldName = `${field?.field_name || ''}`.trim();
+      if (fieldName) {
+        values[fieldName] = this.model?.[fieldName] ?? '';
+      }
+      return values;
+    }, {});
+
     const payload = {
       ...(this.isEditMode && this.invoiceId ? { invoice_id: this.invoiceId } : {}),
+      module_id: this.invoiceModuleId,
+      ...(Object.keys(customFieldData).length ? { custom_field: customFieldData } : {}),
       customer_id: this.model.customer_id,
       invoice_no: `${this.model.invoice_no || ''}`.trim(),
       order_no: `${this.model.order_no || ''}`.trim(),

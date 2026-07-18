@@ -31,6 +31,14 @@ export class CustomFieldListComponent implements OnInit {
     this.getCustomFields();
   }
 
+  get activeCustomFieldsCount(): number {
+    return this.allCustomFields.filter((field: any) => this.isActiveStatus(field)).length;
+  }
+
+  get inactiveCustomFieldsCount(): number {
+    return this.allCustomFields.length - this.activeCustomFieldsCount;
+  }
+
   private getModuleOptionLabel(module: any): string {
     return (
       module?.menu_name ||
@@ -185,6 +193,14 @@ export class CustomFieldListComponent implements OnInit {
         String(value || '').toLowerCase().includes(searchText)
       );
     });
+  }
+
+  clearSearch(): void {
+    this.onSearch('');
+  }
+
+  trackByCustomField(index: number, field: any): any {
+    return field?.fullData?.id ?? field?.fullData?.field_id ?? field?.name ?? index;
   }
 
   getStatusLabel(status: any): string {

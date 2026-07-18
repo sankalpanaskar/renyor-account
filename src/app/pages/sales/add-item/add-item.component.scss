@@ -182,3 +182,72 @@ nb-card-body {
 .payment-term-add-btn {
   flex: 0 0 auto;
 }
+
+.information-toggle-row {
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+:host ::ng-deep .information-toggle .text {
+  color: #263451;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.custom-fields-section {
+  margin: 4px 0 14px;
+  padding: 14px 16px 4px;
+  border: 1px solid #e4eaf4;
+  border-radius: 14px;
+  background: #f9fbff;
+}
+
+.custom-fields-heading {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.custom-fields-heading h3 {
+  margin: 0;
+  color: #263451;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.custom-fields-heading p {
+  margin: 2px 0 0;
+  color: #8a96ae;
+  font-size: 11px;
+}
+
+.custom-fields-heading > span {
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: #edf3ff;
+  color: #3366ff;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.custom-fields-grid {
+  padding-bottom: 0;
+}
+
+.custom-option-group {
+  min-height: 40px;
+  padding: 8px 2px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.custom-checkbox-group {
+  padding: 7px 10px;
+  border: 1px solid #e0e6f0;
+  border-radius: 10px;
+  background: #fff;
+}

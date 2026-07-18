@@ -1,97 +1,119 @@
-<div class="asset-list-container">
-  <div class="row">
-    <div class="col-lg-12">
-      <nb-card>
-        <nb-card-header class="section-header d-flex justify-content-between align-items-center">
-          <span>Custom Field List</span>
+<div class="entity-list-container custom-field-list-page">
+  <section class="entity-summary-grid" aria-label="Custom field summary">
+    <article class="entity-summary-card summary-blue">
+      <div class="entity-summary-icon"><nb-icon icon="options-2-outline"></nb-icon></div>
+      <div><span>Total fields</span><strong>{{ allCustomFields.length }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-green">
+      <div class="entity-summary-icon"><nb-icon icon="checkmark-circle-2-outline"></nb-icon></div>
+      <div><span>Active</span><strong>{{ activeCustomFieldsCount }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-orange">
+      <div class="entity-summary-icon"><nb-icon icon="minus-circle-outline"></nb-icon></div>
+      <div><span>Inactive</span><strong>{{ inactiveCustomFieldsCount }}</strong></div>
+    </article>
+  </section>
 
-          <button
-            nbButton
-            status="primary"
-            size="small"
-            shape="semi-round"
-            (click)="gotoAddCustomField()"
-          >
+  <nb-card class="entity-list-card">
+    <nb-card-body class="entity-list-body" [nbSpinner]="loading || isSubmitting" nbSpinnerStatus="primary">
+      <div class="entity-catalog-toolbar">
+        <div class="entity-catalog-heading">
+          <h2>Custom Field List</h2>
+        </div>
+        <div class="entity-catalog-actions">
+          <div class="entity-search-wrap">
+            <nb-icon icon="search-outline"></nb-icon>
+            <input
+              type="search"
+              aria-label="Search custom fields"
+              placeholder="Search field, type or module"
+              [ngModel]="lastSearchForm"
+              (ngModelChange)="onSearch($event)">
+            <button *ngIf="lastSearchForm" type="button" aria-label="Clear search" (click)="clearSearch()">
+              <nb-icon icon="close-outline"></nb-icon>
+            </button>
+          </div>
+          <button nbButton status="primary" size="small" shape="semi-round" type="button"
+            class="entity-add-btn" (click)="gotoAddCustomField()">
+            <nb-icon icon="plus-outline"></nb-icon>
             Add Custom Field
           </button>
-        </nb-card-header>
+        </div>
+      </div>
 
-        <nb-card-body [nbSpinner]="isSubmitting" nbSpinnerStatus="primary" class="asset-list-body">
-          <div *ngIf="loading" class="loading-overlay d-flex justify-content-center align-items-center">
-            <nb-spinner size="large" status="primary"></nb-spinner>
-          </div>
-
-          <div [class.content-blur]="loading">
-            <div class="row mt-3">
-              <div class="col-12" style="padding-left: 30px;padding-right: 30px;">
-                <input
-                  type="text"
-                  nbInput
-                  fullWidth
-                  shape="semi-round"
-                  #search
-                  class="search"
-                  placeholder="Search Custom Field..."
-                  (input)="onSearch(search.value)"
-                  (keydown.enter)="onSearch(search.value)"
-                />
-              </div>
-
-              <div class="col-12 mt-2" style="padding-left: 30px;padding-right: 30px;">
-                <div class="custom-table-wrapper">
-                  <div class="table-responsive">
-                    <table class="custom-table">
-                      <thead>
-                        <tr>
-                          <th>Name</th>
-                          <th>Type</th>
-                          <th class="module-column">Module</th>
-                          <th class="status-column">Status</th>
-                          <th class="action-column">Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr *ngFor="let item of apiData">
-                          <td>{{ item.name }}</td>
-                          <td>{{ item.type }}</td>
-                          <td class="module-column">{{ item.module }}</td>
-                          <td class="status-column">
-                            <span
-                              class="status-pill"
-                              [class.active]="isActiveStatus(item)"
-                              [class.inactive]="!isActiveStatus(item)"
-                            >
-                              {{ getStatusLabel(item.status) }}
-                            </span>
-                          </td>
-                          <td class="action-cell action-column">
-                            <div class="action-group">
-                              <button type="button" nbButton size="small" status="success" class="action-btn" (click)="onAssign(item, $event)">
-                                <nb-icon icon="person-add-outline"></nb-icon> ASSIGN
-                              </button>
-                              <button type="button" nbButton size="small" status="primary" class="action-btn" (click)="onEdit(item, $event)">
-                                <nb-icon icon="edit-2"></nb-icon> EDIT
-                              </button>
-                              <button type="button" nbButton size="small" status="danger" class="action-btn" (click)="onDeactive(item, $event)">
-                                <nb-icon icon="slash-outline"></nb-icon> DEACTIVE
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                        <tr *ngIf="!apiData || apiData.length === 0">
-                          <td colspan="5" class="text-center">No data found.</td>
-                        </tr>
-                      </tbody>
-                    </table>
+      <div class="entity-table-shell">
+        <div class="entity-table-responsive">
+          <table class="entity-table custom-field-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Module</th>
+                <th>Status</th>
+                <th class="entity-actions-heading">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of apiData; trackBy: trackByCustomField" class="entity-row custom-field-row">
+                <td data-label="Field">
+                  <div class="entity-identity">
+                    <div class="entity-avatar custom-field-avatar"><nb-icon icon="options-2-outline"></nb-icon></div>
+                    <div class="entity-identity-copy">
+                      <strong>{{ item?.name || '-' }}</strong>
+                      <span>{{ item?.fullData?.field_name || 'Custom field' }}</span>
+                    </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </nb-card-body>
-      </nb-card>
-    </div>
-  </div>
+                </td>
+                <td data-label="Type">
+                  <span class="entity-badge type-badge">{{ item?.type || '-' }}</span>
+                </td>
+                <td data-label="Module">
+                  <span class="entity-cell-text module-name" [title]="item?.module || '-'">{{ item?.module || '-' }}</span>
+                </td>
+                <td data-label="Status">
+                  <span class="entity-badge custom-field-status-badge"
+                    [class.active-status]="isActiveStatus(item)"
+                    [class.inactive-status]="!isActiveStatus(item)">
+                    {{ getStatusLabel(item?.status) }}
+                  </span>
+                </td>
+                <td data-label="Actions" class="entity-actions-cell">
+                  <div class="entity-action-group">
+                    <button type="button" class="entity-action-icon assign-action" title="Assign modules"
+                      aria-label="Assign modules" (click)="onAssign(item, $event)">
+                      <nb-icon icon="person-add-outline"></nb-icon>
+                    </button>
+                    <button type="button" class="entity-action-icon edit-action" title="Edit custom field"
+                      aria-label="Edit custom field" (click)="onEdit(item, $event)">
+                      <nb-icon icon="edit-2-outline"></nb-icon>
+                    </button>
+                    <button type="button" class="entity-action-icon deactivate-action" title="Deactivate custom field"
+                      aria-label="Deactivate custom field" (click)="onDeactive(item, $event)">
+                      <nb-icon icon="power-outline"></nb-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr *ngIf="!apiData || apiData.length === 0" class="entity-empty-row">
+                <td colspan="5">
+                  <div class="entity-empty-state">
+                    <div><nb-icon icon="options-2-outline"></nb-icon></div>
+                    <h3>{{ lastSearchForm ? 'No matching custom fields' : 'No custom fields yet' }}</h3>
+                    <p>{{ lastSearchForm ? 'Try a different search term.' : 'Add your first custom field to get started.' }}</p>
+                    <button *ngIf="lastSearchForm" type="button" nbButton status="primary" ghost
+                      (click)="clearSearch()">Clear search</button>
+                    <button *ngIf="!lastSearchForm" type="button" nbButton status="primary"
+                      (click)="gotoAddCustomField()">Add custom field</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </nb-card-body>
+  </nb-card>
 </div>
 
 <div *ngIf="showAssignPopup" class="assign-popup-overlay" (click)="closeAssignPopup()">

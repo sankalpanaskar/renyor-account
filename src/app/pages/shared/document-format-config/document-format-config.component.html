@@ -1,0 +1,192 @@
+<div class="format-config-page">
+  <header class="format-page-header">
+    <div>
+      <span class="format-eyebrow">Sales Documents</span>
+      <h1>Document Format Configuration</h1>
+      <p>Configure the header, content, table columns and footer used for customer documents.</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" nbButton status="basic" size="small" (click)="resetConfiguration()">
+        <nb-icon icon="refresh-outline"></nb-icon> Reset
+      </button>
+      <button type="button" nbButton status="primary" size="small" (click)="saveConfiguration()">
+        <nb-icon icon="save-outline"></nb-icon> Save Configuration
+      </button>
+    </div>
+  </header>
+
+  <section class="document-type-switcher" aria-label="Document type">
+    <button *ngFor="let document of documentOptions" type="button" class="document-type-card"
+      [class.active]="selectedType === document.key" (click)="selectDocument(document.key)">
+      <span class="document-type-icon"><nb-icon [icon]="document.icon"></nb-icon></span>
+      <span><strong>{{ document.label }}</strong><small>{{ document.templatePath }}</small></span>
+      <nb-icon *ngIf="selectedType === document.key" class="selected-check" icon="checkmark-circle-2-outline"></nb-icon>
+    </button>
+  </section>
+
+  <div class="format-workspace">
+    <nb-card class="format-controls-card">
+      <nb-card-header>
+        <div>
+          <span>Configure</span>
+          <strong>{{ selectedDocument.label }} format</strong>
+        </div>
+        <span class="saved-locally-badge"><nb-icon icon="hard-drive-outline"></nb-icon> Saved locally</span>
+      </nb-card-header>
+
+      <nb-card-body>
+        <nav class="config-section-tabs" aria-label="Configuration sections">
+          <button type="button" [class.active]="activeSection === 'header'" (click)="setActiveSection('header')">
+            <nb-icon icon="layout-outline"></nb-icon><span>Header</span>
+          </button>
+          <button type="button" [class.active]="activeSection === 'body'" (click)="setActiveSection('body')">
+            <nb-icon icon="file-text-outline"></nb-icon><span>Body</span>
+          </button>
+          <button type="button" [class.active]="activeSection === 'table'" (click)="setActiveSection('table')">
+            <nb-icon icon="grid-outline"></nb-icon><span>Table</span>
+          </button>
+          <button type="button" [class.active]="activeSection === 'footer'" (click)="setActiveSection('footer')">
+            <nb-icon icon="collapse-outline"></nb-icon><span>Footer</span>
+          </button>
+        </nav>
+
+        <section *ngIf="activeSection === 'header'" class="config-panel">
+          <div class="panel-heading">
+            <div><h2>Header</h2><p>Brand and identify the document.</p></div>
+            <nb-checkbox [(ngModel)]="config.header.visible" (checkedChange)="schedulePreview()">Show header</nb-checkbox>
+          </div>
+
+          <div class="field-grid two-columns" [class.disabled-panel]="!config.header.visible">
+            <label class="config-field">
+              <span>Document title</span>
+              <input nbInput fullWidth name="document_title" [(ngModel)]="config.header.documentTitle" (input)="schedulePreview()">
+            </label>
+            <label class="config-field">
+              <span>Business name</span>
+              <input nbInput fullWidth name="business_name" [(ngModel)]="config.header.businessName" (input)="schedulePreview()">
+            </label>
+            <label class="config-field full-width">
+              <span>Business address</span>
+              <textarea nbInput fullWidth rows="3" name="business_address" [(ngModel)]="config.header.businessAddress" (input)="schedulePreview()"></textarea>
+            </label>
+            <label class="config-field full-width">
+              <span>Logo URL</span>
+              <input nbInput fullWidth name="logo_url" placeholder="https://..." [(ngModel)]="config.header.logoUrl" (input)="schedulePreview()">
+            </label>
+            <label class="config-field color-field">
+              <span>Accent colour</span>
+              <span class="color-control">
+                <input type="color" name="accent_color_picker" [(ngModel)]="config.header.accentColor" (input)="schedulePreview()">
+                <input nbInput fullWidth name="accent_color" [(ngModel)]="config.header.accentColor" (input)="schedulePreview()">
+              </span>
+            </label>
+            <div class="config-field checkbox-field">
+              <span>Branding</span>
+              <nb-checkbox [(ngModel)]="config.header.showLogo" (checkedChange)="schedulePreview()">Show business logo</nb-checkbox>
+            </div>
+          </div>
+        </section>
+
+        <section *ngIf="activeSection === 'body'" class="config-panel">
+          <div class="panel-heading">
+            <div><h2>Body</h2><p>Configure customer, notes and payment content.</p></div>
+            <nb-checkbox [(ngModel)]="config.body.visible" (checkedChange)="schedulePreview()">Show body</nb-checkbox>
+          </div>
+
+          <div class="field-grid" [class.disabled-panel]="!config.body.visible">
+            <label class="config-field">
+              <span>Customer section label</span>
+              <input nbInput fullWidth name="customer_label" [(ngModel)]="config.body.customerLabel" (input)="schedulePreview()">
+            </label>
+            <label class="config-field">
+              <span>Introduction</span>
+              <textarea nbInput fullWidth rows="2" name="intro_text" [(ngModel)]="config.body.introText" (input)="schedulePreview()"></textarea>
+            </label>
+            <label class="config-field">
+              <span>Customer notes</span>
+              <textarea nbInput fullWidth rows="3" name="format_notes" [(ngModel)]="config.body.notes" (input)="schedulePreview()"></textarea>
+            </label>
+            <label class="config-field">
+              <span>Terms &amp; conditions</span>
+              <textarea nbInput fullWidth rows="3" name="format_terms" [(ngModel)]="config.body.terms" (input)="schedulePreview()"></textarea>
+            </label>
+            <div class="config-field">
+              <span>Payment section</span>
+              <nb-checkbox [(ngModel)]="config.body.showPaymentDetails" (checkedChange)="schedulePreview()">Show payment details</nb-checkbox>
+            </div>
+            <label class="config-field" *ngIf="config.body.showPaymentDetails">
+              <span>Payment details</span>
+              <textarea nbInput fullWidth rows="3" name="payment_details" [(ngModel)]="config.body.paymentDetails" (input)="schedulePreview()"></textarea>
+            </label>
+          </div>
+        </section>
+
+        <section *ngIf="activeSection === 'table'" class="config-panel table-config-panel">
+          <div class="panel-heading">
+            <div><h2>Table Columns</h2><p>Choose labels, visibility and display order.</p></div>
+            <span class="column-count">{{ enabledColumnCount }} shown</span>
+          </div>
+
+          <div class="column-list">
+            <div class="column-row" *ngFor="let column of config.columns; let i = index" [class.column-disabled]="!column.enabled">
+              <span class="drag-handle"><nb-icon icon="menu-2-outline"></nb-icon></span>
+              <nb-checkbox [(ngModel)]="column.enabled" (checkedChange)="schedulePreview()"></nb-checkbox>
+              <label>
+                <span>{{ column.key }}</span>
+                <input nbInput fullWidth [name]="'column_label_' + column.key" [(ngModel)]="column.label" (input)="schedulePreview()">
+              </label>
+              <select [name]="'column_align_' + column.key" [(ngModel)]="column.align" (change)="schedulePreview()">
+                <option value="left">Left</option>
+                <option value="center">Center</option>
+                <option value="right">Right</option>
+              </select>
+              <div class="column-order-actions">
+                <button type="button" [disabled]="i === 0" (click)="moveColumn(i, -1)" aria-label="Move column up">
+                  <nb-icon icon="arrow-up-outline"></nb-icon>
+                </button>
+                <button type="button" [disabled]="i === config.columns.length - 1" (click)="moveColumn(i, 1)" aria-label="Move column down">
+                  <nb-icon icon="arrow-down-outline"></nb-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section *ngIf="activeSection === 'footer'" class="config-panel">
+          <div class="panel-heading">
+            <div><h2>Footer</h2><p>Set the closing information shown on each document.</p></div>
+            <nb-checkbox [(ngModel)]="config.footer.visible" (checkedChange)="schedulePreview()">Show footer</nb-checkbox>
+          </div>
+
+          <div class="field-grid" [class.disabled-panel]="!config.footer.visible">
+            <label class="config-field">
+              <span>Footer text</span>
+              <textarea nbInput fullWidth rows="4" name="footer_text" [(ngModel)]="config.footer.text" (input)="schedulePreview()"></textarea>
+            </label>
+            <div class="config-field checkbox-field">
+              <span>Pagination</span>
+              <nb-checkbox [(ngModel)]="config.footer.showPageNumber" (checkedChange)="schedulePreview()">Show page number</nb-checkbox>
+            </div>
+          </div>
+        </section>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card class="format-preview-card">
+      <nb-card-header>
+        <div><span>Live Preview</span><strong>{{ selectedDocument.label }}</strong></div>
+        <span class="a4-badge">A4</span>
+      </nb-card-header>
+      <nb-card-body [nbSpinner]="previewLoading" nbSpinnerStatus="primary">
+        <div *ngIf="templateError" class="template-error">
+          <nb-icon icon="alert-triangle-outline"></nb-icon>
+          <strong>Template unavailable</strong>
+          <span>{{ templateError }}</span>
+        </div>
+        <div *ngIf="!templateError" class="preview-stage">
+          <iframe title="Document format preview" [srcdoc]="previewHtml"></iframe>
+        </div>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>

@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { NbToastrService } from '@nebular/theme';
-import { environment } from '../../../../environments/environment';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { GlobalService } from '../../../services/global.service';
 
 @Component({
@@ -20,12 +21,19 @@ export class InvoiceListComponent implements OnInit {
   showInvoicePopup = false;
   selectedInvoice: any = null;
   pendingDeleteInvoice: any = null;
+  invoicePreviewHtml: SafeHtml = '';
+  private invoicePreviewRawHtml = '';
+  invoicePreviewLoading = false;
+  invoicePreviewError = '';
+  private invoiceTemplateHtml = '';
 
   constructor(
     private globalService: GlobalService,
     private toastrService: NbToastrService,
     private router: Router,
     private changeDetectorRef: ChangeDetectorRef,
+    private http: HttpClient,
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
@@ -148,11 +156,232 @@ export class InvoiceListComponent implements OnInit {
   openInvoicePopup(invoice: any): void {
     this.selectedInvoice = invoice;
     this.showInvoicePopup = true;
+    this.loadInvoicePreview(invoice);
   }
 
   closeInvoicePopup(): void {
     this.showInvoicePopup = false;
     this.selectedInvoice = null;
+    this.invoicePreviewError = '';
+  }
+
+  private loadInvoicePreview(invoice: any): void {
+    this.invoicePreviewLoading = true;
+    this.invoicePreviewError = '';
+
+    if (this.invoiceTemplateHtml) {
+      this.renderInvoicePreview(invoice);
+      return;
+    }
+
+    this.http.get('assets/format/invoice.html', { responseType: 'text' }).subscribe({
+      next: (template: string) => {
+        this.invoiceTemplateHtml = template;
+        this.renderInvoicePreview(invoice);
+      },
+      error: () => {
+        this.invoicePreviewLoading = false;
+        this.invoicePreviewError = 'The invoice format template could not be loaded.';
+        this.changeDetectorRef.detectChanges();
+      },
+    });
+  }
+
+  private renderInvoicePreview(invoice: any): void {
+    const config = this.getInvoiceFormatConfiguration();
+    const columns = config.columns.filter((column: any) => column.enabled);
+    const headers = columns.length
+      ? columns.map((column: any) => `<th class="align-${this.getColumnAlign(column.align)}">${this.escapeHtml(column.label)}</th>`).join('')
+      : '<th>Items</th>';
+    const invoiceItems = this.getInvoiceItems(invoice);
+    const rows = invoiceItems.length && columns.length
+      ? invoiceItems.map((item: any, index: number) => `<tr>${columns.map((column: any) =>
+          `<td class="align-${this.getColumnAlign(column.align)}">${this.getInvoiceItemColumnValue(column.key, item, index)}</td>`
+        ).join('')}</tr>`).join('')
+      : `<tr><td colspan="${Math.max(columns.length, 1)}" class="align-center">No invoice items available.</td></tr>`;
+    const accentColor = /^#[0-9a-f]{6}$/i.test(config.header.accentColor)
+      ? config.header.accentColor
+      : '#3366ff';
+    const logoUrl = `${config.header.logoUrl || ''}`.trim();
+    const logoBlock = config.header.showLogo && logoUrl
+      ? `<img class="document-logo" src="${this.escapeHtml(logoUrl)}" alt="Business logo">`
+      : '<div class="document-logo-placeholder">RY</div>';
+    const tokens: { [key: string]: string } = {
+      '{{ACCENT_COLOR}}': accentColor,
+      '{{HEADER_DISPLAY}}': config.header.visible === false ? 'none' : 'flex',
+      '{{BODY_DISPLAY}}': config.body.visible === false ? 'none' : 'block',
+      '{{FOOTER_DISPLAY}}': config.footer.visible === false ? 'none' : 'block',
+      '{{LOGO_BLOCK}}': logoBlock,
+      '{{BUSINESS_NAME}}': this.escapeHtml(config.header.businessName),
+      '{{BUSINESS_ADDRESS}}': this.multilineHtml(config.header.businessAddress),
+      '{{DOCUMENT_TITLE}}': this.escapeHtml(config.header.documentTitle || 'Invoice'),
+      '{{DOCUMENT_NUMBER_LABEL}}': 'Invoice Number',
+      '{{DOCUMENT_NUMBER}}': this.escapeHtml(this.getInvoiceNumber(invoice)),
+      '{{CUSTOMER_LABEL}}': this.escapeHtml(config.body.customerLabel || 'Bill To'),
+      '{{BILL_TO}}': this.getInvoiceAddressHtml(invoice, 'billing'),
+      '{{SHIP_TO}}': this.getInvoiceAddressHtml(invoice, 'shipping'),
+      '{{DOCUMENT_DETAILS}}': this.getInvoiceDetailsHtml(invoice),
+      '{{BODY_INTRO}}': this.multilineHtml(config.body.introText),
+      '{{TABLE_HEADERS}}': headers,
+      '{{TABLE_ROW}}': rows,
+      '{{TABLE_COLSPAN}}': `${Math.max(columns.length, 1)}`,
+      '{{SUB_TOTAL}}': this.escapeHtml(this.formatCurrency(invoice?.sub_total)),
+      '{{TAX_LABEL}}': this.escapeHtml(invoice?.tax_mode || 'Tax'),
+      '{{TAX_AMOUNT}}': this.escapeHtml(this.formatCurrency(invoice?.tax_amount)),
+      '{{TOTAL}}': this.escapeHtml(this.formatCurrency(this.getInvoiceTotal(invoice))),
+      '{{PAYMENT_DISPLAY}}': config.body.showPaymentDetails ? 'block' : 'none',
+      '{{PAYMENT_DETAILS}}': this.multilineHtml(config.body.paymentDetails),
+      '{{NOTES}}': this.multilineHtml(invoice?.customer_notes || config.body.notes),
+      '{{TERMS}}': this.multilineHtml(invoice?.terms_and_conditions || invoice?.terms_conditions || config.body.terms),
+      '{{FOOTER_TEXT}}': this.multilineHtml(config.footer.text),
+      '{{PAGE_NUMBER}}': config.footer.showPageNumber ? 'Page 1 of 1' : '',
+    };
+
+    let renderedTemplate = this.invoiceTemplateHtml;
+    Object.keys(tokens).forEach((token: string) => {
+      renderedTemplate = renderedTemplate.split(token).join(tokens[token]);
+    });
+    this.invoicePreviewRawHtml = renderedTemplate;
+    this.invoicePreviewHtml = this.sanitizer.bypassSecurityTrustHtml(renderedTemplate);
+    this.invoicePreviewLoading = false;
+    this.changeDetectorRef.detectChanges();
+  }
+
+  private getInvoiceFormatConfiguration(): any {
+    const defaults = {
+      header: {
+        visible: true,
+        showLogo: true,
+        logoUrl: 'https://msmeaccounts.com/assets/images/logo.png',
+        businessName: 'RenYor',
+        businessAddress: '123 Business Street, Kolkata, West Bengal\nGSTIN: 19XXXXX0000X1XX',
+        documentTitle: 'Invoice',
+        accentColor: '#3366ff',
+      },
+      body: {
+        visible: true,
+        customerLabel: 'Bill To',
+        introText: '',
+        notes: 'Thank you for your business.',
+        terms: 'Payment is due according to the terms stated on this document.',
+        showPaymentDetails: true,
+        paymentDetails: 'Bank: Your Bank\nAccount: 0000000000\nIFSC: XXXX0000000',
+      },
+      footer: {
+        visible: true,
+        text: 'RenYor · billing@renyor.com · +91 00000 00000',
+        showPageNumber: true,
+      },
+      columns: this.getDefaultInvoiceColumns(),
+    };
+    const storedValue = localStorage.getItem('document-format-config:invoice');
+    if (!storedValue) {
+      return defaults;
+    }
+
+    try {
+      const stored = JSON.parse(storedValue);
+      return {
+        ...defaults,
+        ...stored,
+        header: { ...defaults.header, ...(stored?.header || {}) },
+        body: { ...defaults.body, ...(stored?.body || {}) },
+        footer: { ...defaults.footer, ...(stored?.footer || {}) },
+        columns: Array.isArray(stored?.columns) ? stored.columns : defaults.columns,
+      };
+    } catch {
+      return defaults;
+    }
+  }
+
+  private getDefaultInvoiceColumns(): any[] {
+    return [
+      { key: 'serial', label: '#', enabled: true, align: 'center' },
+      { key: 'item', label: 'Item', enabled: true, align: 'left' },
+      { key: 'description', label: 'Description', enabled: true, align: 'left' },
+      { key: 'hsn', label: 'HSN/SAC', enabled: true, align: 'left' },
+      { key: 'quantity', label: 'Qty', enabled: true, align: 'right' },
+      { key: 'unit', label: 'Unit', enabled: false, align: 'center' },
+      { key: 'rate', label: 'Rate', enabled: true, align: 'right' },
+      { key: 'tax', label: 'Tax', enabled: true, align: 'right' },
+      { key: 'discount', label: 'Discount', enabled: false, align: 'right' },
+      { key: 'amount', label: 'Amount', enabled: true, align: 'right' },
+    ];
+  }
+
+  private getInvoiceItemColumnValue(key: string, item: any, index: number): string {
+    const values: { [key: string]: any } = {
+      serial: index + 1,
+      item: item?.item_name || item?.item_details || item?.name || '-',
+      description: item?.item_description || item?.description || '-',
+      hsn: item?.hsn_sac || item?.hsn_code || item?.sac || '-',
+      quantity: item?.quantity ?? 0,
+      unit: item?.unit || item?.item_unit || '-',
+      rate: this.formatCurrency(item?.rate),
+      tax: item?.tax || '-',
+      discount: this.formatCurrency(item?.discount || 0),
+      amount: this.formatCurrency(item?.amount ?? (Number(item?.quantity || 0) * Number(item?.rate || 0))),
+    };
+    return this.escapeHtml(values[key] ?? '-');
+  }
+
+  private getInvoiceAddressHtml(invoice: any, type: 'billing' | 'shipping'): string {
+    const customer = invoice?.customer || {};
+    const displayName = invoice?.customer_display_name || invoice?.customer_company_name
+      || customer?.display_name || customer?.company_name || this.getCustomerName(invoice);
+    const contactName = `${invoice?.customer_first_name || customer?.primary_contact_f_name || ''} ${invoice?.customer_last_name || customer?.primary_contact_l_name || ''}`.trim();
+    const prefix = type === 'billing' ? 'billing' : 'shipping';
+    const addressParts = [
+      invoice?.[`${prefix}_address`] || customer?.[`${prefix}_address`],
+      invoice?.[`${prefix}_street`] || customer?.[`${prefix}_street`],
+      invoice?.[`${prefix}_city`] || customer?.[`${prefix}_city`],
+      invoice?.[`${prefix}_state`] || customer?.[`${prefix}_state`] || (type === 'billing' ? invoice?.customer_state : ''),
+      invoice?.[`${prefix}_pin`] || invoice?.[`${prefix}_pincode`] || customer?.[`${prefix}_pin`],
+      invoice?.[`${prefix}_country`] || customer?.[`${prefix}_country`],
+    ].filter((value: any) => `${value || ''}`.trim());
+
+    if (type === 'shipping' && addressParts.length === 0) {
+      return this.getInvoiceAddressHtml(invoice, 'billing');
+    }
+
+    const lines = [`<strong>${this.escapeHtml(displayName)}</strong>`];
+    if (contactName && contactName !== displayName) {
+      lines.push(`Attn: ${this.escapeHtml(contactName)}`);
+    }
+    if (addressParts.length) {
+      lines.push(this.escapeHtml(addressParts.join(', ')));
+    }
+    const gstNumber = invoice?.customer_gst || invoice?.gst_no || customer?.gst_no;
+    if (gstNumber) {
+      lines.push(`GSTIN: ${this.escapeHtml(gstNumber)}`);
+    }
+    return lines.join('<br>');
+  }
+
+  private getInvoiceDetailsHtml(invoice: any): string {
+    const details = [
+      ['Invoice Date', this.formatDate(invoice?.invoice_date || invoice?.date)],
+      ['Due Date', this.formatDate(invoice?.due_date)],
+      ['Terms', invoice?.term || invoice?.payment_term || '-'],
+      ['Order No.', invoice?.order_no || '-'],
+    ];
+    return details.map((detail: any[]) =>
+      `<tr><td>${this.escapeHtml(detail[0])}</td><td>${this.escapeHtml(detail[1])}</td></tr>`
+    ).join('');
+  }
+
+  private getColumnAlign(value: any): 'left' | 'right' | 'center' {
+    return value === 'right' || value === 'center' ? value : 'left';
+  }
+
+  private multilineHtml(value: any): string {
+    return this.escapeHtml(value || '').replace(/\r?\n/g, '<br>');
+  }
+
+  private escapeHtml(value: any): string {
+    return `${value ?? ''}`
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
   requestDeleteInvoice(invoice: any): void {
@@ -192,12 +421,6 @@ export class InvoiceListComponent implements OnInit {
   }
 
   downloadPdf(invoice: any): void {
-    const existingPdfUrl = this.getPdfUrl(invoice);
-    if (existingPdfUrl) {
-      window.open(existingPdfUrl, '_blank', 'noopener');
-      return;
-    }
-
     const invoiceId = this.getInvoiceId(invoice);
     if (!invoiceId) {
       this.toastrService.danger('Invoice id is missing.', 'Download Failed');
@@ -205,22 +428,67 @@ export class InvoiceListComponent implements OnInit {
     }
 
     this.downloadingInvoiceId = invoiceId;
-    this.globalService.downloadInvoicePdf(invoiceId).subscribe({
-      next: (blob: Blob) => {
-        const objectUrl = window.URL.createObjectURL(blob);
+
+    if (this.invoiceTemplateHtml) {
+      this.renderInvoicePreview(invoice);
+      this.requestGeneratedInvoicePdf(invoice);
+      return;
+    }
+
+    this.http.get('assets/format/invoice.html', { responseType: 'text' }).subscribe({
+      next: (template: string) => {
+        this.invoiceTemplateHtml = template;
+        this.renderInvoicePreview(invoice);
+        this.requestGeneratedInvoicePdf(invoice);
+      },
+      error: () => {
+        this.downloadingInvoiceId = null;
+        this.toastrService.danger('The invoice template could not be loaded.', 'PDF Failed');
+      },
+    });
+  }
+
+  private requestGeneratedInvoicePdf(invoice: any): void {
+    const invoiceId = this.getInvoiceId(invoice);
+    if (!invoiceId || !this.invoicePreviewRawHtml) {
+      this.downloadingInvoiceId = null;
+      this.toastrService.danger('Invoice HTML could not be generated.', 'PDF Failed');
+      return;
+    }
+
+    const invoiceNumber = this.getInvoiceNumber(invoice).replace(/[^a-z0-9_-]+/gi, '-');
+    const fileName = `${invoiceNumber || 'invoice'}.pdf`;
+    this.globalService.generateInvoicePdf({
+      invoice_id: invoiceId,
+      document_type: 'invoice',
+      file_name: fileName,
+      html: this.invoicePreviewRawHtml,
+    }).subscribe({
+      next: (pdfBlob: Blob) => {
+        if (!pdfBlob || pdfBlob.size === 0) {
+          this.downloadingInvoiceId = null;
+          this.toastrService.danger('The backend returned an empty PDF.', 'PDF Failed');
+          return;
+        }
+
+        const objectUrl = window.URL.createObjectURL(pdfBlob);
         const anchor = document.createElement('a');
         anchor.href = objectUrl;
-        anchor.download = `${this.getInvoiceNumber(invoice) || 'invoice'}.pdf`;
+        anchor.download = fileName;
+        document.body.appendChild(anchor);
         anchor.click();
+        anchor.remove();
         window.URL.revokeObjectURL(objectUrl);
         this.downloadingInvoiceId = null;
+        this.changeDetectorRef.detectChanges();
       },
       error: (error: any) => {
         this.downloadingInvoiceId = null;
         this.toastrService.danger(
-          error?.error?.message || error?.message || 'Invoice PDF could not be downloaded.',
-          'Download Failed',
+          error?.error?.message || error?.message || 'The invoice PDF could not be generated.',
+          'PDF Failed',
         );
+        this.changeDetectorRef.detectChanges();
       },
     });
   }
@@ -302,17 +570,6 @@ export class InvoiceListComponent implements OnInit {
       }
     }
     return [];
-  }
-
-  getPdfUrl(invoice: any): string {
-    const path = invoice?.pdf_url ?? invoice?.invoice_pdf ?? invoice?.pdf_path ?? invoice?.download_url ?? '';
-    if (!path) {
-      return '';
-    }
-    if (/^https?:\/\//i.test(path)) {
-      return path;
-    }
-    return `${(environment as any)?.apiBaseUrl || ''}${path}`.replace(/([^:]\/)\/+/g, '$1');
   }
 
   formatCurrency(value: any): string {

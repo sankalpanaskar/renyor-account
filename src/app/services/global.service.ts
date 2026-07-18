@@ -247,11 +247,13 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/delete-invoice`, { invoice_id: invoiceId });
     }
 
-    public downloadInvoicePdf(invoiceId: string | number): Observable<Blob> {
-      return this.http.get(
-        `${this.salesUrl}/demo-invoice-pdf?invoice_id=${encodeURIComponent(`${invoiceId}`)}`,
-        { responseType: 'blob' },
-      );
+    public generateInvoicePdf(data: {
+      invoice_id: string | number;
+      document_type: string;
+      file_name: string;
+      html: string;
+    }): Observable<Blob> {
+      return this.http.post(`${this.salesUrl}/demo-invoice-pdf`, data, { responseType: 'blob' });
     }
 
     public insertQuote(data:any): Observable<any> {
