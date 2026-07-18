@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const path = require('path');
 
 const routes = require('./routes');
 const { swaggerUi, swaggerSpec } = require('./swagger');
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use(responseMiddleware);
 app.use('/api',routes);
+app.use('/uploads', express.static(path.join(__dirname, '..', 'public', 'uploads')));
 app.use('/uploads', express.static('/var/www/html/api.msmeaccounts.com/public/uploads'));
 
 

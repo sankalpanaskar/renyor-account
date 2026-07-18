@@ -559,3 +559,78 @@ exports.fetchDocumentNumberSettings = async (req, res) => {
     );
   }
 };
+
+exports.createDemoInvoicePdf = async (req, res) => {
+  return sendDemoDocumentPdf(req, res, 'invoice', 'Demo invoice PDF created successfully');
+};
+
+const sendDemoDocumentPdf = async (req, res, document_type, successMessage) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const documentPdf = await sales.createDocumentPdf(tenant_id, user_id, document_type);
+    const absoluteUrl = `${req.protocol}://${req.get('host')}${documentPdf.pdf_url}`;
+
+    return res.success(200, successMessage, {
+      ...documentPdf,
+      pdf_link: absoluteUrl
+    });
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || `Failed to create ${document_type} PDF`
+    );
+  }
+};
+
+exports.createDemoQuotationPdf = async (req, res) => {
+  return sendDemoDocumentPdf(req, res, 'quotation', 'Demo quotation PDF created successfully');
+};
+
+exports.createDemoWorkOrderPdf = async (req, res) => {
+  return sendDemoDocumentPdf(req, res, 'workorder', 'Demo work order PDF created successfully');
+};
+
+exports.createDocumentPdf = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+    const { document_type, data } = req.body || {};
+
+    if (!document_type) {
+      return res.error(400, "document_type is required");
+    }
+
+    let parsedData = data ?? {};
+    if (typeof parsedData === 'string' && parsedData.trim()) {
+      try {
+        parsedData = JSON.parse(parsedData);
+      } catch (error) {
+        return res.error(400, "data must be valid JSON");
+      }
+    }
+
+    const documentPdf = await sales.createDocumentPdf(
+      tenant_id,
+      user_id,
+      document_type,
+      parsedData
+    );
+    const absoluteUrl = `${req.protocol}://${req.get('host')}${documentPdf.pdf_url}`;
+
+    return res.success(
+      200,
+      "Document PDF created successfully",
+      {
+        ...documentPdf,
+        pdf_link: absoluteUrl
+      }
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to create document PDF"
+    );
+  }
+};

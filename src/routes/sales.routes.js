@@ -110,9 +110,12 @@ router.get('/fetch-units', auth, salesController.fetchUnits);
 router.post('/insert-payment-term', auth, upload.none(), salesController.insertPaymentTerm);
 router.get('/fetch-payment-terms', auth, salesController.fetchPaymentTerms);
 router.post('/create-tax-rate', auth, upload.none(), salesController.createTaxRate);
+router.post('/generate-pdf', auth, upload.none(), salesController.createDocumentPdf);
+router.get('/demo-invoice-pdf', auth, salesController.createDemoInvoicePdf);
+router.get('/demo-quotation-pdf', auth, salesController.createDemoQuotationPdf);
+router.get('/demo-workorder-pdf', auth, salesController.createDemoWorkOrderPdf);
 
 router.get('/fetch-tax-rate', auth, salesController.fetchTaxRate);
 
 
 module.exports = router;
-

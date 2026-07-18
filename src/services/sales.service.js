@@ -1,6 +1,17 @@
 // services/menu.service.js
 const db = require('../config/db');
 const handleCustomFields= require('../utils/custom_field');
+const fs = require('fs');
+const path = require('path');
+const puppeteer = require('puppeteer');
+const {
+  normalizeDocumentType,
+  getDocumentConfig,
+  buildDemoDocumentData,
+  buildHeaderTemplate,
+  buildFooterTemplate,
+  buildDocumentHtml
+} = require('../templates/pdfTemplates');
 
 const hasOwn = (object, key) =>
   Object.prototype.hasOwnProperty.call(object || {}, key);
@@ -80,6 +91,80 @@ const parseBankAccountsForUpdate = (bank_accounts) => {
 
   return Array.isArray(normalized) ? normalized : [];
 };
+
+
+
+exports.createDocumentPdf = async (tenant_id, user_id, document_type = 'invoice', inputData = null) => {
+  const normalizedType = normalizeDocumentType(document_type);
+  console.log(normalizedType);
+  const config = getDocumentConfig(normalizedType);
+  const data = inputData && Object.keys(inputData).length ? inputData : buildDemoDocumentData(normalizedType);
+  const docData = {
+    ...buildDemoDocumentData(normalizedType),
+    ...data,
+    company: {
+      ...buildDemoDocumentData(normalizedType).company,
+      ...(data.company || {})
+    },
+    customer: {
+      ...buildDemoDocumentData(normalizedType).customer,
+      ...(data.customer || {})
+    },
+    document: {
+      ...buildDemoDocumentData(normalizedType).document,
+      ...(data.document || {})
+    },
+    items: Array.isArray(data.items) && data.items.length ? data.items : buildDemoDocumentData(normalizedType).items,
+    totals: data.totals || buildDemoDocumentData(normalizedType).totals
+  };
+
+  let browser = null;
+
+  try {
+    browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+
+    const page = await browser.newPage();
+    const html = buildDocumentHtml(docData, normalizedType);
+    const publicInvoicesDir = path.join(process.cwd(), 'public', 'uploads', config.folder, String(tenant_id || 'common'));
+
+    await fs.promises.mkdir(publicInvoicesDir, { recursive: true });
+
+    const fileName = `${config.filePrefix}-${String(tenant_id || 'common')}-${Date.now()}.pdf`;
+    const filePath = path.join(publicInvoicesDir, fileName);
+
+    await page.setContent(html, { waitUntil: 'networkidle0' });
+    await page.pdf({
+      path: filePath,
+      format: 'A4',
+      printBackground: true,
+      displayHeaderFooter: true,
+      headerTemplate: buildHeaderTemplate(docData, normalizedType),
+      footerTemplate: buildFooterTemplate(docData),
+      margin: {
+        top: '122px',
+        bottom: '90px',
+        left: '22px',
+        right: '22px'
+      }
+    });
+
+    return {
+      document_type: normalizedType,
+      file_name: fileName,
+      file_path: filePath,
+      pdf_url: `/uploads/${config.folder}/${String(tenant_id || 'common')}/${fileName}`,
+      created_by: user_id || null
+    };
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+};
+
 // exports.fetchMenu = async (packageId, roleId = null) => {
 //   let rows;
 
