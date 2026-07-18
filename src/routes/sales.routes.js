@@ -78,7 +78,6 @@ router.post('/create-accounts-head-type', authSuperadmin, formDataUpload.none(),
 router.get('/fetch-chartofaccounts-item', auth, salesController.getchartofaccountsItem);
 router.post('/create-tds', auth, formDataUpload.none(), salesController.createTds);
 router.get('/fetch-tds', auth, salesController.fetchTds);
-router.post('/create-tds', auth, formDataUpload.none(), salesController.createTds);
 
 router.post('/insert-unit', auth, formDataUpload.none(), salesController.insertUnit);
 router.get('/fetch-units', auth, salesController.fetchUnits);
