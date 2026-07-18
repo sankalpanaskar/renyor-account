@@ -302,6 +302,7 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
       total,
       items
     } = data || {};
+    return data;
 
     const invoiceItems = parseInvoiceItems(items);
     console.log(invoiceItems)
