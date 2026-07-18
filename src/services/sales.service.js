@@ -304,6 +304,7 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
     } = data || {};
 
     const invoiceItems = parseInvoiceItems(items);
+    console.log(invoiceItems)
 
     if (customer_id === undefined || customer_id === null || customer_id === "") {
       throw new Error("customer_id is required");
