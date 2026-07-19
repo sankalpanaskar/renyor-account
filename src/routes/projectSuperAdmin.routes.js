@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Controller = require("../controllers/projectSuperAdmin.controller");
 const authSuperadmin = require('../middleware/authSuperAdmin');
+const auth = require('../middleware/auth');
 
 // Only run ONCE (no token needed)
 router.post("/create-project-superadmin", Controller.createProjectSuperAdmin);
@@ -16,7 +17,7 @@ router.post("/custom-field-create", authSuperadmin,Controller.customFieldCreate)
 router.post("/custom-field-update", authSuperadmin,Controller.customFieldUpdate);
 router.post("/assign-custom-field-modules", authSuperadmin,Controller.assignCustomFieldModules);
 router.post("/deassign-custom-field-modules", authSuperadmin,Controller.deassignCustomFieldModules);
-router.get("/fetch-custom-fields", authSuperadmin,Controller.getCustomFields);
+router.get("/fetch-custom-fields", auth,Controller.getCustomFields);
 router.get("/fetch-child-menu", authSuperadmin,Controller.fetchChildMenu);
 
 module.exports = router;
