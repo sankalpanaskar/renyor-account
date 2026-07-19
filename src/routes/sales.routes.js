@@ -12,6 +12,16 @@ const tenantUpload = (folder, fields) => (req, res, next) => {
   uploader.fields(fields)(req, res, next);
 };
 
+const optionalTenantUpload = (folder, fields) => (req, res, next) => {
+  const contentType = req.headers['content-type'] || '';
+
+  if (!contentType.includes('multipart/form-data')) {
+    return next();
+  }
+
+  return tenantUpload(folder, fields)(req, res, next);
+};
+
 router.post(
   '/create-customer',
   auth,
@@ -87,7 +97,7 @@ router.post('/create-tax-rate', auth, formDataUpload.none(), salesController.cre
 router.post(
   '/create-invoice',
   auth,
-  tenantUpload('invoices', [
+  optionalTenantUpload('invoices', [
     { name: 'invoice_attachment', maxCount: 1 }
   ]),
   salesController.createInvoice
