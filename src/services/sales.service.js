@@ -442,7 +442,17 @@ exports.fetchInvoice = async (tenant_id, invoice_id = null, module_id = null) =>
         c.display_name AS customer_display_name,
         c.company_name AS customer_company_name,
         c.primary_contact_f_name AS customer_first_name,
-        c.primary_contact_l_name AS customer_last_name
+        c.primary_contact_l_name AS customer_last_name,
+        c.billing_address AS billing_address,
+        c.billing_country AS billing_country,
+        c.billing_city AS billing_city,
+        c.billing_state AS billing_state,
+        c.billing_pin AS billing_pin,
+        c.shipping_address AS shipping_address,
+        c.shipping_country AS shipping_country,
+        c.shipping_city AS shipping_city,
+        c.shipping_state AS shipping_state,
+        c.shipping_pin AS shipping_pin
 
      FROM invoice_master im
      LEFT JOIN customers c
