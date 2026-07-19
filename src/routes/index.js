@@ -8,6 +8,7 @@ router.use('/permissions', require('./permission.routes'));
 router.use('/users', require('./user.routes'));
 router.use('/system', require('./projectSuperAdmin.routes'));
 router.use('/sales', require('./sales.routes'));
+router.use('/settings', require('./settings.routes'));
 
 
 
