@@ -302,6 +302,8 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
       tax_mode,
       customer_state,
       total,
+      custom_field,
+      module_id,
       items
     } = data || {};
     
@@ -318,7 +320,7 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
       throw new Error("invoice_no is required");
     }
 
-    const normalizedDocumentType = document_type;
+    const normalizedDocumentType = normalizeDocumentType(normalizeFormValue(document_type) || 'invoice');
     const nextCurrentNumber = normalizeFormValue(current_number);
 
     if (nextCurrentNumber === undefined || nextCurrentNumber === null || nextCurrentNumber === "") {
@@ -395,6 +397,24 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
       );
     }
 
+    const customFieldValues = parseCustomFieldForUpdate(custom_field);
+
+    if (customFieldValues && Object.keys(customFieldValues).length > 0) {
+      const moduleId = normalizeFormValue(module_id);
+
+      if (!moduleId) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      await handleCustomFields({
+        connection,
+        custom_field: customFieldValues,
+        module_id: moduleId,
+        tenant_id,
+        record_id: invoiceMasterId
+      });
+    }
+
     const [settingsResult] = await connection.query(
       `UPDATE document_number_settings
        SET current_number = ?
@@ -430,7 +450,7 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
   }
 };
 
-exports.fetchInvoice = async (tenant_id, invoice_id = null) => {
+exports.fetchInvoice = async (tenant_id, invoice_id = null, module_id = null) => {
   const masterParams = [tenant_id];
   let masterWhereClause = "WHERE im.tenant_id = ?";
 
@@ -483,7 +503,40 @@ exports.fetchInvoice = async (tenant_id, invoice_id = null) => {
     items: itemsByInvoiceId[row.id] || []
   }));
 
-  return invoice_id ? invoices[0] : invoices;
+  if (!module_id) {
+    return invoice_id ? invoices[0] : invoices;
+  }
+
+  const [customRows] = await db.query(
+    `SELECT
+        cfv.record_id,
+        cf.field_name,
+        cfv.field_value
+      FROM custom_field_values cfv
+      INNER JOIN custom_fields cf
+        ON cf.id = cfv.field_id
+      WHERE cfv.module_id = ?
+        AND cfv.tenant_id = ?
+        AND cfv.record_id IN (?)`,
+    [module_id, tenant_id, invoiceMasterIds]
+  );
+
+  const customFieldMap = {};
+
+  for (const row of customRows) {
+    if (!customFieldMap[row.record_id]) {
+      customFieldMap[row.record_id] = {};
+    }
+
+    customFieldMap[row.record_id][row.field_name] = row.field_value;
+  }
+
+  const invoicesWithCustomFields = invoices.map((invoice) => ({
+    ...invoice,
+    custom_field: customFieldMap[invoice.id] || {}
+  }));
+
+  return invoice_id ? invoicesWithCustomFields[0] : invoicesWithCustomFields;
 };
 
 exports.fetchAllCustomers = async (tenant_id, module_id) => {
@@ -1989,63 +2042,7 @@ exports.fetchTaxRate = async (tenant_id) => {
   return rows;
 };
 
-exports.documentNumberSettings = async (data, tenant_id, user_id) => {
-  const connection = await db.getConnection();
 
-  try {
-    await connection.beginTransaction();
-
-    const { document_type, prefix, current_number, suffix, increment_by } = data;
-
-    if (!document_type) {
-      throw new Error('document_type is required');
-    }
-
-    if (prefix === undefined || prefix === null) {
-      throw new Error('prefix is required');
-    }
-
-    if (current_number === undefined || current_number === null) {
-      throw new Error('current_number is required');
-    }
-
-    if (suffix === undefined || suffix === null) {
-      throw new Error('suffix is required');
-    }
-
-    if (increment_by === undefined || increment_by === null) {
-      throw new Error('increment_by is required');
-    }
-
-    const [result] = await connection.query(
-      `INSERT INTO document_number_settings (document_type, prefix, current_number, suffix, increment_by, tenant_id, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?)` ,
-      [document_type, prefix, current_number, suffix, increment_by, tenant_id, user_id]
-    );
-
-    const [rows] = await connection.query(
-      `SELECT * FROM document_number_settings WHERE id = ?`,
-      [result.insertId]
-    );
-
-    await connection.commit();
-    return rows[0];
-  } catch (error) {
-    await connection.rollback();
-    throw error;
-  } finally {
-    connection.release();
-  }
-};
-
-exports.fetchDocumentNumberSettings = async (tenant_id, document_type) => {
-  const [rows] = await db.query(
-    "SELECT * FROM document_number_settings WHERE tenant_id = ? AND document_type = ? ORDER BY id DESC",
-    [tenant_id, document_type]
-  );
-
-  return rows;
-};
 
 
 
