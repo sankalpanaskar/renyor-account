@@ -279,7 +279,7 @@ exports.createDocumentPdf = async (tenant_id, user_id, document_type = 'invoice'
 //   return menu;
 // };
 
-exports.createInvoice = async (data, tenant_id, user_id) => {
+exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attachment = null) => {
   const connection = await db.getConnection();
 
   try {
@@ -308,9 +308,7 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
     } = data || {};
     
 
-    const invoiceItems = items;
-    //return invoiceItems;
-    console.log(invoiceItems)
+    const invoiceItems = parseInvoiceItems(items);
 
     if (customer_id === undefined || customer_id === null || customer_id === "") {
       throw new Error("customer_id is required");
@@ -346,6 +344,7 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
       "tax_mode",
       "customer_state",
       "total",
+      "invoice_attachment",
       "tenant_id",
       "user_id"
     ];
@@ -365,6 +364,7 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
       tax_mode ?? null,
       customer_state ?? null,
       total ?? 0,
+      uploaded_invoice_attachment ?? null,
       tenant_id,
       user_id
     ];

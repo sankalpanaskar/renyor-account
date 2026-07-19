@@ -24,6 +24,14 @@ const buildItemUploadPath = (tenant_id, file) => {
   return `uploads/items/${tenant_id}/${file.filename}`;
 };
 
+const buildInvoiceUploadPath = (tenant_id, file) => {
+  if (!file?.filename) {
+    return null;
+  }
+
+  return `uploads/invoices/${tenant_id}/${file.filename}`;
+};
+
 
 exports.fetchCustomers = async (req, res) => {
   try {
@@ -500,8 +508,17 @@ exports.createInvoice = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
+    const invoice_attachment = buildInvoiceUploadPath(
+      tenant_id,
+      req.files?.invoice_attachment?.[0]
+    );
 
-    const invoice = await sales.createInvoice(req.body, tenant_id, user_id);
+    const invoice = await sales.createInvoice(
+      req.body,
+      tenant_id,
+      user_id,
+      invoice_attachment
+    );
 
     return res.success(
       200,
