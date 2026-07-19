@@ -486,26 +486,46 @@ exports.fetchInvoice = async (tenant_id, invoice_id = null, module_id = null) =>
     return acc;
   }, {});
 
-  const invoices = masterRows.map((row) => ({
-    ...row,
-    customer: {
-      display_name: row.customer_display_name || null,
-      company_name: row.customer_company_name || null,
-      first_name: row.customer_first_name || null,
-      last_name: row.customer_last_name || null,
-      billing_address: row.billing_address || null,
-      billing_country: row.billing_country || null,
-      billing_city: row.billing_city || null,
-      billing_state: row.billing_state || null,
-      billing_pin: row.billing_pin || null,
-      shipping_address: row.shipping_address || null,
-      shipping_country: row.shipping_country || null,
-      shipping_city: row.shipping_city || null,
-      shipping_state: row.shipping_state || null,
-      shipping_pin: row.shipping_pin || null
-    },
-    items: itemsByInvoiceId[row.id] || []
-  }));
+  const invoices = masterRows.map((row) => {
+    const {
+      customer_display_name,
+      customer_company_name,
+      customer_first_name,
+      customer_last_name,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      ...invoice
+    } = row;
+
+    return {
+      ...invoice,
+      customer: {
+        display_name: customer_display_name || null,
+        company_name: customer_company_name || null,
+        first_name: customer_first_name || null,
+        last_name: customer_last_name || null,
+        billing_address: billing_address || null,
+        billing_country: billing_country || null,
+        billing_city: billing_city || null,
+        billing_state: billing_state || null,
+        billing_pin: billing_pin || null,
+        shipping_address: shipping_address || null,
+        shipping_country: shipping_country || null,
+        shipping_city: shipping_city || null,
+        shipping_state: shipping_state || null,
+        shipping_pin: shipping_pin || null
+      },
+      items: itemsByInvoiceId[row.id] || []
+    };
+  });
 
   if (!module_id) {
     return invoice_id ? invoices[0] : invoices;
