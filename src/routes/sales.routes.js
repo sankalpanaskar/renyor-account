@@ -93,10 +93,7 @@ router.post(
   salesController.createInvoice
 );
 router.get('/fetch-invoice', auth, salesController.fetchInvoice);
-router.post('/generate-pdf', auth, formDataUpload.none(), salesController.createDocumentPdf);
-router.get('/demo-invoice-pdf', auth, salesController.createDemoInvoicePdf);
-router.get('/demo-quotation-pdf', auth, salesController.createDemoQuotationPdf);
-router.get('/demo-workorder-pdf', auth, salesController.createDemoWorkOrderPdf);
+router.post('/generate-pdf', auth, salesController.createDocumentPdf);
 
 router.get('/fetch-tax-rate', auth, salesController.fetchTaxRate);
 
