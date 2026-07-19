@@ -13,7 +13,7 @@ router.post(
 );
 
 router.get(
-  '/document-number-settings',
+  '/fetch-document-number-settings',
   auth,
   SettingsController.fetchDocumentNumberSettings
 );
