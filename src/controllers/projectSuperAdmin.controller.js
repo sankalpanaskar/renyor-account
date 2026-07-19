@@ -307,9 +307,10 @@ exports.deassignCustomFieldModules = async (req, res) => {
 exports.getCustomFields = async (req, res) => {
   try {
     const { module_id } = req.query;
+    const tenant_id = req.user?.tenant_id;
 
     // Call service
-    const fields = await SuperadminService.fetchFieldsByTable(module_id);
+    const fields = await SuperadminService.fetchFieldsByTable(module_id, tenant_id);
 
     return res.success(
       200,

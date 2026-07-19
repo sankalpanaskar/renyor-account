@@ -612,18 +612,19 @@ exports.fetchChildMenu = async () => {
   return rows; // array (can be empty)
 };
 
-exports.fetchFieldsByTable = async (module_id) => {
+exports.fetchFieldsByTable = async (module_id, tenant_id) => {
   try {
     const moduleIds = normalizeModuleIds(module_id);
     const hasModuleId = moduleIds.length > 0;
     const params = [];
 
     const assignmentFilter = hasModuleId
-      ? "WHERE cfma.module_id IN (?) AND cfma.status = 1"
-      : "WHERE cfma.status = 1";
+      ? "WHERE cfma.module_id IN (?) AND cfma.status = 1 AND cfma.tenant_id = ?"
+      : "WHERE cfma.status = 1 AND cfma.tenant_id = ?";
     if (hasModuleId) {
       params.push(moduleIds);
     }
+    params.push(tenant_id);
 
     const query = `
       SELECT
@@ -644,9 +645,11 @@ exports.fetchFieldsByTable = async (module_id) => {
       ) assignments
         ON assignments.custome_field_id = cf.id
       WHERE cf.show_in_form = 1
-        AND cf.status = 1
+      AND cf.status = 1
+        AND cf.tenant_id = ?
       ORDER BY assignments.module_id ASC, cf.field_order ASC
     `;
+    params.push(tenant_id);
     const [rows] = await db.query(query, params);
     return rows;
   } catch (err) {
