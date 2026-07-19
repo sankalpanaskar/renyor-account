@@ -443,6 +443,7 @@ exports.fetchInvoice = async (tenant_id, invoice_id = null, module_id = null) =>
         c.company_name AS customer_company_name,
         c.primary_contact_f_name AS customer_first_name,
         c.primary_contact_l_name AS customer_last_name
+
      FROM invoice_master im
      LEFT JOIN customers c
        ON c.id = im.customer_id
@@ -477,6 +478,22 @@ exports.fetchInvoice = async (tenant_id, invoice_id = null, module_id = null) =>
 
   const invoices = masterRows.map((row) => ({
     ...row,
+    customer: {
+      display_name: row.customer_display_name || null,
+      company_name: row.customer_company_name || null,
+      first_name: row.customer_first_name || null,
+      last_name: row.customer_last_name || null,
+      billing_address: row.billing_address || null,
+      billing_country: row.billing_country || null,
+      billing_city: row.billing_city || null,
+      billing_state: row.billing_state || null,
+      billing_pin: row.billing_pin || null,
+      shipping_address: row.shipping_address || null,
+      shipping_country: row.shipping_country || null,
+      shipping_city: row.shipping_city || null,
+      shipping_state: row.shipping_state || null,
+      shipping_pin: row.shipping_pin || null
+    },
     items: itemsByInvoiceId[row.id] || []
   }));
 
