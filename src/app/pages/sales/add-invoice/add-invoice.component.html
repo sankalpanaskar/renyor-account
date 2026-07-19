@@ -465,7 +465,7 @@
     </div>
 
     <form #invoiceNumberForm="ngForm" (ngSubmit)="saveInvoiceNumberPreference()" novalidate class="invoice-number-form">
-      <div class="invoice-number-body">
+      <div class="invoice-number-body" [nbSpinner]="isLoadingInvoiceNumberPreference" nbSpinnerStatus="primary">
         <p class="invoice-number-copy">
           Choose whether invoice numbers should be generated automatically or entered manually.
         </p>
@@ -487,13 +487,14 @@
               <div class="preference-field">
                 <label class="preference-field-label">Prefix</label>
                 <input type="text" nbInput fullWidth shape="semi-round"
-                  name="invoice_prefix" [(ngModel)]="invoiceNumberPreference.prefix">
+                  name="invoice_prefix" required [(ngModel)]="invoiceNumberPreference.prefix">
               </div>
 
               <div class="preference-field">
                 <label class="preference-field-label">Next Number</label>
                 <input type="text" nbInput fullWidth shape="semi-round"
-                  name="invoice_next_number" [(ngModel)]="invoiceNumberPreference.nextNumber">
+                  name="invoice_next_number" required inputmode="numeric"
+                  [(ngModel)]="invoiceNumberPreference.nextNumber">
               </div>
             </div>
           </div>
@@ -513,8 +514,12 @@
       </div>
 
       <div class="invoice-number-footer">
-        <button type="submit" nbButton status="success" shape="semi-round">Save</button>
-        <button type="button" nbButton status="basic" shape="semi-round" (click)="closeInvoiceNumberPopup()">Cancel</button>
+        <button type="submit" nbButton status="success" shape="semi-round"
+          [disabled]="invoiceNumberForm.invalid || isSavingInvoiceNumberPreference || isLoadingInvoiceNumberPreference"
+          [nbSpinner]="isSavingInvoiceNumberPreference" nbSpinnerStatus="control">Save</button>
+        <button type="button" nbButton status="basic" shape="semi-round"
+          [disabled]="isSavingInvoiceNumberPreference || isLoadingInvoiceNumberPreference"
+          (click)="closeInvoiceNumberPopup()">Cancel</button>
       </div>
     </form>
   </div>

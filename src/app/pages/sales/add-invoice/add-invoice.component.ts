@@ -64,6 +64,8 @@ interface InvoiceItemOption {
 export class AddInvoiceComponent implements OnInit {
   isSubmitting = false;
   customFieldsLoading = false;
+  isSavingInvoiceNumberPreference = false;
+  isLoadingInvoiceNumberPreference = false;
   isEditMode = false;
   invoiceId: string | number | null = null;
   showInvoiceNumberPopup = false;
@@ -98,8 +100,11 @@ export class AddInvoiceComponent implements OnInit {
 
   invoiceNumberPreference = {
     mode: 'auto',
-    prefix: 'INV-',
-    nextNumber: '00001'
+    prefix: 'INV',
+    currentNumber: '0000',
+    nextNumber: '0001',
+    suffix: ' ',
+    incrementBy: 1,
   };
 
   itemRows: InvoiceItemRow[] = [];
@@ -116,7 +121,7 @@ export class AddInvoiceComponent implements OnInit {
     this.fetchPaymentTerms();
     this.fetchTaxRates();
     this.fetchCustomFields();
-    this.applyInvoiceNumber();
+    this.fetchInvoiceNumberPreference();
     this.model.invoice_date = this.normalizeDate(new Date());
     this.model.due_date = this.normalizeDate(new Date());
     this.dueDateMin = this.model.invoice_date;
@@ -867,13 +872,112 @@ export class AddInvoiceComponent implements OnInit {
     this.showInvoiceNumberPopup = true;
   }
 
+  private fetchInvoiceNumberPreference(): void {
+    this.isLoadingInvoiceNumberPreference = true;
+    this.globalService.fetchDocumentNumberSettings('Invoice').subscribe({
+      next: (res: any) => {
+        const settings = this.extractDocumentNumberSettings(res);
+        if (settings) {
+          const isManualNumbering = `${settings?.type || 'A'}`.trim().toUpperCase() === 'M';
+          const currentNumberText = `${settings?.current_number ?? 0}`.trim();
+          const currentNumber = Number(currentNumberText.replace(/\D/g, '')) || 0;
+          const incrementBy = Math.max(Number(settings?.increment_by) || 1, 1);
+          const existingWidth = `${this.invoiceNumberPreference.nextNumber || ''}`.replace(/\D/g, '').length;
+          const responseWidth = currentNumberText.replace(/\D/g, '').length;
+          const numberWidth = Math.max(existingWidth, responseWidth, 4);
+          const formattedCurrentNumber = `${currentNumber}`.padStart(numberWidth, '0');
+          this.invoiceNumberPreference = {
+            ...this.invoiceNumberPreference,
+            mode: isManualNumbering ? 'manual' : 'auto',
+            prefix: `${settings?.prefix ?? 'INV'}`,
+            currentNumber: formattedCurrentNumber,
+            nextNumber: `${currentNumber + incrementBy}`.padStart(numberWidth, '0'),
+            suffix: settings?.suffix !== undefined && settings?.suffix !== null
+              ? `${settings.suffix}`
+              : ' ',
+            incrementBy,
+          };
+          if (!this.isEditMode) {
+            this.applyInvoiceNumber();
+          }
+        }
+        this.isLoadingInvoiceNumberPreference = false;
+      },
+      error: (error: any) => {
+        this.isLoadingInvoiceNumberPreference = false;
+        this.toastrService.danger(
+          error?.error?.message || error?.message || 'Invoice number preferences could not be loaded.',
+          'Load Failed',
+        );
+      },
+    });
+  }
+
+  private extractDocumentNumberSettings(response: any): any {
+    const candidates = [
+      response?.data,
+      response?.data?.data,
+      response?.settings,
+      response?.result,
+      response,
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate) && candidate.length > 0) {
+        return candidate[0];
+      }
+      if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
+        if (candidate?.prefix !== undefined || candidate?.current_number !== undefined) {
+          return candidate;
+        }
+      }
+    }
+    return null;
+  }
+
   closeInvoiceNumberPopup(): void {
     this.showInvoiceNumberPopup = false;
   }
 
   saveInvoiceNumberPreference(): void {
-    this.applyInvoiceNumber();
-    this.closeInvoiceNumberPopup();
+    const prefix = `${this.invoiceNumberPreference.prefix || ''}`.trim();
+    const currentNumberText = `${this.invoiceNumberPreference.nextNumber || ''}`.replace(/\D/g, '');
+    const currentNumber = Number(currentNumberText);
+    const isAutomaticNumbering = this.invoiceNumberPreference.mode === 'auto';
+
+    if (isAutomaticNumbering && (!prefix || !Number.isFinite(currentNumber) || currentNumber < 0)) {
+      this.toastrService.danger('Enter a valid prefix and next number.', 'Invoice Number');
+      return;
+    }
+
+    const payload = {
+      document_type: 'Invoice',
+      type: (isAutomaticNumbering ? 'A' : 'M') as 'A' | 'M',
+      prefix,
+      current_number: this.invoiceNumberPreference.currentNumber,
+      suffix: this.invoiceNumberPreference.suffix,
+      increment_by: Number(this.invoiceNumberPreference.incrementBy) || 1,
+    };
+
+    this.isSavingInvoiceNumberPreference = true;
+    this.globalService.saveDocumentNumberSettings(payload).subscribe({
+      next: (res: any) => {
+        this.isSavingInvoiceNumberPreference = false;
+        this.applyInvoiceNumber();
+        this.closeInvoiceNumberPopup();
+        this.toastrService.success(
+          res?.message || 'Invoice number preferences saved successfully.',
+          'Saved',
+        );
+      },
+      error: (error: any) => {
+        this.isSavingInvoiceNumberPreference = false;
+        this.toastrService.danger(
+          error?.error?.message || error?.message || 'Invoice number preferences could not be saved.',
+          'Save Failed',
+        );
+      },
+    });
   }
 
   closePaymentTermsPopup(): void {
@@ -898,6 +1002,8 @@ export class AddInvoiceComponent implements OnInit {
   private applyInvoiceNumber(): void {
     if (this.invoiceNumberPreference.mode === 'auto') {
       this.model.invoice_no = this.generateInvoiceNumber();
+    } else if (!this.isEditMode) {
+      this.model.invoice_no = '';
     }
   }
 
@@ -1092,21 +1198,20 @@ export class AddInvoiceComponent implements OnInit {
     formData.append(key, `${value}`);
   }
 
-  private getInvoiceRequestPayload(payload: any): any {
-    if (this.uploadedInvoiceFiles.length === 0) {
-      return payload;
-    }
-
+  private getInvoiceRequestPayload(payload: any): FormData {
     const formData = new FormData();
     Object.keys(payload).forEach((key: string) => {
       this.appendFormDataValue(formData, key, payload[key]);
     });
 
-    formData.append(
-      'invoice_attachment',
-      this.uploadedInvoiceFiles[0],
-      this.uploadedInvoiceFiles[0].name,
-    );
+    const invoiceAttachment = this.uploadedInvoiceFiles[0];
+    if (invoiceAttachment) {
+      formData.append(
+        'invoice_attachment',
+        invoiceAttachment,
+        invoiceAttachment.name,
+      );
+    }
 
     return formData;
   }
@@ -1138,6 +1243,10 @@ export class AddInvoiceComponent implements OnInit {
 
     const payload = {
       ...(this.isEditMode && this.invoiceId ? { invoice_id: this.invoiceId } : {}),
+      ...(!this.isEditMode && this.invoiceNumberPreference.mode === 'auto' ? {
+        document_type: 'Invoice',
+        current_number: `${this.invoiceNumberPreference.nextNumber || ''}`,
+      } : {}),
       module_id: this.invoiceModuleId,
       ...(Object.keys(customFieldData).length ? { custom_field: customFieldData } : {}),
       customer_id: this.model.customer_id,

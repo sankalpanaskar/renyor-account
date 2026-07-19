@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NbToastrService } from '@nebular/theme';
+import { GlobalService } from '../../../services/global.service';
 
 type DocumentFormatType = 'invoice' | 'quote' | 'sales-order';
 type ConfigSection = 'header' | 'body' | 'table' | 'footer';
@@ -24,6 +25,13 @@ interface FormatColumn {
   align: 'left' | 'right' | 'center';
 }
 
+interface FormatCustomField {
+  key: string;
+  label: string;
+  enabled: boolean;
+  defaultValue?: any;
+}
+
 interface DocumentFormatConfiguration {
   header: {
     visible: boolean;
@@ -38,10 +46,11 @@ interface DocumentFormatConfiguration {
     visible: boolean;
     customerLabel: string;
     introText: string;
-    notes: string;
     terms: string;
     showPaymentDetails: boolean;
     paymentDetails: string;
+    customFieldPosition: 'top' | 'bottom';
+    customFields: FormatCustomField[];
   };
   footer: {
     visible: boolean;
@@ -97,16 +106,20 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
   previewHtml: SafeHtml = '';
   previewLoading = false;
   templateError = '';
+  availableCustomFields: any[] = [];
+  customFieldsLoading = false;
   private previewTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
     private http: HttpClient,
     private sanitizer: DomSanitizer,
     private toastrService: NbToastrService,
+    private globalService: GlobalService,
   ) {}
 
   ngOnInit(): void {
     this.loadSelectedConfiguration();
+    this.fetchInvoiceCustomFields();
   }
 
   ngOnDestroy(): void {
@@ -122,6 +135,10 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
 
   get enabledColumnCount(): number {
     return this.config.columns.filter((column: FormatColumn) => column.enabled).length;
+  }
+
+  get enabledCustomFieldCount(): number {
+    return this.config.body.customFields.filter((field: FormatCustomField) => field.enabled).length;
   }
 
   selectDocument(type: DocumentFormatType): void {
@@ -163,6 +180,7 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
   resetConfiguration(): void {
     localStorage.removeItem(this.storageKey);
     this.config = this.createDefaultConfiguration(this.selectedType);
+    this.syncCustomFieldsWithConfiguration();
     this.refreshPreview();
     this.toastrService.info(`${this.selectedDocument.label} format restored to default.`, 'Format Reset');
   }
@@ -173,7 +191,51 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
 
   private loadSelectedConfiguration(): void {
     this.config = this.getStoredConfiguration() || this.createDefaultConfiguration(this.selectedType);
+    this.syncCustomFieldsWithConfiguration();
     this.loadTemplate();
+  }
+
+  private fetchInvoiceCustomFields(): void {
+    this.customFieldsLoading = true;
+    this.globalService.fetchCustomFieldsByModule(54).subscribe({
+      next: (res: any) => {
+        const fields = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        this.availableCustomFields = fields
+          .filter((field: any) => Number(field?.status) === 1)
+          .sort((a: any, b: any) => Number(a?.field_order || 0) - Number(b?.field_order || 0));
+        this.syncCustomFieldsWithConfiguration();
+        this.customFieldsLoading = false;
+        this.schedulePreview();
+      },
+      error: () => {
+        this.availableCustomFields = [];
+        this.customFieldsLoading = false;
+      },
+    });
+  }
+
+  private syncCustomFieldsWithConfiguration(): void {
+    if (this.selectedType !== 'invoice') {
+      this.config.body.customFields = [];
+      return;
+    }
+
+    if (!this.availableCustomFields.length) {
+      return;
+    }
+
+    const savedFields = Array.isArray(this.config.body.customFields) ? this.config.body.customFields : [];
+    const savedState = new Map(savedFields.map((field: FormatCustomField) => [field.key, field]));
+    this.config.body.customFields = this.availableCustomFields.map((field: any) => {
+      const key = `${field?.field_name || field?.name || ''}`.trim();
+      const savedField = savedState.get(key);
+      return {
+        key,
+        label: `${field?.field_label || field?.field_name || field?.name || 'Custom Field'}`,
+        enabled: savedField ? savedField.enabled !== false : true,
+        defaultValue: field?.default_value ?? '',
+      };
+    }).filter((field: FormatCustomField) => !!field.key);
   }
 
   private getStoredConfiguration(): DocumentFormatConfiguration | null {
@@ -239,6 +301,17 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
     const logoBlock = this.config.header.showLogo && this.config.header.logoUrl.trim()
       ? `<img class="document-logo" src="${this.escapeHtml(this.config.header.logoUrl.trim())}" alt="Business logo">`
       : '<div class="document-logo-placeholder">RY</div>';
+    const customFields = this.config.body.customFields.filter((field: FormatCustomField) => field.enabled);
+    const customFieldRows = customFields.map((field: FormatCustomField) => ({
+      label: field.label,
+      value: field.defaultValue || 'Sample value',
+    }));
+    const topCustomFieldRows = this.config.body.customFieldPosition === 'top'
+      ? this.getCustomFieldDetailRows(customFieldRows)
+      : '';
+    const bottomCustomFields = this.config.body.customFieldPosition === 'bottom'
+      ? this.getCustomFieldBottomHtml(customFieldRows)
+      : '';
 
     const tokens: { [key: string]: string } = {
       '{{ACCENT_COLOR}}': accentColor,
@@ -251,10 +324,12 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
       '{{DOCUMENT_TITLE}}': this.escapeHtml(this.config.header.documentTitle),
       '{{DOCUMENT_NUMBER_LABEL}}': this.escapeHtml(this.selectedDocument.numberLabel),
       '{{DOCUMENT_NUMBER}}': this.escapeHtml(this.selectedDocument.number),
+      '{{PAYMENT_STATUS}}': 'Unpaid',
+      '{{PAYMENT_STATUS_CLASS}}': 'unpaid',
       '{{CUSTOMER_LABEL}}': this.escapeHtml(this.config.body.customerLabel),
-      '{{BILL_TO}}': '<strong>ANU · Anudip Foundation</strong><br>Attn: Sankalpa Naskar<br>Kolkata, West Bengal 700001<br>GSTIN: 19XXXXX0000X1XX',
-      '{{SHIP_TO}}': '<strong>ANU · Anudip Foundation</strong><br>Attn: Sankalpa Naskar<br>Kolkata, West Bengal 700001<br>India',
-      '{{DOCUMENT_DETAILS}}': '<tr><td>Invoice Date</td><td>19 Jul 2026</td></tr><tr><td>Due Date</td><td>19 Jul 2026</td></tr><tr><td>Terms</td><td>Due on Receipt</td></tr><tr><td>Order No.</td><td>1234</td></tr>',
+      '{{BILL_TO}}': '<strong>ANU · Anudip Foundation</strong><br>21 Park Street<br>Kolkata, West Bengal, 700001<br>India<br>GSTIN: 19XXXXX0000X1XX',
+      '{{SHIP_TO}}': '<strong>ANU · Anudip Foundation</strong><br>21 Park Street<br>Kolkata, West Bengal, 700001<br>India',
+      '{{DOCUMENT_DETAILS}}': `<tr><td>Invoice Date</td><td>19 Jul 2026</td></tr><tr><td>Due Date</td><td>19 Jul 2026</td></tr><tr><td>Terms</td><td>Due on Receipt</td></tr><tr><td>Order No.</td><td>1234</td></tr>${topCustomFieldRows}`,
       '{{BODY_INTRO}}': this.multilineHtml(this.config.body.introText),
       '{{TABLE_HEADERS}}': headers,
       '{{TABLE_ROW}}': row,
@@ -265,7 +340,8 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
       '{{TOTAL}}': '₹11,800.00',
       '{{PAYMENT_DISPLAY}}': this.config.body.showPaymentDetails ? 'block' : 'none',
       '{{PAYMENT_DETAILS}}': this.multilineHtml(this.config.body.paymentDetails),
-      '{{NOTES}}': this.multilineHtml(this.config.body.notes),
+      '{{CUSTOM_FIELDS_BOTTOM_DISPLAY}}': bottomCustomFields ? 'block' : 'none',
+      '{{CUSTOM_FIELDS_BOTTOM}}': bottomCustomFields,
       '{{TERMS}}': this.multilineHtml(this.config.body.terms),
       '{{FOOTER_TEXT}}': this.multilineHtml(this.config.footer.text),
       '{{PAGE_NUMBER}}': this.config.footer.showPageNumber ? 'Page 1 of 1' : '',
@@ -297,10 +373,11 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
         visible: true,
         customerLabel: option.customerLabel,
         introText: type === 'quote' ? 'Thank you for the opportunity to provide this quotation.' : '',
-        notes: 'Thank you for your business.',
         terms: 'Payment is due according to the terms stated on this document.',
         showPaymentDetails: type === 'invoice',
         paymentDetails: 'Bank: Your Bank\nAccount: 0000000000\nIFSC: XXXX0000000',
+        customFieldPosition: 'top',
+        customFields: [],
       },
       footer: {
         visible: true,
@@ -324,6 +401,28 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
 
   private multilineHtml(value: string): string {
     return this.escapeHtml(value || '').replace(/\r?\n/g, '<br>');
+  }
+
+  private getCustomFieldDetailRows(fields: Array<{ label: string; value: any }>): string {
+    return fields.map((field: { label: string; value: any }) =>
+      `<tr><td>${this.escapeHtml(field.label)}</td><td>${this.escapeHtml(this.formatCustomFieldValue(field.value))}</td></tr>`
+    ).join('');
+  }
+
+  private getCustomFieldBottomHtml(fields: Array<{ label: string; value: any }>): string {
+    return fields.map((field: { label: string; value: any }) =>
+      `<div class="custom-field-line"><span>${this.escapeHtml(field.label)}</span><strong>${this.escapeHtml(this.formatCustomFieldValue(field.value))}</strong></div>`
+    ).join('');
+  }
+
+  private formatCustomFieldValue(value: any): string {
+    if (Array.isArray(value)) {
+      return value.join(', ') || '-';
+    }
+    if (value && typeof value === 'object') {
+      return Object.values(value).join(', ') || '-';
+    }
+    return `${value ?? ''}`.trim() || '-';
   }
 
   private escapeHtml(value: any): string {

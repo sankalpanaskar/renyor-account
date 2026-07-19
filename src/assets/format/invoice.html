@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{DOCUMENT_TITLE}}</title>
   <style>
-    @page { size: A4; margin: 38mm 14mm 22mm; }
+    @page { size: A4; margin: 0; }
     * { box-sizing: border-box; }
     html, body { margin: 0; background: #fff; color: #24304a; font-family: Arial, sans-serif; font-size: 12px; }
     .page { width: 210mm; min-height: 297mm; margin: 0 auto; padding: 14mm 15mm; display: flex; flex-direction: column; }
@@ -19,6 +19,9 @@
     .document-meta h1 { margin: 0 0 7px; color: {{ACCENT_COLOR}}; font-size: 27px; letter-spacing: .05em; text-transform: uppercase; }
     .document-number { color: #66728a; font-size: 11px; }
     .document-number strong { color: #263451; }
+    .document-status { margin-left: 7px; padding: 3px 7px; border-radius: 999px; display: inline-flex; font-size: 8px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; vertical-align: middle; }
+    .document-status.status-paid { color: #168354; background: #eaf8f1; }
+    .document-status.status-unpaid { color: #cf4055; background: #fff0f2; }
     .body { display: {{BODY_DISPLAY}}; flex: 1 0 auto; }
     .intro { margin: 18px 0 0; color: #65718a; line-height: 1.55; }
     .info-grid { margin: 22px 0; display: grid; grid-template-columns: 1fr 1fr .9fr; gap: 18px; }
@@ -39,32 +42,54 @@
     .summary-row { padding: 6px 2px; display: flex; justify-content: space-between; border-bottom: 1px solid #edf0f5; }
     .summary-row span:first-child { color: #78839a; }
     .summary-row.total { margin-top: 4px; padding: 10px 8px; border: 0; border-radius: 7px; background: #f0f4ff; color: {{ACCENT_COLOR}}; font-size: 14px; font-weight: 800; }
-    .notes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .notes-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
     .note { min-height: 82px; padding: 10px; border: 1px solid #e5e9f1; border-radius: 8px; color: #5f6b82; font-size: 10px; line-height: 1.55; }
     .payment { display: {{PAYMENT_DISPLAY}}; }
+    .custom-fields-bottom { display: {{CUSTOM_FIELDS_BOTTOM_DISPLAY}}; }
+    .custom-field-line { padding: 4px 0; border-bottom: 1px solid #edf0f5; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .custom-field-line:last-child { border-bottom: 0; }
+    .custom-field-line span { color: #7d889e; }
+    .custom-field-line strong { color: #263451; text-align: right; overflow-wrap: anywhere; }
     .footer { display: {{FOOTER_DISPLAY}}; margin-top: auto; padding-top: 12px; border-top: 1px solid #dfe5ee; color: #8a95aa; font-size: 9px; text-align: center; line-height: 1.5; }
     .page-number { margin-top: 4px; color: {{ACCENT_COLOR}}; font-weight: 700; }
+    .print-layout { width: 100%; flex: 1 0 auto; border: 0; border-collapse: collapse; display: block; }
+    .print-layout > thead, .print-layout > tfoot { display: none; }
+    .print-layout > tbody, .print-layout > tbody > tr, .print-layout > tbody > tr > td { width: 100%; padding: 0; display: block; }
     @media print {
-      html, body { width: auto; height: auto; overflow: visible; }
-      .page { width: auto; min-height: 0; margin: 0; padding: 0; display: block; }
+      html, body { width: auto; height: auto; overflow: visible; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { width: auto; min-height: 0; margin: 0; padding: 0; display: contents; }
       .header {
         position: fixed;
-        top: -30mm;
-        left: 0;
-        right: 0;
-        height: 25mm;
+        top: 8mm;
+        left: 14mm;
+        right: 14mm;
+        height: 27mm;
         padding-bottom: 8px;
         background: #fff;
+        z-index: 10;
       }
       .footer {
         position: fixed;
-        left: 0;
-        right: 0;
-        bottom: -16mm;
-        height: 12mm;
+        left: 14mm;
+        right: 14mm;
+        bottom: 7mm;
+        height: 13mm;
         margin: 0;
         padding-top: 6px;
         background: #fff;
+        z-index: 10;
+      }
+      .print-layout { width: 100%; border-collapse: collapse; display: table; }
+      .print-layout > thead { display: table-header-group; }
+      .print-layout > tbody { display: table-row-group; }
+      .print-layout > tfoot { display: table-footer-group; }
+      .print-layout > thead > tr, .print-layout > tbody > tr, .print-layout > tfoot > tr { display: table-row; }
+      .print-layout > thead > tr > td, .print-layout > tbody > tr > td, .print-layout > tfoot > tr > td { width: auto; padding: 0; display: table-cell; }
+      .print-layout > tbody > tr > .print-content-cell { padding: 0 14mm; }
+      .print-header-space { height: 38mm; }
+      .print-footer-space { height: 23mm; }
+      .print-content-cell {
+        vertical-align: top;
       }
       .intro { margin-top: 0; }
       .info-grid, .summary, .notes-grid { break-inside: avoid; page-break-inside: avoid; }
@@ -80,23 +105,29 @@
   <main class="page">
     <header class="header">
       <div class="brand-wrap">{{LOGO_BLOCK}}<div><div class="business-name">{{BUSINESS_NAME}}</div><div class="business-address">{{BUSINESS_ADDRESS}}</div></div></div>
-      <div class="document-meta"><h1>{{DOCUMENT_TITLE}}</h1><div class="document-number">{{DOCUMENT_NUMBER_LABEL}} <strong>#{{DOCUMENT_NUMBER}}</strong></div></div>
+      <div class="document-meta"><h1>{{DOCUMENT_TITLE}}</h1><div class="document-number">{{DOCUMENT_NUMBER_LABEL}} <strong>#{{DOCUMENT_NUMBER}}</strong><span class="document-status status-{{PAYMENT_STATUS_CLASS}}">{{PAYMENT_STATUS}}</span></div></div>
     </header>
-    <div class="body">
-      <div class="intro">{{BODY_INTRO}}</div>
-      <section class="info-grid">
-        <div><div class="section-label">{{CUSTOMER_LABEL}}</div><div class="customer-card">{{BILL_TO}}</div></div>
-        <div><div class="section-label">Ship To</div><div class="customer-card">{{SHIP_TO}}</div></div>
-        <div><div class="section-label">Invoice Details</div><table class="details">{{DOCUMENT_DETAILS}}</table></div>
-      </section>
-      <div class="items-wrap"><table class="items"><thead><tr>{{TABLE_HEADERS}}</tr></thead><tbody>{{TABLE_ROW}}</tbody></table></div>
-      <div class="summary"><div class="summary-row"><span>Sub Total</span><strong>{{SUB_TOTAL}}</strong></div><div class="summary-row"><span>{{TAX_LABEL}}</span><strong>{{TAX_AMOUNT}}</strong></div><div class="summary-row total"><span>Total</span><span>{{TOTAL}}</span></div></div>
-      <section class="notes-grid">
-        <div class="note payment"><div class="section-label">Payment Details</div>{{PAYMENT_DETAILS}}</div>
-        <div class="note"><div class="section-label">Customer Notes</div>{{NOTES}}</div>
-        <div class="note"><div class="section-label">Terms &amp; Conditions</div>{{TERMS}}</div>
-      </section>
-    </div>
+    <table class="print-layout" role="presentation">
+      <thead><tr><td><div class="print-header-space"></div></td></tr></thead>
+      <tbody><tr><td class="print-content-cell">
+        <div class="body">
+          <div class="intro">{{BODY_INTRO}}</div>
+          <section class="info-grid">
+            <div><div class="section-label">{{CUSTOMER_LABEL}}</div><div class="customer-card">{{BILL_TO}}</div></div>
+            <div><div class="section-label">Ship To</div><div class="customer-card">{{SHIP_TO}}</div></div>
+            <div><div class="section-label">Invoice Details</div><table class="details">{{DOCUMENT_DETAILS}}</table></div>
+          </section>
+          <div class="items-wrap"><table class="items"><thead><tr>{{TABLE_HEADERS}}</tr></thead><tbody>{{TABLE_ROW}}</tbody></table></div>
+          <div class="summary"><div class="summary-row"><span>Sub Total</span><strong>{{SUB_TOTAL}}</strong></div><div class="summary-row"><span>{{TAX_LABEL}}</span><strong>{{TAX_AMOUNT}}</strong></div><div class="summary-row total"><span>Total</span><span>{{TOTAL}}</span></div></div>
+          <section class="notes-grid">
+            <div class="note payment"><div class="section-label">Payment Details</div>{{PAYMENT_DETAILS}}</div>
+            <div class="note custom-fields-bottom"><div class="section-label">Additional Information</div>{{CUSTOM_FIELDS_BOTTOM}}</div>
+            <div class="note"><div class="section-label">Terms &amp; Conditions</div>{{TERMS}}</div>
+          </section>
+        </div>
+      </td></tr></tbody>
+      <tfoot><tr><td><div class="print-footer-space"></div></td></tr></tfoot>
+    </table>
     <footer class="footer">{{FOOTER_TEXT}}<div class="page-number">{{PAGE_NUMBER}}</div></footer>
   </main>
 </body>

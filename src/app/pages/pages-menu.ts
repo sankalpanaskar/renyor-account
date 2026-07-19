@@ -48,7 +48,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         }
       ],
     },
-    { title: 'Organization Settings', group: true },
+    { title: 'Settings', group: true },
     {
       title: 'Organization',
       icon: 'award-outline',
@@ -58,7 +58,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           link: '/pages/organization-setting/orgprofile',
         },
         {
-          title: 'Manage Subscription',
+          title: 'Subscription',
           link: '/pages/organization-setting/package-list',
         },
         {
@@ -66,7 +66,21 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           link: '/pages/document-format-configuration',
         },
       ],
-    }
+    },
+    {
+        title: 'Custom Field',
+        icon: 'options-outline',
+        children: [
+          {
+            title: 'Add Custom Field',
+            link: '/pages/admin-setting/add-custom-field',
+          },
+          {
+            title: 'Custom Field List',
+            link: '/pages/admin-setting/custom-field-list',
+          }
+        ],
+      },
   );
 
   // Add admin-only menus if user is system super admin
@@ -106,20 +120,6 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           {
             title: 'Company List',
             link: '/pages/admin-setting/company-list',
-          }
-        ],
-      },
-      {
-        title: 'Custom Field',
-        icon: 'options-outline',
-        children: [
-          {
-            title: 'Add Custom Field',
-            link: '/pages/admin-setting/add-custom-field',
-          },
-          {
-            title: 'Custom Field List',
-            link: '/pages/admin-setting/custom-field-list',
           }
         ],
       },

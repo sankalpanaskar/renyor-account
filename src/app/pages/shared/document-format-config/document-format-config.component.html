@@ -89,7 +89,7 @@
 
         <section *ngIf="activeSection === 'body'" class="config-panel">
           <div class="panel-heading">
-            <div><h2>Body</h2><p>Configure customer, notes and payment content.</p></div>
+            <div><h2>Body</h2><p>Configure customer, custom-field and payment content.</p></div>
             <nb-checkbox [(ngModel)]="config.body.visible" (checkedChange)="schedulePreview()">Show body</nb-checkbox>
           </div>
 
@@ -103,10 +103,6 @@
               <textarea nbInput fullWidth rows="2" name="intro_text" [(ngModel)]="config.body.introText" (input)="schedulePreview()"></textarea>
             </label>
             <label class="config-field">
-              <span>Customer notes</span>
-              <textarea nbInput fullWidth rows="3" name="format_notes" [(ngModel)]="config.body.notes" (input)="schedulePreview()"></textarea>
-            </label>
-            <label class="config-field">
               <span>Terms &amp; conditions</span>
               <textarea nbInput fullWidth rows="3" name="format_terms" [(ngModel)]="config.body.terms" (input)="schedulePreview()"></textarea>
             </label>
@@ -118,6 +114,33 @@
               <span>Payment details</span>
               <textarea nbInput fullWidth rows="3" name="payment_details" [(ngModel)]="config.body.paymentDetails" (input)="schedulePreview()"></textarea>
             </label>
+
+            <div class="custom-field-settings" *ngIf="selectedType === 'invoice' && config.body.customFields.length > 0">
+              <div class="custom-field-settings-heading">
+                <div>
+                  <strong>Invoice custom fields</strong>
+                  <span>{{ enabledCustomFieldCount }} of {{ config.body.customFields.length }} shown</span>
+                </div>
+                <label>
+                  <span>Position</span>
+                  <select name="custom_field_position" [(ngModel)]="config.body.customFieldPosition" (change)="schedulePreview()">
+                    <option value="top">Top — after Order No.</option>
+                    <option value="bottom">Bottom — notes position</option>
+                  </select>
+                </label>
+              </div>
+              <div class="custom-field-setting-list">
+                <label *ngFor="let field of config.body.customFields">
+                  <nb-checkbox [(ngModel)]="field.enabled" (checkedChange)="schedulePreview()"></nb-checkbox>
+                  <span>{{ field.label }}</span>
+                  <small>{{ field.key }}</small>
+                </label>
+              </div>
+            </div>
+
+            <div class="custom-fields-loading" *ngIf="selectedType === 'invoice' && customFieldsLoading">
+              Loading invoice custom fields…
+            </div>
           </div>
         </section>
 

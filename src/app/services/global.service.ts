@@ -235,8 +235,25 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/create-invoice`, data);
     }
 
-    public fetchInvoices(): Observable<any> {
-      return this.http.get(`${this.salesUrl}/fetch-invoice`);
+    public saveDocumentNumberSettings(data: {
+      document_type: string;
+      type: 'A' | 'M';
+      prefix: string;
+      current_number: string | number;
+      suffix: string;
+      increment_by: number;
+    }): Observable<any> {
+      return this.http.post(`${this.apiUrl}/settings/document-number-settings`, data);
+    }
+
+    public fetchDocumentNumberSettings(documentType: string): Observable<any> {
+      return this.http.get(
+        `${this.apiUrl}/settings/fetch-document-number-settings?document_type=${encodeURIComponent(documentType)}`
+      );
+    }
+
+    public fetchInvoices(moduleId: number = 54): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-invoice?module_id=${moduleId}`);
     }
 
     public updateInvoice(data:any): Observable<any> {
@@ -253,7 +270,7 @@ export class GlobalService {
       file_name: string;
       html: string;
     }): Observable<Blob> {
-      return this.http.post(`${this.salesUrl}/demo-invoice-pdf`, data, { responseType: 'blob' });
+      return this.http.post(`${this.salesUrl}/generate-pdf`, data, { responseType: 'blob' });
     }
 
     public insertQuote(data:any): Observable<any> {

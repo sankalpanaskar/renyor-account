@@ -26,6 +26,7 @@ export class InvoiceListComponent implements OnInit {
   invoicePreviewLoading = false;
   invoicePreviewError = '';
   private invoiceTemplateHtml = '';
+  private invoiceCustomFields: any[] = [];
 
   constructor(
     private globalService: GlobalService,
@@ -38,6 +39,24 @@ export class InvoiceListComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchInvoices();
+    this.fetchInvoiceCustomFields();
+  }
+
+  private fetchInvoiceCustomFields(): void {
+    this.globalService.fetchCustomFieldsByModule(54).subscribe({
+      next: (res: any) => {
+        const fields = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
+        this.invoiceCustomFields = fields
+          .filter((field: any) => Number(field?.status) === 1)
+          .sort((a: any, b: any) => Number(a?.field_order || 0) - Number(b?.field_order || 0));
+        if (this.showInvoicePopup && this.selectedInvoice && this.invoiceTemplateHtml) {
+          this.renderInvoicePreview(this.selectedInvoice);
+        }
+      },
+      error: () => {
+        this.invoiceCustomFields = [];
+      },
+    });
   }
 
   get paidInvoicesCount(): number {
@@ -51,7 +70,7 @@ export class InvoiceListComponent implements OnInit {
   fetchInvoices(): void {
     this.loading = true;
     this.loadError = '';
-    this.globalService.fetchInvoices().subscribe({
+    this.globalService.fetchInvoices(54).subscribe({
       next: (res: any) => {
         const invoices = this.extractInvoices(res);
         this.allInvoices = [...invoices];
@@ -206,6 +225,10 @@ export class InvoiceListComponent implements OnInit {
     const logoBlock = config.header.showLogo && logoUrl
       ? `<img class="document-logo" src="${this.escapeHtml(logoUrl)}" alt="Business logo">`
       : '<div class="document-logo-placeholder">RY</div>';
+    const customFieldEntries = this.getInvoiceCustomFieldEntries(invoice, config);
+    const showCustomFieldsAtTop = config.body.customFieldPosition === 'top';
+    const paymentStatus = this.getInvoicePaymentStatus(invoice);
+    const paymentStatusClass = paymentStatus.toLowerCase() === 'paid' ? 'paid' : 'unpaid';
     const tokens: { [key: string]: string } = {
       '{{ACCENT_COLOR}}': accentColor,
       '{{HEADER_DISPLAY}}': config.header.visible === false ? 'none' : 'flex',
@@ -217,10 +240,12 @@ export class InvoiceListComponent implements OnInit {
       '{{DOCUMENT_TITLE}}': this.escapeHtml(config.header.documentTitle || 'Invoice'),
       '{{DOCUMENT_NUMBER_LABEL}}': 'Invoice Number',
       '{{DOCUMENT_NUMBER}}': this.escapeHtml(this.getInvoiceNumber(invoice)),
+      '{{PAYMENT_STATUS}}': this.escapeHtml(paymentStatus),
+      '{{PAYMENT_STATUS_CLASS}}': paymentStatusClass,
       '{{CUSTOMER_LABEL}}': this.escapeHtml(config.body.customerLabel || 'Bill To'),
       '{{BILL_TO}}': this.getInvoiceAddressHtml(invoice, 'billing'),
       '{{SHIP_TO}}': this.getInvoiceAddressHtml(invoice, 'shipping'),
-      '{{DOCUMENT_DETAILS}}': this.getInvoiceDetailsHtml(invoice),
+      '{{DOCUMENT_DETAILS}}': this.getInvoiceDetailsHtml(invoice, showCustomFieldsAtTop ? customFieldEntries : []),
       '{{BODY_INTRO}}': this.multilineHtml(config.body.introText),
       '{{TABLE_HEADERS}}': headers,
       '{{TABLE_ROW}}': rows,
@@ -231,7 +256,8 @@ export class InvoiceListComponent implements OnInit {
       '{{TOTAL}}': this.escapeHtml(this.formatCurrency(this.getInvoiceTotal(invoice))),
       '{{PAYMENT_DISPLAY}}': config.body.showPaymentDetails ? 'block' : 'none',
       '{{PAYMENT_DETAILS}}': this.multilineHtml(config.body.paymentDetails),
-      '{{NOTES}}': this.multilineHtml(invoice?.customer_notes || config.body.notes),
+      '{{CUSTOM_FIELDS_BOTTOM_DISPLAY}}': !showCustomFieldsAtTop && customFieldEntries.length ? 'block' : 'none',
+      '{{CUSTOM_FIELDS_BOTTOM}}': !showCustomFieldsAtTop ? this.getCustomFieldBottomHtml(customFieldEntries) : '',
       '{{TERMS}}': this.multilineHtml(invoice?.terms_and_conditions || invoice?.terms_conditions || config.body.terms),
       '{{FOOTER_TEXT}}': this.multilineHtml(config.footer.text),
       '{{PAGE_NUMBER}}': config.footer.showPageNumber ? 'Page 1 of 1' : '',
@@ -262,10 +288,11 @@ export class InvoiceListComponent implements OnInit {
         visible: true,
         customerLabel: 'Bill To',
         introText: '',
-        notes: 'Thank you for your business.',
         terms: 'Payment is due according to the terms stated on this document.',
         showPaymentDetails: true,
         paymentDetails: 'Bank: Your Bank\nAccount: 0000000000\nIFSC: XXXX0000000',
+        customFieldPosition: 'top',
+        customFields: this.getInvoiceCustomFieldConfiguration(),
       },
       footer: {
         visible: true,
@@ -285,13 +312,34 @@ export class InvoiceListComponent implements OnInit {
         ...defaults,
         ...stored,
         header: { ...defaults.header, ...(stored?.header || {}) },
-        body: { ...defaults.body, ...(stored?.body || {}) },
+        body: {
+          ...defaults.body,
+          ...(stored?.body || {}),
+          customFields: this.getInvoiceCustomFieldConfiguration(stored?.body?.customFields),
+        },
         footer: { ...defaults.footer, ...(stored?.footer || {}) },
         columns: Array.isArray(stored?.columns) ? stored.columns : defaults.columns,
       };
     } catch {
       return defaults;
     }
+  }
+
+  private getInvoiceCustomFieldConfiguration(savedFields: any[] = []): any[] {
+    const normalizedSavedFields = Array.isArray(savedFields) ? savedFields : [];
+    const savedState = new Map(normalizedSavedFields.map((field: any) => [field?.key, field]));
+    if (!this.invoiceCustomFields.length) {
+      return normalizedSavedFields;
+    }
+    return this.invoiceCustomFields.map((field: any) => {
+      const key = `${field?.field_name || field?.name || ''}`.trim();
+      const savedField = savedState.get(key) as any;
+      return {
+        key,
+        label: `${field?.field_label || field?.field_name || field?.name || 'Custom Field'}`,
+        enabled: savedField ? savedField.enabled !== false : true,
+      };
+    }).filter((field: any) => !!field.key);
   }
 
   private getDefaultInvoiceColumns(): any[] {
@@ -329,7 +377,6 @@ export class InvoiceListComponent implements OnInit {
     const customer = invoice?.customer || {};
     const displayName = invoice?.customer_display_name || invoice?.customer_company_name
       || customer?.display_name || customer?.company_name || this.getCustomerName(invoice);
-    const contactName = `${invoice?.customer_first_name || customer?.primary_contact_f_name || ''} ${invoice?.customer_last_name || customer?.primary_contact_l_name || ''}`.trim();
     const prefix = type === 'billing' ? 'billing' : 'shipping';
     const addressParts = [
       invoice?.[`${prefix}_address`] || customer?.[`${prefix}_address`],
@@ -345,9 +392,6 @@ export class InvoiceListComponent implements OnInit {
     }
 
     const lines = [`<strong>${this.escapeHtml(displayName)}</strong>`];
-    if (contactName && contactName !== displayName) {
-      lines.push(`Attn: ${this.escapeHtml(contactName)}`);
-    }
     if (addressParts.length) {
       lines.push(this.escapeHtml(addressParts.join(', ')));
     }
@@ -358,16 +402,71 @@ export class InvoiceListComponent implements OnInit {
     return lines.join('<br>');
   }
 
-  private getInvoiceDetailsHtml(invoice: any): string {
-    const details = [
+  private getInvoiceDetailsHtml(invoice: any, customFields: Array<{ label: string; value: any }> = []): string {
+    const details: any[][] = [
       ['Invoice Date', this.formatDate(invoice?.invoice_date || invoice?.date)],
       ['Due Date', this.formatDate(invoice?.due_date)],
       ['Terms', invoice?.term || invoice?.payment_term || '-'],
       ['Order No.', invoice?.order_no || '-'],
     ];
+    customFields.forEach((field: { label: string; value: any }) => {
+      details.push([field.label, this.formatCustomFieldValue(field.value)]);
+    });
     return details.map((detail: any[]) =>
       `<tr><td>${this.escapeHtml(detail[0])}</td><td>${this.escapeHtml(detail[1])}</td></tr>`
     ).join('');
+  }
+
+  private getInvoiceCustomFieldEntries(invoice: any, config: any): Array<{ label: string; value: any }> {
+    const configuredFields = Array.isArray(config?.body?.customFields)
+      ? config.body.customFields.filter((field: any) => field?.enabled !== false)
+      : [];
+    const values = this.normalizeInvoiceCustomFieldValues(
+      invoice?.custom_field ?? invoice?.custom_fields ?? invoice?.customField
+    );
+
+    return configuredFields.map((field: any) => ({
+      label: `${field?.label || field?.key || 'Custom Field'}`,
+      value: values[field?.key],
+    }));
+  }
+
+  private normalizeInvoiceCustomFieldValues(value: any): any {
+    const parsedValue = this.parseJsonValue(value);
+    if (Array.isArray(parsedValue)) {
+      return parsedValue.reduce((values: any, field: any) => {
+        const key = field?.field_name ?? field?.name ?? field?.key;
+        if (key) {
+          values[key] = field?.field_value ?? field?.value ?? '';
+        }
+        return values;
+      }, {});
+    }
+    return parsedValue && typeof parsedValue === 'object' ? parsedValue : {};
+  }
+
+  private getCustomFieldBottomHtml(fields: Array<{ label: string; value: any }>): string {
+    return fields.map((field: { label: string; value: any }) =>
+      `<div class="custom-field-line"><span>${this.escapeHtml(field.label)}</span><strong>${this.escapeHtml(this.formatCustomFieldValue(field.value))}</strong></div>`
+    ).join('');
+  }
+
+  private getInvoicePaymentStatus(invoice: any): 'Paid' | 'Unpaid' {
+    const status = `${invoice?.payment_status ?? invoice?.invoice_status ?? ''}`.trim().toLowerCase();
+    if (status === 'paid' || status === 'complete' || status === 'completed' || Number(invoice?.is_paid) === 1) {
+      return 'Paid';
+    }
+    return 'Unpaid';
+  }
+
+  private formatCustomFieldValue(value: any): string {
+    if (Array.isArray(value)) {
+      return value.join(', ') || '-';
+    }
+    if (value && typeof value === 'object') {
+      return Object.values(value).join(', ') || '-';
+    }
+    return `${value ?? ''}`.trim() || '-';
   }
 
   private getColumnAlign(value: any): 'left' | 'right' | 'center' {
