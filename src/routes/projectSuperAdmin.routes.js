@@ -15,8 +15,8 @@ router.get("/fetch-submenu-based-on-parent-menu", authSuperadmin,Controller.fetc
 router.post("/custom-field-create", authSuperadmin,Controller.customFieldCreate);
 router.post("/custom-field-update", authSuperadmin,Controller.customFieldUpdate);
 router.post("/assign-custom-field-modules", authSuperadmin,Controller.assignCustomFieldModules);
-router.post("/deassign-custom-field-modules", authSuperadmin,Controller.deassignCustomFieldModules);
-router.get("/fetch-custom-fields", authSuperadmin,Controller.getCustomFields);
+router.post("/deassign-custom-field-modules", auth,Controller.deassignCustomFieldModules);
+router.get("/fetch-custom-fields", auth,Controller.getCustomFields);
 router.get("/fetch-child-menu", authSuperadmin,Controller.fetchChildMenu);
 
 module.exports = router;
