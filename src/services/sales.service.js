@@ -288,6 +288,8 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
     const {
       customer_id,
       invoice_no,
+      document_type,
+      current_number,
       order_no,
       invoice_date,
       term,
@@ -314,6 +316,13 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
 
     if (!invoice_no) {
       throw new Error("invoice_no is required");
+    }
+
+    const normalizedDocumentType = document_type;
+    const nextCurrentNumber = normalizeFormValue(current_number);
+
+    if (nextCurrentNumber === undefined || nextCurrentNumber === null || nextCurrentNumber === "") {
+      throw new Error("current_number is required");
     }
 
     if (!invoiceItems.length) {
@@ -384,6 +393,17 @@ exports.createInvoice = async (data, tenant_id, user_id) => {
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         buildInvoiceItemValues(invoiceMasterId, item, tenant_id, user_id)
       );
+    }
+
+    const [settingsResult] = await connection.query(
+      `UPDATE document_number_settings
+       SET current_number = ?
+       WHERE tenant_id = ? AND document_type = ?`,
+      [nextCurrentNumber, tenant_id, normalizedDocumentType]
+    );
+
+    if (settingsResult.affectedRows === 0) {
+      throw new Error("Document number settings not found");
     }
 
     const [masterRows] = await connection.query(
