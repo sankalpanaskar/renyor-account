@@ -216,6 +216,7 @@ exports.createMenuSubmenu = async (data) => {
 };
 exports.customFieldCreate = async (data) => {
   const {
+    tenant_id,
     field_name,
     field_label,
     field_type,
@@ -233,6 +234,7 @@ exports.customFieldCreate = async (data) => {
   } = data;
 
   // Validation
+  if (!tenant_id) throw new Error("tenant_id is required");
   if (!field_name) throw new Error("Field name is required");
   if (!field_label) throw new Error("Field label is required");
 
@@ -268,6 +270,7 @@ exports.customFieldCreate = async (data) => {
   const [result] = await db.query(
     `INSERT INTO custom_fields
     (
+      tenant_id,
       field_name,
       field_label,
       field_type,
@@ -283,8 +286,9 @@ exports.customFieldCreate = async (data) => {
       show_in_list,
       status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
+      tenant_id,
       field_name,
       field_label,
       finalFieldType,
@@ -305,6 +309,7 @@ exports.customFieldCreate = async (data) => {
   // Return created record
   return {
     id: result.insertId,
+    tenant_id,
     field_name,
     field_label,
     field_type: finalFieldType,
