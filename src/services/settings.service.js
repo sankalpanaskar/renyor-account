@@ -8,6 +8,7 @@ exports.createDocumentNumberSettings = async (data, tenant_id, user_id) => {
 
     const {
       document_type,
+      type,
       prefix,
       current_number,
       suffix,
@@ -16,6 +17,10 @@ exports.createDocumentNumberSettings = async (data, tenant_id, user_id) => {
 
     if (!document_type) {
       throw new Error('document_type is required');
+    }
+
+    if (!type) {
+      throw new Error('type is required');
     }
 
     if (prefix === undefined || prefix === null) {
@@ -34,16 +39,44 @@ exports.createDocumentNumberSettings = async (data, tenant_id, user_id) => {
       throw new Error('increment_by is required');
     }
 
-    const [result] = await connection.query(
-      `INSERT INTO document_number_settings
-        (document_type, prefix, current_number, suffix, increment_by, tenant_id, user_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [document_type, prefix, current_number, suffix, increment_by, tenant_id, user_id]
+    const [existingRows] = await connection.query(
+      `SELECT id
+       FROM document_number_settings
+       WHERE tenant_id = ? AND document_type = ?
+       LIMIT 1`,
+      [tenant_id, document_type]
     );
+
+    let recordId;
+
+    if (existingRows.length > 0) {
+      recordId = existingRows[0].id;
+
+      await connection.query(
+        `UPDATE document_number_settings
+         SET \`type\` = ?,
+             prefix = ?,
+             current_number = ?,
+             suffix = ?,
+             increment_by = ?,
+             user_id = ?
+         WHERE id = ? AND tenant_id = ? AND document_type = ?`,
+        [type, prefix, current_number, suffix, increment_by, user_id, recordId, tenant_id, document_type]
+      );
+    } else {
+      const [result] = await connection.query(
+        `INSERT INTO document_number_settings
+          (document_type, \`type\`, prefix, current_number, suffix, increment_by, tenant_id, user_id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [document_type, type, prefix, current_number, suffix, increment_by, tenant_id, user_id]
+      );
+
+      recordId = result.insertId;
+    }
 
     const [rows] = await connection.query(
       `SELECT * FROM document_number_settings WHERE id = ? AND tenant_id = ?`,
-      [result.insertId, tenant_id]
+      [recordId, tenant_id]
     );
 
     await connection.commit();

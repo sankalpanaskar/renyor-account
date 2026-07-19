@@ -17,17 +17,10 @@ exports.createDocumentNumberSettings = async (req, res) => {
       settings
     );
   } catch (err) {
-    if(err.code==='ER_DUP_ENTRY'){
-        return res.error(
-              409,
-              "This Document type has already been created by the same user for the same tenant"
-            );
-    }else{
       return res.error(
       400,
       err.message
        );
-    }
   }
 };
 
