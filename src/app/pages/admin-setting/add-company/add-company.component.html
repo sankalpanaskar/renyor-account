@@ -17,11 +17,14 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">Industry <span
                                 style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select Industry" name="industry"
-                            required #industry="ngModel" [(ngModel)]="model.industry">
-                            <nb-option value="1">Non-Profit</nb-option>
-                            <!-- <nb-option  *ngFor="let pm of parentMenuList" [value]="pm.id">{{pm.menu_name}}</nb-option> -->
-                        </nb-select>
+                        <ngx-search-select
+                            name="industry"
+                            [placeholder]="'Select Industry'"
+                            [options]="industryList"
+                            [(ngModel)]="model.industry"
+                            [required]="true"
+                            #industry="ngModel"
+                        ></ngx-search-select>
                         <div *ngIf="fm.submitted && industry.invalid" class="error-message">
                             Industry is required
                         </div>
@@ -67,10 +70,16 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label">State <span
                         style="color:#d32f2f">*</span></label>
-                        <nb-select shape="semi-round" placeholder="Select State" name="state"
-                            required #state="ngModel" [(ngModel)]="model.state">
-                            <nb-option *ngFor="let state of stateList" [value]="state.code">{{state.name}}</nb-option>
-                        </nb-select>
+                        <ngx-search-select
+                            name="state"
+                            [placeholder]="'Select State'"
+                            [options]="stateList"
+                            [(ngModel)]="model.state"
+                            displayKey="name"
+                            valueKey="code"
+                            [required]="true"
+                            #state="ngModel"
+                        ></ngx-search-select>
                         <div *ngIf="fm.submitted && state.invalid" class="error-message">
                             Select state.
                         </div>

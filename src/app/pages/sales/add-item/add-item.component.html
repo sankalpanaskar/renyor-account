@@ -164,12 +164,7 @@
                             Description
                         </label>
                         <textarea nbInput fullWidth shape="semi-round" name="sales_account_description"
-                            [(ngModel)]="model.sales_account_description"
-                            required
-                            #sales_account_description="ngModel"></textarea>
-                        <div *ngIf="fm.submitted && model.enable_sales_information && sales_account_description.invalid" class="error-message">
-                            Description is required
-                        </div>
+                            [(ngModel)]="model.sales_account_description"></textarea>
                     </div>
                     </ng-container>
                     <div class="col-md-12 mb-10 information-toggle-row">
@@ -216,12 +211,7 @@
                             Description
                         </label>
                         <textarea nbInput fullWidth shape="semi-round" name="purchase_account_description"
-                            [(ngModel)]="model.purchase_account_description"
-                            required
-                            #purchase_account_description="ngModel"></textarea>
-                        <div *ngIf="fm.submitted && model.enable_purchase_information && purchase_account_description.invalid" class="error-message">
-                            Description is required
-                        </div>
+                            [(ngModel)]="model.purchase_account_description"></textarea>
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-prefered-vendor">

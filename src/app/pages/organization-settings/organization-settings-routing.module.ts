@@ -7,6 +7,7 @@ import { RolesComponent } from './roles/roles.component';
 import { ProfileComponent } from '../organization-settings/profile/profile.component';
 import { AddUserComponent } from './add-user/add-user.component';
 import { UserListComponent } from './user-list/user-list.component';
+import { SubscriptionsComponent } from './subscriptions/subscriptions.component';
 
 const routes: Routes = [
   {
@@ -36,6 +37,11 @@ const routes: Routes = [
       {
         path:'user-list',
         component:UserListComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'subscriptions',
+        component:SubscriptionsComponent,
         canActivate: [authGuard]
       }
     ]

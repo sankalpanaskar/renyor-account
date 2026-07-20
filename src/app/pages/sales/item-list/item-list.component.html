@@ -79,6 +79,16 @@
             </section>
           </div>
 
+          <section class="dialog-group dialog-group-full" *ngIf="getCustomItemFields(selectedItem).length > 0">
+            <div class="dialog-group-title">Custom Fields</div>
+            <div class="info-card-grid three-columns">
+              <div class="info-card" *ngFor="let field of getCustomItemFields(selectedItem)">
+                <div class="section-label">{{ field.label }}</div>
+                <div class="section-value multiline-value">{{ field.value }}</div>
+              </div>
+            </div>
+          </section>
+
           <section class="dialog-group dialog-group-full">
             <div class="dialog-group-title">Audit</div>
             <div class="info-card-grid two-columns">

@@ -12,7 +12,7 @@ import { NbToastrService } from '@nebular/theme';
   styleUrls: ['pages.component.scss'],
   template: `
     <ngx-one-column-layout>
-      <nb-menu [items]="menu" autoCollapse="true"></nb-menu>
+      <nb-menu [items]="menu" [autoCollapse]="true"></nb-menu>
       <router-outlet></router-outlet>
     </ngx-one-column-layout>
   `,
@@ -115,6 +115,7 @@ export class PagesComponent implements OnInit, OnDestroy {
           }
           
           console.log('📋 Final menu with dynamic items:', this.menu);
+          this.assignMenuParents(this.menu);
           this.syncMenuSelection();
         }
       },
@@ -145,16 +146,26 @@ export class PagesComponent implements OnInit, OnDestroy {
       if (itemChildren.length > 0) {
         const childrenMenu = itemChildren.filter((child: any) => this.canShowChild(child)).map((child: any) => ({
           title: child.title || child.name,
-          link: child.link || child.url || child.route,
+          link: this.normalizeMenuLink(child.link || child.url || child.route),
           icon: child.icon,
         }));
 
-        if (childrenMenu.length) {
-          menuItem.children = childrenMenu;
+        // Do not render an empty parent menu when every child has all
+        // permissions disabled.
+        if (childrenMenu.length === 0) {
+          return;
         }
+
+        menuItem.children = childrenMenu;
       } else if (item.link || item.url || item.route) {
+        if (!this.canShowChild(item)) {
+          return;
+        }
+
         // If item has direct link, add it
-        menuItem.link = item.link || item.url || item.route;
+        menuItem.link = this.normalizeMenuLink(item.link || item.url || item.route);
+      } else {
+        return;
       }
 
       // Skip group items unless explicitly needed
@@ -191,6 +202,24 @@ export class PagesComponent implements OnInit, OnDestroy {
 
   private normalizeTitle(value: any): string {
     return `${value || ''}`.trim().toLowerCase();
+  }
+
+  private normalizeMenuLink(value: any): string {
+    const link = `${value || ''}`.trim();
+    if (!link) {
+      return '';
+    }
+
+    // Keep external links unchanged; API application routes are normalized
+    // to the absolute route used by PagesRoutingModule.
+    if (/^(https?:)?\/\//i.test(link) || /^(mailto:|tel:)/i.test(link)) {
+      return link;
+    }
+
+    const route = link.replace(/^\/+/, '');
+    return route === 'pages' || route.startsWith('pages/')
+      ? `/${route}`
+      : `/pages/${route}`;
   }
 
   private matchesGroup(item: any, groupConfig: { parentTitles: string[]; linkPrefixes: string[] }): boolean {
@@ -261,6 +290,20 @@ export class PagesComponent implements OnInit, OnDestroy {
     }
 
     return false;
+  }
+
+  private assignMenuParents(items: any[], parent: any = null): void {
+    items.forEach((item: any) => {
+      if (parent) {
+        item.parent = parent;
+      } else if (item.parent) {
+        delete item.parent;
+      }
+
+      if (Array.isArray(item?.children)) {
+        this.assignMenuParents(item.children, item);
+      }
+    });
   }
 
   private syncMenuSelection(): void {

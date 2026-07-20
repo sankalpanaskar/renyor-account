@@ -12,6 +12,7 @@ export class AddCompanyComponent implements OnInit {
   isSubmitting: boolean = false;
   packageList : any = [];
   stateList : any = [];
+  industryList: string[] = [];
   selectedFile: File | null = null;
 
 
@@ -22,7 +23,20 @@ export class AddCompanyComponent implements OnInit {
 
   ngOnInit(): void {
     this.getState();
+    this.getIndustries();
     this.getPackage();
+  }
+
+  getIndustries(): void {
+    this.globalService.getIndustries().subscribe({
+      next: (industries: string[]) => {
+        this.industryList = Array.isArray(industries) ? industries : [];
+      },
+      error: () => {
+        this.industryList = [];
+        this.toastrService.danger('Industry list could not be loaded.', 'Failed');
+      }
+    });
   }
 
   getPackage() {

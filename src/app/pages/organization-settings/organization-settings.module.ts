@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { ProfileComponent } from './profile/profile.component';
 import { AddUserComponent } from './add-user/add-user.component';
 import { UserListComponent } from './user-list/user-list.component';
+import { ThemeModule } from '../../@theme/theme.module';
+import { SubscriptionsComponent } from './subscriptions/subscriptions.component';
 
 
 @NgModule({
@@ -19,10 +21,12 @@ import { UserListComponent } from './user-list/user-list.component';
     AddRolesComponent,
     ProfileComponent,
     AddUserComponent,
-    UserListComponent
+    UserListComponent,
+    SubscriptionsComponent
   ],
   imports: [
     CommonModule,
+    ThemeModule,
     OrganizationSettingsRoutingModule,
     NbCardModule,
     NbInputModule,

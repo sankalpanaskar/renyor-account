@@ -59,7 +59,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         },
         {
           title: 'Subscription',
-          link: '/pages/organization-setting/package-list',
+          link: '/pages/organization-setting/subscriptions',
         },
         {
           title: 'Document Formats',
@@ -86,7 +86,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
   // Add admin-only menus if user is system super admin
   if (isSystemSuperAdmin) {
     menu.push(
-      { title: 'Admin Settings', group: true },
+      // { title: 'Admin Settings', group: true },
       {
         title: 'Package & Module',
         icon: 'options-2-outline',

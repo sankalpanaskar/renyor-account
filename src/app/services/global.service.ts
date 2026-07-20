@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { environment } from '../../environments/environment';
+import industriesData from '../rawData/industries.json';
+import statesData from '../rawData/state.json';
 
 @Injectable({
   providedIn: 'root'
@@ -72,8 +74,12 @@ export class GlobalService {
     
     // constructor(private http: HttpClient) {}
     
-    public getStates() {
-      return this.http.get<any[]>('assets/data/state.json');
+    public getStates(): Observable<Array<{ name: string; code: string }>> {
+      return of(statesData);
+    }
+
+    public getIndustries(): Observable<string[]> {
+      return of(industriesData);
     }
 
     public getMenuByUser() {
@@ -132,6 +138,14 @@ export class GlobalService {
       return this.http.get(`${this.tenantsUrl}/fetch-tenant`,);
     }
 
+    public fetchMyTenant(): Observable<any> {
+      return this.http.get(`${this.tenantsUrl}/fetch-my-tenant`);
+    }
+
+    public updateMyTenant(data: FormData): Observable<any> {
+      return this.http.post(`${this.tenantsUrl}/update-my-tenant`, data);
+    }
+
     public addUser(data:any): Observable<any> {
       return this.http.post(`${this.usersUrl}/user-create`,data);
     }
@@ -180,7 +194,7 @@ export class GlobalService {
     }
 
     public fetchItems(): Observable<any> {
-      return this.http.get(`${this.salesUrl}/fetch-items`);
+      return this.http.get(`${this.salesUrl}/fetch-items?module_id=37`);
     }
 
     public getAccountHeadType(): Observable<any> {

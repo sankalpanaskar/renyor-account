@@ -192,6 +192,39 @@ export class ItemListComponent implements OnInit {
     ];
   }
 
+  getCustomItemFields(item: any): Array<{ label: string; value: any }> {
+    let customFields = item?.custom_field;
+
+    if (typeof customFields === 'string') {
+      try {
+        customFields = JSON.parse(customFields);
+      } catch {
+        return [];
+      }
+    }
+
+    if (!customFields || typeof customFields !== 'object' || Array.isArray(customFields)) {
+      return [];
+    }
+
+    return Object.keys(customFields).map((key: string) => ({
+      label: this.formatLabel(key),
+      value: this.formatCustomFieldValue(customFields[key])
+    }));
+  }
+
+  private formatCustomFieldValue(value: any): string {
+    if (Array.isArray(value)) {
+      return value.length ? value.map((entry: any) => this.formatValue(entry)).join(', ') : '-';
+    }
+
+    if (value && typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+
+    return this.formatValue(value);
+  }
+
   getAuditItemFields(item: any): Array<{ label: string; value: any }> {
     return [
       { label: 'Created At', value: this.formatDateTime(item?.created_at) },

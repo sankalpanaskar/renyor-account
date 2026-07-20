@@ -260,7 +260,7 @@ export class AddItemComponent implements OnInit {
               id: item.id,
               taxName: item.tax_rate_name,
               rate: item.tax_rate_percentage,
-              label: item.tax_rate_name + ' [' + item.tax_rate_percentage + '%]'
+              label: item.tax_rate_name
             }))
           : this.getDefaultGstTaxRates();
       },
