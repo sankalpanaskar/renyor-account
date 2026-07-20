@@ -133,3 +133,11 @@ exports.getAll = async () => {
   const [result] = await db.query('SELECT t.*, p.package_name FROM tenants t LEFT JOIN packages p ON t.package_id = p.id ORDER BY t.id');
   return result;
 };
+
+exports.getById = async (tenant_id) => {
+  const [result] = await db.query(
+    'SELECT t.*, p.package_name FROM tenants t LEFT JOIN packages p ON t.package_id = p.id WHERE t.id = ? LIMIT 1',
+    [tenant_id]
+  );
+  return result[0] || null;
+};

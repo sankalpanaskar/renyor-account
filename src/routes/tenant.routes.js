@@ -1,5 +1,6 @@
 const router = require('express').Router();
 const TenantController = require('../controllers/tenant.controller');
+const auth = require('../middleware/auth');
 const authSuperadmin = require('../middleware/authSuperAdmin');
 const createUpload = require('../middleware/upload');
 const upload = createUpload('../uploads/tenants/tmp');
@@ -22,5 +23,6 @@ router.post(
 //   });
 // }, TenantController.create);
 router.get('/fetch-tenant', authSuperadmin, TenantController.getAll);
+router.get('/fetch-my-tenant', auth, TenantController.getCurrentTenant);
 
 module.exports = router;

@@ -31,10 +31,7 @@ exports.create = async (req, res) => {
 
 exports.getAll = async (req, res) => {
   try {
-    
-   
     const tenants = await TenantService.getAll();
-    
 
      return res.success(
       200,
@@ -44,5 +41,25 @@ exports.getAll = async (req, res) => {
   } catch (err) {
     console.error('get tenants error', err);
     res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.getCurrentTenant = async (req, res) => {
+  try {
+    const tenantId = req.user?.tenant_id;
+    if (!tenantId) {
+      return res.error(400, 'tenant_id is required');
+    }
+
+    const tenant = await TenantService.getById(tenantId);
+
+    return res.success(
+      200,
+      "Tenant fetched successfully",
+      tenant
+    );
+  } catch (err) {
+    console.error('get current tenant error', err);
+    return res.error(500, err.message || 'Internal server error');
   }
 };
