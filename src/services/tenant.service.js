@@ -8,6 +8,14 @@ const publicRoot = path.resolve(__dirname, '..', '..', 'public');
 const buildTenantLogoPath = (tenantId, fileName) =>
   path.join('uploads', 'tenants', String(tenantId), fileName).replace(/\\/g, '/');
 
+const deleteFileIfExists = async (filePath) => {
+  if (!filePath) {
+    return;
+  }
+
+  await fs.unlink(filePath).catch(() => {});
+};
+
 const moveTenantLogoFile = async (logoFile, tenantId) => {
   if (!logoFile?.path || !logoFile?.filename) {
     return null;
@@ -118,6 +126,97 @@ exports.create = async (data, logoFile = null) => {
     }
     if (logoFile?.path) {
       await fs.unlink(logoFile.path).catch(() => {});
+    }
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.updateById = async (tenantId, data, logoFile = null) => {
+  const connection = await db.getConnection();
+  let movedLogoPath = null;
+  let oldLogoPath = null;
+
+  try {
+    await connection.beginTransaction();
+
+    const [existingRows] = await connection.query(
+      'SELECT * FROM tenants WHERE id = ? FOR UPDATE',
+      [tenantId]
+    );
+
+    if (!existingRows.length) {
+      throw new Error('Tenant not found');
+    }
+
+    const existingTenant = existingRows[0];
+    oldLogoPath = existingTenant.logo || null;
+
+    const updates = [];
+    const values = [];
+    const hasOwn = (obj, key) => Object.prototype.hasOwnProperty.call(obj || {}, key);
+    const addUpdate = (column, value, shouldUpdate) => {
+      if (!shouldUpdate) {
+        return;
+      }
+
+      updates.push(`${column} = ?`);
+      values.push(value ?? null);
+    };
+
+    addUpdate('package_id', data.package_id, hasOwn(data, 'package_id'));
+    addUpdate('name', data.name, hasOwn(data, 'name'));
+    addUpdate('industry', data.industry, hasOwn(data, 'industry'));
+    addUpdate('email', data.email, hasOwn(data, 'email'));
+    addUpdate('phone', data.phone, hasOwn(data, 'phone'));
+    addUpdate('website', data.website, hasOwn(data, 'website'));
+    addUpdate('address', data.address, hasOwn(data, 'address'));
+    addUpdate('city', data.city, hasOwn(data, 'city'));
+    addUpdate('state', data.state, hasOwn(data, 'state'));
+    addUpdate('country', data.country, hasOwn(data, 'country'));
+    addUpdate('pin', data.pin, hasOwn(data, 'pin'));
+    addUpdate('pan', data.pan, hasOwn(data, 'pan'));
+    addUpdate('gst', data.gst, hasOwn(data, 'gst'));
+    addUpdate('is_active', data.is_active, hasOwn(data, 'is_active'));
+
+    if (logoFile) {
+      movedLogoPath = await moveTenantLogoFile(logoFile, tenantId);
+      addUpdate('logo', movedLogoPath, true);
+    } else if (hasOwn(data, 'logo')) {
+      addUpdate('logo', data.logo, true);
+    }
+
+    if (updates.length > 0) {
+      await connection.query(
+        `UPDATE tenants
+         SET ${updates.join(', ')}
+         WHERE id = ?`,
+        [...values, tenantId]
+      );
+    }
+
+    await connection.commit();
+
+    if (logoFile && oldLogoPath && oldLogoPath !== movedLogoPath) {
+      const oldLogoAbsolutePath = path.resolve(publicRoot, oldLogoPath);
+      await deleteFileIfExists(oldLogoAbsolutePath);
+    }
+
+    const [rows] = await connection.query(
+      'SELECT * FROM tenants WHERE id = ?',
+      [tenantId]
+    );
+
+    return rows[0] || null;
+  } catch (error) {
+    await connection.rollback();
+    if (movedLogoPath) {
+      const movedLogoAbsolutePath = path.resolve(publicRoot, movedLogoPath);
+      await deleteFileIfExists(movedLogoAbsolutePath);
+    }
+    if (logoFile?.path) {
+      await deleteFileIfExists(logoFile.path);
     }
     throw error;
   } finally {

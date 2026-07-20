@@ -24,5 +24,11 @@ router.post(
 // }, TenantController.create);
 router.get('/fetch-tenant', authSuperadmin, TenantController.getAll);
 router.get('/fetch-my-tenant', auth, TenantController.getCurrentTenant);
+router.post(
+  '/update-my-tenant',
+  auth,
+  upload.fields([{ name: 'logo', maxCount: 1 }]),
+  TenantController.updateCurrentTenant
+);
 
 module.exports = router;

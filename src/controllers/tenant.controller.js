@@ -63,3 +63,40 @@ exports.getCurrentTenant = async (req, res) => {
     return res.error(500, err.message || 'Internal server error');
   }
 };
+
+exports.updateCurrentTenant = async (req, res) => {
+  try {
+    const tenantId = req.user?.tenant_id;
+    if (!tenantId) {
+      return res.error(400, 'tenant_id is required');
+    }
+
+    const uploaded_logo = req.files?.logo?.[0] || null;
+
+    const tenant = await TenantService.updateById(
+      tenantId,
+      {
+        ...req.body
+      },
+      uploaded_logo
+    );
+
+    return res.success(
+      200,
+      "Tenant updated successfully",
+      tenant
+    );
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.error(
+        409,
+        "This email address already exists. Please use a different email."
+      );
+    }
+
+    return res.error(
+      400,
+      err.message
+    );
+  }
+};
