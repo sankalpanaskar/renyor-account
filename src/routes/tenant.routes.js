@@ -1,13 +1,15 @@
 const router = require('express').Router();
 const TenantController = require('../controllers/tenant.controller');
 const authSuperadmin = require('../middleware/authSuperAdmin');
-const multer = require("multer");
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
-});
+const createUpload = require('../middleware/upload');
+const upload = createUpload('../uploads/tenants/tmp');
 
-router.post('/create-tenant', authSuperadmin,upload.single("logo"),TenantController.create);
+router.post(
+  '/create-tenant',
+  authSuperadmin,
+  upload.fields([{ name: 'logo', maxCount: 1 }]),
+  TenantController.create
+);
 // router.post("/create-tenant", authSuperadmin, (req, res, next) => {
 //   upload.single("logo")(req, res, function (err) {
 //     if (err) {

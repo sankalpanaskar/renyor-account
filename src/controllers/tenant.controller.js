@@ -2,8 +2,11 @@ const TenantService = require('../services/tenant.service');
 
 exports.create = async (req, res) => {
   try {
-    console.log(req.body);
-    const tenant = await TenantService.create(req.body);
+    const uploaded_logo = req.files?.logo?.[0] || null;
+
+    const tenant = await TenantService.create({
+      ...req.body,
+    }, uploaded_logo);
     
     //return 0;
     return res.success(
