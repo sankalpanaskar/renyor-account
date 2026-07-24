@@ -380,8 +380,103 @@ exports.createSubscription = async (data) => {
 
 
 exports.getAll = async () => {
-  const [result] = await db.query('SELECT t.*, p.package_name FROM tenants t LEFT JOIN packages p ON t.package_id = p.id ORDER BY t.id');
-  return result;
+  const [rows] = await db.query(
+    `SELECT
+        t.id AS tenant_id,
+        t.package_id AS tenant_package_id,
+        t.name,
+        t.logo,
+        t.industry,
+        t.email,
+        t.phone,
+        t.website,
+        t.address,
+        t.city,
+        t.state,
+        t.country,
+        t.pin,
+        t.pan,
+        t.gst,
+        t.is_active,
+        t.created_at,
+        t.updated_at,
+        s.id AS subscription_id,
+        s.package_id AS subscription_package_id,
+        s.start_date AS subscription_start_date,
+        s.end_date AS subscription_end_date,
+        s.amount AS subscription_amount,
+        s.payment_status,
+        s.payment_method,
+        s.transaction_id,
+        s.invoice_id,
+        s.status AS subscription_status,
+        p.id AS package_id,
+        p.package_name,
+        p.package_type,
+        p.package_details,
+        p.base_price,
+        p.offer_price,
+        p.final_price,
+        p.package_period
+     FROM tenants t
+     LEFT JOIN subscriptions s
+       ON s.tenant_id = t.id
+     LEFT JOIN packages p
+       ON p.id = s.package_id
+     ORDER BY t.id, s.id DESC`
+  );
+
+  const tenantsMap = new Map();
+
+  rows.forEach((row) => {
+    if (!tenantsMap.has(row.tenant_id)) {
+      tenantsMap.set(row.tenant_id, {
+        id: row.tenant_id,
+        package_id: row.tenant_package_id,
+        name: row.name,
+        logo: row.logo,
+        industry: row.industry,
+        email: row.email,
+        phone: row.phone,
+        website: row.website,
+        address: row.address,
+        city: row.city,
+        state: row.state,
+        country: row.country,
+        pin: row.pin,
+        pan: row.pan,
+        gst: row.gst,
+        is_active: row.is_active,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
+        packages: []
+      });
+    }
+
+    if (row.subscription_id) {
+      tenantsMap.get(row.tenant_id).packages.push({
+        subscription_id: row.subscription_id,
+        package_id: row.package_id,
+        package_name: row.package_name,
+        package_type: row.package_type,
+        package_details: row.package_details,
+        base_price: row.base_price,
+        offer_price: row.offer_price,
+        final_price: row.final_price,
+        package_period: row.package_period,
+        start_date: row.subscription_start_date,
+        end_date: row.subscription_end_date,
+        amount: row.subscription_amount,
+        payment_status: row.payment_status,
+        payment_method: row.payment_method,
+        transaction_id: row.transaction_id,
+        invoice_id: row.invoice_id,
+        status: row.subscription_status
+      });
+    }
+  });
+
+  return Array.from(tenantsMap.values());
 };
 
 exports.getById = async (tenant_id) => {
