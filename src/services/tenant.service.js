@@ -109,7 +109,7 @@ exports.create = async (data, logoFile = null) => {
         package_id,
         package_period,
         final_price,
-        "NA",
+        "paid",
         "NA",
         "NA",
         "NA"
