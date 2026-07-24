@@ -91,7 +91,7 @@ exports.create = async (data, logoFile = null) => {
     const { package_period, final_price } = packageRows[0];
 
     await connection.query(
-      `INSERT INTO subscription (
+      `INSERT INTO subscriptions (
         tenant_id,
         package_id,
         start_date,
