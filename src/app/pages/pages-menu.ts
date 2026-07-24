@@ -26,10 +26,12 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       children: [
         {
           title: 'Add Users',
+          icon: 'plus-square-outline',
           link: '/pages/organization-setting/add-user',
         },
         {
           title: 'User List',
+          icon: 'list-outline',
           link: '/pages/organization-setting/user-list',
         }
       ],
@@ -40,10 +42,12 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       children: [
         {
           title: 'Add Roles',
+          icon: 'plus-square-outline',
           link: '/pages/organization-setting/add-roles',
         },
         {
           title: 'Roles',
+          icon: 'list-outline',
           link: '/pages/organization-setting/roles',
         }
       ],
@@ -55,14 +59,17 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       children: [
         {
           title: 'Company Profile',
+          icon: 'person-outline',
           link: '/pages/organization-setting/orgprofile',
         },
         {
           title: 'Subscription',
+          icon: 'credit-card-outline',
           link: '/pages/organization-setting/subscriptions',
         },
         {
           title: 'Document Formats',
+          icon: 'file-text-outline',
           link: '/pages/document-format-configuration',
         },
       ],
@@ -73,10 +80,12 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         children: [
           {
             title: 'Add Custom Field',
+            icon: 'plus-square-outline',
             link: '/pages/admin-setting/add-custom-field',
           },
           {
             title: 'Custom Field List',
+            icon: 'list-outline',
             link: '/pages/admin-setting/custom-field-list',
           }
         ],
@@ -93,6 +102,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         children: [
           {
             title: 'Menu/Module',
+            icon: 'menu-outline',
             link: '/pages/admin-setting/setup-menu',
           },
           // {
@@ -101,10 +111,12 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
           // },
           {
             title: 'Packages',
+            icon: 'credit-card-outline',
             link: '/pages/admin-setting/package-list',
           },
           {
-            title: 'Assign Module Into Package',
+            title: 'Package Module',
+            icon: 'checkmark-square-outline',
             link: '/pages/admin-setting/assign-module',
           },
         ],
@@ -115,10 +127,12 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         children: [
           {
             title: 'Add Company',
+            icon: 'plus-square-outline',
             link: '/pages/admin-setting/add-company',
           },
           {
             title: 'Company List',
+            icon: 'list-outline',
             link: '/pages/admin-setting/company-list',
           }
         ],
@@ -129,6 +143,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         children: [
           {
             title: 'Account Type',
+            icon: 'plus-square-outline',
             link: '/pages/accountant/chart-of-account-type',
           }
         ],
@@ -136,12 +151,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       {
         title: 'Setup',
         icon: 'settings-2-outline',
-        children: [
-          {
-            title: 'General',
-            link: '/pages/organization-setting/profile',
-          }
-        ],
+        // link: '/pages/organization-setting/profile',
       },
     );
   }

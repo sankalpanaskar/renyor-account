@@ -1,6 +1,48 @@
 @import '../@theme/styles/themes';
 
 @include nb-install-component() {
+  ::ng-deep nb-menu.navigation-transition {
+    display: block;
+    transform-origin: center left;
+    will-change: transform, opacity;
+  }
+
+  ::ng-deep nb-menu.settings-navigation {
+    > .menu-items {
+      min-height: 100%;
+      padding-top: 2px;
+      background: linear-gradient(180deg, rgba(237, 243, 255, 0.72) 0, rgba(255, 255, 255, 0) 150px);
+    }
+
+    .menu-group {
+      color: nb-theme(color-primary-600);
+      letter-spacing: 0.08em;
+    }
+  }
+
+  ::ng-deep nb-menu.settings-navigation > .menu-items > .menu-item:first-child {
+    margin: 8px 10px 12px;
+    border-bottom: 1px solid nb-theme(separator);
+
+    > a {
+      border-radius: 8px;
+      color: nb-theme(color-primary-600);
+      background: nb-theme(color-primary-100);
+      font-weight: 700;
+
+      &:hover {
+        color: nb-theme(color-primary-700);
+        background: nb-theme(color-primary-200);
+      }
+    }
+  }
+
+  ::ng-deep {
+  .scrollable {
+      padding-top: 10px !important;
+  }
+}
+
   ::ng-deep router-outlet + * {
     display: block;
     animation: fade 1s;

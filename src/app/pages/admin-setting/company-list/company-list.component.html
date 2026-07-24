@@ -1,3 +1,119 @@
+<div *ngIf="showSubscriptionPopup" class="customer-dialog-overlay subscription-dialog-overlay"
+  (click)="onSubscriptionOverlayClick($event)">
+  <div class="customer-dialog-wrapper compact-access-dialog subscription-dialog" role="dialog"
+    aria-modal="true" aria-labelledby="subscription-dialog-title">
+    <form #subscriptionForm="ngForm" (ngSubmit)="submitSubscription(subscriptionForm)" novalidate
+      class="customer-dialog-shell">
+      <div class="dialog-header">
+        <div class="entity-dialog-identity">
+          <div class="entity-dialog-avatar subscription-dialog-avatar">
+            <nb-icon icon="credit-card-outline"></nb-icon>
+          </div>
+          <div class="dialog-header-copy">
+            <span class="customer-code-badge">Add subscription</span>
+            <div class="customer-title" id="subscription-dialog-title">
+              {{ subscriptionCompany?.name || 'Company' }}
+            </div>
+            <div class="entity-dialog-meta">
+              <span>Record package and payment details</span>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="close-btn" (click)="closeSubscriptionPopup()"
+          [disabled]="subscriptionSubmitting" aria-label="Close subscription form">
+          <nb-icon icon="close-outline"></nb-icon>
+        </button>
+      </div>
+
+      <div class="popup-scroll-body subscription-form-body"
+        [nbSpinner]="subscriptionSubmitting" nbSpinnerStatus="primary">
+        <div class="subscription-form-grid">
+          <div class="subscription-field full-row">
+            <label for="subscription-package">Package <span>*</span></label>
+            <ngx-search-select
+              id="subscription-package"
+              name="package_id"
+              [placeholder]="packagesLoading ? 'Loading packages...' : 'Search package'"
+              [options]="packages"
+              displayKey="package_name"
+              valueKey="id"
+              [required]="true"
+              [disabled]="packagesLoading"
+              [(ngModel)]="subscriptionModel.package_id"
+              #packageId="ngModel">
+            </ngx-search-select>
+            <small class="subscription-field-error"
+              *ngIf="subscriptionForm.submitted && packageId.invalid">Package is required.</small>
+            <small class="subscription-field-hint" *ngIf="!packagesLoading && packages.length === 0">
+              No packages are available.
+            </small>
+          </div>
+
+          <div class="subscription-field">
+            <label for="payment-status">Payment status <span>*</span></label>
+            <ngx-search-select
+              id="payment-status"
+              name="payment_status"
+              [placeholder]="'Search payment status'"
+              [options]="paymentStatuses"
+              displayKey="label"
+              valueKey="value"
+              [required]="true"
+              [(ngModel)]="subscriptionModel.payment_status"
+              #paymentStatus="ngModel">
+            </ngx-search-select>
+            <small class="subscription-field-error"
+              *ngIf="subscriptionForm.submitted && paymentStatus.invalid">Payment status is required.</small>
+          </div>
+
+          <div class="subscription-field">
+            <label for="payment-method">Payment method <span>*</span></label>
+            <ngx-search-select
+              id="payment-method"
+              name="payment_method"
+              [placeholder]="'Search payment method'"
+              [options]="paymentMethods"
+              [required]="true"
+              [(ngModel)]="subscriptionModel.payment_method"
+              #paymentMethod="ngModel">
+            </ngx-search-select>
+            <small class="subscription-field-error"
+              *ngIf="subscriptionForm.submitted && paymentMethod.invalid">Payment method is required.</small>
+          </div>
+
+          <div class="subscription-field">
+            <label for="transaction-id">Transaction ID <span>*</span></label>
+            <input id="transaction-id" name="transaction_id" type="text" nbInput fullWidth
+              shape="semi-round" placeholder="Enter transaction ID" required pattern=".*\S.*" maxlength="100"
+              [(ngModel)]="subscriptionModel.transaction_id" #transactionId="ngModel">
+            <small class="subscription-field-error"
+              *ngIf="subscriptionForm.submitted && transactionId.invalid">Transaction ID is required.</small>
+          </div>
+
+          <div class="subscription-field">
+            <label for="invoice-id">Invoice ID <span>*</span></label>
+            <input id="invoice-id" name="invoice_id" type="text" nbInput fullWidth
+              shape="semi-round" placeholder="Enter invoice ID" required pattern=".*\S.*" maxlength="100"
+              [(ngModel)]="subscriptionModel.invoice_id" #invoiceId="ngModel">
+            <small class="subscription-field-error"
+              *ngIf="subscriptionForm.submitted && invoiceId.invalid">Invoice ID is required.</small>
+          </div>
+        </div>
+      </div>
+
+      <div class="subscription-dialog-footer">
+        <button type="button" nbButton status="basic" shape="semi-round"
+          (click)="closeSubscriptionPopup()" [disabled]="subscriptionSubmitting">Cancel</button>
+        <button type="submit" nbButton status="primary" shape="semi-round"
+          [disabled]="subscriptionSubmitting || packagesLoading || packages.length === 0">
+          <nb-icon icon="checkmark-outline"></nb-icon>
+          {{ subscriptionSubmitting ? 'Submitting...' : 'Submit' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <div *ngIf="showCompanyPopup" class="customer-dialog-overlay" (click)="closeCompanyPopup()">
   <div class="customer-dialog-wrapper compact-access-dialog company-details-dialog" role="dialog" aria-modal="true" aria-label="Company details" (click)="$event.stopPropagation()">
     <div class="customer-dialog-shell">
@@ -5,13 +121,7 @@
         <div class="entity-dialog-identity">
           <div class="entity-dialog-avatar company-dialog-avatar">{{ getCompanyInitials(selectedCompany) }}</div>
           <div class="dialog-header-copy">
-            <span class="customer-code-badge">{{ selectedCompany?.package_name || selectedCompany?.package_type || 'Company' }}</span>
             <div class="customer-title">{{ selectedCompany?.name || 'Company Details' }}</div>
-            <div class="entity-dialog-meta">
-              <span>{{ selectedCompany?.email || 'No email' }}</span>
-              <span aria-hidden="true">•</span>
-              <span>{{ selectedCompany?.phone || 'No phone' }}</span>
-            </div>
           </div>
         </div>
         <button type="button" class="close-btn" (click)="closeCompanyPopup()" aria-label="Close company details">
@@ -25,10 +135,7 @@
           <div class="info-card-grid three-columns">
             <div class="info-card" *ngFor="let field of [
               { label: 'Organization', value: selectedCompany?.name || '-' },
-              { label: 'Package', value: selectedCompany?.package_name || '-' },
-              { label: 'Package Type', value: selectedCompany?.package_type || '-' },
               { label: 'Industry', value: selectedCompany?.industry || '-' },
-              { label: 'Status', value: getCompanyStatus(selectedCompany) },
               { label: 'Website', value: selectedCompany?.website || '-' }
             ]">
               <div class="section-label">{{ field.label }}</div>
@@ -75,6 +182,86 @@
             <div class="section-value">{{ selectedCompany?.address || 'No address available.' }}</div>
           </div>
         </section>
+
+        <section class="dialog-group dialog-group-full company-packages-section">
+          <div class="dialog-group-title">
+            Subscription Packages
+            <span class="package-count">{{ getCompanyPackages(selectedCompany).length }}</span>
+          </div>
+
+          <div class="company-package-list" *ngIf="getCompanyPackages(selectedCompany).length > 0; else noCompanyPackages">
+            <article class="company-package-card"
+              *ngFor="let packageItem of getCompanyPackages(selectedCompany); trackBy: trackBySubscription"
+              [class.current-package]="isCurrentCompanyPackage(selectedCompany, packageItem)">
+              <div class="company-package-heading">
+                <div>
+                  <div class="package-heading-meta">
+                    <span class="subscription-number">Subscription #{{ packageItem?.subscription_id || '-' }}</span>
+                    <span class="current-package-badge"
+                      *ngIf="isCurrentCompanyPackage(selectedCompany, packageItem)">Current</span>
+                  </div>
+                  <h4>{{ packageItem?.package_name || 'Subscription package' }}</h4>
+                  <p>{{ packageItem?.package_details || 'No package details available.' }}</p>
+                </div>
+                <span class="package-state" [class.active]="isPackageActive(packageItem)">
+                  {{ getPackageStatus(packageItem) }}
+                </span>
+              </div>
+
+              <div class="package-detail-grid">
+                <div>
+                  <span>Package type</span>
+                  <strong>{{ packageItem?.package_type || '-' }}</strong>
+                </div>
+                <div>
+                  <span>Package price</span>
+                  <strong>{{ formatCurrency(packageItem?.final_price) }}</strong>
+                </div>
+                <div>
+                  <span>Amount</span>
+                  <strong>{{ formatCurrency(packageItem?.amount) }}</strong>
+                </div>
+                <div>
+                  <span>Payment status</span>
+                  <strong class="payment-state" [class.paid]="isPaymentPaid(packageItem)">
+                    {{ getPaymentStatus(packageItem) }}
+                  </strong>
+                </div>
+                <div>
+                  <span>Payment method</span>
+                  <strong>{{ packageItem?.payment_method || '-' }}</strong>
+                </div>
+                <div>
+                  <span>Period</span>
+                  <strong>{{ packageItem?.package_period ?? '-' }} days</strong>
+                </div>
+                <div>
+                  <span>Start date</span>
+                  <strong>{{ formatDate(packageItem?.start_date) }}</strong>
+                </div>
+                <div>
+                  <span>End date</span>
+                  <strong>{{ formatDate(packageItem?.end_date) }}</strong>
+                </div>
+                <div>
+                  <span>Transaction ID</span>
+                  <strong>{{ packageItem?.transaction_id || '-' }}</strong>
+                </div>
+                <div>
+                  <span>Invoice ID</span>
+                  <strong>{{ packageItem?.invoice_id || '-' }}</strong>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <ng-template #noCompanyPackages>
+            <div class="empty-package-state">
+              <nb-icon icon="cube-outline"></nb-icon>
+              <span>No subscription packages found for this company.</span>
+            </div>
+          </ng-template>
+        </section>
       </div>
     </div>
   </div>
@@ -103,7 +290,7 @@
         <div class="entity-catalog-actions">
           <div class="entity-search-wrap">
             <nb-icon icon="search-outline"></nb-icon>
-            <input type="search" aria-label="Search companies" placeholder="Search name, package, email or location"
+            <input type="search" aria-label="Search companies" placeholder="Search company, package or location"
               [ngModel]="searchText" (ngModelChange)="onSearch($event)">
             <button *ngIf="searchText" type="button" aria-label="Clear search" (click)="clearSearch()">
               <nb-icon icon="close-outline"></nb-icon>
@@ -123,9 +310,8 @@
               <tr>
                 <th>Company</th>
                 <th>Package</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Status</th>
+                <th class="subscription-column-heading">Subscription</th>
+                <th class="company-status-heading">Company Status</th>
                 <th class="entity-actions-heading">Actions</th>
               </tr>
             </thead>
@@ -141,16 +327,30 @@
                     </div>
                   </div>
                 </td>
-                <td data-label="Package"><span class="entity-badge type-badge">{{ item?.package_name || '-' }}</span></td>
-                <td data-label="Email"><span class="entity-cell-text">{{ item?.email || '-' }}</span></td>
-                <td data-label="Phone"><span class="entity-cell-text">{{ item?.phone || '-' }}</span></td>
-                <td data-label="Status">
+                <td data-label="Package"><span class="entity-badge type-badge">{{ getCompanyPackageName(item) }}</span></td>
+                <td data-label="Subscription" class="subscription-column-cell">
+                  <span class="entity-badge subscription-status-badge"
+                    style="min-width:72px; padding:5px 10px; border:1px solid; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; font-weight:800;"
+                    [class.subscription-active]="hasActiveSubscription(item)"
+                    [class.subscription-expired]="!hasActiveSubscription(item)"
+                    [style.color]="hasActiveSubscription(item) ? '#168354' : '#cf4055'"
+                    [style.background-color]="hasActiveSubscription(item) ? '#eaf8f1' : '#fff0f2'"
+                    [style.border-color]="hasActiveSubscription(item) ? '#ccebdc' : '#f3ccd2'">
+                    {{ getSubscriptionStatus(item) }}
+                  </span>
+                </td>
+                <td data-label="Company Status" class="company-status-cell">
                   <span class="entity-badge company-status-badge" [class.active-status]="isCompanyActive(item)" [class.inactive-status]="!isCompanyActive(item)">
                     {{ getCompanyStatus(item) }}
                   </span>
                 </td>
                 <td data-label="Actions" class="entity-actions-cell">
                   <div class="entity-action-group">
+                    <button type="button" class="entity-action-icon payment-action"
+                      title="Add subscription payment" aria-label="Add subscription payment"
+                      (click)="$event.stopPropagation(); openSubscriptionPopup(item)">
+                      <nb-icon icon="credit-card-outline"></nb-icon>
+                    </button>
                     <button type="button" class="entity-action-icon view-action" title="View company" aria-label="View company"
                       (click)="$event.stopPropagation(); openCompanyPopup(item)">
                       <nb-icon icon="eye-outline"></nb-icon>
@@ -168,7 +368,7 @@
               </tr>
 
               <tr *ngIf="!apiData || apiData.length === 0" class="entity-empty-row">
-                <td colspan="6">
+                <td colspan="5">
                   <div class="entity-empty-state">
                     <div><nb-icon icon="briefcase-outline"></nb-icon></div>
                     <h3>{{ searchText ? 'No matching companies' : 'No companies yet' }}</h3>

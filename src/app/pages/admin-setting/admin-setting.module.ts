@@ -12,7 +12,6 @@ import { PackageListComponent } from './package-list/package-list.component';
 import { ModuleListComponent } from './module-list/module-list.component';
 import { AddModuleComponent } from './add-module/add-module.component';
 import { ModuleButtonComponent } from './module-list/custom-btn.component';
-import { AssignModuleComponent } from './assign-module/assign-module.component';
 import { SetupMenuComponent } from './setup-menu/setup-menu.component';
 import { AssignModuleIntoPackageComponent } from './assign-module-into-package/assign-module-into-package.component';
 import { AddCompanyComponent } from './add-company/add-company.component';
@@ -28,7 +27,6 @@ import { CustomFieldListComponent } from './custom-field-list/custom-field-list.
     ModuleListComponent,
     AddModuleComponent,
     ModuleButtonComponent,
-    AssignModuleComponent,
     SetupMenuComponent,
     AssignModuleIntoPackageComponent,
     AddCompanyComponent,

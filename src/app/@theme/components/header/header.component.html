@@ -21,11 +21,15 @@
     <nb-action icon="settings-2-outline" routerLink="settings"></nb-action>
     <nb-action class="user-action" *nbIsGranted="['view', 'user']" >
       <nb-user
-      [nbContextMenu]="userMenu"
-      [onlyPicture]="userPictureOnly"
-      [name]="user?.name"
-      [picture]="user?.picture">
-    </nb-user>
+        class="logged-user"
+        [nbContextMenu]="userMenu"
+        [onlyPicture]="userPictureOnly"
+        [showName]="true"
+        [showTitle]="true"
+        [name]="user?.name"
+        [title]="user?.role"
+        [picture]="user?.picture">
+      </nb-user>
     </nb-action>
   </nb-actions>
 </div>

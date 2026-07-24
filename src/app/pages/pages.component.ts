@@ -5,14 +5,41 @@ import { GlobalService } from '../services/global.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription, combineLatest } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { NbToastrService } from '@nebular/theme';
+import { NbMenuService, NbToastrService } from '@nebular/theme';
+import { animate, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'ngx-pages',
   styleUrls: ['pages.component.scss'],
+  animations: [
+    trigger('navigationSwitch', [
+      transition('main => settings', [
+        style({ opacity: 0, transform: 'translateX(-34px) scale(0.97)' }),
+        animate(
+          '300ms cubic-bezier(0.22, 1, 0.36, 1)',
+          style({ opacity: 1, transform: 'translateX(0) scale(1)' })
+        )
+      ]),
+      transition('settings => main', [
+        style({ opacity: 0, transform: 'translateX(-34px) scale(0.97)' }),
+        animate(
+          '300ms cubic-bezier(0.22, 1, 0.36, 1)',
+          style({ opacity: 1, transform: 'translateX(0) scale(1)' })
+        )
+      ])
+    ])
+  ],
   template: `
     <ngx-one-column-layout>
-      <nb-menu [items]="menu" [autoCollapse]="true"></nb-menu>
+      <nb-menu
+        tag="pages-navigation"
+        [items]="menu"
+        [autoCollapse]="true"
+        class="navigation-transition"
+        [class.settings-navigation]="isSettingsMenuOpen"
+        [class.main-navigation]="!isSettingsMenuOpen"
+        [@navigationSwitch]="isSettingsMenuOpen ? 'settings' : 'main'">
+      </nb-menu>
       <router-outlet></router-outlet>
     </ngx-one-column-layout>
   `,
@@ -20,9 +47,13 @@ import { NbToastrService } from '@nebular/theme';
 export class PagesComponent implements OnInit, OnDestroy {
 
   menu: any[] = [];
+  isSettingsMenuOpen = false;
   isSubmitting: boolean = false;
+  private mainMenu: any[] = [];
+  private settingsMenu: any[] = [];
   private subscription?: Subscription;
   private routerSubscription?: Subscription;
+  private menuClickSubscription?: Subscription;
 
   // Manual grouping for API-driven menus. Add more groups or parent menu titles here.
   private dynamicMenuGroups: Array<{ groupTitle: string; parentTitles: string[]; linkPrefixes: string[] }> = [
@@ -52,6 +83,7 @@ export class PagesComponent implements OnInit, OnDestroy {
     private globalService: GlobalService,
     private toastrService: NbToastrService,
     private router: Router,
+    private menuService: NbMenuService,
   ) {}
 
   ngOnInit() {
@@ -61,22 +93,53 @@ export class PagesComponent implements OnInit, OnDestroy {
       this.globalService.userCode$ ?? this.globalService.roleId$,
     ]).subscribe(([roleId]) => {
       const userCode = this.globalService.user_code;
-      this.menu = getMenuItems(roleId, userCode);
+      this.configureNavigationMenus(getMenuItems(roleId, userCode));
       console.log('✅ Static menu loaded for role:', roleId, 'user:', userCode);
-      this.syncMenuSelection();
+      this.syncMenuModeForRoute(this.router.url);
       
       // Load dynamic menus from API
       this.loadDynamicMenus();
     });
 
+    this.menuClickSubscription = this.menuService.onItemClick()
+      .pipe(filter((event) => event.tag === 'pages-navigation'))
+      .subscribe(({ item }) => {
+        if (item?.data?.navigationAction === 'open-settings') {
+          this.openSettingsMenu();
+        } else if (item?.data?.navigationAction === 'close-settings') {
+          this.closeSettingsMenu();
+        }
+      });
+
     this.routerSubscription = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
-      .subscribe(() => this.syncMenuSelection());
+      .subscribe((event: NavigationEnd) => {
+        this.syncMenuModeForRoute(event.urlAfterRedirects);
+      });
   }
 
   ngOnDestroy() {
     this.subscription?.unsubscribe();
     this.routerSubscription?.unsubscribe();
+    this.menuClickSubscription?.unsubscribe();
+  }
+
+  openSettingsMenu(): void {
+    if (this.isSettingsMenuOpen) {
+      return;
+    }
+
+    this.isSettingsMenuOpen = true;
+    this.refreshDisplayedMenu();
+  }
+
+  closeSettingsMenu(): void {
+    if (!this.isSettingsMenuOpen) {
+      return;
+    }
+
+    this.isSettingsMenuOpen = false;
+    this.refreshDisplayedMenu();
   }
 
   /**
@@ -104,19 +167,19 @@ export class PagesComponent implements OnInit, OnDestroy {
           const groupedDynamicMenuItems = this.applyManualDynamicGroups(dynamicMenuItems);
           
           // Find FEATURES group and insert after it
-          const featuresIndex = this.menu.findIndex(item => item.title === 'FEATURES' && item.group === true);
+          const featuresIndex = this.mainMenu.findIndex(item => item.title === 'FEATURES' && item.group === true);
           
           if (featuresIndex !== -1) {
             // Insert after FEATURES group
-            this.menu.splice(featuresIndex + 1, 0, ...groupedDynamicMenuItems);
+            this.mainMenu.splice(featuresIndex + 1, 0, ...groupedDynamicMenuItems);
           } else {
             // If FEATURES group not found, insert after Dashboard (index 1)
-            this.menu.splice(1, 0, ...groupedDynamicMenuItems);
+            this.mainMenu.splice(1, 0, ...groupedDynamicMenuItems);
           }
           
-          console.log('📋 Final menu with dynamic items:', this.menu);
-          this.assignMenuParents(this.menu);
-          this.syncMenuSelection();
+          console.log('📋 Final main menu with dynamic items:', this.mainMenu);
+          this.assignMenuParents(this.mainMenu);
+          this.refreshDisplayedMenu();
         }
       },
       error: (err: any) => {
@@ -303,6 +366,66 @@ export class PagesComponent implements OnInit, OnDestroy {
       if (Array.isArray(item?.children)) {
         this.assignMenuParents(item.children, item);
       }
+    });
+  }
+
+  private configureNavigationMenus(staticMenu: any[]): void {
+    const dashboardItem = staticMenu.find((item: any) => this.normalizeTitle(item?.title) === 'dashboard');
+    const settingsItems = staticMenu.filter((item: any) => {
+      const title = this.normalizeTitle(item?.title);
+      return title !== 'dashboard' && title !== 'setup';
+    });
+
+    const setupLauncher = {
+      title: 'Setup',
+      icon: 'settings-2-outline',
+      ariaRole: 'button',
+      data: { navigationAction: 'open-settings' }
+    };
+
+    const closeSettingsItem = {
+      title: 'Back to main menu',
+      icon: 'arrow-back-outline',
+      ariaRole: 'button',
+      data: { navigationAction: 'close-settings' }
+    };
+
+    this.mainMenu = [
+      ...(dashboardItem ? [dashboardItem] : []),
+      setupLauncher
+    ];
+    this.settingsMenu = [closeSettingsItem, ...settingsItems];
+
+    this.assignMenuParents(this.mainMenu);
+    this.assignMenuParents(this.settingsMenu);
+    this.refreshDisplayedMenu();
+  }
+
+  private refreshDisplayedMenu(): void {
+    const activeMenu = this.isSettingsMenuOpen ? this.settingsMenu : this.mainMenu;
+    this.menu = [...activeMenu];
+    this.syncMenuSelection();
+  }
+
+  private syncMenuModeForRoute(url: string): void {
+    const shouldShowSettings = this.containsMatchingRoute(this.settingsMenu, this.normalizeUrl(url));
+    if (this.isSettingsMenuOpen !== shouldShowSettings) {
+      this.isSettingsMenuOpen = shouldShowSettings;
+    }
+
+    this.refreshDisplayedMenu();
+  }
+
+  private containsMatchingRoute(items: any[], currentUrl: string): boolean {
+    return items.some((item: any) => {
+      const itemLink = this.normalizeUrl(item?.link);
+      if (itemLink && this.urlMatches(currentUrl, itemLink)) {
+        return true;
+      }
+
+      return Array.isArray(item?.children)
+        ? this.containsMatchingRoute(item.children, currentUrl)
+        : false;
     });
   }
 

@@ -142,6 +142,17 @@ export class GlobalService {
       return this.http.get(`${this.tenantsUrl}/fetch-my-tenant`);
     }
 
+    public createSubscription(data: {
+      tenant_id: string | number;
+      package_id: string | number;
+      payment_status: 'paid' | 'pending';
+      payment_method: 'Cash' | 'UPI' | 'Net Banking' | 'Cheque' | 'Bank Transfer';
+      transaction_id: string;
+      invoice_id: string;
+    }): Observable<any> {
+      return this.http.post(`${this.tenantsUrl}/create-subscription`, data);
+    }
+
     public updateMyTenant(data: FormData): Observable<any> {
       return this.http.post(`${this.tenantsUrl}/update-my-tenant`, data);
     }

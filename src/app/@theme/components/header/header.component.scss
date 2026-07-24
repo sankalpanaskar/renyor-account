@@ -23,6 +23,40 @@
     cursor: pointer;
   }
 
+  ::ng-deep nb-user.logged-user {
+    .user-container {
+      flex-direction: row-reverse;
+    }
+
+    .info-container {
+      margin-right: 0.65rem;
+      margin-left: 0 !important;
+      text-align: right;
+    }
+
+    .user-name {
+      max-width: 180px;
+      overflow: hidden;
+      color: nb-theme(text-basic-color);
+      font-size: 0.78rem;
+      font-weight: 700;
+      line-height: 1.15;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .user-title {
+      max-width: 180px;
+      margin-top: 0.16rem;
+      overflow: hidden;
+      color: nb-theme(text-hint-color);
+      font-size: 0.65rem;
+      line-height: 1.1;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
   ::ng-deep nb-search button {
     padding: 0!important;
   }

@@ -65,9 +65,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
       const userImagePath = parsedUser?.user_image
         ? this.user_image + parsedUser.user_image
         : 'assets/images/profile.png';
+
+      const role = this.getUserRole(parsedUser);
   
       this.user = {
-        name: `${member?.first_name ?? ''} ${member?.last_name ?? ''}`.trim(),
+        name: `${member?.first_name ?? ''} ${member?.last_name ?? ''}`.trim()
+          || parsedUser?.name
+          || parsedUser?.display_name
+          || parsedUser?.email
+          || 'User',
+        role,
         picture: userImagePath,
       };
   
@@ -76,10 +83,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
     }
   
-    const { xl } = this.breakpointService.getBreakpointsMap();
+    const { sm } = this.breakpointService.getBreakpointsMap();
     this.themeService.onMediaQueryChange()
       .pipe(
-        map(([, currentBreakpoint]) => currentBreakpoint.width < xl),
+        map(([, currentBreakpoint]) => currentBreakpoint.width < sm),
         takeUntil(this.destroy$),
       )
       .subscribe((isLessThanXl: boolean) => this.userPictureOnly = isLessThanXl);
@@ -105,6 +112,33 @@ export class HeaderComponent implements OnInit, OnDestroy {
   });
 
 
+  }
+
+  private getUserRole(user: any): string {
+    const directRole = user?.role_name
+      || user?.role?.role_name
+      || user?.role?.name
+      || (typeof user?.role === 'string' ? user.role : '');
+
+    if (`${directRole || ''}`.trim()) {
+      return `${directRole}`.trim();
+    }
+
+    if (Array.isArray(user?.roles)) {
+      const roleNames = user.roles
+        .map((role: any) => role?.role_name || role?.name || (typeof role === 'string' ? role : ''))
+        .filter(Boolean);
+
+      if (roleNames.length) {
+        return roleNames.join(', ');
+      }
+    }
+
+    if (user?.is_system_super_admin === 1 || user?.is_system_super_admin === '1') {
+      return 'Super Admin';
+    }
+
+    return user?.role_id ? `Role ${user.role_id}` : 'User';
   }
 
   logout() {
