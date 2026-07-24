@@ -264,6 +264,117 @@ exports.updateById = async (tenantId, data, logoFile = null) => {
   }
 };
 
+exports.createSubscription = async (data) => {
+  const {
+    tenant_id,
+    package_id,
+    payment_status = "NA",
+    payment_method = "NA",
+    transaction_id = "NA",
+    invoice_id = "NA"
+  } = data;
+
+  if (!tenant_id) {
+    throw new Error("tenant_id is required");
+  }
+
+  if (!package_id) {
+    throw new Error("package_id is required");
+  }
+
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const [tenantRows] = await connection.query(
+      `SELECT id
+       FROM tenants
+       WHERE id = ?
+       LIMIT 1
+       FOR UPDATE`,
+      [tenant_id]
+    );
+
+    if (!tenantRows.length) {
+      throw new Error("Tenant not found");
+    }
+
+    const [packageRows] = await connection.query(
+      `SELECT package_period, final_price
+       FROM packages
+       WHERE id = ?
+       LIMIT 1`,
+      [package_id]
+    );
+
+    if (!packageRows.length) {
+      throw new Error("Package not found");
+    }
+
+    const { package_period, final_price } = packageRows[0];
+
+    await connection.query(
+      `UPDATE subscriptions
+       SET status = 0,
+           updated_at = CURRENT_TIMESTAMP
+       WHERE tenant_id = ?`,
+      [tenant_id]
+    );
+
+    await connection.query(
+      `UPDATE tenants
+       SET package_id = ?
+       WHERE id = ?`,
+      [package_id, tenant_id]
+    );
+
+    const [subscriptionResult] = await connection.query(
+      `INSERT INTO subscriptions (
+        tenant_id,
+        package_id,
+        start_date,
+        end_date,
+        amount,
+        payment_status,
+        payment_method,
+        transaction_id,
+        invoice_id,
+        status,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, CURRENT_DATE(), DATE_ADD(CURRENT_DATE(), INTERVAL ? DAY), ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+      [
+        tenant_id,
+        package_id,
+        package_period,
+        final_price,
+        payment_status,
+        payment_method,
+        transaction_id,
+        invoice_id
+      ]
+    );
+
+    const [subscriptionRows] = await connection.query(
+      `SELECT *
+       FROM subscriptions
+       WHERE id = ?
+       LIMIT 1`,
+      [subscriptionResult.insertId]
+    );
+
+    await connection.commit();
+
+    return subscriptionRows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 
 
 

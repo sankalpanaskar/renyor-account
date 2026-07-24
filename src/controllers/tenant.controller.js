@@ -100,3 +100,22 @@ exports.updateCurrentTenant = async (req, res) => {
     );
   }
 };
+
+exports.createSubscription = async (req, res) => {
+  try {
+    const subscription = await TenantService.createSubscription({
+      ...req.body
+    });
+
+    return res.success(
+      200,
+      "Subscription created successfully",
+      subscription
+    );
+  } catch (err) {
+    return res.error(
+      400,
+      err.message
+    );
+  }
+};

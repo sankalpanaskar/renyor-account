@@ -30,5 +30,10 @@ router.post(
   upload.fields([{ name: 'logo', maxCount: 1 }]),
   TenantController.updateCurrentTenant
 );
+router.post(
+  '/create-subscription',
+  authSuperadmin,
+  TenantController.createSubscription
+);
 
 module.exports = router;
