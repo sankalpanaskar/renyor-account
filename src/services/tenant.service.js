@@ -398,6 +398,7 @@ exports.getAll = async () => {
         t.pan,
         t.gst,
         t.is_active,
+        t.status AS tenant_status,
         t.created_at,
         t.updated_at,
         s.id AS subscription_id,
@@ -447,6 +448,7 @@ exports.getAll = async () => {
         pan: row.pan,
         gst: row.gst,
         is_active: row.is_active,
+        status: row.tenant_status,
         created_at: row.created_at,
         updated_at: row.updated_at,
         packages: []
