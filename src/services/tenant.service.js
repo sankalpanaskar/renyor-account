@@ -76,6 +76,46 @@ exports.create = async (data, logoFile = null) => {
    
     tenantId = tenantResult.insertId;
 
+    const [packageRows] = await connection.query(
+      `SELECT package_period, final_price
+       FROM packages
+       WHERE id = ?
+       LIMIT 1`,
+      [package_id]
+    );
+
+    if (!packageRows.length) {
+      throw new Error("Package not found");
+    }
+
+    const { package_period, final_price } = packageRows[0];
+
+    await connection.query(
+      `INSERT INTO subscription (
+        tenant_id,
+        package_id,
+        start_date,
+        end_date,
+        amount,
+        payment_status,
+        payment_method,
+        transaction_id,
+        invoice_id,
+        created_at,
+        updated_at
+      ) VALUES (?, ?, CURRENT_DATE(), DATE_ADD(CURRENT_DATE(), INTERVAL ? DAY), ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+      [
+        tenantId,
+        package_id,
+        package_period,
+        final_price,
+        "NA",
+        "NA",
+        "NA",
+        "NA"
+      ]
+    );
+
     if (logoFile) {
       movedLogoPath = await moveTenantLogoFile(logoFile, tenantId);
 
