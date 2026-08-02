@@ -76,11 +76,59 @@ exports.create = async (data, tenant_id) => {
 
 exports.getAll = async (tenant_id) => {
   const [rows] = await db.query(
-    'SELECT * FROM roles WHERE tenant_id = ? ORDER BY id',
+    `SELECT
+        r.id AS role_id,
+        r.tenant_id AS role_tenant_id,
+        r.role_name,
+        r.remarks,
+        r.created_at AS role_created_at,
+        r.updated_at AS role_updated_at,
+        rma.id AS role_menu_access_id,
+        rma.menu_id,
+        rma.can_view,
+        rma.can_create,
+        rma.can_edit,
+        rma.can_delete,
+        mm.menu_name
+     FROM roles AS r
+     LEFT JOIN role_menu_access AS rma
+       ON rma.role_id = r.id
+     LEFT JOIN menu_modules AS mm
+       ON mm.id = rma.menu_id
+     WHERE r.tenant_id = ?
+     ORDER BY r.id, mm.menu_name`,
     [tenant_id]
   );
-  return rows;
-};
 
+  const rolesMap = new Map();
+
+  rows.forEach((row) => {
+    if (!rolesMap.has(row.role_id)) {
+      rolesMap.set(row.role_id, {
+        id: row.role_id,
+        tenant_id: row.role_tenant_id,
+        role_name: row.role_name,
+        remarks: row.remarks,
+        created_at: row.role_created_at,
+        updated_at: row.role_updated_at,
+        menus: []
+      });
+    }
+
+    if (row.role_menu_access_id) {
+      rolesMap.get(row.role_id).menus.push({
+        role_menu_access_id: row.role_menu_access_id,
+        menu_id: row.menu_id,
+        menu_name: row.menu_name,
+        can_view: row.can_view,
+        can_create: row.can_create,
+        can_edit: row.can_edit,
+        can_delete: row.can_delete
+      });
+    }
+  });
+
+  return Array.from(rolesMap.values());
+};
 
 
