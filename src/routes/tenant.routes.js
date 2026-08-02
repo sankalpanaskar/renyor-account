@@ -35,5 +35,15 @@ router.post(
   authSuperadmin,
   TenantController.createSubscription
 );
+router.get(
+  '/fetch-subscriptions',
+  authSuperadmin,
+  TenantController.getSubscriptionsByTenantId
+);
+router.get(
+  '/fetch-subscriptions/:tenant_id',
+  authSuperadmin,
+  TenantController.getSubscriptionsByTenantId
+);
 
 module.exports = router;

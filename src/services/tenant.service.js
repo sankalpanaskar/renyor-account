@@ -375,6 +375,32 @@ exports.createSubscription = async (data) => {
   }
 };
 
+exports.getSubscriptionsByTenantId = async (tenant_id) => {
+  if (!tenant_id) {
+    throw new Error("tenant_id is required");
+  }
+
+  const [rows] = await db.query(
+    `SELECT
+        s.*,
+        p.package_name,
+        p.package_type,
+        p.package_details,
+        p.base_price,
+        p.offer_price,
+        p.final_price,
+        p.package_period
+     FROM subscriptions s
+     LEFT JOIN packages p
+       ON p.id = s.package_id
+     WHERE s.tenant_id = ?
+     ORDER BY s.id DESC`,
+    [tenant_id]
+  );
+
+  return rows;
+};
+
 
 
 

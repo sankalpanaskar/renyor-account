@@ -119,3 +119,26 @@ exports.createSubscription = async (req, res) => {
     );
   }
 };
+
+exports.getSubscriptionsByTenantId = async (req, res) => {
+  try {
+    const tenantId =
+      req.params?.tenant_id ||
+      req.query?.tenant_id ||
+      req.body?.tenant_id ||
+      req.user?.tenant_id;
+
+    const subscriptions = await TenantService.getSubscriptionsByTenantId(tenantId);
+
+    return res.success(
+      200,
+      "Subscriptions fetched successfully",
+      subscriptions
+    );
+  } catch (err) {
+    return res.error(
+      400,
+      err.message
+    );
+  }
+};
