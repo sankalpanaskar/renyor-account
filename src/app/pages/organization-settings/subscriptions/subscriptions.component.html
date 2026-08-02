@@ -1,100 +1,121 @@
 <div class="subscriptions-page" [nbSpinner]="loading" nbSpinnerStatus="primary">
-  <section class="current-plan" *ngIf="tenant; else noSubscription">
+  <section class="current-plan" *ngIf="currentSubscription as subscription; else noSubscription">
     <div class="plan-identity">
       <div class="plan-icon"><nb-icon icon="award-outline"></nb-icon></div>
       <div>
         <div class="label-row">
           <span class="section-kicker">Current subscription</span>
-          <span class="status-pill" [class.inactive]="!isTenantActive()">
-            <span></span>{{ isTenantActive() ? 'Active' : 'Inactive' }}
+          <span class="status-pill" [class.inactive]="!isSubscriptionActive(subscription)">
+            <span></span>{{ isSubscriptionActive(subscription) ? 'Active' : 'Inactive' }}
           </span>
         </div>
-        <h2>{{ getPlanName(currentPackage) }}</h2>
-        <p>{{ tenant?.name || 'Your organization' }}</p>
+        <h2>{{ getPlanName(subscription) }}</h2>
       </div>
     </div>
     <div class="current-price">
-      <span>Current plan price</span>
-      <strong>{{ formatCurrency(getPlanPrice(currentPackage)) }}</strong>
-      <small>{{ getPlanType(currentPackage) }}</small>
+      <span>Subscription amount</span>
+      <strong>{{ formatCurrency(getSubscriptionAmount(subscription)) }}</strong>
+      <small>{{ getPlanType(subscription) }}</small>
     </div>
   </section>
 
   <ng-template #noSubscription>
     <section class="empty-current" *ngIf="!loading">
       <nb-icon icon="alert-circle-outline"></nb-icon>
-      <div><strong>No subscription found</strong><span>Current tenant subscription details are unavailable.</span></div>
+      <div><strong>No subscription found</strong><span>Subscription details are currently unavailable.</span></div>
     </section>
   </ng-template>
 
-  <section class="summary-grid" *ngIf="tenant">
+  <section class="summary-grid" *ngIf="currentSubscription as subscription">
     <article class="summary-card">
-      <div class="summary-icon blue"><nb-icon icon="cube-outline"></nb-icon></div>
-      <div><span>Package ID</span><strong>#{{ tenant?.package_id || '-' }}</strong></div>
+      <div class="summary-icon blue"><nb-icon icon="calendar-outline"></nb-icon></div>
+      <div><span>Start date</span><strong>{{ formatDate(subscription?.start_date) }}</strong></div>
     </article>
     <article class="summary-card">
-      <div class="summary-icon violet"><nb-icon icon="layers-outline"></nb-icon></div>
-      <div><span>Plan type</span><strong>{{ getPlanType(currentPackage) }}</strong></div>
+      <div class="summary-icon violet"><nb-icon icon="calendar-outline"></nb-icon></div>
+      <div><span>End date</span><strong>{{ formatDate(subscription?.end_date) }}</strong></div>
     </article>
     <article class="summary-card">
       <div class="summary-icon green"><nb-icon icon="checkmark-circle-2-outline"></nb-icon></div>
-      <div><span>Account status</span><strong>{{ isTenantActive() ? 'Active' : 'Inactive' }}</strong></div>
+      <div><span>Subscription status</span><strong>{{ isSubscriptionActive(subscription) ? 'Active' : 'Inactive' }}</strong></div>
+    </article>
+    <article class="summary-card">
+      <div class="summary-icon orange"><nb-icon icon="credit-card-outline"></nb-icon></div>
+      <div><span>Payment method</span><strong>{{ subscription?.payment_method || '-' }}</strong></div>
     </article>
   </section>
 
-  <div class="detail-grid" *ngIf="tenant">
+  <div class="detail-grid" *ngIf="currentSubscription as subscription">
     <nb-card class="compact-card overview-card">
       <nb-card-header>
-        <div><span class="card-eyebrow">Plan overview</span><h3>{{ getPlanName(currentPackage) }}</h3></div>
-        <span class="plan-chip">{{ getPlanType(currentPackage) }}</span>
+        <div><span class="card-eyebrow">Plan overview</span><h3>{{ getPlanName(subscription) }}</h3></div>
+        <span class="plan-chip">{{ getPlanType(subscription) }}</span>
       </nb-card-header>
       <nb-card-body>
-        <p class="plan-description">{{ currentPackage?.package_details || 'Your organization is currently assigned to this subscription package.' }}</p>
-        <div class="detail-list">
-          <div><span>Organization</span><strong>{{ tenant?.name || '-' }}</strong></div>
-          <div><span>Industry</span><strong>{{ tenant?.industry || '-' }}</strong></div>
-          <div><span>Package</span><strong>{{ tenant?.package_name || getPlanName(currentPackage) }}</strong></div>
+        <p class="plan-description">{{ subscription?.package_details || 'No package description is available.' }}</p>
+        <div class="detail-list pricing-overview">
+          <div>
+            <span>Base price</span>
+            <div class="catalogue-price" [class.has-offer]="hasOfferPrice(subscription)">
+              <strong>{{ formatCurrency(subscription?.base_price) }}</strong>
+              <em *ngIf="hasOfferPrice(subscription)">{{ formatCurrency(subscription?.offer_price) }}</em>
+            </div>
+          </div>
+          <div><span>Final price</span><strong class="final-plan-price">{{ formatCurrency(subscription?.final_price) }}</strong></div>
+        </div>
+
+        <div class="package-includes">
+          <span class="package-includes-label">Package includes</span>
+          <div class="included-module-list">
+            <span *ngFor="let module of includedModules" class="included-module-chip">
+              <nb-icon icon="checkmark-circle-2-outline"></nb-icon>{{ module }}
+            </span>
+          </div>
         </div>
       </nb-card-body>
     </nb-card>
 
     <nb-card class="compact-card pricing-card">
-      <nb-card-header><div><span class="card-eyebrow">Pricing</span><h3>Plan summary</h3></div></nb-card-header>
+      <nb-card-header>
+        <div><span class="card-eyebrow">Payment details</span><h3>Transaction summary</h3></div>
+        <span class="payment-status" [class.pending]="!isPaymentPaid(subscription)">{{ getPaymentStatus(subscription) }}</span>
+      </nb-card-header>
       <nb-card-body>
-        <div class="price-line"><span>Base price</span><strong>{{ formatCurrency(currentPackage?.base_price) }}</strong></div>
-        <div class="price-line discount"><span>Offer price</span><strong>{{ formatCurrency(currentPackage?.offer_price) }}</strong></div>
-        <div class="price-total"><span>Final price</span><strong>{{ formatCurrency(getPlanPrice(currentPackage)) }}</strong></div>
+        <div class="price-line"><span>Payment method</span><strong>{{ subscription?.payment_method || '-' }}</strong></div>
+        <div class="price-line"><span>Transaction ID</span><strong>{{ subscription?.transaction_id || '-' }}</strong></div>
+        <div class="price-line"><span>Invoice ID</span><strong>{{ subscription?.invoice_id || '-' }}</strong></div>
+        <div class="price-total"><span>Paid amount</span><strong>{{ formatCurrency(getSubscriptionAmount(subscription)) }}</strong></div>
       </nb-card-body>
     </nb-card>
   </div>
 
-  <section class="plans-section">
+  <section class="plans-section" *ngIf="subscriptions.length">
     <div class="section-heading">
-      <div><span class="eyebrow">Plan catalogue</span><h2>Available plans</h2></div>
-      <span class="count-badge">{{ activePackages.length }} plan{{ activePackages.length === 1 ? '' : 's' }}</span>
+      <div><span class="eyebrow">Account activity</span><h2>Subscription history</h2></div>
+      <span class="count-badge">{{ subscriptions.length }} record{{ subscriptions.length === 1 ? '' : 's' }}</span>
     </div>
 
-    <div class="plans-grid" *ngIf="activePackages.length > 0; else noPlans">
-      <article class="plan-card" *ngFor="let plan of activePackages; trackBy: trackByPlan" [class.current]="isCurrentPlan(plan)">
-        <div class="plan-card-top">
-          <span class="plan-type">{{ getPlanType(plan) }}</span>
-          <span class="current-badge" *ngIf="isCurrentPlan(plan)"><nb-icon icon="checkmark-outline"></nb-icon> Current</span>
+    <div class="subscription-history-list">
+      <article
+        class="subscription-history-item"
+        *ngFor="let item of subscriptions; trackBy: trackBySubscription"
+        [class.current]="isCurrentSubscription(item)">
+        <div class="history-plan">
+          <div class="history-icon"><nb-icon icon="award-outline"></nb-icon></div>
+          <div>
+            <strong>{{ getPlanName(item) }}</strong>
+            <span>{{ formatDate(item?.start_date) }} – {{ formatDate(item?.end_date) }}</span>
+          </div>
         </div>
-        <h3>{{ getPlanName(plan) }}</h3>
-        <p>{{ plan?.package_details || 'A subscription package configured for your organization.' }}</p>
-        <div class="plan-card-footer">
-          <div><strong>{{ formatCurrency(getPlanPrice(plan)) }}</strong><span>Plan price</span></div>
-          <span class="availability">{{ isCurrentPlan(plan) ? 'In use' : 'Available' }}</span>
+        <div class="history-payment">
+          <span>{{ item?.payment_method || 'Payment method unavailable' }}</span>
+          <strong>{{ formatCurrency(getSubscriptionAmount(item)) }}</strong>
         </div>
+        <span class="payment-status" [class.pending]="!isPaymentPaid(item)">{{ getPaymentStatus(item) }}</span>
+        <span class="history-status" [class.inactive]="!isSubscriptionActive(item)">
+          {{ isSubscriptionActive(item) ? 'Active' : 'Inactive' }}
+        </span>
       </article>
     </div>
-
-    <ng-template #noPlans>
-      <div class="empty-plans" *ngIf="!loading">
-        <nb-icon icon="cube-outline"></nb-icon>
-        <strong>No active plans available</strong>
-        <span>Available subscription packages will appear here.</span>
-      </div>
-    </ng-template>
   </section>
 </div>

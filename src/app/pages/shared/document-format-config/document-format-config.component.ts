@@ -46,6 +46,8 @@ interface DocumentFormatConfiguration {
     visible: boolean;
     customerLabel: string;
     introText: string;
+    showTerms: boolean;
+    showOrderNumber: boolean;
     terms: string;
     showPaymentDetails: boolean;
     paymentDetails: string;
@@ -312,6 +314,16 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
     const bottomCustomFields = this.config.body.customFieldPosition === 'bottom'
       ? this.getCustomFieldBottomHtml(customFieldRows)
       : '';
+    const documentDetailRows = [
+      '<tr><td>Invoice Date</td><td>19 Jul 2026</td></tr>',
+      '<tr><td>Due Date</td><td>19 Jul 2026</td></tr>',
+    ];
+    if (this.config.body.showTerms) {
+      documentDetailRows.push('<tr><td>Terms</td><td>Due on Receipt</td></tr>');
+    }
+    if (this.config.body.showOrderNumber) {
+      documentDetailRows.push('<tr><td>Order No.</td><td>1234</td></tr>');
+    }
 
     const tokens: { [key: string]: string } = {
       '{{ACCENT_COLOR}}': accentColor,
@@ -329,7 +341,7 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
       '{{CUSTOMER_LABEL}}': this.escapeHtml(this.config.body.customerLabel),
       '{{BILL_TO}}': '<strong>ANU · Anudip Foundation</strong><br>21 Park Street<br>Kolkata, West Bengal, 700001<br>India<br>GSTIN: 19XXXXX0000X1XX',
       '{{SHIP_TO}}': '<strong>ANU · Anudip Foundation</strong><br>21 Park Street<br>Kolkata, West Bengal, 700001<br>India',
-      '{{DOCUMENT_DETAILS}}': `<tr><td>Invoice Date</td><td>19 Jul 2026</td></tr><tr><td>Due Date</td><td>19 Jul 2026</td></tr><tr><td>Terms</td><td>Due on Receipt</td></tr><tr><td>Order No.</td><td>1234</td></tr>${topCustomFieldRows}`,
+      '{{DOCUMENT_DETAILS}}': `${documentDetailRows.join('')}${topCustomFieldRows}`,
       '{{BODY_INTRO}}': this.multilineHtml(this.config.body.introText),
       '{{TABLE_HEADERS}}': headers,
       '{{TABLE_ROW}}': row,
@@ -373,6 +385,8 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
         visible: true,
         customerLabel: option.customerLabel,
         introText: type === 'quote' ? 'Thank you for the opportunity to provide this quotation.' : '',
+        showTerms: true,
+        showOrderNumber: true,
         terms: 'Payment is due according to the terms stated on this document.',
         showPaymentDetails: type === 'invoice',
         paymentDetails: 'Bank: Your Bank\nAccount: 0000000000\nIFSC: XXXX0000000',

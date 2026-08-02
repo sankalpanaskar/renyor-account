@@ -142,6 +142,10 @@ export class GlobalService {
       return this.http.get(`${this.tenantsUrl}/fetch-my-tenant`);
     }
 
+    public fetchSubscriptions(): Observable<any> {
+      return this.http.get(`${this.tenantsUrl}/fetch-subscriptions`);
+    }
+
     public createSubscription(data: {
       tenant_id: string | number;
       package_id: string | number;
@@ -294,8 +298,8 @@ export class GlobalService {
       document_type: string;
       file_name: string;
       html: string;
-    }): Observable<Blob> {
-      return this.http.post(`${this.salesUrl}/generate-pdf`, data, { responseType: 'blob' });
+    }): Observable<any> {
+      return this.http.post(`${this.salesUrl}/generate-pdf`, data);
     }
 
     public insertQuote(data:any): Observable<any> {

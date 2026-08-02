@@ -102,6 +102,22 @@
               <span>Introduction</span>
               <textarea nbInput fullWidth rows="2" name="intro_text" [(ngModel)]="config.body.introText" (input)="schedulePreview()"></textarea>
             </label>
+            <div class="document-detail-options">
+              <div class="document-detail-options-heading">
+                <strong>Document details</strong>
+                <span>Choose which fields appear beside the customer details.</span>
+              </div>
+              <div class="document-detail-option-list">
+                <label>
+                  <nb-checkbox [(ngModel)]="config.body.showTerms" (checkedChange)="schedulePreview()"></nb-checkbox>
+                  <span><strong>Terms</strong><small>Show payment terms</small></span>
+                </label>
+                <label>
+                  <nb-checkbox [(ngModel)]="config.body.showOrderNumber" (checkedChange)="schedulePreview()"></nb-checkbox>
+                  <span><strong>Order No.</strong><small>Show customer order number</small></span>
+                </label>
+              </div>
+            </div>
             <label class="config-field">
               <span>Terms &amp; conditions</span>
               <textarea nbInput fullWidth rows="3" name="format_terms" [(ngModel)]="config.body.terms" (input)="schedulePreview()"></textarea>
@@ -124,7 +140,7 @@
                 <label>
                   <span>Position</span>
                   <select name="custom_field_position" [(ngModel)]="config.body.customFieldPosition" (change)="schedulePreview()">
-                    <option value="top">Top — after Order No.</option>
+                    <option value="top">Top — document details</option>
                     <option value="bottom">Bottom — notes position</option>
                   </select>
                 </label>

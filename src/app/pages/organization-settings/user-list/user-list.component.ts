@@ -13,8 +13,6 @@ export class UserListComponent implements OnInit {
   searchText = '';
   allUsers: any[] = [];
   apiData: any[] = [];
-  showUserPopup = false;
-  selectedUser: any = null;
 
   constructor(
     private globalService: GlobalService,
@@ -109,16 +107,6 @@ export class UserListComponent implements OnInit {
 
   trackByUser(index: number, user: any): number | string {
     return user?.id ?? user?.user_id ?? index;
-  }
-
-  openUserPopup(user: any): void {
-    this.selectedUser = user;
-    this.showUserPopup = true;
-  }
-
-  closeUserPopup(): void {
-    this.showUserPopup = false;
-    this.selectedUser = null;
   }
 
   gotoAddUser(): void {

@@ -245,7 +245,11 @@ export class InvoiceListComponent implements OnInit {
       '{{CUSTOMER_LABEL}}': this.escapeHtml(config.body.customerLabel || 'Bill To'),
       '{{BILL_TO}}': this.getInvoiceAddressHtml(invoice, 'billing'),
       '{{SHIP_TO}}': this.getInvoiceAddressHtml(invoice, 'shipping'),
-      '{{DOCUMENT_DETAILS}}': this.getInvoiceDetailsHtml(invoice, showCustomFieldsAtTop ? customFieldEntries : []),
+      '{{DOCUMENT_DETAILS}}': this.getInvoiceDetailsHtml(
+        invoice,
+        showCustomFieldsAtTop ? customFieldEntries : [],
+        config.body,
+      ),
       '{{BODY_INTRO}}': this.multilineHtml(config.body.introText),
       '{{TABLE_HEADERS}}': headers,
       '{{TABLE_ROW}}': rows,
@@ -288,6 +292,8 @@ export class InvoiceListComponent implements OnInit {
         visible: true,
         customerLabel: 'Bill To',
         introText: '',
+        showTerms: true,
+        showOrderNumber: true,
         terms: 'Payment is due according to the terms stated on this document.',
         showPaymentDetails: true,
         paymentDetails: 'Bank: Your Bank\nAccount: 0000000000\nIFSC: XXXX0000000',
@@ -402,13 +408,21 @@ export class InvoiceListComponent implements OnInit {
     return lines.join('<br>');
   }
 
-  private getInvoiceDetailsHtml(invoice: any, customFields: Array<{ label: string; value: any }> = []): string {
+  private getInvoiceDetailsHtml(
+    invoice: any,
+    customFields: Array<{ label: string; value: any }> = [],
+    bodyConfig: any = {},
+  ): string {
     const details: any[][] = [
       ['Invoice Date', this.formatDate(invoice?.invoice_date || invoice?.date)],
       ['Due Date', this.formatDate(invoice?.due_date)],
-      ['Terms', invoice?.term || invoice?.payment_term || '-'],
-      ['Order No.', invoice?.order_no || '-'],
     ];
+    if (bodyConfig?.showTerms !== false) {
+      details.push(['Terms', invoice?.term || invoice?.payment_term || '-']);
+    }
+    if (bodyConfig?.showOrderNumber !== false) {
+      details.push(['Order No.', invoice?.order_no || '-']);
+    }
     customFields.forEach((field: { label: string; value: any }) => {
       details.push([field.label, this.formatCustomFieldValue(field.value)]);
     });
@@ -563,23 +577,18 @@ export class InvoiceListComponent implements OnInit {
       file_name: fileName,
       html: this.invoicePreviewRawHtml,
     }).subscribe({
-      next: (pdfBlob: Blob) => {
-        if (!pdfBlob || pdfBlob.size === 0) {
+      next: (response: any) => {
+        const pdfLink = response?.data?.pdf_link;
+        const generatedFileName = response?.data?.file_name || fileName;
+
+        if (!pdfLink) {
           this.downloadingInvoiceId = null;
-          this.toastrService.danger('The backend returned an empty PDF.', 'PDF Failed');
+          this.toastrService.danger('The backend did not return a PDF link.', 'PDF Failed');
+          this.changeDetectorRef.detectChanges();
           return;
         }
 
-        const objectUrl = window.URL.createObjectURL(pdfBlob);
-        const anchor = document.createElement('a');
-        anchor.href = objectUrl;
-        anchor.download = fileName;
-        document.body.appendChild(anchor);
-        anchor.click();
-        anchor.remove();
-        window.URL.revokeObjectURL(objectUrl);
-        this.downloadingInvoiceId = null;
-        this.changeDetectorRef.detectChanges();
+        this.downloadGeneratedPdf(pdfLink, generatedFileName);
       },
       error: (error: any) => {
         this.downloadingInvoiceId = null;
@@ -590,6 +599,27 @@ export class InvoiceListComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
       },
     });
+  }
+
+  private downloadGeneratedPdf(pdfLink: string, fileName: string): void {
+    const downloadUrl = new URL(pdfLink, window.location.origin);
+
+    // Avoid mixed-content blocking when the API returns an http link on an https page.
+    if (window.location.protocol === 'https:' && downloadUrl.protocol === 'http:') {
+      downloadUrl.protocol = 'https:';
+    }
+
+    const anchor = document.createElement('a');
+    anchor.href = downloadUrl.toString();
+    anchor.download = fileName;
+    anchor.target = '_blank';
+    anchor.rel = 'noopener';
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+
+    this.downloadingInvoiceId = null;
+    this.changeDetectorRef.detectChanges();
   }
 
   isDownloading(invoice: any): boolean {

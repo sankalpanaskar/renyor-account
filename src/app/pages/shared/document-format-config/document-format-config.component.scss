@@ -209,6 +209,65 @@
 .config-field textarea { resize: vertical; }
 .checkbox-field { justify-content: flex-end; padding-bottom: 8px; }
 
+.document-detail-options {
+  padding: 11px;
+  border: 1px solid #e1e7f1;
+  border-radius: 12px;
+  background: #f9fbff;
+}
+
+.document-detail-options-heading {
+  margin-bottom: 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.document-detail-options-heading strong {
+  color: #263451;
+  font-size: 11px;
+}
+
+.document-detail-options-heading span {
+  color: #8a96ad;
+  font-size: 9px;
+}
+
+.document-detail-option-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.document-detail-option-list > label {
+  min-width: 0;
+  margin: 0;
+  padding: 8px 9px;
+  border: 1px solid #e3e9f3;
+  border-radius: 9px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.document-detail-option-list > label > span {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.document-detail-option-list strong {
+  color: #34415e;
+  font-size: 10px;
+}
+
+.document-detail-option-list small {
+  color: #929db3;
+  font-size: 8px;
+}
+
 .custom-field-settings {
   padding: 11px;
   border: 1px solid #e1e7f1;
@@ -338,6 +397,7 @@
   .header-actions button { flex: 1; }
   .document-type-switcher { grid-template-columns: 1fr; }
   .field-grid.two-columns { grid-template-columns: 1fr; }
+  .document-detail-option-list { grid-template-columns: 1fr; }
   .column-row { grid-template-columns: 18px 22px minmax(100px, 1fr) 58px; }
   .column-order-actions { grid-column: 3 / -1; justify-content: flex-end; }
   .column-row label { grid-template-columns: 1fr; }

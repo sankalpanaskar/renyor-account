@@ -1,46 +1,3 @@
-<div *ngIf="showUserPopup" class="customer-dialog-overlay" (click)="closeUserPopup()">
-  <div class="customer-dialog-wrapper compact-access-dialog" role="dialog" aria-modal="true" aria-label="User details" (click)="$event.stopPropagation()">
-    <div class="customer-dialog-shell">
-      <div class="dialog-header">
-        <div class="entity-dialog-identity">
-          <div class="entity-dialog-avatar">{{ getUserInitials(selectedUser) }}</div>
-          <div class="dialog-header-copy">
-            <span class="customer-code-badge">{{ getUserRole(selectedUser) }}</span>
-            <div class="customer-title">{{ selectedUser?.name || 'User Details' }}</div>
-            <div class="entity-dialog-meta">
-              <span>{{ selectedUser?.email || 'No email' }}</span>
-              <span aria-hidden="true">•</span>
-              <span>{{ getUserPhone(selectedUser) }}</span>
-            </div>
-          </div>
-        </div>
-        <button type="button" class="close-btn" (click)="closeUserPopup()" aria-label="Close user details">
-          <nb-icon icon="close-outline"></nb-icon>
-        </button>
-      </div>
-
-      <div class="popup-scroll-body">
-        <section class="dialog-group dialog-group-full">
-          <div class="dialog-group-title">User Information</div>
-          <div class="info-card-grid three-columns">
-            <div class="info-card" *ngFor="let field of [
-              { label: 'Name', value: selectedUser?.name || '-' },
-              { label: 'Role', value: getUserRole(selectedUser) },
-              { label: 'Status', value: getUserStatus(selectedUser) },
-              { label: 'Email', value: selectedUser?.email || '-' },
-              { label: 'Phone', value: getUserPhone(selectedUser) },
-              { label: 'User Type', value: selectedUser?.package_type || selectedUser?.type || '-' }
-            ]">
-              <div class="section-label">{{ field.label }}</div>
-              <div class="section-value">{{ field.value }}</div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="entity-list-container user-list-page">
   <section class="entity-summary-grid" aria-label="User summary">
     <article class="entity-summary-card summary-blue">
@@ -93,12 +50,10 @@
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Status</th>
-                <th class="entity-actions-heading">Actions</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let user of apiData; trackBy: trackByUser" class="entity-row" tabindex="0"
-                (click)="openUserPopup(user)" (keydown.enter)="openUserPopup(user)">
+              <tr *ngFor="let user of apiData; trackBy: trackByUser" class="entity-row">
                 <td data-label="User">
                   <div class="entity-identity">
                     <div class="entity-avatar">{{ getUserInitials(user) }}</div>
@@ -116,18 +71,10 @@
                     {{ getUserStatus(user) }}
                   </span>
                 </td>
-                <td data-label="Actions" class="entity-actions-cell">
-                  <div class="entity-action-group">
-                    <button type="button" class="entity-action-icon view-action" title="View user" aria-label="View user"
-                      (click)="$event.stopPropagation(); openUserPopup(user)">
-                      <nb-icon icon="eye-outline"></nb-icon>
-                    </button>
-                  </div>
-                </td>
               </tr>
 
               <tr *ngIf="!apiData || apiData.length === 0" class="entity-empty-row">
-                <td colspan="6">
+                <td colspan="5">
                   <div class="entity-empty-state">
                     <div><nb-icon icon="people-outline"></nb-icon></div>
                     <h3>{{ searchText ? 'No matching users' : 'No users yet' }}</h3>

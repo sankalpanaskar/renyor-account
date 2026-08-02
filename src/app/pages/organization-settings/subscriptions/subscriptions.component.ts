@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
-import { forkJoin } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { GlobalService } from '../../../services/global.service';
 
@@ -10,9 +9,10 @@ import { GlobalService } from '../../../services/global.service';
   styleUrls: ['./subscriptions.component.scss']
 })
 export class SubscriptionsComponent implements OnInit {
+  readonly includedModules = ['Customer', 'Item', 'Vendor', 'Invoice', 'Quote'];
+
   loading = false;
-  tenant: any = null;
-  packages: any[] = [];
+  subscriptions: any[] = [];
 
   constructor(
     private globalService: GlobalService,
@@ -20,38 +20,24 @@ export class SubscriptionsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadSubscription();
+    this.loadSubscriptions();
   }
 
-  get currentPackage(): any {
-    const packageId = this.tenant?.package_id;
-    const matchedPackage = this.packages.find((item: any) =>
-      `${item?.id ?? item?.package_id ?? ''}` === `${packageId ?? ''}`
-    );
-
-    return matchedPackage || {
-      id: packageId,
-      package_name: this.tenant?.package_name,
-      status: this.tenant?.status
-    };
+  get currentSubscription(): any {
+    return this.subscriptions.find((subscription: any) => this.isSubscriptionActive(subscription))
+      || this.subscriptions[0]
+      || null;
   }
 
-  get activePackages(): any[] {
-    return this.packages.filter((item: any) => this.isPlanActive(item));
-  }
-
-  loadSubscription(): void {
+  loadSubscriptions(): void {
     this.loading = true;
 
-    forkJoin({
-      tenantResponse: this.globalService.fetchMyTenant(),
-      packageResponse: this.globalService.gePackageList()
-    })
+    this.globalService.fetchSubscriptions()
       .pipe(finalize(() => this.loading = false))
       .subscribe({
-        next: ({ tenantResponse, packageResponse }: any) => {
-          this.tenant = this.extractTenant(tenantResponse);
-          this.packages = this.extractArray(packageResponse);
+        next: (response: any) => {
+          console.log('Subscription details response:', response);
+          this.subscriptions = this.extractArray(response);
         },
         error: (err: any) => {
           this.toastrService.danger(
@@ -62,34 +48,63 @@ export class SubscriptionsComponent implements OnInit {
       });
   }
 
-  isCurrentPlan(plan: any): boolean {
-    return `${plan?.id ?? plan?.package_id ?? ''}` === `${this.tenant?.package_id ?? ''}`;
-  }
-
-  isPlanActive(plan: any): boolean {
-    const status = plan?.status;
+  isSubscriptionActive(subscription: any): boolean {
+    const status = subscription?.status;
     return status === 1
       || status === true
       || `${status ?? ''}`.trim().toLowerCase() === 'active';
   }
 
-  isTenantActive(): boolean {
-    const status = this.tenant?.is_active ?? this.tenant?.status;
-    return status === 1
-      || status === true
-      || `${status ?? ''}`.trim().toLowerCase() === 'active';
+  isCurrentSubscription(subscription: any): boolean {
+    return `${subscription?.id ?? ''}` === `${this.currentSubscription?.id ?? ''}`;
   }
 
-  getPlanName(plan: any): string {
-    return plan?.package_name || plan?.name || 'Subscription plan';
+  getPlanName(subscription: any): string {
+    return subscription?.package_name || 'Subscription plan';
   }
 
-  getPlanType(plan: any): string {
-    return plan?.package_type || plan?.type || 'Standard';
+  getPlanType(subscription: any): string {
+    return subscription?.package_type || 'Standard';
   }
 
-  getPlanPrice(plan: any): any {
-    return plan?.final_price ?? plan?.offer_price ?? plan?.base_price;
+  getSubscriptionAmount(subscription: any): any {
+    return subscription?.amount ?? subscription?.final_price ?? subscription?.offer_price ?? subscription?.base_price;
+  }
+
+  hasOfferPrice(subscription: any): boolean {
+    const basePrice = Number(subscription?.base_price);
+    const offerPrice = Number(subscription?.offer_price);
+
+    return Number.isFinite(basePrice)
+      && Number.isFinite(offerPrice)
+      && offerPrice > 0
+      && offerPrice < basePrice;
+  }
+
+  getPaymentStatus(subscription: any): string {
+    const status = `${subscription?.payment_status ?? ''}`.trim();
+    return status ? status.charAt(0).toUpperCase() + status.slice(1).toLowerCase() : 'Pending';
+  }
+
+  isPaymentPaid(subscription: any): boolean {
+    return `${subscription?.payment_status ?? ''}`.trim().toLowerCase() === 'paid';
+  }
+
+  formatDate(value: any): string {
+    if (!value) {
+      return '-';
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return `${value}`;
+    }
+
+    return new Intl.DateTimeFormat('en-IN', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).format(date);
   }
 
   formatCurrency(value: any): string {
@@ -110,17 +125,8 @@ export class SubscriptionsComponent implements OnInit {
     }).format(numericValue);
   }
 
-  trackByPlan(index: number, plan: any): number | string {
-    return plan?.id ?? plan?.package_id ?? index;
-  }
-
-  private extractTenant(response: any): any {
-    const data = response?.data ?? response;
-    if (Array.isArray(data)) {
-      return data[0] || null;
-    }
-
-    return data?.tenant ?? data ?? null;
+  trackBySubscription(index: number, subscription: any): number | string {
+    return subscription?.id ?? index;
   }
 
   private extractArray(response: any): any[] {

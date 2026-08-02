@@ -9,6 +9,13 @@ import { GlobalService } from '../../../services/global.service';
   styleUrls: ['./roles.component.scss']
 })
 export class RolesComponent implements OnInit {
+  readonly permissionTypes = [
+    { key: 'can_view', label: 'View', icon: 'eye-outline' },
+    { key: 'can_create', label: 'Create', icon: 'plus-outline' },
+    { key: 'can_edit', label: 'Edit', icon: 'edit-2-outline' },
+    { key: 'can_delete', label: 'Delete', icon: 'trash-2-outline' },
+  ];
+
   allRoles: any[] = [];
   roleList: any[] = [];
   searchText = '';
@@ -79,6 +86,12 @@ export class RolesComponent implements OnInit {
   }
 
   getPermissionCount(role: any): number {
+    const menus = this.getRoleMenus(role);
+
+    if (menus.length) {
+      return menus.reduce((total: number, menu: any) => total + this.getMenuPermissionCount(menu), 0);
+    }
+
     const permissions = role?.permissions || role?.module_permissions || [];
 
     if (Array.isArray(permissions)) {
@@ -90,6 +103,29 @@ export class RolesComponent implements OnInit {
     }
 
     return 0;
+  }
+
+  getRoleMenus(role: any): any[] {
+    return Array.isArray(role?.menus) ? role.menus : [];
+  }
+
+  getMenuCount(role: any): number {
+    return this.getRoleMenus(role).length;
+  }
+
+  getMenuPermissionCount(menu: any): number {
+    return this.permissionTypes.filter((permission: any) =>
+      this.hasMenuPermission(menu, permission.key)
+    ).length;
+  }
+
+  hasMenuPermission(menu: any, permissionKey: string): boolean {
+    const value = menu?.[permissionKey];
+    return value === 1 || value === true || `${value}`.trim().toLowerCase() === 'true';
+  }
+
+  trackByMenu(index: number, menu: any): number | string {
+    return menu?.role_menu_access_id ?? menu?.menu_id ?? index;
   }
 
   trackByRole(index: number, role: any): number | string {

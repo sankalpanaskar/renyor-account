@@ -1,14 +1,24 @@
 <div *ngIf="showRolePopup" class="customer-dialog-overlay" (click)="closeRolePopup()">
-  <div class="customer-dialog-wrapper compact-access-dialog" role="dialog" aria-modal="true" aria-label="Role details" (click)="$event.stopPropagation()">
+  <div class="customer-dialog-wrapper compact-access-dialog role-access-dialog" role="dialog" aria-modal="true" aria-label="Role details" (click)="$event.stopPropagation()">
     <div class="customer-dialog-shell">
       <div class="dialog-header">
         <div class="entity-dialog-identity">
           <div class="entity-dialog-avatar"><nb-icon icon="shield-outline"></nb-icon></div>
           <div class="dialog-header-copy">
-            <span class="customer-code-badge">{{ getRoleStatus(selectedRole) }}</span>
-            <div class="customer-title">{{ selectedRole?.role_name || 'Role Details' }}</div>
+            <div class="role-popup-heading">
+              <h2 class="role-popup-name">{{ selectedRole?.role_name || 'Role Details' }}</h2>
+              <span
+                class="role-popup-status"
+                [class.role-active]="isRoleActive(selectedRole)"
+                [class.role-inactive]="!isRoleActive(selectedRole)">
+                <span class="role-popup-status-dot" aria-hidden="true"></span>
+                {{ getRoleStatus(selectedRole) }}
+              </span>
+            </div>
             <div class="entity-dialog-meta">
-              <span>{{ getPermissionCount(selectedRole) }} permissions configured</span>
+              <span>{{ getMenuCount(selectedRole) }} menus</span>
+              <span aria-hidden="true">•</span>
+              <span>{{ getPermissionCount(selectedRole) }} permissions granted</span>
             </div>
           </div>
         </div>
@@ -18,19 +28,48 @@
       </div>
 
       <div class="popup-scroll-body">
-        <section class="dialog-group dialog-group-full">
-          <div class="dialog-group-title">Role Information</div>
-          <div class="info-card-grid two-columns">
-            <div class="info-card" *ngFor="let field of [
-              { label: 'Role Name', value: selectedRole?.role_name || '-' },
-              { label: 'Status', value: getRoleStatus(selectedRole) },
-              { label: 'Permissions', value: getPermissionCount(selectedRole) },
-              { label: 'Remarks', value: selectedRole?.remarks || '-' }
-            ]">
-              <div class="section-label">{{ field.label }}</div>
-              <div class="section-value">{{ field.value }}</div>
+        <section class="dialog-group dialog-group-full role-access-section">
+          <div class="role-access-title-row">
+            <div>
+              <div class="dialog-group-title">Menu Access</div>
+              <p>Permissions assigned to this role for each menu.</p>
             </div>
+            <span class="role-access-total">{{ getMenuCount(selectedRole) }} menus</span>
           </div>
+
+          <div *ngIf="getRoleMenus(selectedRole).length; else noMenuAccess" class="role-access-list">
+            <article *ngFor="let menu of getRoleMenus(selectedRole); trackBy: trackByMenu" class="role-access-item">
+              <div class="role-menu-identity">
+                <div class="role-menu-icon"><nb-icon icon="grid-outline"></nb-icon></div>
+                <div class="role-menu-copy">
+                  <strong>{{ menu?.menu_name || 'Unnamed menu' }}</strong>
+                  <span>Menu ID: {{ menu?.menu_id || '-' }}</span>
+                </div>
+                <span class="role-menu-count">{{ getMenuPermissionCount(menu) }}/4 enabled</span>
+              </div>
+
+              <div class="role-permission-grid" aria-label="Menu permissions">
+                <span
+                  *ngFor="let permission of permissionTypes"
+                  class="role-permission-chip"
+                  [class.permission-granted]="hasMenuPermission(menu, permission.key)"
+                  [attr.aria-label]="permission.label + (hasMenuPermission(menu, permission.key) ? ' permission granted' : ' permission not granted')">
+                  <nb-icon [icon]="hasMenuPermission(menu, permission.key) ? permission.icon : 'close-outline'"></nb-icon>
+                  {{ permission.label }}
+                </span>
+              </div>
+            </article>
+          </div>
+
+          <ng-template #noMenuAccess>
+            <div class="role-access-empty">
+              <nb-icon icon="lock-outline"></nb-icon>
+              <div>
+                <strong>No menu access assigned</strong>
+                <span>This role does not currently have access to any menus.</span>
+              </div>
+            </div>
+          </ng-template>
         </section>
       </div>
     </div>
@@ -98,7 +137,7 @@
                     <div class="entity-avatar role-avatar"><nb-icon icon="shield-outline"></nb-icon></div>
                     <div class="entity-identity-copy">
                       <strong>{{ role?.role_name || '-' }}</strong>
-                      <span>{{ getPermissionCount(role) }} permissions</span>
+                      <span>{{ getMenuCount(role) }} menus · {{ getPermissionCount(role) }} permissions</span>
                     </div>
                   </div>
                 </td>

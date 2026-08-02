@@ -1,5 +1,29 @@
 @import '../../shared/styles/compact-entity-list';
 
+.user-table thead tr,
+.user-table tbody .entity-row {
+  grid-template-columns:
+    minmax(220px, 1.5fr)
+    minmax(130px, 0.85fr)
+    minmax(190px, 1.2fr)
+    minmax(120px, 0.75fr)
+    minmax(120px, 0.8fr);
+}
+
+.user-table thead {
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+}
+
+.user-table th,
+.user-table td {
+  text-align: left;
+}
+
+.user-table .entity-row {
+  cursor: default;
+}
+
 .user-status-badge.active-status {
   color: #168354;
   background: #eaf8f1;
