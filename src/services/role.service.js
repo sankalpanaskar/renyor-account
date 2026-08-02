@@ -81,6 +81,7 @@ exports.getAll = async (tenant_id) => {
         r.tenant_id AS role_tenant_id,
         r.role_name,
         r.remarks,
+        r.status AS role_status,
         r.created_at AS role_created_at,
         r.updated_at AS role_updated_at,
         rma.id AS role_menu_access_id,
@@ -109,6 +110,7 @@ exports.getAll = async (tenant_id) => {
         tenant_id: row.role_tenant_id,
         role_name: row.role_name,
         remarks: row.remarks,
+        status: row.role_status,
         created_at: row.role_created_at,
         updated_at: row.role_updated_at,
         menus: []
@@ -130,5 +132,4 @@ exports.getAll = async (tenant_id) => {
 
   return Array.from(rolesMap.values());
 };
-
 
