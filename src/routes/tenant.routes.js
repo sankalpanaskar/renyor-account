@@ -37,12 +37,7 @@ router.post(
 );
 router.get(
   '/fetch-subscriptions',
-  authSuperadmin,
-  TenantController.getSubscriptionsByTenantId
-);
-router.get(
-  '/fetch-subscriptions/:tenant_id',
-  authSuperadmin,
+  auth,
   TenantController.getSubscriptionsByTenantId
 );
 
