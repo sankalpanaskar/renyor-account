@@ -32,6 +32,14 @@ const buildInvoiceUploadPath = (tenant_id, file) => {
   return `uploads/invoices/${tenant_id}/${file.filename}`;
 };
 
+const buildQuotationUploadPath = (tenant_id, file) => {
+  if (!file?.filename) {
+    return null;
+  }
+
+  return `uploads/quotations/${tenant_id}/${file.filename}`;
+};
+
 
 exports.fetchCustomers = async (req, res) => {
   try {
@@ -530,6 +538,43 @@ exports.createInvoice = async (req, res) => {
         return res.error(
               409,
               "Invoice No already Exist."
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+  }
+};
+
+//quotation create
+exports.createQuotation = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+    const quotation_attachment = buildQuotationUploadPath(
+      tenant_id,
+      req.files?.quotation_attachment?.[0]
+    );
+
+    const quotation = await sales.createQuotation(
+      req.body,
+      tenant_id,
+      user_id,
+      quotation_attachment
+    );
+
+    return res.success(
+      200,
+      "Quotation created successfully",
+      quotation
+    );
+  } catch (err) {
+    if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "Quotation No already Exist."
             );
     }else{
       return res.error(

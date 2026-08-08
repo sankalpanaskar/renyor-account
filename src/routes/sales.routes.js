@@ -102,6 +102,14 @@ router.post(
   ]),
   salesController.createInvoice
 );
+router.post(
+  '/create-quotation',
+  auth,
+  optionalTenantUpload('quotations', [
+    { name: 'quotation_attachment', maxCount: 1 }
+  ]),
+  salesController.createQuotation
+);
 router.get('/fetch-invoice', auth, salesController.fetchInvoice);
 router.post('/generate-pdf', auth, salesController.createDocumentPdf);
 

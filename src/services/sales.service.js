@@ -127,6 +127,24 @@ const buildInvoiceItemValues = (invoiceMasterId, item, tenant_id, user_id) => {
   ];
 };
 
+const buildQuotationItemValues = (quotationMasterId, item, tenant_id, user_id) => {
+  return [
+    quotationMasterId,
+    normalizeFormValue(item?.item_id) ?? null,
+    normalizeFormValue(item?.item_name) ?? null,
+    normalizeFormValue(item?.item_description) ?? null,
+    normalizeFormValue(item?.item_type) ?? null,
+    normalizeFormValue(item?.hsn_sac) ?? null,
+    normalizeFormValue(item?.quantity) ?? 0,
+    normalizeFormValue(item?.rate) ?? 0,
+    normalizeFormValue(item?.tax) ?? null,
+    normalizeFormValue(item?.unit) ?? null,
+    normalizeFormValue(item?.amount) ?? 0,
+    tenant_id,
+    user_id
+  ];
+};
+
 
 
 exports.createDocumentPdf = async (
@@ -411,6 +429,181 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
     const [itemRows] = await connection.query(
       `SELECT * FROM invoice_items WHERE invoice_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
       [invoiceMasterId, tenant_id]
+    );
+
+    await connection.commit();
+
+    return {
+      ...masterRows[0],
+      items: itemRows
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.createQuotation = async (data, tenant_id, user_id, uploaded_quotation_attachment = null) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      customer_id,
+      quotation_no,
+      document_type,
+      current_number,
+      ref_no,
+      quotation_date,
+      term,
+      expairy_date,
+      salesperson,
+      project_name,
+      subject,
+      customer_notes,
+      sub_total,
+      tax_amount,
+      tax_mode,
+      customer_state,
+      total,
+      custom_field,
+      module_id,
+      items
+    } = data || {};
+
+    const quotationItems = parseInvoiceItems(items);
+
+    if (customer_id === undefined || customer_id === null || customer_id === "") {
+      throw new Error("customer_id is required");
+    }
+
+    if (!quotation_no) {
+      throw new Error("quotation_no is required");
+    }
+
+    const normalizedDocumentType = String(normalizeFormValue(document_type) || 'quotation')
+      .toLowerCase()
+      .replace(/\s+/g, '');
+    const nextCurrentNumber = normalizeFormValue(current_number);
+
+    if (nextCurrentNumber === undefined || nextCurrentNumber === null || nextCurrentNumber === "") {
+      throw new Error("current_number is required");
+    }
+
+    if (!quotationItems.length) {
+      throw new Error("items are required");
+    }
+
+    const quotationMasterColumns = [
+      "customer_id",
+      "quotation_no",
+      "ref_no",
+      "quotation_date",
+      "term",
+      "expairy_date",
+      "salesperson",
+      "project_name",
+      "subject",
+      "customer_notes",
+      "sub_total",
+      "tax_amount",
+      "tax_mode",
+      "customer_state",
+      "total",
+      "quotation_attachment",
+      "tenant_id",
+      "user_id"
+    ];
+
+    const quotationMasterValues = [
+      customer_id,
+      quotation_no,
+      ref_no ?? null,
+      formatDateForDb(quotation_date),
+      term ?? null,
+      formatDateForDb(expairy_date),
+      salesperson ?? null,
+      project_name ?? null,
+      subject ?? null,
+      customer_notes ?? null,
+      sub_total ?? 0,
+      tax_amount ?? 0,
+      tax_mode ?? null,
+      customer_state ?? null,
+      total ?? 0,
+      uploaded_quotation_attachment ?? null,
+      tenant_id,
+      user_id
+    ];
+
+    const [masterResult] = await connection.query(
+      `INSERT INTO quotation_master (${quotationMasterColumns.join(", ")})
+       VALUES (${quotationMasterColumns.map(() => "?").join(", ")})`,
+      quotationMasterValues
+    );
+
+    const quotationMasterId = masterResult.insertId;
+    for (const item of quotationItems) {
+      await connection.query(
+        `INSERT INTO quotation_items (
+          quotation_master_id,
+          item_id,
+          item_name,
+          item_description,
+          item_type,
+          hsn_sac,
+          quantity,
+          rate,
+          tax,
+          unit,
+          amount,
+          tenant_id,
+          user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        buildQuotationItemValues(quotationMasterId, item, tenant_id, user_id)
+      );
+    }
+
+    const customFieldValues = parseCustomFieldForUpdate(custom_field);
+
+    if (customFieldValues && Object.keys(customFieldValues).length > 0) {
+      const moduleId = normalizeFormValue(module_id);
+
+      if (!moduleId) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      await handleCustomFields({
+        connection,
+        custom_field: customFieldValues,
+        module_id: moduleId,
+        tenant_id,
+        record_id: quotationMasterId
+      });
+    }
+
+    const [settingsResult] = await connection.query(
+      `UPDATE document_number_settings
+       SET current_number = ?
+       WHERE tenant_id = ? AND document_type = ?`,
+      [nextCurrentNumber, tenant_id, normalizedDocumentType]
+    );
+
+    if (settingsResult.affectedRows === 0) {
+      throw new Error("Document number settings not found");
+    }
+
+    const [masterRows] = await connection.query(
+      `SELECT * FROM quotation_master WHERE id = ? AND tenant_id = ?`,
+      [quotationMasterId, tenant_id]
+    );
+
+    const [itemRows] = await connection.query(
+      `SELECT * FROM quotation_items WHERE quotation_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
+      [quotationMasterId, tenant_id]
     );
 
     await connection.commit();
