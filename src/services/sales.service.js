@@ -150,7 +150,7 @@ const buildQuotationItemValues = (quotationMasterId, item, tenant_id, user_id) =
 exports.createDocumentPdf = async (
   tenant_id,
   user_id,
-  document_type = 'invoice',
+  document_type,
   html,
   requestedFileName = null
 ) => {

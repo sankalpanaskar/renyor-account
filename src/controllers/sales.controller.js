@@ -694,7 +694,7 @@ exports.createDocumentPdf = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
-    const { document_type, html, file_name, invoice_id } = req.body || {};
+    const { document_type, html, file_name } = req.body || {};
 
     if (!document_type) {
       return res.error(400, "document_type is required");
@@ -718,7 +718,6 @@ exports.createDocumentPdf = async (req, res) => {
       "Document PDF created successfully",
       {
         ...documentPdf,
-        invoice_id: invoice_id ?? null,
         pdf_link: absoluteUrl
       }
     );
