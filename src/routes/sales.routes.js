@@ -111,6 +111,7 @@ router.post(
   salesController.createQuotation
 );
 router.get('/fetch-invoice', auth, salesController.fetchInvoice);
+router.get('/fetch-quotation', auth, salesController.fetchQuotation);
 router.post('/generate-pdf', auth, salesController.createDocumentPdf);
 
 router.get('/fetch-tax-rate', auth, salesController.fetchTaxRate);

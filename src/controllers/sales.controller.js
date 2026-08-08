@@ -605,6 +605,26 @@ exports.fetchInvoice = async (req, res) => {
   }
 };
 
+exports.fetchQuotation = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const { id, module_id } = req.query;
+
+    const quotations = await sales.fetchQuotation(tenant_id, id, module_id);
+
+    return res.success(
+      200,
+      id ? "Quotation fetched successfully" : "Quotations fetched successfully",
+      quotations
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch quotation"
+    );
+  }
+};
+
 exports.fetchTaxRate = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;

@@ -781,6 +781,142 @@ exports.fetchInvoice = async (tenant_id, invoice_id = null, module_id = null) =>
   return invoice_id ? invoicesWithCustomFields[0] : invoicesWithCustomFields;
 };
 
+exports.fetchQuotation = async (tenant_id, quotation_id = null, module_id = null) => {
+  const masterParams = [tenant_id];
+  let masterWhereClause = "WHERE qm.tenant_id = ?";
+
+  if (quotation_id !== undefined && quotation_id !== null && quotation_id !== "") {
+    masterWhereClause += " AND qm.id = ?";
+    masterParams.push(quotation_id);
+  }
+
+  const [masterRows] = await db.query(
+    `SELECT
+        qm.*,
+        c.display_name AS customer_display_name,
+        c.company_name AS customer_company_name,
+        c.primary_contact_f_name AS customer_first_name,
+        c.primary_contact_l_name AS customer_last_name,
+        c.billing_address AS billing_address,
+        c.billing_country AS billing_country,
+        c.billing_city AS billing_city,
+        c.billing_state AS billing_state,
+        c.billing_pin AS billing_pin,
+        c.shipping_address AS shipping_address,
+        c.shipping_country AS shipping_country,
+        c.shipping_city AS shipping_city,
+        c.shipping_state AS shipping_state,
+        c.shipping_pin AS shipping_pin
+
+     FROM quotation_master qm
+     LEFT JOIN customers c
+       ON c.id = qm.customer_id
+      AND c.tenant_id = qm.tenant_id
+     ${masterWhereClause}
+     ORDER BY qm.id DESC`,
+    masterParams
+  );
+
+  if (!masterRows.length) {
+    return quotation_id ? null : [];
+  }
+
+  const quotationMasterIds = masterRows.map((row) => row.id);
+  const [itemRows] = await db.query(
+    `SELECT *
+     FROM quotation_items
+     WHERE tenant_id = ?
+       AND quotation_master_id IN (?)
+     ORDER BY quotation_master_id ASC, id ASC`,
+    [tenant_id, quotationMasterIds]
+  );
+
+  const itemsByQuotationId = itemRows.reduce((acc, item) => {
+    if (!acc[item.quotation_master_id]) {
+      acc[item.quotation_master_id] = [];
+    }
+
+    acc[item.quotation_master_id].push(item);
+    return acc;
+  }, {});
+
+  const quotations = masterRows.map((row) => {
+    const {
+      customer_display_name,
+      customer_company_name,
+      customer_first_name,
+      customer_last_name,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      ...quotation
+    } = row;
+
+    return {
+      ...quotation,
+      customer: {
+        display_name: customer_display_name || null,
+        company_name: customer_company_name || null,
+        first_name: customer_first_name || null,
+        last_name: customer_last_name || null,
+        billing_address: billing_address || null,
+        billing_country: billing_country || null,
+        billing_city: billing_city || null,
+        billing_state: billing_state || null,
+        billing_pin: billing_pin || null,
+        shipping_address: shipping_address || null,
+        shipping_country: shipping_country || null,
+        shipping_city: shipping_city || null,
+        shipping_state: shipping_state || null,
+        shipping_pin: shipping_pin || null
+      },
+      items: itemsByQuotationId[row.id] || []
+    };
+  });
+
+  if (!module_id) {
+    return quotation_id ? quotations[0] : quotations;
+  }
+
+  const [customRows] = await db.query(
+    `SELECT
+        cfv.record_id,
+        cf.field_name,
+        cfv.field_value
+      FROM custom_field_values cfv
+      INNER JOIN custom_fields cf
+        ON cf.id = cfv.field_id
+      WHERE cfv.module_id = ?
+        AND cfv.tenant_id = ?
+        AND cfv.record_id IN (?)`,
+    [module_id, tenant_id, quotationMasterIds]
+  );
+
+  const customFieldMap = {};
+
+  for (const row of customRows) {
+    if (!customFieldMap[row.record_id]) {
+      customFieldMap[row.record_id] = {};
+    }
+
+    customFieldMap[row.record_id][row.field_name] = row.field_value;
+  }
+
+  const quotationsWithCustomFields = quotations.map((quotation) => ({
+    ...quotation,
+    custom_field: customFieldMap[quotation.id] || {}
+  }));
+
+  return quotation_id ? quotationsWithCustomFields[0] : quotationsWithCustomFields;
+};
+
 exports.fetchAllCustomers = async (tenant_id, module_id) => {
   const [customers] = await db.query(
     "SELECT * FROM customers WHERE tenant_id = ? ORDER BY id DESC",
