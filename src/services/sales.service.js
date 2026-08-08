@@ -793,6 +793,7 @@ exports.fetchQuotation = async (tenant_id, quotation_id = null, module_id = null
   const [masterRows] = await db.query(
     `SELECT
         qm.*,
+        qm.status AS status,
         c.display_name AS customer_display_name,
         c.company_name AS customer_company_name,
         c.primary_contact_f_name AS customer_first_name,
