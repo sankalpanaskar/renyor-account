@@ -657,6 +657,7 @@ exports.fetchInvoice = async (tenant_id, invoice_id = null, module_id = null) =>
   const [masterRows] = await db.query(
     `SELECT
         im.*,
+        im.status AS status,
         c.display_name AS customer_display_name,
         c.company_name AS customer_company_name,
         c.primary_contact_f_name AS customer_first_name,
