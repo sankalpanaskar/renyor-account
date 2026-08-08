@@ -1,5 +1,44 @@
 const db = require('../config/db');
 
+const parseConfiguration = (configuration) => {
+  if (configuration === undefined || configuration === null || configuration === '') {
+    throw new Error('configuration is required');
+  }
+
+  if (typeof configuration === 'string') {
+    try {
+      return JSON.parse(configuration);
+    } catch (error) {
+      throw new Error('configuration must be valid JSON');
+    }
+  }
+
+  if (typeof configuration !== 'object' || Array.isArray(configuration)) {
+    throw new Error('configuration must be a JSON object');
+  }
+
+  return configuration;
+};
+
+const parseConfigurationRow = (row) => {
+  if (!row) {
+    return row;
+  }
+
+  if (typeof row.configuration === 'string') {
+    try {
+      return {
+        ...row,
+        configuration: JSON.parse(row.configuration)
+      };
+    } catch (error) {
+      return row;
+    }
+  }
+
+  return row;
+};
+
 exports.createDocumentNumberSettings = async (data, tenant_id, user_id) => {
   const connection = await db.getConnection();
 
@@ -109,4 +148,97 @@ exports.fetchDocumentNumberSettings = async (tenant_id, document_type = null) =>
   );
 
   return rows;
+};
+
+exports.createDocumentFormatSettings = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      module_id,
+      document_type,
+      configuration,
+      is_active = 1
+    } = data || {};
+
+    if (module_id === undefined || module_id === null || module_id === '') {
+      throw new Error('module_id is required');
+    }
+
+    if (!document_type) {
+      throw new Error('document_type is required');
+    }
+
+    const parsedConfiguration = parseConfiguration(configuration);
+
+    const [result] = await connection.query(
+      `INSERT INTO document_format_settings
+        (tenant_id, user_id, module_id, document_type, configuration, is_active, created_by, updated_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        tenant_id,
+        user_id,
+        module_id,
+        document_type,
+        JSON.stringify(parsedConfiguration),
+        is_active,
+        user_id,
+        user_id
+      ]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT *
+       FROM document_format_settings
+       WHERE id = ? AND tenant_id = ?`,
+      [result.insertId, tenant_id]
+    );
+
+    await connection.commit();
+    return parseConfigurationRow(rows[0]);
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.fetchDocumentFormatSettings = async (tenant_id, filters = {}) => {
+  const { id, module_id, document_type, is_active } = filters || {};
+  const params = [tenant_id];
+  let whereClause = 'WHERE tenant_id = ?';
+
+  if (id !== undefined && id !== null && id !== '') {
+    whereClause += ' AND id = ?';
+    params.push(id);
+  }
+
+  if (module_id !== undefined && module_id !== null && module_id !== '') {
+    whereClause += ' AND module_id = ?';
+    params.push(module_id);
+  }
+
+  if (document_type) {
+    whereClause += ' AND document_type = ?';
+    params.push(document_type);
+  }
+
+  if (is_active !== undefined && is_active !== null && is_active !== '') {
+    whereClause += ' AND is_active = ?';
+    params.push(is_active);
+  }
+
+  const [rows] = await db.query(
+    `SELECT *
+     FROM document_format_settings
+     ${whereClause}
+     ORDER BY id DESC`,
+    params
+  );
+
+  const settings = rows.map(parseConfigurationRow);
+  return id ? settings[0] || null : settings;
 };

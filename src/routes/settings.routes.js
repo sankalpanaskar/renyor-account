@@ -18,4 +18,17 @@ router.get(
   SettingsController.fetchDocumentNumberSettings
 );
 
+router.post(
+  '/document-format-settings',
+  auth,
+  upload.none(),
+  SettingsController.createDocumentFormatSettings
+);
+
+router.get(
+  '/fetch-document-format-settings',
+  auth,
+  SettingsController.fetchDocumentFormatSettings
+);
+
 module.exports = router;
