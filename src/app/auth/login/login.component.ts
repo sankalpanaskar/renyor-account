@@ -34,12 +34,14 @@ export class NgxLoginComponent {
             const response: any = result.getResponse();
             const token = response?.body?.data?.token;
             const user = response?.body?.data?.user;
-            console.log(response)
+            const tenantDetails = response?.body?.data?.tenant_details;
             if (token && user) {
               localStorage.setItem('auth_token', token);
               localStorage.setItem('user', JSON.stringify(user));
+              localStorage.setItem('tenant_details', JSON.stringify(tenantDetails || {}));
               this.tokenService.set(new NbAuthSimpleToken(token, 'email'));
               this.globalService.setUser(user);
+              this.globalService.setTenantDetails(tenantDetails);
               
               this.toastrService.success(response?.body?.message || 'Login successful', 'Success');
               this.router.navigate(['/pages/custom-dashboard']);
@@ -69,4 +71,3 @@ export class NgxLoginComponent {
 
   
 }
-

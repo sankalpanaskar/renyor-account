@@ -19,6 +19,7 @@ export class GlobalService {
     
   
     public currentUser: any;
+    public tenantDetails: any;
     public member_id = '';
     public fullName = '';
     public mobile = '';
@@ -29,9 +30,11 @@ export class GlobalService {
   
     constructor(private http: HttpClient) {
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
-      if (storedUser?.role_id) {
+      const storedTenantDetails = JSON.parse(localStorage.getItem('tenant_details') || '{}');
+      if (storedUser?.id) {
         this.setUser(storedUser);
       }
+      this.setTenantDetails(storedTenantDetails);
     }
   
     set role_id(value: any) {
@@ -61,6 +64,10 @@ export class GlobalService {
       this.user_id = user.id;
       this.user_code = user.user_id;
       this.centerData = user.assgin_centers;
+    }
+
+    setTenantDetails(tenantDetails: any) {
+      this.tenantDetails = tenantDetails || {};
     }
   
     private apiUrl= environment.apiBaseUrl+ 'api';
@@ -285,12 +292,20 @@ export class GlobalService {
       return this.http.get(`${this.salesUrl}/fetch-invoice?module_id=${moduleId}`);
     }
 
+    public fetchQuotations(moduleId: number = 52): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-quotation?module_id=${moduleId}`);
+    }
+
     public updateInvoice(data:any): Observable<any> {
       return this.http.post(`${this.salesUrl}/update-invoice`, data);
     }
 
     public deleteInvoice(invoiceId: string | number): Observable<any> {
       return this.http.post(`${this.salesUrl}/delete-invoice`, { invoice_id: invoiceId });
+    }
+
+    public deleteQuotation(quotationId: string | number): Observable<any> {
+      return this.http.post(`${this.salesUrl}/delete-quotation`, { quotation_id: quotationId });
     }
 
     public generateInvoicePdf(data: {
@@ -302,8 +317,21 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/generate-pdf`, data);
     }
 
+    public generateQuotationPdf(data: {
+      quotation_id: string | number;
+      document_type: string;
+      file_name: string;
+      html: string;
+    }): Observable<any> {
+      return this.http.post(`${this.salesUrl}/generate-pdf`, data);
+    }
+
     public insertQuote(data:any): Observable<any> {
-      return this.http.post(`${this.salesUrl}/insert-quote`, data);
+      return this.http.post(`${this.salesUrl}/create-quotation`, data);
+    }
+
+    public updateQuotation(data:any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/update-quotation`, data);
     }
 
     public addVendor(data:any): Observable<any> {

@@ -11,6 +11,7 @@ import { AddInvoiceComponent } from './add-invoice/add-invoice.component';
 import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 import { AddQuoteComponent } from './add-quote/add-quote.component';
 import { InvoiceListComponent } from './invoice-list/invoice-list.component';
+import { QuotationListComponent } from './quotation-list/quotation-list.component';
 
 const routes: Routes = [
   {
@@ -65,6 +66,16 @@ const routes: Routes = [
       {
         path:'add-quote',
         component:AddQuoteComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'update-quotation',
+        component:AddQuoteComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'quotation-list',
+        component:QuotationListComponent,
         canActivate: [authGuard]
       },
       {

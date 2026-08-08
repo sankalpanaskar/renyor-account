@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
+import { Router } from '@angular/router';
 import { GlobalService } from '../../../services/global.service';
 
 interface QuoteItemRow {
@@ -80,8 +81,14 @@ interface QuoteItemOption {
 })
 export class AddQuoteComponent implements OnInit {
   isSubmitting = false;
+  customFieldsLoading = false;
+  isEditMode = false;
+  quotationId: string | number | null = null;
+  isSavingQuoteNumberPreference = false;
+  isLoadingQuoteNumberPreference = false;
   showQuoteNumberPopup = false;
   showPaymentTermsPopup = false;
+  uploadedQuotationFiles: File[] = [];
   today = this.normalizeDate(new Date());
   dueDateMin = this.today;
   expiryDateMin = this.today;
@@ -93,6 +100,8 @@ export class AddQuoteComponent implements OnInit {
   taxOptions: QuoteTaxOption[] = [
     { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' }
   ];
+  customFields: any[] = [];
+  private readonly quotationModuleId = 52;
 
   model: any = {
     customer_id: '',
@@ -102,9 +111,9 @@ export class AddQuoteComponent implements OnInit {
     expiry_date: null,
     salesperson: '',
     project_name: '',
-    place_of_supply: '',
     subject: '',
     customer_notes: 'Looking forward for your business.',
+    terms_and_conditions: '',
     additional_tax: '',
     adjustment_label: 'Adjustment',
     adjustment_value: 0
@@ -113,14 +122,18 @@ export class AddQuoteComponent implements OnInit {
   quoteNumberPreference = {
     mode: 'auto',
     prefix: 'QT-',
-    nextNumber: '000001'
+    currentNumber: '000000',
+    nextNumber: '000001',
+    suffix: ' ',
+    incrementBy: 1,
   };
 
   itemRows: QuoteItemRow[] = [];
 
   constructor(
     private toastrService: NbToastrService,
-    private globalService: GlobalService
+    private globalService: GlobalService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -128,10 +141,249 @@ export class AddQuoteComponent implements OnInit {
     this.fetchStates();
     this.fetchItems();
     this.fetchTaxRates();
-    this.applyQuoteNumber();
+    this.fetchCustomFields();
+    this.fetchQuoteNumberPreference();
     this.model.quote_date = this.normalizeDate(new Date());
     this.expiryDateMin = this.model.quote_date;
-    this.addRow();
+    this.configureEditMode();
+    if (this.itemRows.length === 0) {
+      this.addRow();
+    }
+  }
+
+  private configureEditMode(): void {
+    const navigationState = window.history.state || {};
+    const quotation = navigationState?.quotationData;
+    if (!navigationState?.isEditMode || !quotation) {
+      return;
+    }
+
+    this.isEditMode = true;
+    this.quotationId = quotation?.quotation_id ?? quotation?.id ?? null;
+    this.model = {
+      ...this.model,
+      ...this.parseCustomFieldValues(quotation?.custom_field ?? quotation?.custom_fields),
+      customer_id: quotation?.customer_id ?? quotation?.customer?.id ?? '',
+      quote_no: quotation?.quotation_no ?? quotation?.quote_no ?? quotation?.quotation_number ?? '',
+      reference_no: quotation?.ref_no ?? quotation?.reference_no ?? '',
+      quote_date: this.normalizeDate(quotation?.quotation_date ?? quotation?.quote_date ?? quotation?.date ?? new Date()),
+      expiry_date: quotation?.expiry_date ? this.normalizeDate(quotation.expiry_date) : null,
+      salesperson: quotation?.salesperson ?? quotation?.sales_person ?? '',
+      project_name: quotation?.project_name ?? quotation?.project ?? '',
+      subject: quotation?.subject ?? '',
+      customer_notes: quotation?.customer_notes ?? '',
+      terms_and_conditions: quotation?.terms_and_conditions ?? quotation?.terms_conditions ?? '',
+      adjustment_label: quotation?.adjustment_label ?? 'Adjustment',
+      adjustment_value: Number(quotation?.adjustment_value ?? quotation?.adjustment ?? 0),
+    };
+    this.expiryDateMin = this.model.quote_date;
+    this.itemRows = this.getQuotationItems(quotation).map((item: any) => ({
+      item_id: item?.item_id ?? item?.id ?? '',
+      item_details: item?.item_name ?? item?.item_details ?? item?.name ?? '',
+      item_description: item?.item_description ?? item?.description ?? '',
+      hsn_sac: item?.hsn_sac ?? item?.hsn_code ?? item?.sac ?? '',
+      quantity: Number(item?.quantity ?? 1),
+      rate: this.formatDecimalValue(item?.rate ?? item?.selling_price ?? 0),
+      tax: item?.tax ?? item?.tax_name ?? 'Non-Taxable',
+      item_unit: item?.unit ?? item?.item_unit ?? '',
+      item_type: item?.item_type ?? item?.type ?? '',
+      item_list_open: false,
+      item_is_manual: !!item?.is_manual,
+    }));
+  }
+
+  private parseCustomFieldValues(value: any): any {
+    if (!value) {
+      return {};
+    }
+    if (typeof value === 'string') {
+      try {
+        const parsedValue = JSON.parse(value);
+        return parsedValue && typeof parsedValue === 'object' ? parsedValue : {};
+      } catch {
+        return {};
+      }
+    }
+    return typeof value === 'object' ? { ...value } : {};
+  }
+
+  private getQuotationItems(quotation: any): any[] {
+    const rawItems = quotation?.items ?? quotation?.quotation_items ?? quotation?.quote_items ?? quotation?.details ?? [];
+    if (Array.isArray(rawItems)) {
+      return rawItems;
+    }
+    if (typeof rawItems === 'string') {
+      try {
+        const parsedItems = JSON.parse(rawItems);
+        return Array.isArray(parsedItems) ? parsedItems : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  fetchCustomFields(): void {
+    this.customFieldsLoading = true;
+    this.globalService.fetchCustomFieldsByModule(this.quotationModuleId).subscribe({
+      next: (res: any) => {
+        const fields = Array.isArray(res?.data)
+          ? res.data
+          : (Array.isArray(res) ? res : []);
+        this.customFields = fields
+          .filter((field: any) => Number(field?.show_in_form) === 1 && Number(field?.status) === 1)
+          .sort((a: any, b: any) => Number(a?.field_order || 0) - Number(b?.field_order || 0));
+        this.applyCustomFieldDefaults();
+        this.customFieldsLoading = false;
+      },
+      error: (error: any) => {
+        this.customFields = [];
+        this.customFieldsLoading = false;
+        this.toastrService.danger(
+          error?.error?.message || 'Quotation custom fields could not be loaded.',
+          'Custom Fields',
+        );
+      },
+    });
+  }
+
+  private applyCustomFieldDefaults(): void {
+    this.customFields.forEach((field: any) => {
+      const fieldName = `${field?.field_name || ''}`.trim();
+      if (!fieldName) {
+        return;
+      }
+      const hasValue = this.model[fieldName] !== undefined && this.model[fieldName] !== null;
+      if (this.getFieldType(field) === 'checkbox') {
+        this.model[fieldName] = this.parseCheckboxValues(hasValue ? this.model[fieldName] : field?.default_value);
+      } else if (!hasValue) {
+        this.model[fieldName] = field?.default_value ?? '';
+      }
+    });
+  }
+
+  getFieldType(field: any): string {
+    const type = `${field?.field_type || 'text'}`.trim().toLowerCase().replace(/[\s_-]+/g, '');
+    if (type === 'radiobutton') {
+      return 'radio';
+    }
+    if (type === 'checkboxes') {
+      return 'checkbox';
+    }
+    if (type === 'datepicker') {
+      return 'date';
+    }
+    const allowedTypes = ['text', 'textarea', 'number', 'email', 'date', 'select', 'radio', 'checkbox'];
+    return allowedTypes.includes(type) ? type : 'text';
+  }
+
+  getFieldOptions(field: any): string[] {
+    const rawOptions = field?.field_options;
+    if (!rawOptions) {
+      return [];
+    }
+    if (Array.isArray(rawOptions)) {
+      return rawOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+    }
+    if (typeof rawOptions === 'string') {
+      const normalizedOptions = rawOptions.trim();
+      if (!normalizedOptions) {
+        return [];
+      }
+      try {
+        const parsedOptions = JSON.parse(normalizedOptions);
+        if (Array.isArray(parsedOptions)) {
+          return parsedOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+        if (parsedOptions && typeof parsedOptions === 'object') {
+          return Object.values(parsedOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+      } catch {
+      }
+      return normalizedOptions.split(/[\n,|]/).map((option: string) => option.trim()).filter(Boolean);
+    }
+    return typeof rawOptions === 'object'
+      ? Object.values(rawOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean)
+      : [];
+  }
+
+  private normalizeFieldOption(option: any): string {
+    if (option === null || option === undefined) {
+      return '';
+    }
+    if (typeof option === 'object') {
+      return `${option?.label ?? option?.name ?? option?.title ?? option?.value ?? ''}`.trim();
+    }
+    return `${option}`.trim();
+  }
+
+  private parseCheckboxValues(value: any): string[] {
+    if (!value) {
+      return [];
+    }
+    if (Array.isArray(value)) {
+      return value.map((item: any) => `${item}`.trim()).filter(Boolean);
+    }
+    if (typeof value === 'string') {
+      const normalizedValue = value.trim();
+      if (!normalizedValue) {
+        return [];
+      }
+      try {
+        const parsedValue = JSON.parse(normalizedValue);
+        if (Array.isArray(parsedValue)) {
+          return parsedValue.map((item: any) => `${item}`.trim()).filter(Boolean);
+        }
+      } catch {
+      }
+      return normalizedValue.split(/[\n,|]/).map((item: string) => item.trim()).filter(Boolean);
+    }
+    return [`${value}`.trim()].filter(Boolean);
+  }
+
+  isFieldRequired(field: any): boolean {
+    return Number(field?.is_required) === 1;
+  }
+
+  isCheckboxChecked(fieldName: string, option: string): boolean {
+    return Array.isArray(this.model?.[fieldName]) && this.model[fieldName].includes(option);
+  }
+
+  onCheckboxOptionChange(fieldName: string, option: string, checkedValue: any): void {
+    const checked = typeof checkedValue === 'boolean' ? checkedValue : !!checkedValue?.checked;
+    const selectedOptions = Array.isArray(this.model?.[fieldName]) ? [...this.model[fieldName]] : [];
+    if (checked && !selectedOptions.includes(option)) {
+      selectedOptions.push(option);
+    } else if (!checked) {
+      const optionIndex = selectedOptions.indexOf(option);
+      if (optionIndex !== -1) {
+        selectedOptions.splice(optionIndex, 1);
+      }
+    }
+    this.model[fieldName] = selectedOptions;
+  }
+
+  hasFieldError(form: any, field: any): boolean {
+    if (!form?.submitted || !this.isFieldRequired(field)) {
+      return false;
+    }
+    const fieldName = field?.field_name;
+    if (this.getFieldType(field) === 'checkbox') {
+      return !Array.isArray(this.model?.[fieldName]) || this.model[fieldName].length === 0;
+    }
+    return !!form?.controls?.[fieldName]?.invalid;
+  }
+
+  private hasRequiredCustomFieldError(): boolean {
+    return this.customFields.some((field: any) => {
+      if (!this.isFieldRequired(field)) {
+        return false;
+      }
+      const value = this.model?.[field?.field_name];
+      return this.getFieldType(field) === 'checkbox'
+        ? !Array.isArray(value) || value.length === 0
+        : value === undefined || value === null || `${value}`.trim() === '';
+    });
   }
 
   fetchCustomers(): void {
@@ -159,6 +411,9 @@ export class AddQuoteComponent implements OnInit {
             source_of_supply: `${customer?.source_of_supply || ''}`.trim()
           }))
           .filter((customer: QuoteCustomerOption) => customer.id > 0 && !!customer.label);
+        if (this.model.customer_id) {
+          this.onCustomerSelected(this.model.customer_id);
+        }
       },
       error: () => {
         this.customerOptions = [];
@@ -188,11 +443,6 @@ export class AddQuoteComponent implements OnInit {
     this.selectedCustomer = this.customerOptions.find(
       (customer: QuoteCustomerOption) => customer.id === Number(customerId)
     ) || null;
-
-    this.model.place_of_supply = this.selectedCustomer?.source_of_supply
-      || this.selectedCustomer?.billing_state
-      || this.selectedCustomer?.state
-      || '';
   }
 
   getCustomerAddress(type: 'billing' | 'shipping'): string[] {
@@ -376,9 +626,12 @@ export class AddQuoteComponent implements OnInit {
   }
 
   private getBusinessStateCode(): string {
+    const tenantDetails = this.globalService.tenantDetails
+      || JSON.parse(localStorage.getItem('tenant_details') || '{}');
     const user = this.globalService.currentUser || JSON.parse(localStorage.getItem('user') || '{}');
 
     const candidates = [
+      tenantDetails?.state,
       user?.state,
       user?.company_state,
       user?.billing_state,
@@ -393,13 +646,17 @@ export class AddQuoteComponent implements OnInit {
     ];
 
     const match = candidates.find((value: any) => `${value || ''}`.trim());
-    return `${match || ''}`.trim().toUpperCase();
+    return this.normalizeStateCode(`${match || ''}`);
   }
 
   getCustomerStateCode(): string {
     const selectedCustomer = this.getSelectedCustomer();
-    const stateCode = selectedCustomer?.billing_state || selectedCustomer?.state || '';
-    return `${stateCode || ''}`.trim().toUpperCase();
+    const customerState = selectedCustomer?.billing_state
+      || selectedCustomer?.state
+      || selectedCustomer?.state_name
+      || selectedCustomer?.source_of_supply
+      || '';
+    return this.normalizeStateCode(customerState);
   }
 
   isInterState(): boolean {
@@ -411,6 +668,18 @@ export class AddQuoteComponent implements OnInit {
     }
 
     return customerState !== businessState;
+  }
+
+  private normalizeStateCode(value: string): string {
+    const normalizedValue = `${value || ''}`.trim().toUpperCase();
+    if (!normalizedValue) {
+      return '';
+    }
+
+    const matchedState = this.stateOptions.find((state: QuoteStateOption) =>
+      state.code.toUpperCase() === normalizedValue || state.name.toUpperCase() === normalizedValue
+    );
+    return matchedState?.code.toUpperCase() || normalizedValue;
   }
 
   getItemTaxRate(row: QuoteItemRow): number {
@@ -427,6 +696,10 @@ export class AddQuoteComponent implements OnInit {
 
   getTaxModeLabel(): string {
     return this.isInterState() ? 'IGST' : 'CGST + SGST';
+  }
+
+  getTaxMode(): 'IGST' | 'CGST_SGST' {
+    return this.isInterState() ? 'IGST' : 'CGST_SGST';
   }
 
   getTaxLabel(): string {
@@ -694,13 +967,112 @@ export class AddQuoteComponent implements OnInit {
     this.showQuoteNumberPopup = true;
   }
 
+  private fetchQuoteNumberPreference(): void {
+    this.isLoadingQuoteNumberPreference = true;
+    this.globalService.fetchDocumentNumberSettings('Quotation').subscribe({
+      next: (res: any) => {
+        const settings = this.extractDocumentNumberSettings(res);
+        if (settings) {
+          const isManualNumbering = `${settings?.type || 'A'}`.trim().toUpperCase() === 'M';
+          const currentNumberText = `${settings?.current_number ?? 0}`.trim();
+          const currentNumber = Number(currentNumberText.replace(/\D/g, '')) || 0;
+          const incrementBy = Math.max(Number(settings?.increment_by) || 1, 1);
+          const existingWidth = `${this.quoteNumberPreference.nextNumber || ''}`.replace(/\D/g, '').length;
+          const responseWidth = currentNumberText.replace(/\D/g, '').length;
+          const numberWidth = Math.max(existingWidth, responseWidth, 4);
+          const formattedCurrentNumber = `${currentNumber}`.padStart(numberWidth, '0');
+          this.quoteNumberPreference = {
+            ...this.quoteNumberPreference,
+            mode: isManualNumbering ? 'manual' : 'auto',
+            prefix: `${settings?.prefix ?? 'QT-'}`,
+            currentNumber: formattedCurrentNumber,
+            nextNumber: `${currentNumber + incrementBy}`.padStart(numberWidth, '0'),
+            suffix: settings?.suffix !== undefined && settings?.suffix !== null
+              ? `${settings.suffix}`
+              : ' ',
+            incrementBy,
+          };
+          if (!this.isEditMode) {
+            this.applyQuoteNumber();
+          }
+        }
+        this.isLoadingQuoteNumberPreference = false;
+      },
+      error: (error: any) => {
+        this.isLoadingQuoteNumberPreference = false;
+        this.toastrService.danger(
+          error?.error?.message || error?.message || 'Quotation number preferences could not be loaded.',
+          'Load Failed',
+        );
+      },
+    });
+  }
+
+  private extractDocumentNumberSettings(response: any): any {
+    const candidates = [
+      response?.data,
+      response?.data?.data,
+      response?.settings,
+      response?.result,
+      response,
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate) && candidate.length > 0) {
+        return candidate[0];
+      }
+      if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
+        if (candidate?.prefix !== undefined || candidate?.current_number !== undefined) {
+          return candidate;
+        }
+      }
+    }
+    return null;
+  }
+
   closeQuoteNumberPopup(): void {
     this.showQuoteNumberPopup = false;
   }
 
   saveQuoteNumberPreference(): void {
-    this.applyQuoteNumber();
-    this.closeQuoteNumberPopup();
+    const prefix = `${this.quoteNumberPreference.prefix || ''}`.trim();
+    const currentNumberText = `${this.quoteNumberPreference.nextNumber || ''}`.replace(/\D/g, '');
+    const currentNumber = Number(currentNumberText);
+    const isAutomaticNumbering = this.quoteNumberPreference.mode === 'auto';
+
+    if (isAutomaticNumbering && (!prefix || !Number.isFinite(currentNumber) || currentNumber < 0)) {
+      this.toastrService.danger('Enter a valid prefix and next number.', 'Quotation Number');
+      return;
+    }
+
+    const payload = {
+      document_type: 'Quotation',
+      type: (isAutomaticNumbering ? 'A' : 'M') as 'A' | 'M',
+      prefix,
+      current_number: this.quoteNumberPreference.currentNumber,
+      suffix: this.quoteNumberPreference.suffix,
+      increment_by: Number(this.quoteNumberPreference.incrementBy) || 1,
+    };
+
+    this.isSavingQuoteNumberPreference = true;
+    this.globalService.saveDocumentNumberSettings(payload).subscribe({
+      next: (res: any) => {
+        this.isSavingQuoteNumberPreference = false;
+        this.applyQuoteNumber();
+        this.closeQuoteNumberPopup();
+        this.toastrService.success(
+          res?.message || 'Quotation number preferences saved successfully.',
+          'Saved',
+        );
+      },
+      error: (error: any) => {
+        this.isSavingQuoteNumberPreference = false;
+        this.toastrService.danger(
+          error?.error?.message || error?.message || 'Quotation number preferences could not be saved.',
+          'Save Failed',
+        );
+      },
+    });
   }
 
   closePaymentTermsPopup(): void {
@@ -725,6 +1097,8 @@ export class AddQuoteComponent implements OnInit {
   private applyQuoteNumber(): void {
     if (this.quoteNumberPreference.mode === 'auto') {
       this.model.quote_no = this.generateQuoteNumber();
+    } else if (!this.isEditMode) {
+      this.model.quote_no = '';
     }
   }
 
@@ -776,11 +1150,14 @@ export class AddQuoteComponent implements OnInit {
   }
 
   getTaxRate(label: string): number {
-    return this.taxOptions.find((option: QuoteTaxOption) => option.label === label)?.rate || 0;
+    const normalizedLabel = this.getTaxDisplayLabel(label).toLowerCase();
+    return this.taxOptions.find((option: QuoteTaxOption) =>
+      this.getTaxDisplayLabel(option.label).toLowerCase() === normalizedLabel
+    )?.rate || 0;
   }
 
   getTaxAmount(): number {
-    return this.getTotalItemTaxAmount();
+    return this.roundCurrency(this.getTotalItemTaxAmount());
   }
 
   getIGST(): number {
@@ -788,11 +1165,15 @@ export class AddQuoteComponent implements OnInit {
   }
 
   getCGST(): number {
-    return this.isInterState() ? 0 : this.getTaxAmount() / 2;
+    return this.isInterState() ? 0 : this.roundCurrency(this.getTaxAmount() / 2);
   }
 
   getSGST(): number {
-    return this.isInterState() ? 0 : this.getTaxAmount() / 2;
+    return this.isInterState() ? 0 : this.roundCurrency(this.getTaxAmount() - this.getCGST());
+  }
+
+  private roundCurrency(value: number): number {
+    return Number((Number(value) || 0).toFixed(2));
   }
 
   getAdjustmentValue(): number {
@@ -800,7 +1181,7 @@ export class AddQuoteComponent implements OnInit {
   }
 
   getTotal(): number {
-    return this.getSubTotal() + this.getTaxAmount() + this.getAdjustmentValue();
+    return this.roundCurrency(this.getSubTotal() + this.getTaxAmount() + this.getAdjustmentValue());
   }
 
   private formatApiDate(value: Date | string | null | undefined): string {
@@ -884,14 +1265,55 @@ export class AddQuoteComponent implements OnInit {
         hsn_sac: `${row.hsn_sac || ''}`.trim(),
         quantity: Number(row.quantity || 0),
         rate: this.getRateNumber(row.rate),
-        tax: row.tax || '',
+        tax: this.getTaxDisplayLabel(row.tax),
         unit: `${row.item_unit || ''}`.trim(),
         amount: this.getRowAmount(row),
         is_manual: !!row.item_is_manual,
       }));
   }
 
+  onQuotationFilesChange(files: File[]): void {
+    this.uploadedQuotationFiles = files;
+  }
+
+  private appendFormDataValue(formData: FormData, key: string, value: any): void {
+    if (value === undefined || value === null) {
+      formData.append(key, '');
+      return;
+    }
+
+    if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+      return;
+    }
+
+    formData.append(key, `${value}`);
+  }
+
+  private getQuotationRequestPayload(payload: any): FormData {
+    const formData = new FormData();
+    Object.keys(payload).forEach((key: string) => {
+      this.appendFormDataValue(formData, key, payload[key]);
+    });
+
+    const quotationAttachment = this.uploadedQuotationFiles[0];
+    if (quotationAttachment) {
+      formData.append(
+        'quotation_attachment',
+        quotationAttachment,
+        quotationAttachment.name,
+      );
+    }
+
+    return formData;
+  }
+
   onSubmit(form: any): void {
+    if (this.hasRequiredCustomFieldError()) {
+      this.toastrService.danger('Complete all required custom fields.', 'Validation Failed');
+      return;
+    }
+
     if (!form.valid) {
       return;
     }
@@ -903,22 +1325,40 @@ export class AddQuoteComponent implements OnInit {
       return;
     }
 
+    const customFieldData = this.customFields.reduce((values: any, field: any) => {
+      const fieldName = `${field?.field_name || ''}`.trim();
+      if (fieldName) {
+        values[fieldName] = this.model?.[fieldName] ?? '';
+      }
+      return values;
+    }, {});
+
     const payload = {
+      ...(this.isEditMode && this.quotationId ? { quotation_id: this.quotationId } : {}),
+      ...(!this.isEditMode && this.quoteNumberPreference.mode === 'auto' ? {
+        document_type: 'Quotation',
+        current_number: `${this.quoteNumberPreference.nextNumber || ''}`,
+      } : {}),
+      module_id: this.quotationModuleId,
+      ...(Object.keys(customFieldData).length ? { custom_field: customFieldData } : {}),
       customer_id: this.model.customer_id,
-      quote_no: `${this.model.quote_no || ''}`.trim(),
-      reference_no: `${this.model.reference_no || ''}`.trim(),
-      quote_date: this.formatApiDate(this.model.quote_date),
+      quotation_no: `${this.model.quote_no || ''}`.trim(),
+      ref_no: `${this.model.reference_no || ''}`.trim(),
+      quotation_date: this.formatApiDate(this.model.quote_date),
       expiry_date: this.formatApiDate(this.model.expiry_date),
       salesperson: `${this.model.salesperson || ''}`.trim(),
       project_name: `${this.model.project_name || ''}`.trim(),
-      place_of_supply: `${this.model.place_of_supply || ''}`.trim(),
       subject: `${this.model.subject || ''}`.trim(),
       customer_notes: `${this.model.customer_notes || ''}`.trim(),
+      terms_and_conditions: `${this.model.terms_and_conditions || ''}`.trim(),
       additional_tax: this.getTaxLabel(),
       additional_tax_rate: 0,
       sub_total: this.getSubTotal(),
       tax_amount: this.getTaxAmount(),
-      tax_mode: this.getTaxLabel(),
+      cgst_amount: this.getCGST(),
+      sgst_amount: this.getSGST(),
+      igst_amount: this.getIGST(),
+      tax_mode: this.getTaxMode(),
       customer_state: this.getCustomerStateCode(),
       business_state: this.getBusinessStateCode(),
       adjustment_label: `${this.model.adjustment_label || 'Adjustment'}`.trim(),
@@ -928,10 +1368,18 @@ export class AddQuoteComponent implements OnInit {
     };
 
     this.isSubmitting = true;
-    this.globalService.insertQuote(payload).subscribe({
+    const quotationRequest$ = this.isEditMode
+      ? this.globalService.updateQuotation(this.getQuotationRequestPayload(payload))
+      : this.globalService.insertQuote(this.getQuotationRequestPayload(payload));
+
+    quotationRequest$.subscribe({
       next: (res: any) => {
         this.isSubmitting = false;
-        this.toastrService.success(res?.message || 'Quote saved successfully.', 'Saved');
+        this.toastrService.success(
+          res?.message || (this.isEditMode ? 'Quotation updated successfully.' : 'Quotation saved successfully.'),
+          this.isEditMode ? 'Updated' : 'Saved',
+        );
+        this.router.navigate(['/pages/sales/quotation-list']);
       },
       error: (error: any) => {
         this.isSubmitting = false;

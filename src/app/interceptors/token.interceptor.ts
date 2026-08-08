@@ -60,6 +60,7 @@ export class TokenInterceptor implements HttpInterceptor {
 
     localStorage.removeItem('auth_token');
     localStorage.removeItem('user');
+    localStorage.removeItem('tenant_details');
 
     this.tokenService.clear().subscribe({
       complete: () => {

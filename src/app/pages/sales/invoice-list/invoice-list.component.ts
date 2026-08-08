@@ -465,12 +465,8 @@ export class InvoiceListComponent implements OnInit {
     ).join('');
   }
 
-  private getInvoicePaymentStatus(invoice: any): 'Paid' | 'Unpaid' {
-    const status = `${invoice?.payment_status ?? invoice?.invoice_status ?? ''}`.trim().toLowerCase();
-    if (status === 'paid' || status === 'complete' || status === 'completed' || Number(invoice?.is_paid) === 1) {
-      return 'Paid';
-    }
-    return 'Unpaid';
+  private getInvoicePaymentStatus(invoice: any): string {
+    return this.getInvoiceStatus(invoice);
   }
 
   private formatCustomFieldValue(value: any): string {
@@ -655,7 +651,23 @@ export class InvoiceListComponent implements OnInit {
   }
 
   getInvoiceStatus(invoice: any): string {
-    return `${invoice?.payment_status ?? invoice?.status ?? 'Unpaid'}`.trim() || 'Unpaid';
+    const rawStatus = invoice?.payment_status ?? invoice?.invoice_status ?? invoice?.status;
+    const statusLabels: { [key: number]: string } = {
+      0: 'Draft',
+      1: 'Sent',
+      2: 'Unpaid',
+      3: 'Partially Paid',
+      4: 'Paid',
+      5: 'Overdue',
+      6: 'Cancelled',
+      7: 'Refunded',
+    };
+
+    if (rawStatus !== undefined && rawStatus !== null && /^\d+$/.test(`${rawStatus}`.trim())) {
+      return statusLabels[Number(rawStatus)] || 'Draft';
+    }
+
+    return `${rawStatus ?? 'Unpaid'}`.trim() || 'Unpaid';
   }
 
   getStatusClass(invoice: any): string {
@@ -668,6 +680,12 @@ export class InvoiceListComponent implements OnInit {
     }
     if (status.includes('partial')) {
       return 'partial-status';
+    }
+    if (status.includes('sent')) {
+      return 'partial-status';
+    }
+    if (status.includes('refund')) {
+      return 'refunded-status';
     }
     return 'unpaid-status';
   }
@@ -682,7 +700,8 @@ export class InvoiceListComponent implements OnInit {
       return Number(explicitBalance) || 0;
     }
 
-    return this.getInvoiceStatus(invoice).toLowerCase() === 'paid' ? 0 : this.getInvoiceTotal(invoice);
+    const status = this.getInvoiceStatus(invoice).toLowerCase();
+    return status === 'paid' || status === 'refunded' ? 0 : this.getInvoiceTotal(invoice);
   }
 
   getInvoiceItems(invoice: any): any[] {

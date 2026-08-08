@@ -38,6 +38,11 @@ interface InvoiceTaxOption {
   label: string;
 }
 
+interface InvoiceStateOption {
+  code: string;
+  name: string;
+}
+
 interface InvoiceItemOption {
   id: number;
   label: string;
@@ -74,6 +79,7 @@ export class AddInvoiceComponent implements OnInit {
   today = this.normalizeDate(new Date());
   dueDateMin = this.today;
   customerOptions: InvoiceCustomerOption[] = [];
+  stateOptions: InvoiceStateOption[] = [];
   itemOptions: InvoiceItemOption[] = [];
   paymentTerms: InvoicePaymentTermOption[] = [];
   taxOptions: InvoiceTaxOption[] = [
@@ -117,6 +123,7 @@ export class AddInvoiceComponent implements OnInit {
 
   ngOnInit(): void {
     this.fetchCustomers();
+    this.fetchStates();
     this.fetchItems();
     this.fetchPaymentTerms();
     this.fetchTaxRates();
@@ -392,6 +399,17 @@ export class AddInvoiceComponent implements OnInit {
     });
   }
 
+  fetchStates(): void {
+    this.globalService.getStates().subscribe({
+      next: (states: InvoiceStateOption[]) => {
+        this.stateOptions = Array.isArray(states) ? states : [];
+      },
+      error: () => {
+        this.stateOptions = [];
+      }
+    });
+  }
+
   fetchPaymentTerms(): void {
     this.globalService.getPaymentTerms().subscribe({
       next: (res: any) => {
@@ -554,9 +572,12 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   private getBusinessStateCode(): string {
+    const tenantDetails = this.globalService.tenantDetails
+      || JSON.parse(localStorage.getItem('tenant_details') || '{}');
     const user = this.globalService.currentUser || JSON.parse(localStorage.getItem('user') || '{}');
 
     const candidates = [
+      tenantDetails?.state,
       user?.state,
       user?.company_state,
       user?.billing_state,
@@ -571,13 +592,16 @@ export class AddInvoiceComponent implements OnInit {
     ];
 
     const match = candidates.find((value: any) => `${value || ''}`.trim());
-    return `${match || ''}`.trim().toUpperCase();
+    return this.normalizeStateCode(`${match || ''}`);
   }
 
   getCustomerStateCode(): string {
     const selectedCustomer = this.getSelectedCustomer();
-    const stateCode = selectedCustomer?.billing_state || selectedCustomer?.state || '';
-    return `${stateCode || ''}`.trim().toUpperCase();
+    const stateCode = selectedCustomer?.billing_state
+      || selectedCustomer?.state
+      || selectedCustomer?.state_name
+      || '';
+    return this.normalizeStateCode(stateCode);
   }
 
   isInterState(): boolean {
@@ -589,6 +613,18 @@ export class AddInvoiceComponent implements OnInit {
     }
 
     return customerState !== businessState;
+  }
+
+  private normalizeStateCode(value: string): string {
+    const normalizedValue = `${value || ''}`.trim().toUpperCase();
+    if (!normalizedValue) {
+      return '';
+    }
+
+    const matchedState = this.stateOptions.find((state: InvoiceStateOption) =>
+      state.code.toUpperCase() === normalizedValue || state.name.toUpperCase() === normalizedValue
+    );
+    return matchedState?.code.toUpperCase() || normalizedValue;
   }
 
   getItemTaxRate(row: InvoiceItemRow): number {
@@ -605,6 +641,10 @@ export class AddInvoiceComponent implements OnInit {
 
   getTaxModeLabel(): string {
     return this.isInterState() ? 'IGST' : 'CGST + SGST';
+  }
+
+  getTaxMode(): 'IGST' | 'CGST_SGST' {
+    return this.isInterState() ? 'IGST' : 'CGST_SGST';
   }
 
   getTaxLabel(): string {
@@ -1069,7 +1109,7 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   getTaxAmount(): number {
-    return this.getTotalItemTaxAmount();
+    return this.roundCurrency(this.getTotalItemTaxAmount());
   }
 
   getIGST(): number {
@@ -1077,11 +1117,15 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   getCGST(): number {
-    return this.isInterState() ? 0 : this.getTaxAmount() / 2;
+    return this.isInterState() ? 0 : this.roundCurrency(this.getTaxAmount() / 2);
   }
 
   getSGST(): number {
-    return this.isInterState() ? 0 : this.getTaxAmount() / 2;
+    return this.isInterState() ? 0 : this.roundCurrency(this.getTaxAmount() - this.getCGST());
+  }
+
+  private roundCurrency(value: number): number {
+    return Number((Number(value) || 0).toFixed(2));
   }
 
   getAdjustmentValue(): number {
@@ -1089,7 +1133,7 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   getTotal(): number {
-    return this.getSubTotal() + this.getTaxAmount() + this.getAdjustmentValue();
+    return this.roundCurrency(this.getSubTotal() + this.getTaxAmount() + this.getAdjustmentValue());
   }
 
   private formatApiDate(value: Date | string | null | undefined): string {
@@ -1263,7 +1307,10 @@ export class AddInvoiceComponent implements OnInit {
       additional_tax_rate: 0,
       sub_total: this.getSubTotal(),
       tax_amount: this.getTaxAmount(),
-      tax_mode: this.getTaxLabel(),
+      cgst_amount: this.getCGST(),
+      sgst_amount: this.getSGST(),
+      igst_amount: this.getIGST(),
+      tax_mode: this.getTaxMode(),
       customer_state: this.getCustomerStateCode(),
       business_state: this.getBusinessStateCode(),
       adjustment_label: `${this.model.adjustment_label || 'Adjustment'}`.trim(),

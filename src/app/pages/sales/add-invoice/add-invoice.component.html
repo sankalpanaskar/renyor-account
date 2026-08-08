@@ -351,10 +351,6 @@
               <span>Sub Total</span>
               <span>{{ getSubTotal() | number:'1.2-2' }}</span>
             </div>
-            <div class="summary-row">
-              <span>Tax</span>
-              <span>{{ getTaxAmount() | number:'1.2-2' }}</span>
-            </div>
             <div class="summary-row muted" *ngIf="isInterState()">
               <span>IGST</span>
               <span>{{ getIGST() | number:'1.2-2' }}</span>
