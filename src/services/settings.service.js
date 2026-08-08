@@ -172,28 +172,65 @@ exports.createDocumentFormatSettings = async (data, tenant_id, user_id) => {
     }
 
     const parsedConfiguration = parseConfiguration(configuration);
+    const configurationJson = JSON.stringify(parsedConfiguration);
 
-    const [result] = await connection.query(
-      `INSERT INTO document_format_settings
-        (tenant_id, user_id, module_id, document_type, configuration, is_active, created_by, updated_by)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        tenant_id,
-        user_id,
-        module_id,
-        document_type,
-        JSON.stringify(parsedConfiguration),
-        is_active,
-        user_id,
-        user_id
-      ]
+    const [existingRows] = await connection.query(
+      `SELECT id
+       FROM document_format_settings
+       WHERE tenant_id = ? AND module_id = ?
+       LIMIT 1`,
+      [tenant_id, module_id]
     );
+
+    let recordId;
+
+    if (existingRows.length > 0) {
+      recordId = existingRows[0].id;
+
+      await connection.query(
+        `UPDATE document_format_settings
+         SET user_id = ?,
+             document_type = ?,
+             configuration = ?,
+             is_active = ?,
+             updated_by = ?
+         WHERE id = ? AND tenant_id = ? AND module_id = ?`,
+        [
+          user_id,
+          document_type,
+          configurationJson,
+          is_active,
+          user_id,
+          recordId,
+          tenant_id,
+          module_id
+        ]
+      );
+    } else {
+      const [result] = await connection.query(
+        `INSERT INTO document_format_settings
+          (tenant_id, user_id, module_id, document_type, configuration, is_active, created_by, updated_by)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          tenant_id,
+          user_id,
+          module_id,
+          document_type,
+          configurationJson,
+          is_active,
+          user_id,
+          user_id
+        ]
+      );
+
+      recordId = result.insertId;
+    }
 
     const [rows] = await connection.query(
       `SELECT *
        FROM document_format_settings
        WHERE id = ? AND tenant_id = ?`,
-      [result.insertId, tenant_id]
+      [recordId, tenant_id]
     );
 
     await connection.commit();
