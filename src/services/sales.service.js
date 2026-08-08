@@ -548,6 +548,7 @@ exports.createQuotation = async (data, tenant_id, user_id, uploaded_quotation_at
       user_id
     ];
 
+    
     const [masterResult] = await connection.query(
       `INSERT INTO quotation_master (${quotationMasterColumns.join(", ")})
        VALUES (${quotationMasterColumns.map(() => "?").join(", ")})`,
