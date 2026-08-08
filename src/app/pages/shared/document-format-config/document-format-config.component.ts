@@ -3,6 +3,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { NbToastrService } from '@nebular/theme';
 import { GlobalService } from '../../../services/global.service';
+import { environment } from '../../../../environments/environment';
 
 type DocumentFormatType = 'invoice' | 'quote' | 'sales-order';
 type ConfigSection = 'header' | 'body' | 'table' | 'footer';
@@ -48,6 +49,10 @@ interface DocumentFormatConfiguration {
     introText: string;
     showTerms: boolean;
     showOrderNumber: boolean;
+    showSalesperson: boolean;
+    showProject: boolean;
+    showReferenceNumber: boolean;
+    showExpiryDate: boolean;
     terms: string;
     showPaymentDetails: boolean;
     paymentDetails: string;
@@ -110,7 +115,19 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
   templateError = '';
   availableCustomFields: any[] = [];
   customFieldsLoading = false;
+  configurationLoading = false;
+  configurationSaving = false;
   private previewTimer?: ReturnType<typeof setTimeout>;
+  private readonly documentModuleIds: { [key in DocumentFormatType]: number } = {
+    invoice: 54,
+    quote: 52,
+    'sales-order': 53,
+  };
+  private readonly documentApiTypes: { [key in DocumentFormatType]: string } = {
+    invoice: 'invoice',
+    quote: 'quotation',
+    'sales-order': 'sales_order',
+  };
 
   constructor(
     private http: HttpClient,
@@ -121,7 +138,7 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadSelectedConfiguration();
-    this.fetchInvoiceCustomFields();
+    this.fetchDocumentCustomFields();
   }
 
   ngOnDestroy(): void {
@@ -149,7 +166,9 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
     }
     this.selectedType = type;
     this.activeSection = 'header';
+    this.availableCustomFields = [];
     this.loadSelectedConfiguration();
+    this.fetchDocumentCustomFields();
   }
 
   setActiveSection(section: ConfigSection): void {
@@ -174,17 +193,28 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
     this.refreshPreview();
   }
 
+  onLogoPreviewError(event: Event): void {
+    const image = event.target as HTMLImageElement;
+    if (!image.src.endsWith('/assets/images/logo.png')) {
+      image.src = 'assets/images/logo.png';
+    }
+  }
+
   saveConfiguration(): void {
-    localStorage.setItem(this.storageKey, JSON.stringify(this.config));
-    this.toastrService.success(`${this.selectedDocument.label} format saved successfully.`, 'Format Saved');
+    this.persistConfiguration(
+      `${this.selectedDocument.label} format saved successfully.`,
+      'Format Saved',
+    );
   }
 
   resetConfiguration(): void {
-    localStorage.removeItem(this.storageKey);
     this.config = this.createDefaultConfiguration(this.selectedType);
     this.syncCustomFieldsWithConfiguration();
     this.refreshPreview();
-    this.toastrService.info(`${this.selectedDocument.label} format restored to default.`, 'Format Reset');
+    this.persistConfiguration(
+      `${this.selectedDocument.label} format restored to default and saved.`,
+      'Format Reset',
+    );
   }
 
   private get storageKey(): string {
@@ -195,12 +225,73 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
     this.config = this.getStoredConfiguration() || this.createDefaultConfiguration(this.selectedType);
     this.syncCustomFieldsWithConfiguration();
     this.loadTemplate();
+
+    const requestedType = this.selectedType;
+    this.configurationLoading = true;
+    this.globalService.fetchDocumentFormatConfiguration(this.documentApiTypes[requestedType]).subscribe({
+      next: (response: any) => {
+        if (requestedType !== this.selectedType) {
+          return;
+        }
+
+        const savedConfiguration = this.extractConfiguration(response);
+        if (savedConfiguration) {
+          this.config = this.normalizeConfiguration(savedConfiguration, requestedType);
+          localStorage.setItem(this.storageKey, JSON.stringify(this.config));
+          this.syncCustomFieldsWithConfiguration();
+          this.schedulePreview();
+        }
+        this.configurationLoading = false;
+      },
+      error: () => {
+        if (requestedType === this.selectedType) {
+          this.configurationLoading = false;
+        }
+      },
+    });
   }
 
-  private fetchInvoiceCustomFields(): void {
+  private persistConfiguration(successMessage: string, successTitle: string): void {
+    const requestedType = this.selectedType;
+    const storageKey = this.storageKey;
+    const configuration = this.normalizeConfiguration(this.config, requestedType);
+
+    // Keep a browser cache so previews still work when the API is temporarily unavailable.
+    localStorage.setItem(storageKey, JSON.stringify(configuration));
+    this.configurationSaving = true;
+    this.globalService.saveDocumentFormatConfiguration({
+      module_id: this.documentModuleIds[requestedType],
+      document_type: this.documentApiTypes[requestedType],
+      configuration,
+    }).subscribe({
+      next: () => {
+        this.configurationSaving = false;
+        this.toastrService.success(successMessage, successTitle);
+      },
+      error: (error: any) => {
+        this.configurationSaving = false;
+        const message = error?.error?.message
+          || 'The format was cached in this browser, but could not be saved to the database.';
+        this.toastrService.danger(message, 'Database Save Failed');
+      },
+    });
+  }
+
+  private fetchDocumentCustomFields(): void {
+    if (this.selectedType === 'sales-order') {
+      this.availableCustomFields = [];
+      this.config.body.customFields = [];
+      this.customFieldsLoading = false;
+      return;
+    }
+
+    const requestedType = this.selectedType;
     this.customFieldsLoading = true;
-    this.globalService.fetchCustomFieldsByModule(54).subscribe({
+    this.globalService.fetchCustomFieldsByModule(this.documentModuleIds[requestedType]).subscribe({
       next: (res: any) => {
+        if (requestedType !== this.selectedType) {
+          return;
+        }
         const fields = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
         this.availableCustomFields = fields
           .filter((field: any) => Number(field?.status) === 1)
@@ -210,14 +301,16 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
         this.schedulePreview();
       },
       error: () => {
-        this.availableCustomFields = [];
-        this.customFieldsLoading = false;
+        if (requestedType === this.selectedType) {
+          this.availableCustomFields = [];
+          this.customFieldsLoading = false;
+        }
       },
     });
   }
 
   private syncCustomFieldsWithConfiguration(): void {
-    if (this.selectedType !== 'invoice') {
+    if (this.selectedType === 'sales-order') {
       this.config.body.customFields = [];
       return;
     }
@@ -247,18 +340,58 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
     }
     try {
       const storedConfig = JSON.parse(storedValue);
-      const defaults = this.createDefaultConfiguration(this.selectedType);
-      return {
-        ...defaults,
-        ...storedConfig,
-        header: { ...defaults.header, ...(storedConfig?.header || {}) },
-        body: { ...defaults.body, ...(storedConfig?.body || {}) },
-        footer: { ...defaults.footer, ...(storedConfig?.footer || {}) },
-        columns: Array.isArray(storedConfig?.columns) ? storedConfig.columns : defaults.columns,
-      };
+      return this.normalizeConfiguration(storedConfig, this.selectedType);
     } catch {
       return null;
     }
+  }
+
+  private normalizeConfiguration(
+    configuration: any,
+    type: DocumentFormatType,
+  ): DocumentFormatConfiguration {
+    const defaults = this.createDefaultConfiguration(type);
+    const header = { ...defaults.header, ...(configuration?.header || {}) };
+    if (!`${header.logoUrl || ''}`.trim()
+      || header.logoUrl === 'https://msmeaccounts.com/assets/images/logo.png') {
+      header.logoUrl = defaults.header.logoUrl;
+    }
+    return {
+      ...defaults,
+      ...(configuration || {}),
+      header,
+      body: { ...defaults.body, ...(configuration?.body || {}) },
+      footer: { ...defaults.footer, ...(configuration?.footer || {}) },
+      columns: Array.isArray(configuration?.columns) ? configuration.columns : defaults.columns,
+    };
+  }
+
+  private extractConfiguration(response: any): any | null {
+    const candidates = [
+      response?.data?.configuration,
+      response?.data?.format_config,
+      response?.data?.config,
+      response?.configuration,
+      response?.format_config,
+      response?.config,
+      response?.data,
+    ];
+
+    for (const candidate of candidates) {
+      let configuration = candidate;
+      if (typeof configuration === 'string') {
+        try {
+          configuration = JSON.parse(configuration);
+        } catch {
+          continue;
+        }
+      }
+      if (configuration && typeof configuration === 'object'
+        && (configuration.header || configuration.body || configuration.footer || configuration.columns)) {
+        return configuration;
+      }
+    }
+    return null;
   }
 
   private loadTemplate(): void {
@@ -314,15 +447,29 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
     const bottomCustomFields = this.config.body.customFieldPosition === 'bottom'
       ? this.getCustomFieldBottomHtml(customFieldRows)
       : '';
-    const documentDetailRows = [
-      '<tr><td>Invoice Date</td><td>19 Jul 2026</td></tr>',
-      '<tr><td>Due Date</td><td>19 Jul 2026</td></tr>',
-    ];
-    if (this.config.body.showTerms) {
+    const documentDetailRows = this.selectedType === 'quote'
+      ? ['<tr><td>Quotation Date</td><td>19 Jul 2026</td></tr>']
+      : [
+          '<tr><td>Invoice Date</td><td>19 Jul 2026</td></tr>',
+          '<tr><td>Due Date</td><td>19 Jul 2026</td></tr>',
+        ];
+    if (this.selectedType === 'quote' && this.config.body.showExpiryDate) {
+      documentDetailRows.push('<tr><td>Expiry Date</td><td>19 Aug 2026</td></tr>');
+    }
+    if (this.selectedType !== 'quote' && this.config.body.showTerms) {
       documentDetailRows.push('<tr><td>Terms</td><td>Due on Receipt</td></tr>');
     }
-    if (this.config.body.showOrderNumber) {
+    if (this.selectedType !== 'quote' && this.config.body.showOrderNumber) {
       documentDetailRows.push('<tr><td>Order No.</td><td>1234</td></tr>');
+    }
+    if (this.selectedType === 'quote' && this.config.body.showReferenceNumber) {
+      documentDetailRows.push('<tr><td>Reference No.</td><td>REF-001</td></tr>');
+    }
+    if (this.selectedType === 'quote' && this.config.body.showSalesperson) {
+      documentDetailRows.push('<tr><td>Salesperson</td><td>Sample Salesperson</td></tr>');
+    }
+    if (this.selectedType === 'quote' && this.config.body.showProject) {
+      documentDetailRows.push('<tr><td>Project</td><td>Sample Project</td></tr>');
     }
 
     const tokens: { [key: string]: string } = {
@@ -375,7 +522,7 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
       header: {
         visible: true,
         showLogo: true,
-        logoUrl: 'https://msmeaccounts.com/assets/images/logo.png',
+        logoUrl: this.getTenantLogoUrl(),
         businessName: 'RenYor',
         businessAddress: '123 Business Street, Kolkata, West Bengal\nGSTIN: 19XXXXX0000X1XX',
         documentTitle: option.defaultTitle,
@@ -387,6 +534,10 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
         introText: type === 'quote' ? 'Thank you for the opportunity to provide this quotation.' : '',
         showTerms: true,
         showOrderNumber: true,
+        showSalesperson: type === 'quote',
+        showProject: type === 'quote',
+        showReferenceNumber: type === 'quote',
+        showExpiryDate: type === 'quote',
         terms: 'Payment is due according to the terms stated on this document.',
         showPaymentDetails: type === 'invoice',
         paymentDetails: 'Bank: Your Bank\nAccount: 0000000000\nIFSC: XXXX0000000',
@@ -415,6 +566,26 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
 
   private multilineHtml(value: string): string {
     return this.escapeHtml(value || '').replace(/\r?\n/g, '<br>');
+  }
+
+  private getTenantLogoUrl(): string {
+    let tenantDetails: any = {};
+    try {
+      tenantDetails = JSON.parse(localStorage.getItem('tenant_details') || '{}');
+    } catch {
+      tenantDetails = {};
+    }
+
+    const logoPath = `${tenantDetails?.logo || ''}`.trim();
+    if (!logoPath) {
+      return 'assets/images/logo.png';
+    }
+    if (/^(https?:)?\/\//i.test(logoPath) || /^(data|blob):/i.test(logoPath)) {
+      return logoPath;
+    }
+
+    const baseUrl = `${environment.apiBaseUrl || ''}`.replace(/\/+$/, '');
+    return `${baseUrl}/${logoPath.replace(/^\/+/, '')}`;
   }
 
   private getCustomFieldDetailRows(fields: Array<{ label: string; value: any }>): string {

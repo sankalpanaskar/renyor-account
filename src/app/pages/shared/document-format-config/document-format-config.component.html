@@ -6,10 +6,13 @@
       <p>Configure the header, content, table columns and footer used for customer documents.</p>
     </div>
     <div class="header-actions">
-      <button type="button" nbButton status="basic" size="small" (click)="resetConfiguration()">
+      <button type="button" nbButton status="basic" size="small" (click)="resetConfiguration()"
+        [disabled]="configurationSaving || configurationLoading">
         <nb-icon icon="refresh-outline"></nb-icon> Reset
       </button>
-      <button type="button" nbButton status="primary" size="small" (click)="saveConfiguration()">
+      <button type="button" nbButton status="primary" size="small" (click)="saveConfiguration()"
+        [disabled]="configurationSaving || configurationLoading"
+        [nbSpinner]="configurationSaving" nbSpinnerStatus="control">
         <nb-icon icon="save-outline"></nb-icon> Save Configuration
       </button>
     </div>
@@ -31,10 +34,10 @@
           <span>Configure</span>
           <strong>{{ selectedDocument.label }} format</strong>
         </div>
-        <span class="saved-locally-badge"><nb-icon icon="hard-drive-outline"></nb-icon> Saved locally</span>
+        <span class="saved-locally-badge"><nb-icon icon="save-outline"></nb-icon> Saved in database</span>
       </nb-card-header>
 
-      <nb-card-body>
+      <nb-card-body [nbSpinner]="configurationLoading" nbSpinnerStatus="primary">
         <nav class="config-section-tabs" aria-label="Configuration sections">
           <button type="button" [class.active]="activeSection === 'header'" (click)="setActiveSection('header')">
             <nb-icon icon="layout-outline"></nb-icon><span>Header</span>
@@ -69,10 +72,15 @@
               <span>Business address</span>
               <textarea nbInput fullWidth rows="3" name="business_address" [(ngModel)]="config.header.businessAddress" (input)="schedulePreview()"></textarea>
             </label>
-            <label class="config-field full-width">
-              <span>Logo URL</span>
-              <input nbInput fullWidth name="logo_url" placeholder="https://..." [(ngModel)]="config.header.logoUrl" (input)="schedulePreview()">
-            </label>
+            <div class="config-field full-width">
+              <span>Business logo</span>
+              <div class="business-logo-preview" [class.logo-disabled]="!config.header.showLogo">
+                <div class="business-logo-thumbnail">
+                  <img [src]="config.header.logoUrl" alt="Business logo" width="112" height="52"
+                    (error)="onLogoPreviewError($event)">
+                </div>
+              </div>
+            </div>
             <label class="config-field color-field">
               <span>Accent colour</span>
               <span class="color-control">
@@ -108,13 +116,29 @@
                 <span>Choose which fields appear beside the customer details.</span>
               </div>
               <div class="document-detail-option-list">
-                <label>
+                <label *ngIf="selectedType !== 'quote'">
                   <nb-checkbox [(ngModel)]="config.body.showTerms" (checkedChange)="schedulePreview()"></nb-checkbox>
                   <span><strong>Terms</strong><small>Show payment terms</small></span>
                 </label>
-                <label>
+                <label *ngIf="selectedType === 'quote'">
+                  <nb-checkbox [(ngModel)]="config.body.showExpiryDate" (checkedChange)="schedulePreview()"></nb-checkbox>
+                  <span><strong>Expiry Date</strong><small>Show quotation expiry date</small></span>
+                </label>
+                <label *ngIf="selectedType !== 'quote'">
                   <nb-checkbox [(ngModel)]="config.body.showOrderNumber" (checkedChange)="schedulePreview()"></nb-checkbox>
                   <span><strong>Order No.</strong><small>Show customer order number</small></span>
+                </label>
+                <label *ngIf="selectedType === 'quote'">
+                  <nb-checkbox [(ngModel)]="config.body.showReferenceNumber" (checkedChange)="schedulePreview()"></nb-checkbox>
+                  <span><strong>Reference No.</strong><small>Show quotation reference number</small></span>
+                </label>
+                <label *ngIf="selectedType === 'quote'">
+                  <nb-checkbox [(ngModel)]="config.body.showSalesperson" (checkedChange)="schedulePreview()"></nb-checkbox>
+                  <span><strong>Salesperson</strong><small>Show assigned salesperson</small></span>
+                </label>
+                <label *ngIf="selectedType === 'quote'">
+                  <nb-checkbox [(ngModel)]="config.body.showProject" (checkedChange)="schedulePreview()"></nb-checkbox>
+                  <span><strong>Project</strong><small>Show associated project</small></span>
                 </label>
               </div>
             </div>
@@ -131,10 +155,10 @@
               <textarea nbInput fullWidth rows="3" name="payment_details" [(ngModel)]="config.body.paymentDetails" (input)="schedulePreview()"></textarea>
             </label>
 
-            <div class="custom-field-settings" *ngIf="selectedType === 'invoice' && config.body.customFields.length > 0">
+            <div class="custom-field-settings" *ngIf="selectedType !== 'sales-order' && config.body.customFields.length > 0">
               <div class="custom-field-settings-heading">
                 <div>
-                  <strong>Invoice custom fields</strong>
+                  <strong>{{ selectedDocument.label }} custom fields</strong>
                   <span>{{ enabledCustomFieldCount }} of {{ config.body.customFields.length }} shown</span>
                 </div>
                 <label>
@@ -154,8 +178,8 @@
               </div>
             </div>
 
-            <div class="custom-fields-loading" *ngIf="selectedType === 'invoice' && customFieldsLoading">
-              Loading invoice custom fields…
+            <div class="custom-fields-loading" *ngIf="selectedType !== 'sales-order' && customFieldsLoading">
+              Loading {{ selectedDocument.label | lowercase }} custom fields…
             </div>
           </div>
         </section>

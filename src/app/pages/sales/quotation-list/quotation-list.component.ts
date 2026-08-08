@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { NbToastrService } from '@nebular/theme';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { GlobalService } from '../../../services/global.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ngx-quotation-list',
@@ -27,6 +28,7 @@ export class QuotationListComponent implements OnInit {
   quotationPreviewError = '';
   private quotationTemplateHtml = '';
   private quotationCustomFields: any[] = [];
+  private quotationFormatConfiguration: any = null;
 
   constructor(
     private globalService: GlobalService,
@@ -40,6 +42,26 @@ export class QuotationListComponent implements OnInit {
   ngOnInit(): void {
     this.fetchQuotations();
     this.fetchQuotationCustomFields();
+    this.fetchQuotationFormatConfiguration();
+  }
+
+  private fetchQuotationFormatConfiguration(): void {
+    this.globalService.fetchDocumentFormatConfiguration('quotation').subscribe({
+      next: (response: any) => {
+        const configuration = this.extractDocumentFormatConfiguration(response);
+        if (!configuration) {
+          return;
+        }
+        this.quotationFormatConfiguration = configuration;
+        localStorage.setItem('document-format-config:quote', JSON.stringify(configuration));
+        if (this.showQuotationPopup && this.selectedQuotation && this.quotationTemplateHtml) {
+          this.renderQuotationPreview(this.selectedQuotation);
+        }
+      },
+      error: () => {
+        // The locally cached configuration remains available as an offline fallback.
+      },
+    });
   }
 
   private fetchQuotationCustomFields(): void {
@@ -224,7 +246,10 @@ export class QuotationListComponent implements OnInit {
     const accentColor = /^#[0-9a-f]{6}$/i.test(config.header.accentColor)
       ? config.header.accentColor
       : '#3366ff';
-    const logoUrl = `${config.header.logoUrl || ''}`.trim();
+    const configuredLogoUrl = `${config.header.logoUrl || ''}`.trim();
+    const logoUrl = !configuredLogoUrl || configuredLogoUrl === 'https://msmeaccounts.com/assets/images/logo.png'
+      ? this.getTenantLogoUrl()
+      : configuredLogoUrl;
     const logoBlock = config.header.showLogo && logoUrl
       ? `<img class="document-logo" src="${this.escapeHtml(logoUrl)}" alt="Business logo">`
       : '<div class="document-logo-placeholder">RY</div>';
@@ -286,7 +311,7 @@ export class QuotationListComponent implements OnInit {
       header: {
         visible: true,
         showLogo: true,
-        logoUrl: 'https://msmeaccounts.com/assets/images/logo.png',
+        logoUrl: this.getTenantLogoUrl(),
         businessName: 'RenYor',
         businessAddress: '123 Business Street, Kolkata, West Bengal\nGSTIN: 19XXXXX0000X1XX',
         documentTitle: 'Quotation',
@@ -298,6 +323,10 @@ export class QuotationListComponent implements OnInit {
         introText: 'Thank you for the opportunity to provide this quotation.',
         showTerms: true,
         showOrderNumber: true,
+        showSalesperson: true,
+        showProject: true,
+        showReferenceNumber: true,
+        showExpiryDate: true,
         terms: 'Payment is due according to the terms stated on this document.',
         showPaymentDetails: false,
         paymentDetails: 'Bank: Your Bank\nAccount: 0000000000\nIFSC: XXXX0000000',
@@ -311,28 +340,53 @@ export class QuotationListComponent implements OnInit {
       },
       columns: this.getDefaultQuotationColumns(),
     };
-    const storedValue = localStorage.getItem('document-format-config:quote');
-    if (!storedValue) {
+    let stored: any = this.quotationFormatConfiguration;
+    if (!stored) {
+      const storedValue = localStorage.getItem('document-format-config:quote');
+      if (storedValue) {
+        try {
+          stored = JSON.parse(storedValue);
+        } catch {
+          stored = null;
+        }
+      }
+    }
+    if (!stored) {
       return defaults;
     }
 
-    try {
-      const stored = JSON.parse(storedValue);
-      return {
-        ...defaults,
-        ...stored,
-        header: { ...defaults.header, ...(stored?.header || {}) },
-        body: {
-          ...defaults.body,
-          ...(stored?.body || {}),
-          customFields: this.getQuotationCustomFieldConfiguration(stored?.body?.customFields),
-        },
-        footer: { ...defaults.footer, ...(stored?.footer || {}) },
-        columns: Array.isArray(stored?.columns) ? stored.columns : defaults.columns,
-      };
-    } catch {
-      return defaults;
+    return {
+      ...defaults,
+      ...stored,
+      header: { ...defaults.header, ...(stored?.header || {}) },
+      body: {
+        ...defaults.body,
+        ...(stored?.body || {}),
+        customFields: this.getQuotationCustomFieldConfiguration(stored?.body?.customFields),
+      },
+      footer: { ...defaults.footer, ...(stored?.footer || {}) },
+      columns: Array.isArray(stored?.columns) ? stored.columns : defaults.columns,
+    };
+  }
+
+  private extractDocumentFormatConfiguration(response: any): any | null {
+    const candidates = [
+      response?.data?.configuration,
+      response?.data?.format_config,
+      response?.data?.config,
+      response?.configuration,
+      response?.format_config,
+      response?.config,
+      response?.data,
+    ];
+    for (const candidate of candidates) {
+      const configuration = this.parseJsonValue(candidate);
+      if (configuration && typeof configuration === 'object'
+        && (configuration.header || configuration.body || configuration.footer || configuration.columns)) {
+        return configuration;
+      }
     }
+    return null;
   }
 
   private getQuotationCustomFieldConfiguration(savedFields: any[] = []): any[] {
@@ -350,6 +404,24 @@ export class QuotationListComponent implements OnInit {
         enabled: savedField ? savedField.enabled !== false : true,
       };
     }).filter((field: any) => !!field.key);
+  }
+
+  private getTenantLogoUrl(): string {
+    let tenantDetails: any = {};
+    try {
+      tenantDetails = JSON.parse(localStorage.getItem('tenant_details') || '{}');
+    } catch {
+      tenantDetails = {};
+    }
+    const logoPath = `${tenantDetails?.logo || ''}`.trim();
+    if (!logoPath) {
+      return 'assets/images/logo.png';
+    }
+    if (/^(https?:)?\/\//i.test(logoPath) || /^(data|blob):/i.test(logoPath)) {
+      return logoPath;
+    }
+    const baseUrl = `${environment.apiBaseUrl || ''}`.replace(/\/+$/, '');
+    return `${baseUrl}/${logoPath.replace(/^\/+/, '')}`;
   }
 
   private getDefaultQuotationColumns(): any[] {
@@ -475,10 +547,24 @@ export class QuotationListComponent implements OnInit {
   ): string {
     const details: any[][] = [
       ['Quotation Date', this.formatDate(quotation?.quotation_date || quotation?.date)],
-      ['Expiry Date', this.formatDate(quotation?.expiry_date || quotation?.valid_until || quotation?.valid_till)],
     ];
-    if (bodyConfig?.showOrderNumber !== false) {
+    if (bodyConfig?.showExpiryDate !== false) {
+      details.push(['Expiry Date', this.formatDate(quotation?.expiry_date || quotation?.valid_until || quotation?.valid_till)]);
+    }
+    if (bodyConfig?.showReferenceNumber !== false) {
       details.push(['Reference No.', quotation?.ref_no || quotation?.reference_no || '-']);
+    }
+    if (bodyConfig?.showSalesperson !== false) {
+      details.push([
+        'Salesperson',
+        this.formatDocumentDetailValue(quotation?.salesperson ?? quotation?.sales_person),
+      ]);
+    }
+    if (bodyConfig?.showProject !== false) {
+      details.push([
+        'Project',
+        this.formatDocumentDetailValue(quotation?.project_name ?? quotation?.project),
+      ]);
     }
     customFields.forEach((field: { label: string; value: any }) => {
       details.push([field.label, this.formatCustomFieldValue(field.value)]);
@@ -486,6 +572,13 @@ export class QuotationListComponent implements OnInit {
     return details.map((detail: any[]) =>
       `<tr><td>${this.escapeHtml(detail[0])}</td><td>${this.escapeHtml(detail[1])}</td></tr>`
     ).join('');
+  }
+
+  private formatDocumentDetailValue(value: any): string {
+    if (value && typeof value === 'object') {
+      return `${value?.name ?? value?.display_name ?? value?.project_name ?? value?.full_name ?? value?.label ?? '-'}`;
+    }
+    return `${value ?? ''}`.trim() || '-';
   }
 
   private getQuotationCustomFieldEntries(quotation: any, config: any): Array<{ label: string; value: any }> {

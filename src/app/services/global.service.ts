@@ -288,6 +288,20 @@ export class GlobalService {
       );
     }
 
+    public saveDocumentFormatConfiguration(data: {
+      module_id: number;
+      document_type: string;
+      configuration: any;
+    }): Observable<any> {
+      return this.http.post(`${this.apiUrl}/settings/document-format-settings`, data);
+    }
+
+    public fetchDocumentFormatConfiguration(documentType: string): Observable<any> {
+      return this.http.get(
+        `${this.apiUrl}/settings/fetch-document-format-settings?document_type=${encodeURIComponent(documentType)}`
+      );
+    }
+
     public fetchInvoices(moduleId: number = 54): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-invoice?module_id=${moduleId}`);
     }
