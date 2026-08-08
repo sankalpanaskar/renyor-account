@@ -1,0 +1,156 @@
+<div *ngIf="showQuotationPopup" class="quotation-preview-overlay" (click)="closeQuotationPopup()">
+  <aside class="quotation-preview-drawer" role="dialog" aria-modal="true" aria-label="Quotation preview"
+    (click)="$event.stopPropagation()">
+    <header class="quotation-drawer-header">
+      <div class="quotation-drawer-identity">
+        <div class="quotation-drawer-icon"><nb-icon icon="file-text-outline"></nb-icon></div>
+        <div>
+          <span>{{ getQuotationStatus(selectedQuotation) }}</span>
+          <h2>Quotation {{ getQuotationNumber(selectedQuotation) }}</h2>
+          <p>{{ getCustomerName(selectedQuotation) }} · {{ formatDate(selectedQuotation?.quotation_date || selectedQuotation?.quote_date || selectedQuotation?.date) }}</p>
+        </div>
+      </div>
+      <div class="quotation-drawer-actions">
+        <button type="button" class="drawer-action-btn" nbTooltip="Edit quotation" aria-label="Edit quotation"
+          (click)="editQuotation(selectedQuotation)"><nb-icon icon="edit-2-outline"></nb-icon></button>
+        <button type="button" class="drawer-action-btn download" nbTooltip="Download PDF" aria-label="Download PDF"
+          [disabled]="isDownloading(selectedQuotation)" (click)="downloadPdf(selectedQuotation)">
+          <nb-icon [icon]="isDownloading(selectedQuotation) ? 'loader-outline' : 'download-outline'"></nb-icon>
+        </button>
+        <button type="button" class="drawer-action-btn close" aria-label="Close quotation preview"
+          (click)="closeQuotationPopup()"><nb-icon icon="close-outline"></nb-icon></button>
+      </div>
+    </header>
+
+    <div class="quotation-drawer-body" [nbSpinner]="quotationPreviewLoading" nbSpinnerStatus="primary">
+      <div *ngIf="quotationPreviewError" class="quotation-preview-error">
+        <nb-icon icon="alert-triangle-outline"></nb-icon>
+        <strong>Preview unavailable</strong>
+        <span>{{ quotationPreviewError }}</span>
+      </div>
+      <div *ngIf="!quotationPreviewError" class="quotation-preview-stage">
+        <iframe title="Formatted quotation preview" [srcdoc]="quotationPreviewHtml"></iframe>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<div *ngIf="pendingDeleteQuotation" class="quotation-confirm-overlay" (click)="cancelDeleteQuotation()">
+  <div class="quotation-confirm-dialog" role="alertdialog" aria-modal="true" aria-label="Delete quotation"
+    (click)="$event.stopPropagation()">
+    <div class="quotation-confirm-icon"><nb-icon icon="trash-2-outline"></nb-icon></div>
+    <h3>Delete quotation?</h3>
+    <p>Quotation <strong>{{ getQuotationNumber(pendingDeleteQuotation) }}</strong> will be permanently deleted.</p>
+    <div class="quotation-confirm-actions">
+      <button type="button" nbButton status="basic" size="small" [disabled]="deleting" (click)="cancelDeleteQuotation()">Cancel</button>
+      <button type="button" nbButton status="danger" size="small" [disabled]="deleting" (click)="confirmDeleteQuotation()">
+        {{ deleting ? 'Deleting...' : 'Delete Quotation' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="entity-list-container quotation-list-page">
+  <section class="entity-summary-grid" aria-label="Quotation summary">
+    <article class="entity-summary-card summary-blue">
+      <div class="entity-summary-icon"><nb-icon icon="file-text-outline"></nb-icon></div>
+      <div><span>Total quotations</span><strong>{{ allQuotations.length }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-green">
+      <div class="entity-summary-icon"><nb-icon icon="checkmark-circle-2-outline"></nb-icon></div>
+      <div><span>Accepted quotations</span><strong>{{ acceptedQuotationsCount }}</strong></div>
+    </article>
+    <article class="entity-summary-card summary-orange">
+      <div class="entity-summary-icon"><nb-icon icon="clock-outline"></nb-icon></div>
+      <div><span>Total quoted value</span><strong class="summary-currency">{{ formatCurrency(totalQuotationValue) }}</strong></div>
+    </article>
+  </section>
+
+  <nb-card class="entity-list-card">
+    <nb-card-body class="entity-list-body" [nbSpinner]="loading" nbSpinnerStatus="primary">
+      <div class="entity-catalog-toolbar">
+        <div class="entity-catalog-heading"><h2>Quotation List</h2></div>
+        <div class="entity-catalog-actions">
+          <div class="entity-search-wrap">
+            <nb-icon icon="search-outline"></nb-icon>
+            <input type="search" aria-label="Search quotations" placeholder="Search quotation, customer, reference or status"
+              [ngModel]="searchText" (ngModelChange)="onSearch($event)">
+            <button *ngIf="searchText" type="button" aria-label="Clear search" (click)="clearSearch()">
+              <nb-icon icon="close-outline"></nb-icon>
+            </button>
+          </div>
+          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddQuotation()">
+            <nb-icon icon="plus-outline"></nb-icon>
+            Add Quotation
+          </button>
+        </div>
+      </div>
+
+      <div class="entity-table-shell">
+        <div class="entity-table-responsive">
+          <table class="entity-table quotation-table">
+            <thead>
+              <tr>
+                <th>Quotation</th>
+                <th>Customer</th>
+                <th>Quotation date</th>
+                <th>Expiry date</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th class="entity-actions-heading">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let quotation of apiData; trackBy: trackByQuotation" class="entity-row" tabindex="0"
+                (click)="openQuotationPopup(quotation)" (keydown.enter)="openQuotationPopup(quotation)">
+                <td data-label="Quotation">
+                  <div class="entity-identity">
+                    <div class="entity-avatar quotation-avatar"><nb-icon icon="file-text-outline"></nb-icon></div>
+                    <div class="entity-identity-copy">
+                      <strong>{{ getQuotationNumber(quotation) }}</strong>
+                      <span>{{ (quotation?.ref_no || quotation?.reference_no) ? 'Ref ' + (quotation?.ref_no || quotation?.reference_no) : (quotation?.subject || 'Quotation') }}</span>
+                    </div>
+                  </div>
+                </td>
+                <td data-label="Customer"><span class="entity-cell-text customer-name">{{ getCustomerName(quotation) }}</span></td>
+                <td data-label="Quotation date"><span class="entity-cell-text">{{ formatDate(quotation?.quotation_date || quotation?.quote_date || quotation?.date) }}</span></td>
+                <td data-label="Expiry date"><span class="entity-cell-text">{{ formatDate(quotation?.expiry_date || quotation?.valid_until || quotation?.valid_till) }}</span></td>
+                <td data-label="Total"><span class="entity-cell-text quotation-total">{{ formatCurrency(getQuotationTotal(quotation)) }}</span></td>
+                <td data-label="Status">
+                  <span class="entity-badge quotation-status-badge" [ngClass]="getStatusClass(quotation)">{{ getQuotationStatus(quotation) }}</span>
+                </td>
+                <td data-label="Actions" class="entity-actions-cell">
+                  <div class="entity-action-group">
+                    <button type="button" class="entity-action-icon view-action" title="View quotation" aria-label="View quotation"
+                      (click)="$event.stopPropagation(); openQuotationPopup(quotation)"><nb-icon icon="eye-outline"></nb-icon></button>
+                    <button type="button" class="entity-action-icon edit-action" title="Edit quotation" aria-label="Edit quotation"
+                      (click)="$event.stopPropagation(); editQuotation(quotation)"><nb-icon icon="edit-2-outline"></nb-icon></button>
+                    <button type="button" class="entity-action-icon download-action" title="Download PDF" aria-label="Download quotation PDF"
+                      [disabled]="isDownloading(quotation)" (click)="$event.stopPropagation(); downloadPdf(quotation)">
+                      <nb-icon [icon]="isDownloading(quotation) ? 'loader-outline' : 'download-outline'"></nb-icon>
+                    </button>
+                    <button type="button" class="entity-action-icon delete-action" title="Delete quotation" aria-label="Delete quotation"
+                      (click)="$event.stopPropagation(); requestDeleteQuotation(quotation)"><nb-icon icon="trash-2-outline"></nb-icon></button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr *ngIf="!apiData.length" class="entity-empty-row">
+                <td colspan="7">
+                  <div class="entity-empty-state">
+                    <div><nb-icon icon="file-text-outline"></nb-icon></div>
+                    <h3>{{ searchText ? 'No matching quotations' : 'No quotations yet' }}</h3>
+                    <p>{{ loadError || (searchText ? 'Try another quotation number, customer or status.' : 'Create your first quotation to get started.') }}</p>
+                    <button *ngIf="searchText" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
+                    <button *ngIf="loadError && !searchText" type="button" nbButton status="primary" ghost (click)="fetchQuotations()">Try again</button>
+                    <button *ngIf="!searchText" type="button" nbButton status="primary" (click)="gotoAddQuotation()">Add quotation</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </nb-card-body>
+  </nb-card>
+</div>
