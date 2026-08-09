@@ -193,6 +193,11 @@ nb-select {
   gap: 8px;
 }
 
+.payment-terms-control ngx-search-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .payment-term-add-btn {
   min-width: auto;
   padding: 0.45rem;

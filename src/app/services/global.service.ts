@@ -259,6 +259,14 @@ export class GlobalService {
       return this.http.get(`${this.salesUrl}/fetch-payment-terms`);
     }
 
+    public fetchGroups(): Observable<any> {
+      return this.http.get(`${this.apiUrl}/settings/fetch-group`);
+    }
+
+    public createGroup(data: { group_name: string; group_description: string }): Observable<any> {
+      return this.http.post(`${this.apiUrl}/settings/create-group`, data);
+    }
+
     public createPaymentTerm(data:any): Observable<any> {
       return this.insertPaymentTerm(data);
     }
@@ -310,6 +318,10 @@ export class GlobalService {
       return this.http.get(`${this.salesUrl}/fetch-quotation?module_id=${moduleId}`);
     }
 
+    public fetchSalesOrders(moduleId: number = 57): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-sales-order?module_id=${moduleId}`);
+    }
+
     public updateInvoice(data:any): Observable<any> {
       return this.http.post(`${this.salesUrl}/update-invoice`, data);
     }
@@ -320,6 +332,10 @@ export class GlobalService {
 
     public deleteQuotation(quotationId: string | number): Observable<any> {
       return this.http.post(`${this.salesUrl}/delete-quotation`, { quotation_id: quotationId });
+    }
+
+    public deleteSalesOrder(salesOrderId: string | number): Observable<any> {
+      return this.http.post(`${this.salesUrl}/delete-sales-order`, { sales_order_id: salesOrderId });
     }
 
     public generateInvoicePdf(data: {
@@ -340,8 +356,25 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/generate-pdf`, data);
     }
 
+    public generateSalesOrderPdf(data: {
+      sales_order_id: string | number;
+      document_type: string;
+      file_name: string;
+      html: string;
+    }): Observable<any> {
+      return this.http.post(`${this.salesUrl}/generate-pdf`, data);
+    }
+
     public insertQuote(data:any): Observable<any> {
       return this.http.post(`${this.salesUrl}/create-quotation`, data);
+    }
+
+    public insertSalesOrder(data: any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-sales-order`, data);
+    }
+
+    public updateSalesOrder(data: any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/update-sales-order`, data);
     }
 
     public updateQuotation(data:any): Observable<any> {

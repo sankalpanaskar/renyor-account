@@ -1332,6 +1332,7 @@ export class AddQuoteComponent implements OnInit {
       }
       return values;
     }, {});
+    const additionalTax = this.getTaxLabel();
 
     const payload = {
       ...(this.isEditMode && this.quotationId ? { quotation_id: this.quotationId } : {}),
@@ -1351,14 +1352,14 @@ export class AddQuoteComponent implements OnInit {
       subject: `${this.model.subject || ''}`.trim(),
       customer_notes: `${this.model.customer_notes || ''}`.trim(),
       terms_and_conditions: `${this.model.terms_and_conditions || ''}`.trim(),
-      additional_tax: this.getTaxLabel(),
+      additional_tax: additionalTax,
       additional_tax_rate: 0,
       sub_total: this.getSubTotal(),
       tax_amount: this.getTaxAmount(),
       cgst_amount: this.getCGST(),
       sgst_amount: this.getSGST(),
       igst_amount: this.getIGST(),
-      tax_mode: this.getTaxMode(),
+      tax_mode: additionalTax,
       customer_state: this.getCustomerStateCode(),
       business_state: this.getBusinessStateCode(),
       adjustment_label: `${this.model.adjustment_label || 'Adjustment'}`.trim(),

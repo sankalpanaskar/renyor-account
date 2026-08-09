@@ -155,7 +155,7 @@
               <textarea nbInput fullWidth rows="3" name="payment_details" [(ngModel)]="config.body.paymentDetails" (input)="schedulePreview()"></textarea>
             </label>
 
-            <div class="custom-field-settings" *ngIf="selectedType !== 'sales-order' && config.body.customFields.length > 0">
+            <div class="custom-field-settings" *ngIf="config.body.customFields.length > 0">
               <div class="custom-field-settings-heading">
                 <div>
                   <strong>{{ selectedDocument.label }} custom fields</strong>
@@ -178,7 +178,7 @@
               </div>
             </div>
 
-            <div class="custom-fields-loading" *ngIf="selectedType !== 'sales-order' && customFieldsLoading">
+            <div class="custom-fields-loading" *ngIf="customFieldsLoading">
               Loading {{ selectedDocument.label | lowercase }} custom fields…
             </div>
           </div>

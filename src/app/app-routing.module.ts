@@ -3,6 +3,11 @@ import { NgModule } from '@angular/core';
 
 export const routes: Routes = [
   {
+    path: 'sales/sales-order-list',
+    redirectTo: 'pages/sales/sales-order-list',
+    pathMatch: 'full',
+  },
+  {
     path: 'pages',
     loadChildren: () => import('./pages/pages.module').then((m) => m.PagesModule),
   },

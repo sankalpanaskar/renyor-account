@@ -1,17 +1,77 @@
 import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
 import { GlobalService } from '../../../services/global.service';
+import { Router } from '@angular/router';
 
 interface SalesOrderItemRow {
+  item_id: string | number;
   item_details: string;
+  item_description: string;
+  hsn_sac: string;
   quantity: number;
-  rate: number;
+  rate: string | number;
   tax: string;
+  item_unit?: string;
+  item_type?: string;
+  item_list_open?: boolean;
+  item_is_manual?: boolean;
 }
 
 interface SalesOrderCustomerOption {
   id: number;
   label: string;
+  billing_address?: string;
+  billing_city?: string;
+  billing_country?: string;
+  billing_pin?: string;
+  billing_state?: string;
+  shipping_address?: string;
+  shipping_city?: string;
+  shipping_country?: string;
+  shipping_pin?: string;
+  shipping_state?: string;
+  state?: string;
+  state_name?: string;
+  gst_treatment?: string;
+  gstin?: string;
+  source_of_supply?: string;
+}
+
+interface SalesOrderPaymentTermOption {
+  id?: string | number;
+  termName: string;
+  days: string | number;
+}
+
+interface SalesOrderTaxOption {
+  id?: string | number;
+  taxName: string;
+  rate: number;
+  label: string;
+}
+
+interface SalesOrderStateOption {
+  code: string;
+  name: string;
+  label: string;
+}
+
+interface SalesOrderItemOption {
+  id: number;
+  label: string;
+  name?: string;
+  type?: string;
+  selling_price?: number | string;
+  hsn_code?: string;
+  sac?: string;
+  unit?: string;
+  tax_preference?: string;
+  tax_rate_name?: string;
+  tax_rate_percentage?: number | string;
+  sales_account_description?: string;
+  purchase_account_description?: string;
+  description?: string;
+  item_description?: string;
 }
 
 @Component({
@@ -21,33 +81,33 @@ interface SalesOrderCustomerOption {
 })
 export class AddSalesOrderComponent implements OnInit {
   isSubmitting = false;
+  customFieldsLoading = false;
+  isEditMode = false;
+  salesOrderId: string | number | null = null;
+  isSavingOrderNumberPreference = false;
+  isLoadingOrderNumberPreference = false;
   showOrderNumberPopup = false;
+  showPaymentTermsPopup = false;
+  uploadedSalesOrderFiles: File[] = [];
+  today = this.normalizeDate(new Date());
+  dueDateMin = this.today;
+  shipmentDateMin = this.today;
   customerOptions: SalesOrderCustomerOption[] = [];
-  uploadedFiles: File[] = [];
-
-  salespersonOptions: string[] = [
-    'Aarav Sharma',
-    'Riya Verma',
-    'Neha Singh'
+  selectedCustomer: SalesOrderCustomerOption | null = null;
+  stateOptions: SalesOrderStateOption[] = [];
+  itemOptions: SalesOrderItemOption[] = [];
+  paymentTerms: SalesOrderPaymentTermOption[] = [];
+  taxOptions: SalesOrderTaxOption[] = [
+    { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' }
   ];
-
+  customFields: any[] = [];
   deliveryMethodOptions: string[] = [
     'Local Delivery',
     'Courier',
     'Express Shipping',
-    'Pickup'
+    'Pickup',
   ];
-
-  paymentTerms: Array<{ termName: string; days: number }> = [];
-
-  taxOptions: Array<{ label: string; rate: number }> = [
-    { label: 'Non-Taxable', rate: 0 },
-    { label: 'GST 5%', rate: 5 },
-    { label: 'GST 12%', rate: 12 },
-    { label: 'GST 18%', rate: 18 }
-  ];
-
-  taxModes = ['TDS', 'TCS'];
+  private readonly salesOrderModuleId = 57;
 
   model: any = {
     customer_id: '',
@@ -58,9 +118,10 @@ export class AddSalesOrderComponent implements OnInit {
     payment_terms: '',
     delivery_method: '',
     salesperson: '',
-    customer_notes: '',
+    project_name: '',
+    subject: '',
+    customer_notes: 'Looking forward for your business.',
     terms_and_conditions: '',
-    tax_mode: 'TDS',
     additional_tax: '',
     adjustment_label: 'Adjustment',
     adjustment_value: 0
@@ -69,22 +130,273 @@ export class AddSalesOrderComponent implements OnInit {
   orderNumberPreference = {
     mode: 'auto',
     prefix: 'SO-',
-    nextNumber: '00001'
+    currentNumber: '000000',
+    nextNumber: '000001',
+    suffix: ' ',
+    incrementBy: 1,
   };
 
   itemRows: SalesOrderItemRow[] = [];
 
   constructor(
     private toastrService: NbToastrService,
-    private globalService: GlobalService
+    private globalService: GlobalService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
     this.fetchCustomers();
+    this.fetchStates();
+    this.fetchItems();
+    this.fetchTaxRates();
     this.fetchPaymentTerms();
-    this.applyOrderNumber();
-    this.model.sales_order_date = this.getToday();
-    this.addRow();
+    this.fetchCustomFields();
+    this.fetchOrderNumberPreference();
+    this.model.sales_order_date = this.normalizeDate(new Date());
+    this.shipmentDateMin = this.model.sales_order_date;
+    this.configureEditMode();
+    if (this.itemRows.length === 0) {
+      this.addRow();
+    }
+  }
+
+  private configureEditMode(): void {
+    const navigationState = window.history.state || {};
+    const salesOrder = navigationState?.salesOrderData;
+    if (!navigationState?.isEditMode || !salesOrder) {
+      return;
+    }
+
+    this.isEditMode = true;
+    this.salesOrderId = salesOrder?.sales_order_id ?? salesOrder?.id ?? null;
+    this.model = {
+      ...this.model,
+      ...this.parseCustomFieldValues(salesOrder?.custom_field ?? salesOrder?.custom_fields),
+      customer_id: salesOrder?.customer_id ?? salesOrder?.customer?.id ?? '',
+      sales_order_no: salesOrder?.sales_order_no ?? salesOrder?.sales_order_number ?? '',
+      reference_no: salesOrder?.ref_no ?? salesOrder?.reference_no ?? '',
+      sales_order_date: this.normalizeDate(salesOrder?.sales_order_date ?? salesOrder?.date ?? new Date()),
+      expected_shipment_date: salesOrder?.expected_shipment_date
+        ? this.normalizeDate(salesOrder.expected_shipment_date)
+        : null,
+      payment_terms: salesOrder?.payment_terms ?? salesOrder?.term ?? '',
+      delivery_method: salesOrder?.delivery_method ?? '',
+      salesperson: salesOrder?.salesperson ?? salesOrder?.sales_person ?? '',
+      project_name: salesOrder?.project_name ?? salesOrder?.project ?? '',
+      subject: salesOrder?.subject ?? '',
+      customer_notes: salesOrder?.customer_notes ?? '',
+      terms_and_conditions: salesOrder?.terms_and_conditions ?? salesOrder?.terms_conditions ?? '',
+      adjustment_label: salesOrder?.adjustment_label ?? 'Adjustment',
+      adjustment_value: Number(salesOrder?.adjustment_value ?? salesOrder?.adjustment ?? 0),
+    };
+    this.shipmentDateMin = this.model.sales_order_date;
+    this.itemRows = this.getSalesOrderItems(salesOrder).map((item: any) => ({
+      item_id: item?.item_id ?? item?.id ?? '',
+      item_details: item?.item_name ?? item?.item_details ?? item?.name ?? '',
+      item_description: item?.item_description ?? item?.description ?? '',
+      hsn_sac: item?.hsn_sac ?? item?.hsn_code ?? item?.sac ?? '',
+      quantity: Number(item?.quantity ?? 1),
+      rate: this.formatDecimalValue(item?.rate ?? item?.selling_price ?? 0),
+      tax: item?.tax ?? item?.tax_name ?? 'Non-Taxable',
+      item_unit: item?.unit ?? item?.item_unit ?? '',
+      item_type: item?.item_type ?? item?.type ?? '',
+      item_list_open: false,
+      item_is_manual: !!item?.is_manual,
+    }));
+  }
+
+  private parseCustomFieldValues(value: any): any {
+    if (!value) {
+      return {};
+    }
+    if (typeof value === 'string') {
+      try {
+        const parsedValue = JSON.parse(value);
+        return parsedValue && typeof parsedValue === 'object' ? parsedValue : {};
+      } catch {
+        return {};
+      }
+    }
+    return typeof value === 'object' ? { ...value } : {};
+  }
+
+  private getSalesOrderItems(salesOrder: any): any[] {
+    const rawItems = salesOrder?.items ?? salesOrder?.sales_order_items ?? salesOrder?.details ?? [];
+    if (Array.isArray(rawItems)) {
+      return rawItems;
+    }
+    if (typeof rawItems === 'string') {
+      try {
+        const parsedItems = JSON.parse(rawItems);
+        return Array.isArray(parsedItems) ? parsedItems : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  }
+
+  fetchCustomFields(): void {
+    this.customFieldsLoading = true;
+    this.globalService.fetchCustomFieldsByModule(this.salesOrderModuleId).subscribe({
+      next: (res: any) => {
+        const fields = Array.isArray(res?.data)
+          ? res.data
+          : (Array.isArray(res) ? res : []);
+        this.customFields = fields
+          .filter((field: any) => Number(field?.show_in_form) === 1 && Number(field?.status) === 1)
+          .sort((a: any, b: any) => Number(a?.field_order || 0) - Number(b?.field_order || 0));
+        this.applyCustomFieldDefaults();
+        this.customFieldsLoading = false;
+      },
+      error: (error: any) => {
+        this.customFields = [];
+        this.customFieldsLoading = false;
+        this.toastrService.danger(
+          error?.error?.message || 'Sales order custom fields could not be loaded.',
+          'Custom Fields',
+        );
+      },
+    });
+  }
+
+  private applyCustomFieldDefaults(): void {
+    this.customFields.forEach((field: any) => {
+      const fieldName = `${field?.field_name || ''}`.trim();
+      if (!fieldName) {
+        return;
+      }
+      const hasValue = this.model[fieldName] !== undefined && this.model[fieldName] !== null;
+      if (this.getFieldType(field) === 'checkbox') {
+        this.model[fieldName] = this.parseCheckboxValues(hasValue ? this.model[fieldName] : field?.default_value);
+      } else if (!hasValue) {
+        this.model[fieldName] = field?.default_value ?? '';
+      }
+    });
+  }
+
+  getFieldType(field: any): string {
+    const type = `${field?.field_type || 'text'}`.trim().toLowerCase().replace(/[\s_-]+/g, '');
+    if (type === 'radiobutton') {
+      return 'radio';
+    }
+    if (type === 'checkboxes') {
+      return 'checkbox';
+    }
+    if (type === 'datepicker') {
+      return 'date';
+    }
+    const allowedTypes = ['text', 'textarea', 'number', 'email', 'date', 'select', 'radio', 'checkbox'];
+    return allowedTypes.includes(type) ? type : 'text';
+  }
+
+  getFieldOptions(field: any): string[] {
+    const rawOptions = field?.field_options;
+    if (!rawOptions) {
+      return [];
+    }
+    if (Array.isArray(rawOptions)) {
+      return rawOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+    }
+    if (typeof rawOptions === 'string') {
+      const normalizedOptions = rawOptions.trim();
+      if (!normalizedOptions) {
+        return [];
+      }
+      try {
+        const parsedOptions = JSON.parse(normalizedOptions);
+        if (Array.isArray(parsedOptions)) {
+          return parsedOptions.map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+        if (parsedOptions && typeof parsedOptions === 'object') {
+          return Object.values(parsedOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean);
+        }
+      } catch {
+      }
+      return normalizedOptions.split(/[\n,|]/).map((option: string) => option.trim()).filter(Boolean);
+    }
+    return typeof rawOptions === 'object'
+      ? Object.values(rawOptions).map((option: any) => this.normalizeFieldOption(option)).filter(Boolean)
+      : [];
+  }
+
+  private normalizeFieldOption(option: any): string {
+    if (option === null || option === undefined) {
+      return '';
+    }
+    if (typeof option === 'object') {
+      return `${option?.label ?? option?.name ?? option?.title ?? option?.value ?? ''}`.trim();
+    }
+    return `${option}`.trim();
+  }
+
+  private parseCheckboxValues(value: any): string[] {
+    if (!value) {
+      return [];
+    }
+    if (Array.isArray(value)) {
+      return value.map((item: any) => `${item}`.trim()).filter(Boolean);
+    }
+    if (typeof value === 'string') {
+      const normalizedValue = value.trim();
+      if (!normalizedValue) {
+        return [];
+      }
+      try {
+        const parsedValue = JSON.parse(normalizedValue);
+        if (Array.isArray(parsedValue)) {
+          return parsedValue.map((item: any) => `${item}`.trim()).filter(Boolean);
+        }
+      } catch {
+      }
+      return normalizedValue.split(/[\n,|]/).map((item: string) => item.trim()).filter(Boolean);
+    }
+    return [`${value}`.trim()].filter(Boolean);
+  }
+
+  isFieldRequired(field: any): boolean {
+    return Number(field?.is_required) === 1;
+  }
+
+  isCheckboxChecked(fieldName: string, option: string): boolean {
+    return Array.isArray(this.model?.[fieldName]) && this.model[fieldName].includes(option);
+  }
+
+  onCheckboxOptionChange(fieldName: string, option: string, checkedValue: any): void {
+    const checked = typeof checkedValue === 'boolean' ? checkedValue : !!checkedValue?.checked;
+    const selectedOptions = Array.isArray(this.model?.[fieldName]) ? [...this.model[fieldName]] : [];
+    if (checked && !selectedOptions.includes(option)) {
+      selectedOptions.push(option);
+    } else if (!checked) {
+      const optionIndex = selectedOptions.indexOf(option);
+      if (optionIndex !== -1) {
+        selectedOptions.splice(optionIndex, 1);
+      }
+    }
+    this.model[fieldName] = selectedOptions;
+  }
+
+  hasFieldError(form: any, field: any): boolean {
+    if (!form?.submitted || !this.isFieldRequired(field)) {
+      return false;
+    }
+    const fieldName = field?.field_name;
+    if (this.getFieldType(field) === 'checkbox') {
+      return !Array.isArray(this.model?.[fieldName]) || this.model[fieldName].length === 0;
+    }
+    return !!form?.controls?.[fieldName]?.invalid;
+  }
+
+  private hasRequiredCustomFieldError(): boolean {
+    return this.customFields.some((field: any) => {
+      if (!this.isFieldRequired(field)) {
+        return false;
+      }
+      const value = this.model?.[field?.field_name];
+      return this.getFieldType(field) === 'checkbox'
+        ? !Array.isArray(value) || value.length === 0
+        : value === undefined || value === null || `${value}`.trim() === '';
+    });
   }
 
   fetchCustomers(): void {
@@ -94,9 +406,27 @@ export class AddSalesOrderComponent implements OnInit {
         this.customerOptions = customers
           .map((customer: any) => ({
             id: Number(customer?.id || 0),
-            label: this.getCustomerLabel(customer)
+            label: this.getCustomerLabel(customer),
+            billing_address: `${customer?.billing_address || ''}`.trim(),
+            billing_city: `${customer?.billing_city || ''}`.trim(),
+            billing_country: `${customer?.billing_country || ''}`.trim(),
+            billing_pin: `${customer?.billing_pin || ''}`.trim(),
+            billing_state: `${customer?.billing_state || ''}`.trim(),
+            shipping_address: `${customer?.shipping_address || ''}`.trim(),
+            shipping_city: `${customer?.shipping_city || ''}`.trim(),
+            shipping_country: `${customer?.shipping_country || ''}`.trim(),
+            shipping_pin: `${customer?.shipping_pin || ''}`.trim(),
+            shipping_state: `${customer?.shipping_state || ''}`.trim(),
+            state: `${customer?.state || ''}`.trim(),
+            state_name: `${customer?.state_name || ''}`.trim(),
+            gst_treatment: `${customer?.gst_treatment || ''}`.trim(),
+            gstin: `${customer?.gstin || customer?.gst_no || customer?.custom_field?.gst_no || ''}`.trim(),
+            source_of_supply: `${customer?.source_of_supply || ''}`.trim()
           }))
           .filter((customer: SalesOrderCustomerOption) => customer.id > 0 && !!customer.label);
+        if (this.model.customer_id) {
+          this.onCustomerSelected(this.model.customer_id);
+        }
       },
       error: () => {
         this.customerOptions = [];
@@ -104,22 +434,155 @@ export class AddSalesOrderComponent implements OnInit {
     });
   }
 
+  fetchStates(): void {
+    this.globalService.getStates().subscribe({
+      next: (res: any) => {
+        const states = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        this.stateOptions = states
+          .map((state: any) => {
+            const code = `${state?.code || ''}`.trim();
+            const name = `${state?.name || ''}`.trim();
+            return { code, name, label: code ? `[${code}] - ${name}` : name };
+          })
+          .filter((state: SalesOrderStateOption) => !!state.code && !!state.name);
+      },
+      error: () => {
+        this.stateOptions = [];
+      }
+    });
+  }
+
+  onCustomerSelected(customerId: number | string): void {
+    this.selectedCustomer = this.customerOptions.find(
+      (customer: SalesOrderCustomerOption) => customer.id === Number(customerId)
+    ) || null;
+  }
+
+  getCustomerAddress(type: 'billing' | 'shipping'): string[] {
+    const customer = this.selectedCustomer;
+    if (!customer) {
+      return [];
+    }
+
+    const address = type === 'billing' ? customer.billing_address : customer.shipping_address;
+    const city = type === 'billing' ? customer.billing_city : customer.shipping_city;
+    const stateCode = type === 'billing' ? customer.billing_state : customer.shipping_state;
+    const pin = type === 'billing' ? customer.billing_pin : customer.shipping_pin;
+    const country = type === 'billing' ? customer.billing_country : customer.shipping_country;
+    const state = this.getStateName(stateCode);
+
+    return [address, city, [state, pin].filter(Boolean).join(' '), country]
+      .map((line: string | undefined) => `${line || ''}`.trim())
+      .filter((line: string) => !!line);
+  }
+
+  private getStateName(code: string | undefined): string {
+    const normalizedCode = `${code || ''}`.trim().toUpperCase();
+    return this.stateOptions.find(
+      (state: SalesOrderStateOption) => state.code.toUpperCase() === normalizedCode
+    )?.name || `${code || ''}`.trim();
+  }
+
   fetchPaymentTerms(): void {
     this.globalService.getPaymentTerms().subscribe({
       next: (res: any) => {
         this.paymentTerms = Array.isArray(res?.data)
           ? res.data.map((item: any) => ({
+              id: item.id,
               termName: item.term_name,
-              days: Number(item.no_of_days || 0)
+              days: item.no_of_days
             }))
           : [];
 
         if (!this.model.payment_terms && this.paymentTerms.length > 0) {
-          this.model.payment_terms = this.paymentTerms[0].termName;
+          const defaultTerm = this.paymentTerms.find((term: SalesOrderPaymentTermOption) => `${term.termName}`.trim().toLowerCase() === 'due on receipt');
+          this.model.payment_terms = defaultTerm?.termName || 'Due on Receipt';
         }
       },
       error: () => {
         this.paymentTerms = [];
+        if (!this.model.payment_terms) {
+          this.model.payment_terms = 'Due on Receipt';
+        }
+      }
+    });
+  }
+
+  fetchTaxRates(): void {
+    this.globalService.getTaxRates().subscribe({
+      next: (res: any) => {
+        const apiRows = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        const mappedRates = apiRows
+          .map((item: any) => {
+            const taxName = `${item?.tax_rate_name ?? ''}`.trim();
+            const rate = Number(item?.tax_rate_percentage || 0);
+
+            if (!taxName && !rate) {
+              return null;
+            }
+
+            return {
+              id: item?.id,
+              taxName,
+              rate,
+              label: `${taxName} [${rate}%]`
+            } as SalesOrderTaxOption;
+          })
+          .filter((item: SalesOrderTaxOption | null): item is SalesOrderTaxOption => !!item);
+
+        this.taxOptions = [
+          { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' },
+          ...mappedRates.filter((option: SalesOrderTaxOption) => option.rate > 0)
+        ];
+      },
+      error: (error: any) => {
+        console.error('Failed to fetch tax rates:', error);
+        this.taxOptions = [{ label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' }];
+      }
+    });
+  }
+
+  onSalesOrderDateChange(date: Date): void {
+    const normalizedDate = this.normalizeDate(date);
+    this.model.sales_order_date = normalizedDate;
+    this.shipmentDateMin = normalizedDate;
+
+    if (this.model.expected_shipment_date && this.normalizeDate(this.model.expected_shipment_date).getTime() < normalizedDate.getTime()) {
+      this.model.expected_shipment_date = null;
+    }
+  }
+
+  private normalizeDate(value: Date | string | null | undefined): Date {
+    const sourceDate = value instanceof Date ? value : new Date(value || new Date());
+    return new Date(sourceDate.getFullYear(), sourceDate.getMonth(), sourceDate.getDate());
+  }
+
+  fetchItems(): void {
+    this.globalService.fetchItems().subscribe({
+      next: (res: any) => {
+        const rows = Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+        this.itemOptions = rows
+          .map((item: any) => ({
+            id: Number(item?.id || 0),
+            label: this.getItemLabel(item),
+            name: item?.name || '',
+            type: item?.type || '',
+            selling_price: item?.selling_price,
+            hsn_code: item?.hsn_code,
+            sac: item?.sac,
+            unit: item?.unit,
+            tax_preference: item?.tax_preference,
+            tax_rate_name: item?.tax_rate_name,
+            tax_rate_percentage: item?.tax_rate_percentage,
+            sales_account_description: item?.sales_account_description,
+            purchase_account_description: item?.purchase_account_description,
+            description: item?.description,
+            item_description: item?.item_description,
+          }))
+          .filter((item: SalesOrderItemOption) => item.id > 0 && !!item.label);
+      },
+      error: () => {
+        this.itemOptions = [];
       }
     });
   }
@@ -129,72 +592,451 @@ export class AddSalesOrderComponent implements OnInit {
     return customer?.display_name || customer?.company_name || fullName || '';
   }
 
-  generateOrderNumber(): string {
-    return `${this.orderNumberPreference.prefix}${this.orderNumberPreference.nextNumber}`;
+  private getItemLabel(item: any): string {
+    return `${item?.name || ''}`.trim();
   }
 
-  getToday(): Date {
-    return new Date();
+  private getItemDescription(item: any): string {
+    return (
+      item?.description ||
+      item?.item_description ||
+      item?.sales_account_description ||
+      item?.purchase_account_description ||
+      ''
+    ).trim();
   }
 
-  addRow(): void {
-    this.itemRows = [
-      ...this.itemRows,
-      {
-        item_details: '',
-        quantity: 1,
-        rate: 0,
-        tax: ''
+  private getItemTaxLabel(item: any): string {
+    const rate = Number(item?.tax_rate_percentage);
+
+    if (rate > 0) {
+      const match = this.taxOptions.find((option: SalesOrderTaxOption) => option.rate === rate);
+      if (match) {
+        return match.label;
       }
-    ];
+
+      const taxName = `${item?.tax_rate_name || 'GST'}`.trim();
+      return `${taxName} [${rate}%]`;
+    }
+
+    return item?.tax_preference || 'Non-Taxable';
   }
 
-  removeRow(index: number): void {
-    if (this.itemRows.length === 1) {
-      this.itemRows[0] = {
-        item_details: '',
-        quantity: 1,
-        rate: 0,
-        tax: ''
-      };
+  getTaxDisplayLabel(label: string): string {
+    return `${label || 'Non-Taxable'}`
+      .trim()
+      .replace(/\s*\[\s*\d+(?:\.\d+)?%\s*\]\s*$/, '');
+  }
+
+  private getSelectedCustomer(): SalesOrderCustomerOption | undefined {
+    return this.customerOptions.find(
+      (customer: SalesOrderCustomerOption) => customer.id === Number(this.model.customer_id)
+    );
+  }
+
+  private getBusinessStateCode(): string {
+    const tenantDetails = this.globalService.tenantDetails
+      || JSON.parse(localStorage.getItem('tenant_details') || '{}');
+    const user = this.globalService.currentUser || JSON.parse(localStorage.getItem('user') || '{}');
+
+    const candidates = [
+      tenantDetails?.state,
+      user?.state,
+      user?.company_state,
+      user?.billing_state,
+      user?.business_state,
+      user?.member?.state,
+      user?.member?.base_state,
+      user?.organization?.state,
+      user?.tenant?.state,
+      user?.company?.state,
+      user?.centerData?.[0]?.state,
+      user?.assgin_centers?.[0]?.state
+    ];
+
+    const match = candidates.find((value: any) => `${value || ''}`.trim());
+    return this.normalizeStateCode(`${match || ''}`);
+  }
+
+  getCustomerStateCode(): string {
+    const selectedCustomer = this.getSelectedCustomer();
+    const customerState = selectedCustomer?.billing_state
+      || selectedCustomer?.state
+      || selectedCustomer?.state_name
+      || selectedCustomer?.source_of_supply
+      || '';
+    return this.normalizeStateCode(customerState);
+  }
+
+  isInterState(): boolean {
+    const customerState = this.getCustomerStateCode();
+    const businessState = this.getBusinessStateCode();
+
+    if (!customerState || !businessState) {
+      return true;
+    }
+
+    return customerState !== businessState;
+  }
+
+  private normalizeStateCode(value: string): string {
+    const normalizedValue = `${value || ''}`.trim().toUpperCase();
+    if (!normalizedValue) {
+      return '';
+    }
+
+    const matchedState = this.stateOptions.find((state: SalesOrderStateOption) =>
+      state.code.toUpperCase() === normalizedValue || state.name.toUpperCase() === normalizedValue
+    );
+    return matchedState?.code.toUpperCase() || normalizedValue;
+  }
+
+  getItemTaxRate(row: SalesOrderItemRow): number {
+    return this.getTaxRate(row.tax);
+  }
+
+  getRowTaxAmount(row: SalesOrderItemRow): number {
+    return (this.getRowAmount(row) * this.getItemTaxRate(row)) / 100;
+  }
+
+  getTotalItemTaxAmount(): number {
+    return this.itemRows.reduce((total: number, row: SalesOrderItemRow) => total + this.getRowTaxAmount(row), 0);
+  }
+
+  getTaxModeLabel(): string {
+    return this.isInterState() ? 'IGST' : 'CGST + SGST';
+  }
+
+  getTaxMode(): 'IGST' | 'CGST_SGST' {
+    return this.isInterState() ? 'IGST' : 'CGST_SGST';
+  }
+
+  getTaxLabel(): string {
+    return this.getTaxModeLabel();
+  }
+
+  onItemSelected(row: SalesOrderItemRow, selectedId: string | number): void {
+    const item = this.itemOptions.find((option: SalesOrderItemOption) => option.id === Number(selectedId));
+
+    if (!item) {
       return;
     }
 
-    this.itemRows = this.itemRows.filter((_: SalesOrderItemRow, rowIndex: number) => rowIndex !== index);
+    row.item_id = item.id;
+    row.item_details = item.label;
+    row.item_description = this.getItemDescription(item);
+    row.hsn_sac = `${item.hsn_code || item.sac || ''}`.trim();
+    row.item_unit = `${item.unit || ''}`.trim();
+    row.item_type = `${item.type || ''}`.trim();
+    row.quantity = Number(row.quantity || 1) || 1;
+    row.rate = this.formatDecimalValue(item.selling_price || 0);
+    row.tax = this.getItemTaxLabel(item);
+    row.item_is_manual = false;
   }
 
-  trackByIndex(index: number): number {
-    return index;
+  onItemInputChange(row: SalesOrderItemRow, value: string): void {
+    row.item_details = value;
+    row.item_id = '';
+    row.item_is_manual = false;
+    row.item_list_open = true;
   }
 
-  getTaxRate(label: string): number {
-    return this.taxOptions.find((option: { label: string; rate: number }) => option.label === label)?.rate || 0;
+  autoGrowTextarea(event: Event): void {
+    const target = event.target as HTMLTextAreaElement | null;
+
+    if (!target) {
+      return;
+    }
+
+    target.style.height = 'auto';
+    target.style.height = `${target.scrollHeight}px`;
+  }
+
+  allowIntegerOnly(event: KeyboardEvent): void {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Enter',
+      'Escape',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Home',
+      'End'
+    ];
+
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    if (!/^\d$/.test(event.key)) {
+      event.preventDefault();
+    }
+  }
+
+  allowDecimalOnly(event: KeyboardEvent): void {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Enter',
+      'Escape',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Home',
+      'End'
+    ];
+
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    const target = event.target as HTMLInputElement | null;
+    const value = `${target?.value || ''}`;
+
+    if (event.key === '.' && value.includes('.')) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!/^\d$/.test(event.key) && event.key !== '.') {
+      event.preventDefault();
+    }
+  }
+
+  formatRateOnBlur(row: SalesOrderItemRow): void {
+    row.rate = this.formatDecimalValue(row.rate);
+  }
+
+  getRateNumber(value: string | number): number {
+    const numericValue = Number(value || 0);
+    return Number.isFinite(numericValue) ? numericValue : 0;
   }
 
   getRowAmount(row: SalesOrderItemRow): number {
-    return Number(row.quantity || 0) * Number(row.rate || 0);
+    return this.getRateNumber(row.rate) * Number(row.quantity || 0);
   }
 
-  getSubTotal(): number {
-    return this.itemRows.reduce((total: number, row: SalesOrderItemRow) => total + this.getRowAmount(row), 0);
+  private formatDecimalValue(value: string | number): string {
+    return this.getRateNumber(value).toFixed(2);
   }
 
-  getAdditionalTaxAmount(): number {
-    const subTotal = this.getSubTotal();
-    const taxRate = this.getTaxRate(this.model.additional_tax);
-    return (subTotal * taxRate) / 100;
+  allowSignedDecimalOnly(event: KeyboardEvent): void {
+    const allowedKeys = [
+      'Backspace',
+      'Delete',
+      'Tab',
+      'Enter',
+      'Escape',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'Home',
+      'End'
+    ];
+
+    if (allowedKeys.includes(event.key) || event.ctrlKey || event.metaKey) {
+      return;
+    }
+
+    const target = event.target as HTMLInputElement | null;
+    const value = `${target?.value || ''}`;
+    const selectionStart = target?.selectionStart ?? 0;
+
+    if ((event.key === '+' || event.key === '-') && selectionStart === 0 && !value.includes('+') && !value.includes('-')) {
+      return;
+    }
+
+    if (event.key === '.' && value.includes('.')) {
+      event.preventDefault();
+      return;
+    }
+
+    if (!/^\d$/.test(event.key) && event.key !== '.') {
+      event.preventDefault();
+    }
   }
 
-  getAdjustmentValue(): number {
-    return Number(this.model.adjustment_value || 0);
+  onItemInputFocus(row: SalesOrderItemRow): void {
+    row.item_list_open = true;
   }
 
-  getTotal(): number {
-    return this.getSubTotal() + this.getAdditionalTaxAmount() + this.getAdjustmentValue();
+  onItemInputBlur(row: SalesOrderItemRow): void {
+    setTimeout(() => {
+      row.item_list_open = false;
+      this.applyExactItemMatch(row);
+    }, 150);
+  }
+
+  selectItemFromAutocomplete(row: SalesOrderItemRow, item: SalesOrderItemOption, rowIndex: number): void {
+    row.item_id = item.id;
+    row.item_details = item.label;
+    row.item_description = this.getItemDescription(item);
+    row.hsn_sac = `${item.hsn_code || item.sac || ''}`.trim();
+    row.item_unit = `${item.unit || ''}`.trim();
+    row.item_type = `${item.type || ''}`.trim();
+    row.quantity = Number(row.quantity || 1) || 1;
+    row.rate = this.formatDecimalValue(item.selling_price || 0);
+    row.tax = this.getItemTaxLabel(item);
+    row.item_list_open = false;
+    row.item_is_manual = false;
+
+    setTimeout(() => {
+      this.resizeRowTextarea(`item-details-${rowIndex}`);
+      this.resizeRowTextarea(`item-description-${rowIndex}`);
+    }, 0);
+  }
+
+  getFilteredItems(query: string): SalesOrderItemOption[] {
+    const searchValue = `${query || ''}`.trim().toLowerCase();
+
+    if (!searchValue) {
+      return this.itemOptions;
+    }
+
+    return this.itemOptions.filter(
+      (item: SalesOrderItemOption) => item.label.toLowerCase().includes(searchValue)
+    );
+  }
+
+  private applyExactItemMatch(row: SalesOrderItemRow): void {
+    const rawValue = `${row.item_details || ''}`.trim().toLowerCase();
+
+    if (!rawValue) {
+      return;
+    }
+
+    const exactMatch = this.itemOptions.find(
+      (item: SalesOrderItemOption) => item.label.toLowerCase() === rawValue
+    );
+
+    if (exactMatch) {
+      this.selectItemFromAutocomplete(row, exactMatch, this.itemRows.indexOf(row));
+      return;
+    }
+
+    this.selectManualItem(row, this.itemRows.indexOf(row));
+  }
+
+  private selectManualItem(row: SalesOrderItemRow, rowIndex: number): void {
+    const itemLabel = `${row.item_details || ''}`.trim();
+
+    if (!itemLabel) {
+      return;
+    }
+
+    row.item_id = `manual-${rowIndex}-${Date.now()}`;
+    row.item_details = itemLabel;
+    row.item_description = `${row.item_description || ''}`.trim();
+    row.hsn_sac = `${row.hsn_sac || ''}`.trim();
+    row.item_unit = `${row.item_unit || ''}`.trim();
+    row.item_type = 'Service';
+    row.quantity = Number(row.quantity || 1) || 1;
+    row.rate = this.formatDecimalValue(row.rate || 0);
+    row.tax = row.tax || 'Non-Taxable';
+    row.item_list_open = false;
+    row.item_is_manual = true;
+  }
+
+  clearItemRow(row: SalesOrderItemRow): void {
+    row.item_id = '';
+    row.item_details = '';
+    row.item_description = '';
+    row.hsn_sac = '';
+    row.item_unit = '';
+    row.item_type = '';
+    row.quantity = 1;
+    row.rate = '0.00';
+    row.tax = 'Non-Taxable';
+    row.item_list_open = false;
+    row.item_is_manual = false;
+  }
+
+  private resizeRowTextarea(elementId: string): void {
+    const element = document.getElementById(elementId) as HTMLTextAreaElement | null;
+
+    if (!element) {
+      return;
+    }
+
+    element.style.height = 'auto';
+    element.style.height = `${element.scrollHeight}px`;
+  }
+
+  openPaymentTermsPopup(): void {
+    this.showPaymentTermsPopup = true;
   }
 
   openOrderNumberPopup(): void {
     this.showOrderNumberPopup = true;
+  }
+
+  private fetchOrderNumberPreference(): void {
+    this.isLoadingOrderNumberPreference = true;
+    this.globalService.fetchDocumentNumberSettings('SalesOrder').subscribe({
+      next: (res: any) => {
+        const settings = this.extractDocumentNumberSettings(res);
+        if (settings) {
+          const isManualNumbering = `${settings?.type || 'A'}`.trim().toUpperCase() === 'M';
+          const currentNumberText = `${settings?.current_number ?? 0}`.trim();
+          const currentNumber = Number(currentNumberText.replace(/\D/g, '')) || 0;
+          const incrementBy = Math.max(Number(settings?.increment_by) || 1, 1);
+          const existingWidth = `${this.orderNumberPreference.nextNumber || ''}`.replace(/\D/g, '').length;
+          const responseWidth = currentNumberText.replace(/\D/g, '').length;
+          const numberWidth = Math.max(existingWidth, responseWidth, 4);
+          const formattedCurrentNumber = `${currentNumber}`.padStart(numberWidth, '0');
+          this.orderNumberPreference = {
+            ...this.orderNumberPreference,
+            mode: isManualNumbering ? 'manual' : 'auto',
+            prefix: `${settings?.prefix ?? 'SO-'}`,
+            currentNumber: formattedCurrentNumber,
+            nextNumber: `${currentNumber + incrementBy}`.padStart(numberWidth, '0'),
+            suffix: settings?.suffix !== undefined && settings?.suffix !== null
+              ? `${settings.suffix}`
+              : ' ',
+            incrementBy,
+          };
+          if (!this.isEditMode) {
+            this.applyOrderNumber();
+          }
+        }
+        this.isLoadingOrderNumberPreference = false;
+      },
+      error: (error: any) => {
+        this.isLoadingOrderNumberPreference = false;
+        this.toastrService.danger(
+          error?.error?.message || error?.message || 'Sales order number preferences could not be loaded.',
+          'Load Failed',
+        );
+      },
+    });
+  }
+
+  private extractDocumentNumberSettings(response: any): any {
+    const candidates = [
+      response?.data,
+      response?.data?.data,
+      response?.settings,
+      response?.result,
+      response,
+    ];
+
+    for (const candidate of candidates) {
+      if (Array.isArray(candidate) && candidate.length > 0) {
+        return candidate[0];
+      }
+      if (candidate && typeof candidate === 'object' && !Array.isArray(candidate)) {
+        if (candidate?.prefix !== undefined || candidate?.current_number !== undefined) {
+          return candidate;
+        }
+      }
+    }
+    return null;
   }
 
   closeOrderNumberPopup(): void {
@@ -202,25 +1044,388 @@ export class AddSalesOrderComponent implements OnInit {
   }
 
   saveOrderNumberPreference(): void {
-    this.applyOrderNumber();
-    this.closeOrderNumberPopup();
+    const prefix = `${this.orderNumberPreference.prefix || ''}`.trim();
+    const currentNumberText = `${this.orderNumberPreference.nextNumber || ''}`.replace(/\D/g, '');
+    const currentNumber = Number(currentNumberText);
+    const isAutomaticNumbering = this.orderNumberPreference.mode === 'auto';
+
+    if (isAutomaticNumbering && (!prefix || !Number.isFinite(currentNumber) || currentNumber < 0)) {
+      this.toastrService.danger('Enter a valid prefix and next number.', 'Sales Order Number');
+      return;
+    }
+
+    const payload = {
+      document_type: 'SalesOrder',
+      type: (isAutomaticNumbering ? 'A' : 'M') as 'A' | 'M',
+      prefix,
+      current_number: this.orderNumberPreference.currentNumber,
+      suffix: this.orderNumberPreference.suffix,
+      increment_by: Number(this.orderNumberPreference.incrementBy) || 1,
+    };
+
+    this.isSavingOrderNumberPreference = true;
+    this.globalService.saveDocumentNumberSettings(payload).subscribe({
+      next: (res: any) => {
+        this.isSavingOrderNumberPreference = false;
+        this.applyOrderNumber();
+        this.closeOrderNumberPopup();
+        this.toastrService.success(
+          res?.message || 'Sales order number preferences saved successfully.',
+          'Saved',
+        );
+      },
+      error: (error: any) => {
+        this.isSavingOrderNumberPreference = false;
+        this.toastrService.danger(
+          error?.error?.message || error?.message || 'Sales order number preferences could not be saved.',
+          'Save Failed',
+        );
+      },
+    });
   }
 
-  onFilesChange(files: File[]): void {
-    this.uploadedFiles = files;
+  closePaymentTermsPopup(): void {
+    this.showPaymentTermsPopup = false;
+  }
+
+  onPaymentTermsChanged(terms: SalesOrderPaymentTermOption[]): void {
+    this.paymentTerms = terms;
+  }
+
+  onPaymentTermSelected(termName: string): void {
+    this.model.payment_terms = termName;
+    this.closePaymentTermsPopup();
+  }
+
+  generateOrderNumber(): string {
+    return `${this.orderNumberPreference.prefix}${this.orderNumberPreference.nextNumber}`;
   }
 
   private applyOrderNumber(): void {
     if (this.orderNumberPreference.mode === 'auto') {
       this.model.sales_order_no = this.generateOrderNumber();
+    } else if (!this.isEditMode) {
+      this.model.sales_order_no = '';
     }
   }
 
-  onSubmit(form: any): void {
-    if (!form.valid || this.itemRows.length === 0) {
+  addRow(): void {
+    this.itemRows = [
+      ...this.itemRows,
+      {
+        item_id: '',
+        item_details: '',
+        item_description: '',
+        hsn_sac: '',
+        quantity: 1,
+        rate: '0.00',
+        tax: 'Non-Taxable',
+        item_unit: '',
+        item_type: '',
+        item_list_open: false,
+        item_is_manual: false
+      }
+    ];
+  }
+
+  removeRow(index: number): void {
+    if (this.itemRows.length === 1) {
+      this.itemRows[0] = {
+        item_id: '',
+        item_details: '',
+        item_description: '',
+        hsn_sac: '',
+        quantity: 1,
+        rate: '0.00',
+        tax: 'Non-Taxable',
+        item_unit: '',
+        item_type: '',
+        item_list_open: false,
+        item_is_manual: false
+      };
+      return;
+    }
+    this.itemRows = this.itemRows.filter((_: SalesOrderItemRow, rowIndex: number) => rowIndex !== index);
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
+  getSubTotal(): number {
+    return this.itemRows.reduce((total: number, row: SalesOrderItemRow) => total + this.getRowAmount(row), 0);
+  }
+
+  getTaxRate(label: string): number {
+    const normalizedLabel = this.getTaxDisplayLabel(label).toLowerCase();
+    return this.taxOptions.find((option: SalesOrderTaxOption) =>
+      this.getTaxDisplayLabel(option.label).toLowerCase() === normalizedLabel
+    )?.rate || 0;
+  }
+
+  getTaxAmount(): number {
+    return this.roundCurrency(this.getTotalItemTaxAmount());
+  }
+
+  getIGST(): number {
+    return this.isInterState() ? this.getTaxAmount() : 0;
+  }
+
+  getCGST(): number {
+    return this.isInterState() ? 0 : this.roundCurrency(this.getTaxAmount() / 2);
+  }
+
+  getSGST(): number {
+    return this.isInterState() ? 0 : this.roundCurrency(this.getTaxAmount() - this.getCGST());
+  }
+
+  private roundCurrency(value: number): number {
+    return Number((Number(value) || 0).toFixed(2));
+  }
+
+  getAdjustmentValue(): number {
+    return Number(this.model.adjustment_value || 0);
+  }
+
+  getTotal(): number {
+    return this.roundCurrency(this.getSubTotal() + this.getTaxAmount() + this.getAdjustmentValue());
+  }
+
+  private formatApiDate(value: Date | string | null | undefined): string {
+    if (!value) {
+      return '';
+    }
+
+    const date = this.normalizeDate(value);
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, '0');
+    const day = `${date.getDate()}`.padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  private updateDueDateFromPaymentTerm(termName: string = `${this.model.term || ''}`.trim()): void {
+    const normalizedTerm = `${termName || ''}`.trim().toLowerCase();
+    const quoteDate = this.normalizeDate(this.model.sales_order_date || new Date());
+
+    if (!normalizedTerm) {
+      this.dueDateMin = quoteDate;
       return;
     }
 
-    this.toastrService.success('Sales order form is ready.', 'Saved');
+    if (normalizedTerm === 'due on receipt') {
+      this.model.due_date = quoteDate;
+      this.dueDateMin = quoteDate;
+      return;
+    }
+
+    const dueDays = this.getPaymentTermDays(termName);
+    if (dueDays === null) {
+      this.dueDateMin = quoteDate;
+      return;
+    }
+
+    const dueDate = new Date(quoteDate);
+    dueDate.setDate(dueDate.getDate() + dueDays);
+    this.model.due_date = dueDate;
+    this.dueDateMin = dueDate;
+  }
+
+  private getPaymentTermDays(termName: string): number | null {
+    const normalizedTerm = `${termName || ''}`.trim().toLowerCase();
+    if (!normalizedTerm) {
+      return null;
+    }
+
+    const matchedTerm = this.paymentTerms.find((term: SalesOrderPaymentTermOption) =>
+      `${term.termName || ''}`.trim().toLowerCase() === normalizedTerm
+    );
+
+    const daysFromApi = Number(matchedTerm?.days);
+    if (Number.isFinite(daysFromApi)) {
+      return daysFromApi;
+    }
+
+    const netMatch = normalizedTerm.match(/^net\s+(\d+)$/i);
+    if (netMatch) {
+      const netDays = Number(netMatch[1]);
+      return Number.isFinite(netDays) ? netDays : null;
+    }
+
+    const daysMatch = normalizedTerm.match(/^(\d+)\s*days?$/i);
+    if (daysMatch) {
+      const explicitDays = Number(daysMatch[1]);
+      return Number.isFinite(explicitDays) ? explicitDays : null;
+    }
+
+    return null;
+  }
+
+  private getSubmitRows(): any[] {
+    return this.itemRows
+      .filter((row: SalesOrderItemRow) => `${row.item_details || ''}`.trim())
+      .map((row: SalesOrderItemRow) => ({
+        item_id: row.item_is_manual ? null : row.item_id,
+        item_name: `${row.item_details || ''}`.trim(),
+        item_description: `${row.item_description || ''}`.trim(),
+        item_type: `${row.item_type || 'Service'}`.trim(),
+        hsn_sac: `${row.hsn_sac || ''}`.trim(),
+        quantity: Number(row.quantity || 0),
+        rate: this.getRateNumber(row.rate),
+        tax: this.getTaxDisplayLabel(row.tax),
+        unit: `${row.item_unit || ''}`.trim(),
+        amount: this.getRowAmount(row),
+        is_manual: !!row.item_is_manual,
+      }));
+  }
+
+  onSalesOrderFilesChange(files: File[]): void {
+    this.uploadedSalesOrderFiles = files;
+  }
+
+  private appendFormDataValue(formData: FormData, key: string, value: any): void {
+    if (value === undefined || value === null) {
+      formData.append(key, '');
+      return;
+    }
+
+    if (typeof value === 'object') {
+      formData.append(key, JSON.stringify(value));
+      return;
+    }
+
+    formData.append(key, `${value}`);
+  }
+
+  private getSalesOrderRequestPayload(payload: any): FormData {
+    const formData = new FormData();
+    Object.keys(payload).forEach((key: string) => {
+      this.appendFormDataValue(formData, key, payload[key]);
+    });
+
+    const salesOrderAttachment = this.uploadedSalesOrderFiles[0];
+    if (salesOrderAttachment) {
+      formData.append(
+        'sales_order_attachment',
+        salesOrderAttachment,
+        salesOrderAttachment.name,
+      );
+    }
+
+    return formData;
+  }
+
+  private resetSalesOrderForm(): void {
+    const salesOrderDate = this.normalizeDate(new Date());
+    this.model = {
+      customer_id: '',
+      sales_order_no: '',
+      reference_no: '',
+      sales_order_date: salesOrderDate,
+      expected_shipment_date: null,
+      payment_terms: this.paymentTerms[0]?.termName || 'Due on Receipt',
+      delivery_method: '',
+      salesperson: '',
+      project_name: '',
+      subject: '',
+      customer_notes: 'Looking forward for your business.',
+      terms_and_conditions: '',
+      additional_tax: '',
+      adjustment_label: 'Adjustment',
+      adjustment_value: 0,
+    };
+    this.shipmentDateMin = salesOrderDate;
+    this.selectedCustomer = null;
+    this.uploadedSalesOrderFiles = [];
+    this.itemRows = [];
+    this.applyCustomFieldDefaults();
+    this.addRow();
+    this.applyOrderNumber();
+  }
+
+  onSubmit(form: any): void {
+    if (this.hasRequiredCustomFieldError()) {
+      this.toastrService.danger('Complete all required custom fields.', 'Validation Failed');
+      return;
+    }
+
+    if (!form.valid) {
+      return;
+    }
+
+    const items = this.getSubmitRows();
+
+    if (items.length === 0) {
+      this.toastrService.danger('Add at least one sales order item.', 'Validation Failed');
+      return;
+    }
+
+    const customFieldData = this.customFields.reduce((values: any, field: any) => {
+      const fieldName = `${field?.field_name || ''}`.trim();
+      if (fieldName) {
+        values[fieldName] = this.model?.[fieldName] ?? '';
+      }
+      return values;
+    }, {});
+    const additionalTax = this.getTaxLabel();
+
+    const payload = {
+      ...(this.isEditMode && this.salesOrderId ? { sales_order_id: this.salesOrderId } : {}),
+      ...(!this.isEditMode && this.orderNumberPreference.mode === 'auto' ? {
+        document_type: 'SalesOrder',
+        current_number: `${this.orderNumberPreference.nextNumber || ''}`,
+      } : {}),
+      module_id: this.salesOrderModuleId,
+      ...(Object.keys(customFieldData).length ? { custom_field: customFieldData } : {}),
+      customer_id: this.model.customer_id,
+      sales_order_no: `${this.model.sales_order_no || ''}`.trim(),
+      ref_no: `${this.model.reference_no || ''}`.trim(),
+      sales_order_date: this.formatApiDate(this.model.sales_order_date),
+      expected_shipment_date: this.formatApiDate(this.model.expected_shipment_date),
+      payment_terms: `${this.model.payment_terms || ''}`.trim(),
+      delivery_method: `${this.model.delivery_method || ''}`.trim(),
+      salesperson: `${this.model.salesperson || ''}`.trim(),
+      project_name: `${this.model.project_name || ''}`.trim(),
+      subject: `${this.model.subject || ''}`.trim(),
+      customer_notes: `${this.model.customer_notes || ''}`.trim(),
+      terms_and_conditions: `${this.model.terms_and_conditions || ''}`.trim(),
+      additional_tax: additionalTax,
+      additional_tax_rate: 0,
+      sub_total: this.getSubTotal(),
+      tax_amount: this.getTaxAmount(),
+      cgst_amount: this.getCGST(),
+      sgst_amount: this.getSGST(),
+      igst_amount: this.getIGST(),
+      tax_mode: additionalTax,
+      customer_state: this.getCustomerStateCode(),
+      business_state: this.getBusinessStateCode(),
+      adjustment_label: `${this.model.adjustment_label || 'Adjustment'}`.trim(),
+      adjustment_value: this.getAdjustmentValue(),
+      total: this.getTotal(),
+      items,
+    };
+
+    this.isSubmitting = true;
+    const salesOrderRequest$ = this.isEditMode
+      ? this.globalService.updateSalesOrder(this.getSalesOrderRequestPayload(payload))
+      : this.globalService.insertSalesOrder(this.getSalesOrderRequestPayload(payload));
+
+    salesOrderRequest$.subscribe({
+      next: (res: any) => {
+        this.isSubmitting = false;
+        this.toastrService.success(
+          res?.message || (this.isEditMode ? 'Sales order updated successfully.' : 'Sales order saved successfully.'),
+          this.isEditMode ? 'Updated' : 'Saved',
+        );
+        this.router.navigate(['/pages/sales/sales-order-list']);
+      },
+      error: (error: any) => {
+        this.isSubmitting = false;
+        this.toastrService.danger(
+          error?.error?.message || error?.message || 'Sales order could not be saved.',
+          'Save Failed',
+        );
+      },
+    });
   }
 }

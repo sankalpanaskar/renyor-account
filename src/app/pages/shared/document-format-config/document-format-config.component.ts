@@ -121,7 +121,7 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
   private readonly documentModuleIds: { [key in DocumentFormatType]: number } = {
     invoice: 54,
     quote: 52,
-    'sales-order': 53,
+    'sales-order': 57,
   };
   private readonly documentApiTypes: { [key in DocumentFormatType]: string } = {
     invoice: 'invoice',
@@ -278,13 +278,6 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
   }
 
   private fetchDocumentCustomFields(): void {
-    if (this.selectedType === 'sales-order') {
-      this.availableCustomFields = [];
-      this.config.body.customFields = [];
-      this.customFieldsLoading = false;
-      return;
-    }
-
     const requestedType = this.selectedType;
     this.customFieldsLoading = true;
     this.globalService.fetchCustomFieldsByModule(this.documentModuleIds[requestedType]).subscribe({
@@ -310,11 +303,6 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
   }
 
   private syncCustomFieldsWithConfiguration(): void {
-    if (this.selectedType === 'sales-order') {
-      this.config.body.customFields = [];
-      return;
-    }
-
     if (!this.availableCustomFields.length) {
       return;
     }

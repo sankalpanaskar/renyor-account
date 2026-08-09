@@ -836,7 +836,7 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 991px) {
   .item-list-container {
     padding-top: 0;
   }
@@ -1029,7 +1029,13 @@
   }
 
   .actions-cell {
+    display: flex !important;
     text-align: right !important;
+  }
+
+  .action-group {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .empty-state {

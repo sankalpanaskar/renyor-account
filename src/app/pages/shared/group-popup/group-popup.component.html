@@ -1,0 +1,64 @@
+<div class="payment-terms-modal-overlay" *ngIf="open">
+  <nb-card class="payment-terms-modal">
+    <nb-card-header class="payment-terms-modal-header">
+      <span>{{ title }}</span>
+      <button type="button" class="modal-close-btn" (click)="closePopup()" aria-label="Close" [disabled]="isSubmitting">
+        Close
+      </button>
+    </nb-card-header>
+
+    <nb-card-body class="payment-terms-modal-body">
+      <table class="payment-terms-table">
+        <thead>
+          <tr><th>Group Name</th></tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let group of groups" (click)="selectGroup(group.groupName)" class="term-row">
+            <td>{{ group.groupName }}</td>
+          </tr>
+          <tr *ngIf="!groups.length">
+            <td class="empty-groups">No groups available.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button type="button" nbButton status="primary" size="small" outline class="add-new-link" (click)="startAddGroup()">
+        <nb-icon icon="plus-circle"></nb-icon>
+        Add New
+      </button>
+
+      <div class="payment-term-new-row" *ngIf="showAddForm">
+        <input
+          type="text"
+          nbInput
+          fullWidth
+          shape="semi-round"
+          placeholder="Group Name"
+          [(ngModel)]="newGroupName"
+          [ngModelOptions]="{standalone: true}"
+          [disabled]="isSubmitting"
+          (keydown.enter)="saveGroup()"
+        >
+        <textarea
+          nbInput
+          fullWidth
+          rows="3"
+          shape="semi-round"
+          class="group-description-input"
+          placeholder="Group Description"
+          [(ngModel)]="newGroupDescription"
+          [ngModelOptions]="{standalone: true}"
+          [disabled]="isSubmitting"
+        ></textarea>
+        <div class="payment-term-new-actions">
+          <button type="button" nbButton status="success" size="small" (click)="saveGroup()" [disabled]="isSubmitting">
+            {{ isSubmitting ? 'Submitting...' : 'Add' }}
+          </button>
+          <button type="button" nbButton status="basic" size="small" (click)="cancelAddGroup()" [disabled]="isSubmitting">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </nb-card-body>
+  </nb-card>
+</div>

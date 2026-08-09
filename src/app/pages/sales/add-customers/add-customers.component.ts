@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
 import { Router } from '@angular/router';
+import { GroupOption } from '../../shared/group-popup/group-popup.component';
 
 type CustomerDocumentField = 'document_1' | 'document_2';
 type DocumentPreviewType = 'image' | 'pdf' | 'file';
@@ -26,6 +27,7 @@ export class AddCustomersComponent implements OnInit, OnDestroy {
   stateList : Array<{ name: string; code: string }> = [];
   customFields: any[] = [];
   showPaymentTermsPopup: boolean = false;
+  showGroupPopup: boolean = false;
   document1File: File | null = null;
   document2File: File | null = null;
   documentObjectUrls: Partial<Record<CustomerDocumentField, string>> = {};
@@ -35,6 +37,7 @@ export class AddCustomersComponent implements OnInit, OnDestroy {
   selectedDocumentName = '';
   selectedDocumentType: DocumentPreviewType = 'file';
   paymentTerms: any[] = [];
+  groups: GroupOption[] = [];
   tdsTerms: any[] = [];
 
   gstTreatmentOptions: string[] = [
@@ -65,6 +68,7 @@ export class AddCustomersComponent implements OnInit, OnDestroy {
     this.getState();
     this.getCustomFields();
     this.fetchPaymentTerms();
+    this.fetchGroups();
   }
 
   ngOnDestroy(): void {
@@ -151,6 +155,25 @@ export class AddCustomersComponent implements OnInit, OnDestroy {
       error: () => {
         this.paymentTerms = [];
       }
+    });
+  }
+
+  fetchGroups(): void {
+    this.globalService.fetchGroups().subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res?.data)
+          ? res.data
+          : (Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
+        this.groups = data
+          .map((item: any) => ({
+            id: item?.id ?? item?.group_id,
+            groupName: `${item?.group_name ?? item?.name ?? item?.group ?? ''}`.trim(),
+          }))
+          .filter((group: GroupOption) => !!group.groupName);
+      },
+      error: () => {
+        this.groups = [];
+      },
     });
   }
 
@@ -441,6 +464,24 @@ export class AddCustomersComponent implements OnInit, OnDestroy {
   onPaymentTermSelected(termName: string): void {
     this.model.payment_terms = termName;
     this.showPaymentTermsPopup = false;
+  }
+
+  openGroupPopup(): void {
+    this.fetchGroups();
+    this.showGroupPopup = true;
+  }
+
+  closeGroupPopup(): void {
+    this.showGroupPopup = false;
+  }
+
+  onGroupsChanged(groups: GroupOption[]): void {
+    this.groups = groups;
+  }
+
+  onGroupSelected(groupName: string): void {
+    this.model.customer_group = groupName;
+    this.showGroupPopup = false;
   }
 
   onPhoneInputChange(field: 'work_phone' | 'mobile_no'): void {

@@ -925,7 +925,23 @@
   }
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1199px) and (min-width: 992px) {
+  .entity-table {
+    min-width: 940px !important;
+  }
+
+  .entity-table th,
+  .entity-table td {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .entity-action-group {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 991px) {
   .entity-page-heading h1 {
     font-size: 22px;
   }
@@ -960,11 +976,11 @@
   }
 
   .entity-table {
-    min-width: 0;
+    min-width: 0 !important;
   }
 
   .entity-table thead {
-    display: none;
+    display: none !important;
   }
 
   .entity-table,
@@ -972,7 +988,7 @@
   .entity-table tr,
   .entity-table td {
     width: 100%;
-    display: block;
+    display: block !important;
   }
 
   .entity-table tbody {
@@ -987,14 +1003,15 @@
     border-radius: 14px;
     background: #fff;
     box-shadow: 0 5px 16px rgba(39, 53, 83, 0.055);
-    display: block;
+    display: block !important;
+    grid-template-columns: none !important;
   }
 
   .entity-table tbody .entity-row td {
     min-height: 40px;
     padding: 9px 2px;
     border-bottom: 1px dashed #e8edf5;
-    display: flex;
+    display: flex !important;
     align-items: center;
     justify-content: space-between;
     gap: 18px;
@@ -1012,7 +1029,7 @@
 
   .entity-table tbody .entity-row td:first-child {
     padding-bottom: 13px;
-    display: block;
+    display: block !important;
     text-align: left;
   }
 
@@ -1025,7 +1042,13 @@
   }
 
   .entity-actions-cell {
+    display: flex !important;
     text-align: right !important;
+  }
+
+  .entity-action-group {
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .entity-empty-state {

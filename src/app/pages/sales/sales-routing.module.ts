@@ -12,6 +12,7 @@ import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.compon
 import { AddQuoteComponent } from './add-quote/add-quote.component';
 import { InvoiceListComponent } from './invoice-list/invoice-list.component';
 import { QuotationListComponent } from './quotation-list/quotation-list.component';
+import { SalesOrderListComponent } from './sales-order-list/sales-order-list.component';
 
 const routes: Routes = [
   {
@@ -81,6 +82,16 @@ const routes: Routes = [
       {
         path:'add-sales-order',
         component:AddSalesOrderComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'update-sales-order',
+        component:AddSalesOrderComponent,
+        canActivate: [authGuard]
+      },
+      {
+        path:'sales-order-list',
+        component:SalesOrderListComponent,
         canActivate: [authGuard]
       }
     ]

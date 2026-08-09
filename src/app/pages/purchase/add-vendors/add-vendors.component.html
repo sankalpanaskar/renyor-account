@@ -1,6 +1,7 @@
-<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
-    <nb-card class="add-form-card">
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" class="vendor-form-shell">      
+    <nb-card class="vendor-form-card add-form-card">
         <nb-card-header>{{ isEditMode ? 'Update Vendor' : 'Add Vendor' }}</nb-card-header>
+        <nb-card-body class="vendor-form-body">
         <nb-tabset fullWidth>
             <nb-tab tabTitle="Vendor Details">
                 <div class="row">
@@ -87,12 +88,26 @@
             </nb-tab>
             <nb-tab tabTitle="Others Details">
                 <div class="row">
-                    <div class="col-lg-6">
-                        <label class="small-label" id="label-category">Group</label>
-                        <nb-select shape="semi-round" placeholder="Select Group" name="group"
-                            required #group="ngModel" [(ngModel)]="model.group">
-                            <nb-option value="Group 1">Group 1</nb-option>
-                        </nb-select>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-category">Group <span style="color:#d32f2f">*</span></label>
+                        <div class="payment-terms-control">
+                            <ngx-search-select
+                                name="group"
+                                [placeholder]="'Select Group'"
+                                [options]="groups"
+                                [(ngModel)]="model.group"
+                                displayKey="groupName"
+                                valueKey="groupName"
+                                [required]="true"
+                            ></ngx-search-select>
+                            <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
+                                (click)="openGroupPopup()" aria-label="Add group">
+                                <nb-icon icon="plus-circle"></nb-icon>
+                            </button>
+                        </div>
+                        <div *ngIf="fm.submitted && !model.group" class="error-message">
+                            Group is required
+                        </div>
                     </div>
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">GST Treatment <span
@@ -583,8 +598,9 @@
                 </div>
             </nb-tab>
         </nb-tabset>
+        </nb-card-body>
         <nb-card-footer>
-            <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
                 <button nbButton status="primary" shape="semi-round" hero type="submit"
                     [disabled]="isSubmitting">
                     {{ isEditMode ? 'Update' : 'Save' }}
@@ -602,6 +618,15 @@
     (termsChange)="onPaymentTermsChanged($event)"
     (termSelected)="onPaymentTermSelected($event)"
 ></ngx-payment-terms-popup>
+
+<ngx-group-popup
+    [open]="showGroupPopup"
+    [title]="'Configure Groups'"
+    [groups]="groups"
+    (close)="closeGroupPopup()"
+    (groupsChange)="onGroupsChanged($event)"
+    (groupSelected)="onGroupSelected($event)"
+></ngx-group-popup>
 
 <ngx-tds-popup
     [open]="showTdsPopup"

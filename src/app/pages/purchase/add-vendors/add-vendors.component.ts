@@ -7,6 +7,7 @@ import { TdsTermOption } from '../../shared/tds-popup/tds-popup.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
+import { GroupOption } from '../../shared/group-popup/group-popup.component';
 
 type VendorDocumentField = 'document_1' | 'document_2';
 type VendorDocumentPreviewType = 'image' | 'pdf' | 'file';
@@ -23,6 +24,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
   stateList : any = [];
   customFields: any[] = [];
   showPaymentTermsPopup: boolean = false;
+  showGroupPopup: boolean = false;
   document1File: File | null = null;
   document2File: File | null = null;
   documentObjectUrls: Partial<Record<VendorDocumentField, string>> = {};
@@ -33,6 +35,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
   selectedDocumentType: VendorDocumentPreviewType = 'file';
   showTdsPopup: boolean = false;
   paymentTerms: PaymentTermOption[] = [];
+  groups: GroupOption[] = [];
   tdsTerms: TdsTermOption[] = [];
   isEditMode = false;
   vendorId: number | null = null;
@@ -53,6 +56,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
     this.getCustomFields();
     this.fetchTdsTerms();
     this.fetchPaymentTerms();
+    this.fetchGroups();
     this.route.queryParams.subscribe((params: any) => {
       const vendorId = Number(params?.vendor_id);
       this.vendorId = Number.isNaN(vendorId) || !vendorId ? null : vendorId;
@@ -166,6 +170,25 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
     });
   }
 
+  fetchGroups(): void {
+    this.globalService.fetchGroups().subscribe({
+      next: (res: any) => {
+        const data = Array.isArray(res?.data)
+          ? res.data
+          : (Array.isArray(res?.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
+        this.groups = data
+          .map((item: any) => ({
+            id: item?.id ?? item?.group_id,
+            groupName: `${item?.group_name ?? item?.name ?? item?.group ?? ''}`.trim(),
+          }))
+          .filter((group: GroupOption) => !!group.groupName);
+      },
+      error: () => {
+        this.groups = [];
+      },
+    });
+  }
+
   private getEmptyBankAccount(): any {
     return {
       account_holder_name: '',
@@ -217,6 +240,24 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
 
   onPaymentTermSelected(termName: string): void {
     this.model.payment_terms = termName;
+  }
+
+  openGroupPopup(): void {
+    this.fetchGroups();
+    this.showGroupPopup = true;
+  }
+
+  closeGroupPopup(): void {
+    this.showGroupPopup = false;
+  }
+
+  onGroupsChanged(groups: GroupOption[]): void {
+    this.groups = groups;
+  }
+
+  onGroupSelected(groupName: string): void {
+    this.model.group = groupName;
+    this.showGroupPopup = false;
   }
 
   openTdsPopup(): void {
