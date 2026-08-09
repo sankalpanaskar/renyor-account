@@ -145,6 +145,24 @@ const buildQuotationItemValues = (quotationMasterId, item, tenant_id, user_id) =
   ];
 };
 
+const buildSalesOrderItemValues = (salesOrderMasterId, item, tenant_id, user_id) => {
+  return [
+    salesOrderMasterId,
+    normalizeFormValue(item?.item_id) ?? null,
+    normalizeFormValue(item?.item_name) ?? null,
+    normalizeFormValue(item?.item_description) ?? null,
+    normalizeFormValue(item?.item_type) ?? null,
+    normalizeFormValue(item?.hsn_sac) ?? null,
+    normalizeFormValue(item?.quantity) ?? 0,
+    normalizeFormValue(item?.rate) ?? 0,
+    normalizeFormValue(item?.tax) ?? null,
+    normalizeFormValue(item?.unit) ?? null,
+    normalizeFormValue(item?.amount) ?? 0,
+    tenant_id,
+    user_id
+  ];
+};
+
 
 
 exports.createDocumentPdf = async (
@@ -299,6 +317,7 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
       tax_mode,
       customer_state,
       total,
+      adjustment_value,
       custom_field,
       module_id,
       items
@@ -347,6 +366,7 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
       "tax_mode",
       "customer_state",
       "total",
+      "adjustment_value",
       "invoice_attachment",
       "tenant_id",
       "user_id"
@@ -371,6 +391,7 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
       tax_mode ?? null,
       customer_state ?? null,
       total ?? 0,
+      adjustment_value ?? 0,
       uploaded_invoice_attachment ?? null,
       tenant_id,
       user_id
@@ -485,6 +506,7 @@ exports.createQuotation = async (data, tenant_id, user_id, uploaded_quotation_at
       tax_mode,
       customer_state,
       total,
+      adjustment_value,
       custom_field,
       module_id,
       items
@@ -533,6 +555,7 @@ exports.createQuotation = async (data, tenant_id, user_id, uploaded_quotation_at
       "tax_mode",
       "customer_state",
       "total",
+      "adjustment_value",
       "quotation_attachment",
       "tenant_id",
       "user_id"
@@ -558,6 +581,7 @@ exports.createQuotation = async (data, tenant_id, user_id, uploaded_quotation_at
       tax_mode ?? null,
       customer_state ?? null,
       total ?? 0,
+      adjustment_value ?? 0,
       uploaded_quotation_attachment ?? null,
       tenant_id,
       user_id
@@ -629,6 +653,211 @@ exports.createQuotation = async (data, tenant_id, user_id, uploaded_quotation_at
     const [itemRows] = await connection.query(
       `SELECT * FROM quotation_items WHERE quotation_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
       [quotationMasterId, tenant_id]
+    );
+
+    await connection.commit();
+
+    return {
+      ...masterRows[0],
+      items: itemRows
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.createSalesOrder = async (data, tenant_id, user_id, uploaded_sales_order_attachment = null) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      customer_id,
+      sales_order_no,
+      document_type,
+      current_number,
+      ref_no,
+      sales_order_date,
+      expected_shipment_date,
+      payment_terms,
+      delivery_method,
+      salesperson,
+      project_name,
+      subject,
+      customer_notes,
+      terms_and_conditions,
+      additional_tax,
+      additional_tax_rate,
+      sub_total,
+      tax_amount,
+      cgst_amount,
+      sgst_amount,
+      igst_amount,
+      tax_mode,
+      customer_state,
+      business_state,
+      adjustment_label,
+      adjustment_value,
+      total,
+      custom_field,
+      module_id,
+      items
+    } = data || {};
+
+    const salesOrderItems = parseInvoiceItems(items);
+
+    if (customer_id === undefined || customer_id === null || customer_id === "") {
+      throw new Error("customer_id is required");
+    }
+
+    if (!sales_order_no) {
+      throw new Error("sales_order_no is required");
+    }
+
+    const normalizedDocumentType = String(normalizeFormValue(document_type) || 'salesorder')
+      .toLowerCase()
+      .replace(/\s+/g, '');
+    const nextCurrentNumber = normalizeFormValue(current_number);
+
+    if (nextCurrentNumber === undefined || nextCurrentNumber === null || nextCurrentNumber === "") {
+      throw new Error("current_number is required");
+    }
+
+    if (!salesOrderItems.length) {
+      throw new Error("items are required");
+    }
+
+    const salesOrderMasterColumns = [
+      "customer_id",
+      "sales_order_no",
+      "ref_no",
+      "sales_order_date",
+      "expected_shipment_date",
+      "payment_terms",
+      "delivery_method",
+      "salesperson",
+      "project_name",
+      "subject",
+      "customer_notes",
+      "terms_and_conditions",
+      "additional_tax",
+      "additional_tax_rate",
+      "sub_total",
+      "tax_amount",
+      "cgst_amount",
+      "sgst_amount",
+      "igst_amount",
+      "tax_mode",
+      "customer_state",
+      "business_state",
+      "adjustment_label",
+      "adjustment_value",
+      "total",
+      "sales_order_attachment",
+      "tenant_id",
+      "user_id"
+    ];
+
+    const salesOrderMasterValues = [
+      customer_id,
+      sales_order_no,
+      ref_no ?? null,
+      formatDateForDb(sales_order_date),
+      formatDateForDb(expected_shipment_date),
+      payment_terms ?? null,
+      delivery_method ?? null,
+      salesperson ?? null,
+      project_name ?? null,
+      subject ?? null,
+      customer_notes ?? null,
+      terms_and_conditions ?? null,
+      additional_tax ?? null,
+      additional_tax_rate ?? 0,
+      sub_total ?? 0,
+      tax_amount ?? 0,
+      cgst_amount ?? 0,
+      sgst_amount ?? 0,
+      igst_amount ?? 0,
+      tax_mode ?? null,
+      customer_state ?? null,
+      business_state ?? null,
+      adjustment_label ?? null,
+      adjustment_value ?? 0,
+      total ?? 0,
+      uploaded_sales_order_attachment ?? null,
+      tenant_id,
+      user_id
+    ];
+
+    const [masterResult] = await connection.query(
+      `INSERT INTO sales_order_master (${salesOrderMasterColumns.join(", ")})
+       VALUES (${salesOrderMasterColumns.map(() => "?").join(", ")})`,
+      salesOrderMasterValues
+    );
+
+    const salesOrderMasterId = masterResult.insertId;
+    for (const item of salesOrderItems) {
+      await connection.query(
+        `INSERT INTO sales_order_items (
+          sales_order_master_id,
+          item_id,
+          item_name,
+          item_description,
+          item_type,
+          hsn_sac,
+          quantity,
+          rate,
+          tax,
+          unit,
+          amount,
+          tenant_id,
+          user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        buildSalesOrderItemValues(salesOrderMasterId, item, tenant_id, user_id)
+      );
+    }
+
+    const customFieldValues = parseCustomFieldForUpdate(custom_field);
+
+    if (customFieldValues && Object.keys(customFieldValues).length > 0) {
+      const moduleId = normalizeFormValue(module_id);
+
+      if (!moduleId) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      await handleCustomFields({
+        connection,
+        custom_field: customFieldValues,
+        module_id: moduleId,
+        tenant_id,
+        record_id: salesOrderMasterId
+      });
+    }
+
+    const [settingsResult] = await connection.query(
+      `UPDATE document_number_settings
+       SET current_number = ?
+       WHERE tenant_id = ? AND document_type = ?`,
+      [nextCurrentNumber, tenant_id, normalizedDocumentType]
+    );
+
+    if (settingsResult.affectedRows === 0) {
+      throw new Error("Document number settings not found");
+    }
+
+    const [masterRows] = await connection.query(
+      `SELECT * FROM sales_order_master WHERE id = ? AND tenant_id = ?`,
+      [salesOrderMasterId, tenant_id]
+    );
+
+    const [itemRows] = await connection.query(
+      `SELECT * FROM sales_order_items WHERE sales_order_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
+      [salesOrderMasterId, tenant_id]
     );
 
     await connection.commit();
@@ -917,6 +1146,143 @@ exports.fetchQuotation = async (tenant_id, quotation_id = null, module_id = null
   }));
 
   return quotation_id ? quotationsWithCustomFields[0] : quotationsWithCustomFields;
+};
+
+exports.fetchSalesOrder = async (tenant_id, sales_order_id = null, module_id = null) => {
+  const masterParams = [tenant_id];
+  let masterWhereClause = "WHERE som.tenant_id = ?";
+
+  if (sales_order_id !== undefined && sales_order_id !== null && sales_order_id !== "") {
+    masterWhereClause += " AND som.id = ?";
+    masterParams.push(sales_order_id);
+  }
+
+  const [masterRows] = await db.query(
+    `SELECT
+        som.*,
+        som.status AS status,
+        c.display_name AS customer_display_name,
+        c.company_name AS customer_company_name,
+        c.primary_contact_f_name AS customer_first_name,
+        c.primary_contact_l_name AS customer_last_name,
+        c.billing_address AS billing_address,
+        c.billing_country AS billing_country,
+        c.billing_city AS billing_city,
+        c.billing_state AS billing_state,
+        c.billing_pin AS billing_pin,
+        c.shipping_address AS shipping_address,
+        c.shipping_country AS shipping_country,
+        c.shipping_city AS shipping_city,
+        c.shipping_state AS shipping_state,
+        c.shipping_pin AS shipping_pin
+
+     FROM sales_order_master som
+     LEFT JOIN customers c
+       ON c.id = som.customer_id
+      AND c.tenant_id = som.tenant_id
+     ${masterWhereClause}
+     ORDER BY som.id DESC`,
+    masterParams
+  );
+
+  if (!masterRows.length) {
+    return sales_order_id ? null : [];
+  }
+
+  const salesOrderMasterIds = masterRows.map((row) => row.id);
+  const [itemRows] = await db.query(
+    `SELECT *
+     FROM sales_order_items
+     WHERE tenant_id = ?
+       AND sales_order_master_id IN (?)
+     ORDER BY sales_order_master_id ASC, id ASC`,
+    [tenant_id, salesOrderMasterIds]
+  );
+
+  const itemsBySalesOrderId = itemRows.reduce((acc, item) => {
+    if (!acc[item.sales_order_master_id]) {
+      acc[item.sales_order_master_id] = [];
+    }
+
+    acc[item.sales_order_master_id].push(item);
+    return acc;
+  }, {});
+
+  const salesOrders = masterRows.map((row) => {
+    const {
+      customer_display_name,
+      customer_company_name,
+      customer_first_name,
+      customer_last_name,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      ...salesOrder
+    } = row;
+
+    return {
+      ...salesOrder,
+      customer: {
+        display_name: customer_display_name || null,
+        company_name: customer_company_name || null,
+        first_name: customer_first_name || null,
+        last_name: customer_last_name || null,
+        billing_address: billing_address || null,
+        billing_country: billing_country || null,
+        billing_city: billing_city || null,
+        billing_state: billing_state || null,
+        billing_pin: billing_pin || null,
+        shipping_address: shipping_address || null,
+        shipping_country: shipping_country || null,
+        shipping_city: shipping_city || null,
+        shipping_state: shipping_state || null,
+        shipping_pin: shipping_pin || null
+      },
+      items: itemsBySalesOrderId[row.id] || []
+    };
+  });
+
+  if (!module_id) {
+    return sales_order_id ? salesOrders[0] : salesOrders;
+  }
+
+  const [customRows] = await db.query(
+    `SELECT
+        cfv.record_id,
+        cf.field_name,
+        cfv.field_value
+      FROM custom_field_values cfv
+      INNER JOIN custom_fields cf
+        ON cf.id = cfv.field_id
+      WHERE cfv.module_id = ?
+        AND cfv.tenant_id = ?
+        AND cfv.record_id IN (?)`,
+    [module_id, tenant_id, salesOrderMasterIds]
+  );
+
+  const customFieldMap = {};
+
+  for (const row of customRows) {
+    if (!customFieldMap[row.record_id]) {
+      customFieldMap[row.record_id] = {};
+    }
+
+    customFieldMap[row.record_id][row.field_name] = row.field_value;
+  }
+
+  const salesOrdersWithCustomFields = salesOrders.map((salesOrder) => ({
+    ...salesOrder,
+    custom_field: customFieldMap[salesOrder.id] || {}
+  }));
+
+  return sales_order_id ? salesOrdersWithCustomFields[0] : salesOrdersWithCustomFields;
 };
 
 exports.fetchAllCustomers = async (tenant_id, module_id) => {

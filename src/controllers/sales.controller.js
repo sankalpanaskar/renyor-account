@@ -40,6 +40,14 @@ const buildQuotationUploadPath = (tenant_id, file) => {
   return `uploads/quotations/${tenant_id}/${file.filename}`;
 };
 
+const buildSalesOrderUploadPath = (tenant_id, file) => {
+  if (!file?.filename) {
+    return null;
+  }
+
+  return `uploads/sales-orders/${tenant_id}/${file.filename}`;
+};
+
 
 exports.fetchCustomers = async (req, res) => {
   try {
@@ -585,6 +593,43 @@ exports.createQuotation = async (req, res) => {
   }
 };
 
+//sales order create
+exports.createSalesOrder = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+    const sales_order_attachment = buildSalesOrderUploadPath(
+      tenant_id,
+      req.files?.sales_order_attachment?.[0]
+    );
+
+    const salesOrder = await sales.createSalesOrder(
+      req.body,
+      tenant_id,
+      user_id,
+      sales_order_attachment
+    );
+
+    return res.success(
+      200,
+      "Sales order created successfully",
+      salesOrder
+    );
+  } catch (err) {
+    if(err.code==='ER_DUP_ENTRY'){
+        return res.error(
+              409,
+              "Sales Order No already Exist."
+            );
+    }else{
+      return res.error(
+      400,
+      err.message
+       );
+    }
+  }
+};
+
 exports.fetchInvoice = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
@@ -621,6 +666,26 @@ exports.fetchQuotation = async (req, res) => {
     return res.error(
       500,
       err.message || "Failed to fetch quotation"
+    );
+  }
+};
+
+exports.fetchSalesOrder = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const { id, module_id } = req.query;
+
+    const salesOrders = await sales.fetchSalesOrder(tenant_id, id, module_id);
+
+    return res.success(
+      200,
+      id ? "Sales order fetched successfully" : "Sales orders fetched successfully",
+      salesOrders
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch sales order"
     );
   }
 };

@@ -110,8 +110,17 @@ router.post(
   ]),
   salesController.createQuotation
 );
+router.post(
+  '/create-sales-order',
+  auth,
+  optionalTenantUpload('sales-orders', [
+    { name: 'sales_order_attachment', maxCount: 1 }
+  ]),
+  salesController.createSalesOrder
+);
 router.get('/fetch-invoice', auth, salesController.fetchInvoice);
 router.get('/fetch-quotation', auth, salesController.fetchQuotation);
+router.get('/fetch-sales-order', auth, salesController.fetchSalesOrder);
 router.post('/generate-pdf', auth, salesController.createDocumentPdf);
 
 router.get('/fetch-tax-rate', auth, salesController.fetchTaxRate);
