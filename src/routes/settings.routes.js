@@ -31,4 +31,17 @@ router.get(
   SettingsController.fetchDocumentFormatSettings
 );
 
+router.post(
+  '/create-goup',
+  auth,
+  upload.none(),
+  SettingsController.createGroup
+);
+
+router.get(
+  '/fetch-group',
+  auth,
+  SettingsController.fetchGroup
+);
+
 module.exports = router;

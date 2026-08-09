@@ -279,3 +279,61 @@ exports.fetchDocumentFormatSettings = async (tenant_id, filters = {}) => {
   const settings = rows.map(parseConfigurationRow);
   return id ? settings[0] || null : settings;
 };
+
+exports.createGroup = async (data, tenant_id, user_id) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      group_name,
+      group_description,
+      status = 1
+    } = data || {};
+
+    if (!group_name) {
+      throw new Error('group_name is required');
+    }
+
+    const [result] = await connection.query(
+      `INSERT INTO group_tbl
+        (tenant_id, user_id, group_name, group_description, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
+      [
+        tenant_id,
+        user_id,
+        group_name,
+        group_description ?? null,
+        status
+      ]
+    );
+
+    const [rows] = await connection.query(
+      `SELECT *
+       FROM group_tbl
+       WHERE id = ? AND tenant_id = ?`,
+      [result.insertId, tenant_id]
+    );
+
+    await connection.commit();
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
+exports.fetchGroup = async (tenant_id) => {
+  const [rows] = await db.query(
+    `SELECT *
+     FROM group_tbl
+     WHERE tenant_id = ?
+     ORDER BY id DESC`,
+    [tenant_id]
+  );
+
+  return rows;
+};

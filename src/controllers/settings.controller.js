@@ -93,3 +93,41 @@ exports.fetchDocumentFormatSettings = async (req, res) => {
     );
   }
 };
+
+exports.createGroup = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const group = await SettingsService.createGroup(req.body, tenant_id, user_id);
+
+    return res.success(
+      200,
+      'Group created successfully',
+      group
+    );
+  } catch (err) {
+    return res.error(
+      400,
+      err.message
+    );
+  }
+};
+
+exports.fetchGroup = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const groups = await SettingsService.fetchGroup(tenant_id);
+
+    return res.success(
+      200,
+      'Groups fetched successfully',
+      groups
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || 'Failed to fetch groups'
+    );
+  }
+};
