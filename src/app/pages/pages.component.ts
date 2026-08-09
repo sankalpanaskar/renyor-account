@@ -161,6 +161,7 @@ export class PagesComponent implements OnInit, OnDestroy {
       next: (res: any) => {
         if (res.data && Array.isArray(res.data)) {
           console.log('📡 Dynamic menu structure from API:', res.data);
+          this.globalService.setMenuPermissions(res.data);
           
           // Convert API menu structure to NbMenuItem format
           const dynamicMenuItems = this.convertMenuStructure(res.data);
@@ -328,6 +329,11 @@ export class PagesComponent implements OnInit, OnDestroy {
   }
 
   private canShowChild(child: any): boolean {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    if (this.isTruthyPermission(user?.is_system_super_admin)) {
+      return true;
+    }
+
     const permissionKeys = ['can_create', 'can_view', 'can_edit', 'can_delete'];
     const hasPermissionFields = permissionKeys.some((key: string) => child?.[key] !== undefined && child?.[key] !== null);
 
@@ -370,6 +376,10 @@ export class PagesComponent implements OnInit, OnDestroy {
   }
 
   private configureNavigationMenus(staticMenu: any[]): void {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const isCompanySuperAdmin = this.isTruthyPermission(user?.is_company_super_admin);
+    const isSystemSuperAdmin = this.isTruthyPermission(user?.is_system_super_admin);
+    const canAccessSetup = isCompanySuperAdmin || isSystemSuperAdmin;
     const dashboardItem = staticMenu.find((item: any) => this.normalizeTitle(item?.title) === 'dashboard');
     const settingsItems = staticMenu.filter((item: any) => {
       const title = this.normalizeTitle(item?.title);
@@ -392,9 +402,13 @@ export class PagesComponent implements OnInit, OnDestroy {
 
     this.mainMenu = [
       ...(dashboardItem ? [dashboardItem] : []),
-      setupLauncher
+      ...(canAccessSetup ? [setupLauncher] : []),
     ];
-    this.settingsMenu = [closeSettingsItem, ...settingsItems];
+    this.settingsMenu = canAccessSetup ? [closeSettingsItem, ...settingsItems] : [];
+
+    if (!canAccessSetup) {
+      this.isSettingsMenuOpen = false;
+    }
 
     this.assignMenuParents(this.mainMenu);
     this.assignMenuParents(this.settingsMenu);

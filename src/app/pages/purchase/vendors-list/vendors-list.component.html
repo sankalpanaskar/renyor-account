@@ -228,7 +228,7 @@
               <nb-icon icon="close-outline"></nb-icon>
             </button>
           </div>
-          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddVendorPage()">
+          <button *ngIf="canCreate" nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddVendorPage()">
             <nb-icon icon="plus-outline"></nb-icon>
             Add Vendor
           </button>
@@ -280,7 +280,7 @@
                     <h3>{{ lastSearchForm ? 'No matching vendors' : 'No vendors yet' }}</h3>
                     <p>{{ lastSearchForm ? 'Try a different search term.' : 'Add your first vendor to get started.' }}</p>
                     <button *ngIf="lastSearchForm" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
-                    <button *ngIf="!lastSearchForm" type="button" nbButton status="primary" (click)="gotoAddVendorPage()">Add vendor</button>
+                    <button *ngIf="!lastSearchForm && canCreate" type="button" nbButton status="primary" (click)="gotoAddVendorPage()">Add vendor</button>
                   </div>
                 </td>
               </tr>

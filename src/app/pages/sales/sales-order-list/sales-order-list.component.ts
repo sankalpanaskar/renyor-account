@@ -1,17 +1,18 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { NbToastrService } from '@nebular/theme';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { GlobalService } from '../../../services/global.service';
 import { environment } from '../../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-sales-order-list',
   templateUrl: './sales-order-list.component.html',
   styleUrls: ['./sales-order-list.component.scss'],
 })
-export class SalesOrderListComponent implements OnInit {
+export class SalesOrderListComponent implements OnInit, OnDestroy {
   allSalesOrders: any[] = [];
   apiData: any[] = [];
   searchText = '';
@@ -29,6 +30,8 @@ export class SalesOrderListComponent implements OnInit {
   private salesOrderTemplateHtml = '';
   private salesOrderCustomFields: any[] = [];
   private salesOrderFormatConfiguration: any = null;
+  canCreate = false;
+  private permissionSubscription?: Subscription;
 
   constructor(
     private globalService: GlobalService,
@@ -40,9 +43,16 @@ export class SalesOrderListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.permissionSubscription = this.globalService.menuPermissions$.subscribe(() => {
+      this.canCreate = Number(this.globalService.getMenuPermissions('/pages/sales/sales-order-list')?.can_create) === 1;
+    });
     this.fetchSalesOrders();
     this.fetchSalesOrderCustomFields();
     this.fetchSalesOrderFormatConfiguration();
+  }
+
+  ngOnDestroy(): void {
+    this.permissionSubscription?.unsubscribe();
   }
 
   private fetchSalesOrderFormatConfiguration(): void {
@@ -186,6 +196,9 @@ export class SalesOrderListComponent implements OnInit {
   }
 
   gotoAddSalesOrder(): void {
+    if (!this.canCreate) {
+      return;
+    }
     this.router.navigate(['/pages/sales/add-sales-order']);
   }
 

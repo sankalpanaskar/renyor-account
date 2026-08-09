@@ -1,17 +1,18 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { NbToastrService } from '@nebular/theme';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { GlobalService } from '../../../services/global.service';
 import { environment } from '../../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-invoice-list',
   templateUrl: './invoice-list.component.html',
   styleUrls: ['./invoice-list.component.scss'],
 })
-export class InvoiceListComponent implements OnInit {
+export class InvoiceListComponent implements OnInit, OnDestroy {
   allInvoices: any[] = [];
   apiData: any[] = [];
   searchText = '';
@@ -29,6 +30,8 @@ export class InvoiceListComponent implements OnInit {
   private invoiceTemplateHtml = '';
   private invoiceCustomFields: any[] = [];
   private invoiceFormatConfiguration: any = null;
+  canCreate = false;
+  private permissionSubscription?: Subscription;
 
   constructor(
     private globalService: GlobalService,
@@ -40,9 +43,16 @@ export class InvoiceListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.permissionSubscription = this.globalService.menuPermissions$.subscribe(() => {
+      this.canCreate = Number(this.globalService.getMenuPermissions('/pages/sales/invoice-list')?.can_create) === 1;
+    });
     this.fetchInvoices();
     this.fetchInvoiceCustomFields();
     this.fetchInvoiceFormatConfiguration();
+  }
+
+  ngOnDestroy(): void {
+    this.permissionSubscription?.unsubscribe();
   }
 
   private fetchInvoiceFormatConfiguration(): void {
@@ -182,6 +192,9 @@ export class InvoiceListComponent implements OnInit {
   }
 
   gotoAddInvoice(): void {
+    if (!this.canCreate) {
+      return;
+    }
     this.router.navigate(['/pages/sales/add-invoice']);
   }
 

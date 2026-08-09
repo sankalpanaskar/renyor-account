@@ -79,7 +79,7 @@
               <nb-icon icon="close-outline"></nb-icon>
             </button>
           </div>
-          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddInvoice()">
+          <button *ngIf="canCreate" nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddInvoice()">
             <nb-icon icon="plus-outline"></nb-icon>
             Add Invoice
           </button>
@@ -143,7 +143,7 @@
                     <p>{{ loadError || (searchText ? 'Try another invoice number, customer or status.' : 'Create your first invoice to get started.') }}</p>
                     <button *ngIf="searchText" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
                     <button *ngIf="loadError && !searchText" type="button" nbButton status="primary" ghost (click)="fetchInvoices()">Try again</button>
-                    <button *ngIf="!searchText" type="button" nbButton status="primary" (click)="gotoAddInvoice()">Add invoice</button>
+                    <button *ngIf="!searchText && canCreate" type="button" nbButton status="primary" (click)="gotoAddInvoice()">Add invoice</button>
                   </div>
                 </td>
               </tr>

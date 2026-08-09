@@ -187,7 +187,7 @@
               <nb-icon icon="close-outline"></nb-icon>
             </button>
           </div>
-          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddCustomerPage()">
+          <button *ngIf="canCreate" nbButton status="primary" size="small" shape="semi-round" type="button" class="entity-add-btn" (click)="gotoAddCustomerPage()">
             <nb-icon icon="plus-outline"></nb-icon>
             Add Customer
           </button>
@@ -239,7 +239,7 @@
                     <h3>{{ lastSearchForm ? 'No matching customers' : 'No customers yet' }}</h3>
                     <p>{{ lastSearchForm ? 'Try a different search term.' : 'Add your first customer to get started.' }}</p>
                     <button *ngIf="lastSearchForm" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
-                    <button *ngIf="!lastSearchForm" type="button" nbButton status="primary" (click)="gotoAddCustomerPage()">Add customer</button>
+                    <button *ngIf="!lastSearchForm && canCreate" type="button" nbButton status="primary" (click)="gotoAddCustomerPage()">Add customer</button>
                   </div>
                 </td>
               </tr>

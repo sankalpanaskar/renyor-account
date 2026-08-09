@@ -1,19 +1,25 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { GlobalService } from '../../../services/global.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-item-list',
   templateUrl: './item-list.component.html',
   styleUrls: ['./item-list.component.scss']
 })
-export class ItemListComponent implements OnInit {
+export class ItemListComponent implements OnInit, OnDestroy {
   loading = false;
   searchText = '';
   allItems: any[] = [];
   apiData: any[] = [];
   showItemPopup = false;
   selectedItem: any = null;
+  canView = false;
+  canCreate = false;
+  canEdit = false;
+  canDelete = false;
+  private permissionSubscription?: Subscription;
 
   constructor(
     private globalService: GlobalService,
@@ -29,7 +35,18 @@ export class ItemListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.permissionSubscription = this.globalService.menuPermissions$.subscribe(() => {
+      const permissions = this.globalService.getMenuPermissions('/pages/sales/item-list');
+      this.canView = Number(permissions?.can_view) === 1;
+      this.canCreate = Number(permissions?.can_create) === 1;
+      this.canEdit = Number(permissions?.can_edit) === 1;
+      this.canDelete = Number(permissions?.can_delete) === 1;
+    });
     this.fetchItems();
+  }
+
+  ngOnDestroy(): void {
+    this.permissionSubscription?.unsubscribe();
   }
 
   fetchItems(): void {
@@ -73,6 +90,9 @@ export class ItemListComponent implements OnInit {
   }
 
   gotoAddItemPage(): void {
+    if (!this.canCreate) {
+      return;
+    }
     this.router.navigate(['/pages/sales/add-item']);
   }
 
@@ -142,6 +162,9 @@ export class ItemListComponent implements OnInit {
   }
 
   openItemPopup(item: any): void {
+    if (!this.canView) {
+      return;
+    }
     this.selectedItem = item;
     this.showItemPopup = true;
   }
@@ -281,10 +304,16 @@ export class ItemListComponent implements OnInit {
   }
 
   editItem(item: any): void {
+    if (!this.canEdit) {
+      return;
+    }
     console.log('edit-item', item);
   }
 
   deleteItem(item: any): void {
+    if (!this.canDelete) {
+      return;
+    }
     console.log('delete-item', item);
   }
 }

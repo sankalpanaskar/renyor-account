@@ -1,18 +1,19 @@
 // ...existing code...
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbDialogService, NbToastrService } from '@nebular/theme';
 import { DatePipe } from '@angular/common';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { environment } from '../../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-customers-list',
   templateUrl: './customers-list.component.html',
   styleUrls: ['./customers-list.component.scss']
 })
-export class CustomersListComponent implements OnInit{
+export class CustomersListComponent implements OnInit, OnDestroy {
 
   showCustomerPopup = false;
   showDocumentViewer = false;
@@ -21,6 +22,8 @@ export class CustomersListComponent implements OnInit{
   selectedDocumentName = '';
   selectedCustomer: any = null;
   allCustomers: any[] = [];
+  canCreate = false;
+  private permissionSubscription?: Subscription;
 
   openCustomerPopup(customer: any) {
     this.selectedCustomer = customer;
@@ -137,7 +140,14 @@ export class CustomersListComponent implements OnInit{
 
 
   ngOnInit(): void {
+    this.permissionSubscription = this.globalService.menuPermissions$.subscribe(() => {
+      this.canCreate = Number(this.globalService.getMenuPermissions('/pages/sales/customer-list')?.can_create) === 1;
+    });
     this.getCustomerList();
+  }
+
+  ngOnDestroy(): void {
+    this.permissionSubscription?.unsubscribe();
   }
 
   get businessCustomersCount(): number {
@@ -244,6 +254,9 @@ export class CustomersListComponent implements OnInit{
   }
 
   gotoAddCustomerPage() {
+    if (!this.canCreate) {
+      return;
+    }
     this.router.navigate(['pages/sales/add-customer']);
   }
 }

@@ -16,6 +16,8 @@ export class GlobalService {
     /** ---------- userCode (NEW) ---------- */
     private userCodeSubject = new BehaviorSubject<string>('');
     public  userCode$       = this.userCodeSubject.asObservable();
+    private menuPermissionsSubject = new BehaviorSubject<Record<string, any>>({});
+    public menuPermissions$ = this.menuPermissionsSubject.asObservable();
     
   
     public currentUser: any;
@@ -31,10 +33,12 @@ export class GlobalService {
     constructor(private http: HttpClient) {
       const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
       const storedTenantDetails = JSON.parse(localStorage.getItem('tenant_details') || '{}');
+      const storedMenuPermissions = JSON.parse(localStorage.getItem('menu_permissions') || '{}');
       if (storedUser?.id) {
         this.setUser(storedUser);
       }
       this.setTenantDetails(storedTenantDetails);
+      this.menuPermissionsSubject.next(storedMenuPermissions);
     }
   
     set role_id(value: any) {
@@ -68,6 +72,64 @@ export class GlobalService {
 
     setTenantDetails(tenantDetails: any) {
       this.tenantDetails = tenantDetails || {};
+    }
+
+    setMenuPermissions(menuItems: any[]): void {
+      const permissions: Record<string, any> = {};
+
+      const collectPermissions = (items: any[]): void => {
+        (items || []).forEach((item: any) => {
+          const rawLink = item?.link || item?.url || item?.route;
+          if (rawLink) {
+            const link = this.normalizeMenuPermissionLink(rawLink);
+            permissions[link] = {
+              id: item?.id,
+              can_view: this.normalizePermissionValue(item?.can_view),
+              can_create: this.normalizePermissionValue(item?.can_create),
+              can_edit: this.normalizePermissionValue(item?.can_edit),
+              can_delete: this.normalizePermissionValue(item?.can_delete),
+            };
+          }
+
+          const children = [item?.children, item?.submenus, item?.submenu, item?.sub_menu, item?.modules]
+            .find((candidate: any) => Array.isArray(candidate));
+          if (Array.isArray(children)) {
+            collectPermissions(children);
+          }
+        });
+      };
+
+      collectPermissions(menuItems);
+      localStorage.setItem('menu_permissions', JSON.stringify(permissions));
+      this.menuPermissionsSubject.next(permissions);
+    }
+
+    getMenuPermissions(link: string): any | null {
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (this.normalizePermissionValue(user?.is_system_super_admin) === 1) {
+        return {
+          can_view: 1,
+          can_create: 1,
+          can_edit: 1,
+          can_delete: 1,
+        };
+      }
+
+      return this.menuPermissionsSubject.value[this.normalizeMenuPermissionLink(link)] || null;
+    }
+
+    private normalizeMenuPermissionLink(link: any): string {
+      const route = `${link || ''}`.trim().replace(/^\/+/, '');
+      return route === 'pages' || route.startsWith('pages/')
+        ? `/${route}`
+        : `/pages/${route}`;
+    }
+
+    private normalizePermissionValue(value: any): number {
+      if (value === true || value === 1 || value === '1') {
+        return 1;
+      }
+      return 0;
     }
   
     private apiUrl= environment.apiBaseUrl+ 'api';

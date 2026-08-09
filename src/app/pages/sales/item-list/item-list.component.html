@@ -157,7 +157,7 @@
               <nb-icon icon="close-outline"></nb-icon>
             </button>
           </div>
-          <button nbButton status="primary" size="small" shape="semi-round" type="button" class="add-item-btn" (click)="gotoAddItemPage()">
+          <button *ngIf="canCreate" nbButton status="primary" size="small" shape="semi-round" type="button" class="add-item-btn" (click)="gotoAddItemPage()">
             <nb-icon icon="plus-outline"></nb-icon>
             Add Item
           </button>
@@ -203,15 +203,15 @@
                 <td data-label="Unit"><span class="unit-pill">{{ getUnit(item) }}</span></td>
                 <td data-label="Actions" class="actions-cell">
                   <div class="action-group">
-                    <button type="button" class="action-icon view-action" nbTooltip="View item" aria-label="View item"
+                    <button *ngIf="canView" type="button" class="action-icon view-action" nbTooltip="View item" aria-label="View item"
                       (click)="$event.stopPropagation(); viewItem(item)">
                       <nb-icon icon="eye-outline"></nb-icon>
                     </button>
-                    <button type="button" class="action-icon edit-action" nbTooltip="Edit item" aria-label="Edit item"
+                    <button *ngIf="canEdit" type="button" class="action-icon edit-action" nbTooltip="Edit item" aria-label="Edit item"
                       (click)="$event.stopPropagation(); editItem(item)">
                       <nb-icon icon="edit-2-outline"></nb-icon>
                     </button>
-                    <button type="button" class="action-icon delete-action" nbTooltip="Delete item" aria-label="Delete item"
+                    <button *ngIf="canDelete" type="button" class="action-icon delete-action" nbTooltip="Delete item" aria-label="Delete item"
                       (click)="$event.stopPropagation(); deleteItem(item)">
                       <nb-icon icon="trash-2-outline"></nb-icon>
                     </button>
@@ -226,7 +226,7 @@
                     <h3>{{ searchText ? 'No matching items' : 'Your catalogue is empty' }}</h3>
                     <p>{{ searchText ? 'Try another name, code, type or unit.' : 'Add your first item to start building your catalogue.' }}</p>
                     <button *ngIf="searchText" type="button" nbButton status="primary" ghost (click)="clearSearch()">Clear search</button>
-                    <button *ngIf="!searchText" type="button" nbButton status="primary" (click)="gotoAddItemPage()">Add first item</button>
+                    <button *ngIf="!searchText && canCreate" type="button" nbButton status="primary" (click)="gotoAddItemPage()">Add first item</button>
                   </div>
                 </td>
               </tr>

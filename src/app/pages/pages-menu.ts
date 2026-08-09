@@ -6,6 +6,7 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
   // Get user from localStorage
   const user = JSON.parse(localStorage.getItem('user') || '{}');
   const isSystemSuperAdmin = user?.is_system_super_admin === 1 || user?.is_system_super_admin === '1';
+  const isCompanySuperAdmin = user?.is_company_super_admin === 1 || user?.is_company_super_admin === '1';
 
   const menu: NbMenuItem[] = [
     // Dashboard
@@ -92,6 +93,14 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       },
   );
 
+  if (isCompanySuperAdmin || isSystemSuperAdmin) {
+    menu.push({ title: 'Menu Setup', group: true }, {
+      title: 'Setup Menu',
+      icon: 'menu-outline',
+      link: '/pages/admin-setting/setup-menu',
+    });
+  }
+
   // Add admin-only menus if user is system super admin
   if (isSystemSuperAdmin) {
     menu.push(
@@ -100,11 +109,6 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         title: 'Package & Module',
         icon: 'options-2-outline',
         children: [
-          {
-            title: 'Menu/Module',
-            icon: 'menu-outline',
-            link: '/pages/admin-setting/setup-menu',
-          },
           // {
           //   title: 'Add Package',
           //   link: '/pages/admin-setting/add-package',
@@ -147,11 +151,6 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
             link: '/pages/accountant/chart-of-account-type',
           }
         ],
-      },
-      {
-        title: 'Setup',
-        icon: 'settings-2-outline',
-        // link: '/pages/organization-setting/profile',
       },
     );
   }

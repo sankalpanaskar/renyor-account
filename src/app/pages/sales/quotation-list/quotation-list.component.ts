@@ -1,17 +1,18 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { NbToastrService } from '@nebular/theme';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { GlobalService } from '../../../services/global.service';
 import { environment } from '../../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-quotation-list',
   templateUrl: './quotation-list.component.html',
   styleUrls: ['./quotation-list.component.scss'],
 })
-export class QuotationListComponent implements OnInit {
+export class QuotationListComponent implements OnInit, OnDestroy {
   allQuotations: any[] = [];
   apiData: any[] = [];
   searchText = '';
@@ -29,6 +30,8 @@ export class QuotationListComponent implements OnInit {
   private quotationTemplateHtml = '';
   private quotationCustomFields: any[] = [];
   private quotationFormatConfiguration: any = null;
+  canCreate = false;
+  private permissionSubscription?: Subscription;
 
   constructor(
     private globalService: GlobalService,
@@ -40,9 +43,16 @@ export class QuotationListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.permissionSubscription = this.globalService.menuPermissions$.subscribe(() => {
+      this.canCreate = Number(this.globalService.getMenuPermissions('/pages/sales/quotation-list')?.can_create) === 1;
+    });
     this.fetchQuotations();
     this.fetchQuotationCustomFields();
     this.fetchQuotationFormatConfiguration();
+  }
+
+  ngOnDestroy(): void {
+    this.permissionSubscription?.unsubscribe();
   }
 
   private fetchQuotationFormatConfiguration(): void {
@@ -185,6 +195,9 @@ export class QuotationListComponent implements OnInit {
   }
 
   gotoAddQuotation(): void {
+    if (!this.canCreate) {
+      return;
+    }
     this.router.navigate(['/pages/sales/add-quote']);
   }
 

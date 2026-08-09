@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { environment } from '../../../../environments/environment';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'ngx-vendors-list',
   templateUrl: './vendors-list.component.html',
   styleUrls: ['./vendors-list.component.scss']
 })
-export class VendorsListComponent implements OnInit {
+export class VendorsListComponent implements OnInit, OnDestroy {
   showVendorPopup = false;
   showDocumentViewer = false;
   selectedDocumentUrl = '';
@@ -23,6 +24,8 @@ export class VendorsListComponent implements OnInit {
   loading: boolean = false;
   apiData: any[] = [];
   lastSearchForm: string = '';
+  canCreate = false;
+  private permissionSubscription?: Subscription;
 
   constructor(
     private globalService: GlobalService,
@@ -33,7 +36,14 @@ export class VendorsListComponent implements OnInit {
 
 
   ngOnInit(): void {
+    this.permissionSubscription = this.globalService.menuPermissions$.subscribe(() => {
+      this.canCreate = Number(this.globalService.getMenuPermissions('/pages/purchase/vendor-list')?.can_create) === 1;
+    });
     this.getVendorList();
+  }
+
+  ngOnDestroy(): void {
+    this.permissionSubscription?.unsubscribe();
   }
 
   get msmeVendorsCount(): number {
@@ -167,6 +177,9 @@ export class VendorsListComponent implements OnInit {
   }
 
   gotoAddVendorPage(): void {
+    if (!this.canCreate) {
+      return;
+    }
     this.router.navigate(['pages/purchase/add-vendor']);
   }
 
