@@ -714,7 +714,7 @@ exports.createSalesOrder = async (data, tenant_id, user_id, uploaded_sales_order
       throw new Error("sales_order_no is required");
     }
 
-    const normalizedDocumentType = String(normalizeFormValue(document_type) || 'salesorder')
+    const normalizedDocumentType = String(normalizeFormValue(document_type) || 'Sales Order')
       .toLowerCase()
       .replace(/\s+/g, '');
     const nextCurrentNumber = normalizeFormValue(current_number);
