@@ -831,7 +831,7 @@ exports.createSalesOrder = async (data, tenant_id, user_id, uploaded_sales_order
       `UPDATE document_number_settings
        SET current_number = ?
        WHERE tenant_id = ? AND document_type = ?`,
-      [nextCurrentNumber, tenant_id, normalizedDocumentType]
+      [nextCurrentNumber, tenant_id, document_type]
     );
 
     if (settingsResult.affectedRows === 0) {
