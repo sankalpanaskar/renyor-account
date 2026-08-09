@@ -32,7 +32,7 @@ router.get(
 );
 
 router.post(
-  '/create-goup',
+  '/create-group',
   auth,
   upload.none(),
   SettingsController.createGroup
