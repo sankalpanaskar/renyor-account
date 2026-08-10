@@ -153,6 +153,10 @@
                       (click)="$event.stopPropagation(); openRolePopup(role)">
                       <nb-icon icon="eye-outline"></nb-icon>
                     </button>
+                    <button type="button" class="entity-action-icon edit-action" title="Edit role" aria-label="Edit role"
+                      (click)="$event.stopPropagation(); editRole(role)">
+                      <nb-icon icon="edit-2-outline"></nb-icon>
+                    </button>
                   </div>
                 </td>
               </tr>

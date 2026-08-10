@@ -9,7 +9,9 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
   const isCompanySuperAdmin = user?.is_company_super_admin === 1 || user?.is_company_super_admin === '1';
 
   const menu: NbMenuItem[] = [
-    // Dashboard
+
+    //visible to all users
+
     {
       title: 'Dashboard',
       icon: 'home-outline',
@@ -17,88 +19,42 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
     },
     // { title: 'FEATURES', group: true },
   ];
-
-  // Add Users & Roles menu - visible to all users
-  menu.push(
+  
+  if (isCompanySuperAdmin || isSystemSuperAdmin) {
+    menu.push(
     { title: 'Users & Roles', group: true },
     {
       title: 'Users',
-      icon: 'people-outline',
-      children: [
-        {
-          title: 'Add Users',
-          icon: 'plus-square-outline',
-          link: '/pages/organization-setting/add-user',
-        },
-        {
-          title: 'User List',
-          icon: 'list-outline',
-          link: '/pages/organization-setting/user-list',
-        }
-      ],
+      icon: { icon: 'people', pack: 'material-icons' },
+      link: '/pages/organization-setting/user-list',
     },
     {
       title: 'Roles',
-      icon: 'checkmark-circle-outline',
-      children: [
-        {
-          title: 'Add Roles',
-          icon: 'plus-square-outline',
-          link: '/pages/organization-setting/add-roles',
-        },
-        {
-          title: 'Roles',
-          icon: 'list-outline',
-          link: '/pages/organization-setting/roles',
-        }
-      ],
+      icon: { icon: 'settings_b_roll', pack: 'material-icons' },
+      link: '/pages/organization-setting/roles',
     },
     { title: 'Settings', group: true },
     {
-      title: 'Organization',
-      icon: 'award-outline',
-      children: [
-        {
-          title: 'Company Profile',
-          icon: 'person-outline',
-          link: '/pages/organization-setting/orgprofile',
-        },
-        {
-          title: 'Subscription',
-          icon: 'credit-card-outline',
-          link: '/pages/organization-setting/subscriptions',
-        },
-        {
-          title: 'Document Formats',
-          icon: 'file-text-outline',
-          link: '/pages/document-format-configuration',
-        },
-      ],
+      title: 'Company Profile',
+      icon: { icon: 'person', pack: 'material-icons' },
+      link: '/pages/organization-setting/orgprofile',
     },
     {
-        title: 'Custom Field',
-        icon: 'options-outline',
-        children: [
-          {
-            title: 'Add Custom Field',
-            icon: 'plus-square-outline',
-            link: '/pages/admin-setting/add-custom-field',
-          },
-          {
-            title: 'Custom Field List',
-            icon: 'list-outline',
-            link: '/pages/admin-setting/custom-field-list',
-          }
-        ],
-      },
+      title: 'Subscription',
+      icon: { icon: 'subscriptions', pack: 'material-icons' },
+      link: '/pages/organization-setting/subscriptions',
+    },
+    {
+      title: 'Report Configuration',
+      icon: { icon: 'article', pack: 'material-icons' },
+      link: '/pages/document-format-configuration',
+    },
+    {
+      title: 'Custom Field',
+      icon: { icon: 'tune', pack: 'material-icons' },
+      link: '/pages/admin-setting/custom-field-list'
+    }
   );
-
-  if (isCompanySuperAdmin || isSystemSuperAdmin) {
-    menu.push({ title: 'Menu Setup', group: true }, {
-      title: 'Setup Menu',
-      icon: 'menu-outline',
-      link: '/pages/admin-setting/setup-menu',
-    });
   }
 
   // Add admin-only menus if user is system super admin
@@ -106,48 +62,38 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
     menu.push(
       // { title: 'Admin Settings', group: true },
       {
+        title: 'Menu',
+        icon: { icon: 'display_settings', pack: 'material-icons' },
+        link: '/pages/admin-setting/setup-menu',
+      },  
+     {
         title: 'Package & Module',
-        icon: 'options-2-outline',
+        icon: { icon: 'inventory_2', pack: 'material-icons' },
         children: [
-          // {
-          //   title: 'Add Package',
-          //   link: '/pages/admin-setting/add-package',
-          // },
           {
             title: 'Packages',
-            icon: 'credit-card-outline',
+            icon: { icon: 'credit_card', pack: 'material-icons' },
             link: '/pages/admin-setting/package-list',
           },
           {
             title: 'Package Module',
-            icon: 'checkmark-square-outline',
+            icon: { icon: 'admin_panel_settings', pack: 'material-icons' },
             link: '/pages/admin-setting/assign-module',
           },
         ],
       },
       {
         title: 'Company',
-        icon: 'bookmark-outline',
-        children: [
-          {
-            title: 'Add Company',
-            icon: 'plus-square-outline',
-            link: '/pages/admin-setting/add-company',
-          },
-          {
-            title: 'Company List',
-            icon: 'list-outline',
-            link: '/pages/admin-setting/company-list',
-          }
-        ],
+        icon: { icon: 'add_business', pack: 'material-icons' },
+        link: '/pages/admin-setting/company-list',
       },
       {
-        title: 'Configure Chart Of Account',
-        icon: 'activity-outline',
+        title: 'Chart Of Account',
+        icon: { icon: 'account_tree', pack: 'material-icons' },
         children: [
           {
             title: 'Account Type',
-            icon: 'plus-square-outline',
+            icon: { icon: 'add_chart', pack: 'material-icons' },
             link: '/pages/accountant/chart-of-account-type',
           }
         ],

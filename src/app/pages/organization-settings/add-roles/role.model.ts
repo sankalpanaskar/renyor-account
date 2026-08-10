@@ -8,6 +8,8 @@ export interface Permission {
   key: 'create' | 'view' | 'edit' | 'delete';
 }
 
+export type PermissionKey = 'create' | 'view' | 'edit' | 'delete';
+
 export interface ModulePermission {
   module_id: number;
   module_name: string;
@@ -29,6 +31,20 @@ export interface Module {
   title?: string;
   module_name?: string;
   children?: Module[];
+}
+
+export interface MenuModule {
+  id: number;
+  title: string;
+  parent_id?: number;
+  icon?: string;
+  link?: string;
+}
+
+export interface MenuCategory {
+  id: number;
+  title: string;
+  modules: MenuModule[];
 }
 
 export interface ParentMenu {

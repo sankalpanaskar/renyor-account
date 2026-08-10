@@ -25,6 +25,11 @@ const routes: Routes = [
         canActivate: [authGuard]
       },
       {
+        path:'add-roles/:role_id',
+        component:AddRolesComponent,
+        canActivate: [authGuard]
+      },
+      {
         path:'roles',
         component:RolesComponent,
         canActivate: [authGuard]

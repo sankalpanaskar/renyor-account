@@ -1,54 +1,247 @@
-<div class="welcome-banner">
-  <h1>Welcome to <span>Renyor Account Management System</span></h1>
-</div>
+<div class="accounts-dashboard">
+  <header class="dashboard-header">
+    <div class="header-identity">
+      <span class="header-mark"><nb-icon icon="bar-chart-2-outline"></nb-icon></span>
+      <div class="header-copy">
+        <div class="header-context">
+          <span class="eyebrow">Accounts workspace</span>
+          <span class="books-status"><i aria-hidden="true"></i> Books in sync</span>
+        </div>
+        <h1>Financial overview</h1>
+        <p class="header-subtitle">Cash, profitability and receivables at a glance.</p>
+      </div>
+    </div>
 
-<!-- Show this for all roles EXCEPT 51 -->
-<div class="dashboard-grid">
+    <div class="header-tools">
+      <div class="reporting-date">
+        <span><nb-icon icon="calendar-outline"></nb-icon></span>
+        <div><small>Reporting date</small><strong>{{ todayLabel }}</strong></div>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="secondary-action" (click)="navigateTo('/pages/sales/invoice-list')">
+          <nb-icon icon="file-text-outline"></nb-icon>
+          Invoices
+        </button>
+        <button nbButton status="primary" shape="semi-round" type="button" (click)="navigateTo('/pages/sales/add-invoice')">
+          <nb-icon icon="plus-outline"></nb-icon>
+          New invoice
+        </button>
+      </div>
+    </div>
+  </header>
 
-  <div class="followup-buttons-wrapper">
-    <button nbButton size="small" class="status-success">
-      Company
-      <span class="count-badge"> 632 </span>
+  <section class="quick-actions" aria-label="Quick actions">
+    <button type="button" (click)="navigateTo('/pages/sales/add-invoice')">
+      <span class="quick-action-icon blue"><nb-icon icon="file-add-outline"></nb-icon></span>
+      <span><strong>Create invoice</strong><small>Bill a customer</small></span>
+      <nb-icon icon="chevron-right-outline" class="action-arrow"></nb-icon>
     </button>
-    <button nbButton size="small" class="status-info">
-      Package
-      <span class="count-badge"> 4 </span>
+    <button type="button" (click)="navigateTo('/pages/sales/add-customer')">
+      <span class="quick-action-icon green"><nb-icon icon="person-add-outline"></nb-icon></span>
+      <span><strong>Add customer</strong><small>Create a contact</small></span>
+      <nb-icon icon="chevron-right-outline" class="action-arrow"></nb-icon>
     </button>
-    <button nbButton size="small" class="status-warning" app>
-      Paid User
-      <span class="count-badge"> 3 </span>
+    <button type="button" (click)="navigateTo('/pages/sales/add-quote')">
+      <span class="quick-action-icon violet"><nb-icon icon="clipboard-outline"></nb-icon></span>
+      <span><strong>New quotation</strong><small>Send an estimate</small></span>
+      <nb-icon icon="chevron-right-outline" class="action-arrow"></nb-icon>
     </button>
-    <button nbButton size="small" class="status-primary">
-      Free User
-      <span class="count-badge"> 1 </span>
+    <button type="button" (click)="navigateTo('/pages/accountant/chart-of-account')">
+      <span class="quick-action-icon orange"><nb-icon icon="book-open-outline"></nb-icon></span>
+      <span><strong>View ledger</strong><small>Review accounts</small></span>
+      <nb-icon icon="chevron-right-outline" class="action-arrow"></nb-icon>
     </button>
-    
-  </div>
-  <div *ngIf="isSubmitting" class="loading-overlay d-flex justify-content-center align-items-center">
-    <nb-spinner size="large" status="primary"></nb-spinner>
-  </div>
+  </section>
 
-  <!-- Summary Cards -->
-  <div class="summary-cards compact">
-    <nb-card class="compact-card clickable-card">
-      <nb-card-header>Box 1</nb-card-header>
-      <nb-card-body class="summary-value">20</nb-card-body>
-    </nb-card>
-    <nb-card class="compact-card clickable-card">
-      <nb-card-header>Box 1</nb-card-header>
-      <nb-card-body class="summary-value">20</nb-card-body>
-    </nb-card>
-    <nb-card class="compact-card clickable-card">
-      <nb-card-header>Box 1</nb-card-header>
-      <nb-card-body class="summary-value">20</nb-card-body>
-    </nb-card>
-    <nb-card class="compact-card clickable-card">
-      <nb-card-header>Box 1</nb-card-header>
-      <nb-card-body class="summary-value">20</nb-card-body>
-    </nb-card>
-    <nb-card class="compact-card clickable-card">
-      <nb-card-header>Box 1</nb-card-header>
-      <nb-card-body class="summary-value">20</nb-card-body>
-    </nb-card>
-  </div>
+  <section class="summary-grid" aria-label="Financial summary">
+    <article *ngFor="let card of summaryCards" class="summary-card">
+      <div class="summary-card-top">
+        <span class="summary-icon" [ngClass]="card.tone"><nb-icon [icon]="card.icon"></nb-icon></span>
+        <span class="change-chip" [class.positive]="card.direction === 'up'" [class.saving]="card.direction === 'down'">
+          <nb-icon [icon]="card.direction === 'up' ? 'arrow-upward-outline' : 'arrow-downward-outline'"></nb-icon>
+          {{ card.change }}
+        </span>
+      </div>
+      <span class="summary-label">{{ card.label }}</span>
+      <strong class="summary-value">{{ formatCurrency(card.value) }}</strong>
+      <small>{{ card.context }}</small>
+    </article>
+  </section>
+
+  <section class="dashboard-main-grid">
+    <article class="dashboard-panel cash-flow-panel">
+      <header class="panel-header">
+        <div>
+          <span class="panel-kicker">Performance</span>
+          <h2>Cash flow</h2>
+          <p>Income and expenses across the selected period.</p>
+        </div>
+        <label class="period-control">
+          <span class="sr-only">Chart period</span>
+          <select [(ngModel)]="selectedPeriod" aria-label="Cash flow chart period">
+            <option value="6m">Last 6 months</option>
+            <option value="fy">Financial year</option>
+          </select>
+          <nb-icon icon="chevron-down-outline"></nb-icon>
+        </label>
+      </header>
+
+      <div class="chart-summary">
+        <div>
+          <span class="legend-dot income"></span>
+          <span>Income</span>
+          <strong>{{ formatCompactCurrency(incomeTotal) }}</strong>
+        </div>
+        <div>
+          <span class="legend-dot expense"></span>
+          <span>Expenses</span>
+          <strong>{{ formatCompactCurrency(expenseTotal) }}</strong>
+        </div>
+        <div class="net-cash">
+          <span>Net cash flow</span>
+          <strong>+{{ formatCompactCurrency(incomeTotal - expenseTotal) }}</strong>
+        </div>
+      </div>
+
+      <div class="cash-flow-chart" role="img" aria-label="Line chart comparing income and expenses">
+        <svg [attr.viewBox]="'0 0 ' + chartWidth + ' 250'" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <linearGradient id="incomeArea" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3867ed" stop-opacity="0.22"></stop>
+              <stop offset="100%" stop-color="#3867ed" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+
+          <g *ngFor="let tick of chartTicks">
+            <line class="chart-grid-line" [attr.x1]="chartLeft" [attr.x2]="chartWidth - chartRight"
+              [attr.y1]="getChartY(tick)" [attr.y2]="getChartY(tick)"></line>
+            <text class="chart-axis-label" x="4" [attr.y]="getChartY(tick) + 4">{{ formatCompactCurrency(tick) }}</text>
+          </g>
+
+          <polygon class="income-area" [attr.points]="getAreaPoints(currentSeries.income)"></polygon>
+          <polyline class="chart-line income-line" [attr.points]="getLinePoints(currentSeries.income)"></polyline>
+          <polyline class="chart-line expense-line" [attr.points]="getLinePoints(currentSeries.expenses)"></polyline>
+
+          <g *ngFor="let value of currentSeries.income; let index = index">
+            <circle class="chart-point income-point" [attr.cx]="getChartX(index)" [attr.cy]="getChartY(value)" r="4">
+              <title>{{ currentSeries.labels[index] }} income: {{ formatCurrency(value) }}</title>
+            </circle>
+          </g>
+          <g *ngFor="let value of currentSeries.expenses; let index = index">
+            <circle class="chart-point expense-point" [attr.cx]="getChartX(index)" [attr.cy]="getChartY(value)" r="4">
+              <title>{{ currentSeries.labels[index] }} expenses: {{ formatCurrency(value) }}</title>
+            </circle>
+          </g>
+
+          <ng-container *ngFor="let label of currentSeries.labels; let index = index">
+            <text *ngIf="shouldShowChartLabel(index)" class="chart-month-label" [attr.x]="getChartX(index)" y="239">{{ label }}</text>
+          </ng-container>
+        </svg>
+      </div>
+    </article>
+
+    <article class="dashboard-panel expense-panel">
+      <header class="panel-header compact-header">
+        <div>
+          <span class="panel-kicker">This month</span>
+          <h2>Expense mix</h2>
+        </div>
+        <button type="button" class="icon-button" aria-label="Expense options"><nb-icon icon="more-horizontal-outline"></nb-icon></button>
+      </header>
+
+      <div class="donut-wrap">
+        <div class="expense-donut" aria-label="Expense breakdown donut chart">
+          <div><strong>{{ formatCompactCurrency(518640) }}</strong><span>Total spent</span></div>
+        </div>
+      </div>
+
+      <div class="expense-list">
+        <div *ngFor="let category of expenseBreakdown">
+          <span class="expense-color" [style.background]="category.color"></span>
+          <span class="expense-name"><strong>{{ category.label }}</strong><small>{{ category.percentage }}% of expenses</small></span>
+          <strong>{{ formatCompactCurrency(category.value) }}</strong>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-detail-grid">
+    <article class="dashboard-panel invoices-panel">
+      <header class="panel-header compact-header">
+        <div>
+          <span class="panel-kicker">Receivables</span>
+          <h2>Outstanding invoices</h2>
+        </div>
+        <button type="button" class="text-action" (click)="navigateTo('/pages/sales/invoice-list')">
+          View all <nb-icon icon="arrow-forward-outline"></nb-icon>
+        </button>
+      </header>
+
+      <div class="receivable-summary">
+        <div><span>Total outstanding</span><strong>{{ formatCurrency(231650) }}</strong></div>
+        <div class="overdue-summary"><span>Overdue</span><strong>{{ formatCurrency(46800) }}</strong></div>
+        <span class="invoice-count">4 invoices</span>
+      </div>
+
+      <div class="invoice-table-wrap">
+        <table class="dashboard-table">
+          <thead><tr><th>Invoice</th><th>Customer</th><th>Due date</th><th class="amount-column">Amount</th></tr></thead>
+          <tbody>
+            <tr *ngFor="let invoice of outstandingInvoices">
+              <td><strong>{{ invoice.number }}</strong></td>
+              <td>{{ invoice.customer }}</td>
+              <td><span class="due-status" [ngClass]="invoice.status">{{ invoice.due }}</span></td>
+              <td class="amount-column"><strong>{{ formatCurrency(invoice.amount) }}</strong></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="dashboard-panel accounts-panel">
+      <header class="panel-header compact-header">
+        <div>
+          <span class="panel-kicker">Liquidity</span>
+          <h2>Cash accounts</h2>
+        </div>
+        <button type="button" class="icon-button" aria-label="Refresh balances"><nb-icon icon="refresh-outline"></nb-icon></button>
+      </header>
+
+      <div class="account-total">
+        <span>Available balance</span>
+        <strong>{{ formatCurrency(482760) }}</strong>
+        <small>Updated a few moments ago</small>
+      </div>
+
+      <div class="account-list">
+        <div *ngFor="let account of accounts">
+          <span class="account-icon" [ngClass]="account.tone"><nb-icon [icon]="account.icon"></nb-icon></span>
+          <span class="account-name"><strong>{{ account.name }}</strong><small>{{ account.suffix }}</small></span>
+          <strong>{{ formatCurrency(account.balance) }}</strong>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <section class="dashboard-panel transactions-panel">
+    <header class="panel-header compact-header">
+      <div>
+        <span class="panel-kicker">Latest activity</span>
+        <h2>Recent transactions</h2>
+      </div>
+      <button type="button" class="text-action" (click)="navigateTo('/pages/accountant/chart-of-account')">
+        Open ledger <nb-icon icon="arrow-forward-outline"></nb-icon>
+      </button>
+    </header>
+
+    <div class="transaction-grid">
+      <div *ngFor="let transaction of transactions" class="transaction-item">
+        <span class="transaction-icon" [ngClass]="transaction.type"><nb-icon [icon]="transaction.icon"></nb-icon></span>
+        <span class="transaction-copy"><strong>{{ transaction.title }}</strong><small>{{ transaction.meta }}</small></span>
+        <strong class="transaction-amount" [ngClass]="transaction.type">
+          {{ transaction.amount > 0 ? '+' : '−' }}{{ formatCurrency(transaction.amount > 0 ? transaction.amount : -transaction.amount) }}
+        </strong>
+      </div>
+    </div>
+  </section>
 </div>

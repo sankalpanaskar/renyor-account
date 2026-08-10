@@ -145,4 +145,15 @@ export class RolesComponent implements OnInit {
   gotoAddRole(): void {
     this.router.navigate(['/pages/organization-setting/add-roles']);
   }
+
+  editRole(role: any): void {
+    const roleId = role?.role_id ?? role?.id;
+
+    if (roleId === undefined || roleId === null || roleId === '') {
+      this.toastrService.danger('Role ID is missing', 'Error');
+      return;
+    }
+
+    this.router.navigate(['/pages/organization-setting/add-roles', roleId]);
+  }
 }

@@ -102,7 +102,7 @@
 
           <div class="menu-field">
             <label for="menu-icon">Icon <span>*</span></label>
-            <input id="menu-icon" type="text" nbInput fullWidth shape="semi-round" placeholder="e.g. people-outline"
+            <input id="menu-icon" type="text" nbInput fullWidth shape="semi-round" placeholder="e.g. settings_b_roll"
               name="icon" required #icon="ngModel" [(ngModel)]="model.icon">
             <div *ngIf="fm.submitted && icon.invalid" class="error-message">Menu icon is required</div>
           </div>

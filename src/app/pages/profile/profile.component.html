@@ -1,18 +1,130 @@
-<div class="profile-container">
-    <nb-card>
-      <nb-card-header>
-        <h2>{{ user?.name }}</h2>
-      </nb-card-header>
-      <nb-card-body class="profile-body">
-        <img [src]="user?.picture" alt="Profile Image" class="profile-image" />
-        <div class="profile-details">
-          <p><strong>Email:</strong> {{ user?.email }}</p>
-          <p><strong>Mobile:</strong> {{ user?.mobile }}</p>
-          <p><strong>Designation:</strong> {{ user?.designation }}</p>
-          <p><strong>Department:</strong> {{ user?.department }}</p>
-          <p><strong>Base Location1:</strong> {{ user?.base_location }}</p>
+<div class="profile-page" *ngIf="profile as user; else profileUnavailable">
+  <header class="page-heading">
+    <div>
+      <span class="page-eyebrow">Account settings</span>
+      <h1>My profile</h1>
+      <p>Your identity, organization and access information for this account.</p>
+    </div>
+    <button nbButton status="basic" shape="semi-round" type="button" (click)="navigateToDashboard()">
+      <nb-icon icon="arrow-back-outline"></nb-icon>
+      Back to dashboard
+    </button>
+  </header>
+
+  <section class="profile-hero">
+    <div class="hero-pattern" aria-hidden="true"></div>
+    <div class="profile-identity">
+      <div class="profile-avatar" [class.has-image]="showProfileImage">
+        <img *ngIf="showProfileImage" [src]="user.image" [alt]="user.name" (error)="handleImageError()">
+        <span *ngIf="!showProfileImage">{{ user.initials }}</span>
+      </div>
+
+      <div class="identity-copy">
+        <div class="identity-status-row">
+          <span class="account-status" [class.inactive]="!user.statusActive">
+            <i aria-hidden="true"></i>{{ user.status }}
+          </span>
+          <span *ngIf="user.isSystemAdmin || user.isCompanyAdmin" class="admin-chip">
+            <nb-icon icon="shield-outline"></nb-icon>
+            {{ user.isSystemAdmin ? 'System admin' : 'Company admin' }}
+          </span>
         </div>
-      </nb-card-body>
-    </nb-card>
+        <h2>{{ user.name }}</h2>
+        <p>{{ user.role }}<span aria-hidden="true">•</span>{{ user.company }}</p>
+      </div>
+    </div>
+
+    <div class="profile-completion">
+      <div><span>Profile completeness</span><strong>{{ profileCompletion }}%</strong></div>
+      <div class="completion-track" role="progressbar" aria-label="Profile completeness"
+        aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="profileCompletion">
+        <span [style.width.%]="profileCompletion"></span>
+      </div>
+      <small>{{ profileCompletion === 100 ? 'Your profile is complete.' : 'Add missing information through your administrator.' }}</small>
+    </div>
+  </section>
+
+  <section class="contact-strip" aria-label="Profile highlights">
+    <article>
+      <span class="highlight-icon blue"><nb-icon icon="email-outline"></nb-icon></span>
+      <div><small>Email address</small><strong>{{ user.email }}</strong></div>
+    </article>
+    <article>
+      <span class="highlight-icon green"><nb-icon icon="phone-outline"></nb-icon></span>
+      <div><small>Mobile number</small><strong>{{ user.mobile }}</strong></div>
+    </article>
+    <article>
+      <span class="highlight-icon violet"><nb-icon icon="pin-outline"></nb-icon></span>
+      <div><small>Base location</small><strong>{{ user.location }}</strong></div>
+    </article>
+    <article>
+      <span class="highlight-icon orange"><nb-icon icon="cube-outline"></nb-icon></span>
+      <div><small>Subscription package</small><strong>{{ user.packageName }}</strong></div>
+    </article>
+  </section>
+
+  <div class="profile-content-grid">
+    <div class="profile-main-column">
+      <section class="profile-panel">
+        <header class="panel-heading">
+          <span class="panel-icon blue"><nb-icon icon="person-outline"></nb-icon></span>
+          <div><h3>Personal information</h3><p>Contact and identity information saved with your user.</p></div>
+        </header>
+        <div class="detail-grid">
+          <article *ngFor="let detail of personalDetails">
+            <span class="detail-icon"><nb-icon [icon]="detail.icon"></nb-icon></span>
+            <div><small>{{ detail.label }}</small><strong [class.missing]="detail.value === 'Not provided'">{{ detail.value }}</strong></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="profile-panel">
+        <header class="panel-heading">
+          <span class="panel-icon violet"><nb-icon icon="briefcase-outline"></nb-icon></span>
+          <div><h3>Organization information</h3><p>Business details loaded from your saved tenant profile.</p></div>
+        </header>
+        <div class="detail-grid">
+          <article *ngFor="let detail of organizationDetails">
+            <span class="detail-icon"><nb-icon [icon]="detail.icon"></nb-icon></span>
+            <div><small>{{ detail.label }}</small><strong [class.missing]="detail.value === 'Not provided'">{{ detail.value }}</strong></div>
+          </article>
+        </div>
+      </section>
+    </div>
+
+    <aside class="profile-side-column">
+      <section class="profile-panel access-panel">
+        <header class="panel-heading compact">
+          <span class="panel-icon green"><nb-icon icon="shield-outline"></nb-icon></span>
+          <div><h3>Account access</h3><p>Your role and current subscription access.</p></div>
+        </header>
+
+        <div class="access-list">
+          <div><span>Role</span><strong>{{ user.role }}</strong></div>
+          <div><span>Package</span><strong>{{ user.packageName }}</strong></div>
+          <div><span>Account status</span><strong>{{ user.status }}</strong></div>
+          <div><span>Member since</span><strong>{{ user.createdAt }}</strong></div>
+        </div>
+
+        <div class="security-note">
+          <span><nb-icon icon="lock-outline"></nb-icon></span>
+          <div><strong>Protected session</strong><p>Your access is controlled by the permissions assigned to {{ user.role }}.</p></div>
+        </div>
+      </section>
+
+      <section class="session-card">
+        <span><nb-icon icon="monitor-outline"></nb-icon></span>
+        <div><small>Profile source</small><strong>Current browser session</strong><p>User and organization information is loaded from your signed-in session.</p></div>
+      </section>
+    </aside>
   </div>
-  
+</div>
+
+<ng-template #profileUnavailable>
+  <section class="profile-empty-state">
+    <span><nb-icon icon="person-delete-outline"></nb-icon></span>
+    <h2>Profile unavailable</h2>
+    <p>{{ storageError }}</p>
+    <button nbButton status="primary" type="button" (click)="navigateToDashboard()">Return to dashboard</button>
+  </section>
+</ng-template>

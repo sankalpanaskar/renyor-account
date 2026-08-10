@@ -1,7 +1,13 @@
 import { Component, OnInit } from '@angular/core';
-import { GlobalService } from '../../services/global.service';
-import { NbThemeService, NbToastrService } from '@nebular/theme';
 import { Router } from '@angular/router';
+
+type DashboardPeriod = '6m' | 'fy';
+
+interface CashFlowSeries {
+  labels: string[];
+  income: number[];
+  expenses: number[];
+}
 
 @Component({
   selector: 'ngx-custom-dashboard',
@@ -9,100 +15,178 @@ import { Router } from '@angular/router';
   styleUrls: ['./custom-dashboard.component.scss']
 })
 export class CustomDashboardComponent implements OnInit {
+  readonly chartWidth = 720;
+  readonly chartTop = 24;
+  readonly chartBottom = 210;
+  readonly chartLeft = 52;
+  readonly chartRight = 18;
 
-  model: any = [];
-  assets: any[] = [];
-  centers: any[] = [];
-  isSubmitting = false;
+  todayLabel = '';
+  selectedPeriod: DashboardPeriod = '6m';
 
-  constructor(
-    public globalService: GlobalService,
-    private toastrService: NbToastrService,
-    private themeService: NbThemeService,
-    private router: Router
-  ) {}
+  readonly summaryCards = [
+    {
+      label: 'Cash balance',
+      value: 482760,
+      change: '12.4%',
+      direction: 'up',
+      context: 'across all bank accounts',
+      icon: 'credit-card-outline',
+      tone: 'blue',
+    },
+    {
+      label: 'Revenue',
+      value: 864200,
+      change: '8.2%',
+      direction: 'up',
+      context: 'compared with last month',
+      icon: 'trending-up-outline',
+      tone: 'green',
+    },
+    {
+      label: 'Expenses',
+      value: 518640,
+      change: '3.1%',
+      direction: 'down',
+      context: 'lower than last month',
+      icon: 'trending-down-outline',
+      tone: 'orange',
+    },
+    {
+      label: 'Net profit',
+      value: 345560,
+      change: '18.6%',
+      direction: 'up',
+      context: '40.0% profit margin',
+      icon: 'pie-chart-outline',
+      tone: 'violet',
+    },
+  ];
+
+  readonly chartData: Record<DashboardPeriod, CashFlowSeries> = {
+    '6m': {
+      labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
+      income: [520000, 610000, 572000, 748000, 692000, 864200],
+      expenses: [378000, 424000, 398000, 486000, 472000, 518640],
+    },
+    fy: {
+      labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'],
+      income: [520000, 610000, 572000, 748000, 692000, 864200, 812000, 905000, 886000, 978000, 1024000, 1090000],
+      expenses: [378000, 424000, 398000, 486000, 472000, 518640, 496000, 548000, 526000, 584000, 602000, 628000],
+    },
+  };
+
+  readonly expenseBreakdown = [
+    { label: 'Purchases', value: 228202, percentage: 44, color: '#3867ed' },
+    { label: 'Payroll', value: 134846, percentage: 26, color: '#19a974' },
+    { label: 'Operations', value: 93355, percentage: 18, color: '#f5a524' },
+    { label: 'Other', value: 62237, percentage: 12, color: '#9b7cf0' },
+  ];
+
+  readonly outstandingInvoices = [
+    { number: 'INV-2048', customer: 'Aster Retail Pvt. Ltd.', due: 'Due today', amount: 84200, status: 'due' },
+    { number: 'INV-2044', customer: 'Northstar Foods', due: '2 days overdue', amount: 46800, status: 'overdue' },
+    { number: 'INV-2039', customer: 'Kaveri Distribution', due: 'Due 18 Sep', amount: 62150, status: 'upcoming' },
+    { number: 'INV-2035', customer: 'BluePeak Services', due: 'Due 22 Sep', amount: 38500, status: 'upcoming' },
+  ];
+
+  readonly accounts = [
+    { name: 'HDFC Current Account', suffix: '•• 4812', balance: 326540, icon: 'briefcase-outline', tone: 'blue' },
+    { name: 'ICICI Business Account', suffix: '•• 0934', balance: 138720, icon: 'credit-card-outline', tone: 'green' },
+    { name: 'Petty cash', suffix: 'Cash on hand', balance: 17500, icon: 'inbox-outline', tone: 'orange' },
+  ];
+
+  readonly transactions = [
+    { title: 'Payment from Aster Retail', meta: 'Invoice INV-2041 · Today, 10:42 AM', amount: 72400, type: 'credit', icon: 'arrow-downward-outline' },
+    { title: 'Office lease', meta: 'Bank transfer · Today, 9:15 AM', amount: -45000, type: 'debit', icon: 'arrow-upward-outline' },
+    { title: 'Cloud software subscription', meta: 'Corporate card · Yesterday', amount: -6820, type: 'debit', icon: 'arrow-upward-outline' },
+    { title: 'Payment from Northstar Foods', meta: 'Invoice INV-2037 · Yesterday', amount: 58900, type: 'credit', icon: 'arrow-downward-outline' },
+  ];
+
+  constructor(private router: Router) {}
 
   ngOnInit(): void {
-    //console.log('member is', this.globalService.member_id, this.globalService.role_id, this.globalService.user_code);
-    //this.loadDashboardData();
+    this.todayLabel = new Intl.DateTimeFormat('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(new Date());
   }
 
-  // ✅ Fetch Dashboard data dynamically
-  loadDashboardData() {
-    const payload = {
-      user_id: this.globalService.user_id,
-      member_id: this.globalService.member_id,
-    };
-
-    this.isSubmitting = true;
-
-    // this.globalService.getCustomerList().subscribe({
-    //   next: (res: any) => {
-    //     console.log('📦 Raw dashboard API response:', res);
-    //     this.isSubmitting = false;
-
-    //     if (res?.status && res?.data) {
-    //       const apiAssets = res.data.asset_details || [];
-    //       const apiCenters = res.data.centers || [];
-
-    //       // ✅ Map API asset data into your display structure
-    //       this.assets = apiAssets.map((item: any) => ({
-    //         label: item.assets_sub_class,
-    //         count: item.subclass_count,
-    //         icon: this.getIconForAsset(item.assets_sub_class),
-    //       }));
-
-    //       // ✅ Centers (if any)
-    //       this.centers = apiCenters.map((center: any, index: number) => ({
-    //         id: index + 1,
-    //         name: center.name || 'N/A',
-    //         code: center.short_code || 'N/A',
-    //       }));
-
-    //       this.toastrService.success(res?.message || 'Dashboard loaded successfully', 'Success');
-    //     } else {
-    //       this.toastrService.warning('No data found', 'Warning');
-    //     }
-    //   },
-    //   error: (err) => {
-    //     console.error('❌ Dashboard API error:', err);
-    //     this.toastrService.danger(err?.error?.message || 'Failed to load dashboard data', 'Error');
-    //     this.isSubmitting = false;
-    //   },
-    // });
+  get currentSeries(): CashFlowSeries {
+    return this.chartData[this.selectedPeriod];
   }
 
-  // ✅ Helper function to assign icons dynamically
-  getIconForAsset(assetName: string): string {
-    const name = assetName.toLowerCase();
+  get chartMax(): number {
+    const highestValue = Math.max(...this.currentSeries.income, ...this.currentSeries.expenses);
+    return Math.ceil(highestValue / 200000) * 200000;
+  }
 
-    if (name.includes('cpu')) return 'hard-drive-outline';
-    if (name.includes('monitor')) return 'monitor-outline';
-    if (name.includes('switch')) return 'shuffle-outline';
-    if (name.includes('web') || name.includes('camera')) return 'video-outline';
-    if (name.includes('battery')) return 'battery-outline';
-    if (name.includes('projector')) return 'tv-outline';
-    if (name.includes('biometric')) return 'person-done-outline';
-    if (name.includes('router') || name.includes('wifi')) return 'wifi-outline';
-    if (name.includes('printer')) return 'printer-outline';
-    if (name.includes('speaker')) return 'volume-up-outline';
-    if (name.includes('ups')) return 'flash-outline';
-    if (name.includes('laptop')) return 'monitor-outline';
-    if (name.includes('tablet')) return 'smartphone-outline';
-    if (name.includes('scanner')) return 'copy-outline';
-    if (name.includes('server')) return 'hard-drive-outline';
-    if (name.includes('chair')) return 'cube-outline';
-    if (name.includes('table')) return 'grid-outline';
-    if (name.includes('fire')) return 'alert-triangle-outline';
-    if (name.includes('water')) return 'droplet-outline';
-    if (name.includes('rack')) return 'layers-outline';
-    if (name.includes('air')) return 'thermometer-minus-outline';
-    if (name.includes('mobile')) return 'smartphone-outline';
-    if (name.includes('almirah')) return 'archive-outline';
-    if (name.includes('shred')) return 'scissors-outline';
-    if (name.includes('nvr')) return 'film-outline';
+  get chartTicks(): number[] {
+    return [1, 0.75, 0.5, 0.25, 0].map((ratio: number) => this.chartMax * ratio);
+  }
 
-    // default icon
-    return 'cube-outline';
+  get incomeTotal(): number {
+    return this.currentSeries.income.reduce((total: number, value: number) => total + value, 0);
+  }
+
+  get expenseTotal(): number {
+    return this.currentSeries.expenses.reduce((total: number, value: number) => total + value, 0);
+  }
+
+  getChartX(index: number): number {
+    const count = this.currentSeries.labels.length;
+    const availableWidth = this.chartWidth - this.chartLeft - this.chartRight;
+    return count === 1
+      ? this.chartLeft
+      : this.chartLeft + (availableWidth * index / (count - 1));
+  }
+
+  getChartY(value: number): number {
+    const availableHeight = this.chartBottom - this.chartTop;
+    return this.chartBottom - (value / this.chartMax * availableHeight);
+  }
+
+  getLinePoints(values: number[]): string {
+    return values.map((value: number, index: number) =>
+      `${this.getChartX(index)},${this.getChartY(value)}`
+    ).join(' ');
+  }
+
+  getAreaPoints(values: number[]): string {
+    const firstX = this.getChartX(0);
+    const lastX = this.getChartX(values.length - 1);
+    return `${firstX},${this.chartBottom} ${this.getLinePoints(values)} ${lastX},${this.chartBottom}`;
+  }
+
+  shouldShowChartLabel(index: number): boolean {
+    return this.selectedPeriod === '6m' || index % 2 === 0 || index === this.currentSeries.labels.length - 1;
+  }
+
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
+  formatCompactCurrency(value: number): string {
+    const absoluteValue = Math.abs(value);
+    if (absoluteValue >= 10000000) {
+      return `₹${(value / 10000000).toFixed(1)}Cr`;
+    }
+    if (absoluteValue >= 100000) {
+      return `₹${(value / 100000).toFixed(1)}L`;
+    }
+    if (absoluteValue >= 1000) {
+      return `₹${(value / 1000).toFixed(0)}K`;
+    }
+    return `₹${value}`;
+  }
+
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
   }
 }

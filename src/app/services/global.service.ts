@@ -199,6 +199,16 @@ export class GlobalService {
       return this.http.get(`${this.roleUrl}/get-roles`,);
     }
 
+    public fetchRoleAccessByRoleId(roleId: string | number): Observable<any> {
+      return this.http.get(`${this.roleUrl}/fetch-role-access-based-on-role-id`, {
+        params: { role_id: String(roleId) },
+      });
+    }
+
+    public editRole(data:any): Observable<any> {
+      return this.http.post(`${this.roleUrl}/role-edit`, data);
+    }
+
     public addCompany(data:any): Observable<any> {
       return this.http.post(`${this.tenantsUrl}/create-tenant`,data);
     }

@@ -199,7 +199,7 @@ export class PagesComponent implements OnInit, OnDestroy {
     menuItems.forEach((item: any) => {
       const menuItem: any = {
         title: item.title || item.name,
-        icon: item.icon || 'layers-outline',
+        icon: this.getApiMenuIcon(item.icon, 'layers-outline'),
       };
 
       const itemChildren = this.extractChildren(item);
@@ -211,7 +211,7 @@ export class PagesComponent implements OnInit, OnDestroy {
         const childrenMenu = itemChildren.filter((child: any) => this.canShowChild(child)).map((child: any) => ({
           title: child.title || child.name,
           link: this.normalizeMenuLink(child.link || child.url || child.route),
-          icon: child.icon,
+          icon: this.getApiMenuIcon(child.icon, 'list-outline'),
         }));
 
         // Do not render an empty parent menu when every child has all
@@ -284,6 +284,22 @@ export class PagesComponent implements OnInit, OnDestroy {
     return route === 'pages' || route.startsWith('pages/')
       ? `/${route}`
       : `/pages/${route}`;
+  }
+
+  /** API icons can contain Material Symbols or legacy Material Icons ligatures. */
+  private getApiMenuIcon(value: any, fallback: string): any {
+    const icon = `${value || ''}`.trim();
+    const normalizedIcon = icon.toUpperCase();
+
+    if (!icon || normalizedIcon === 'NA' || normalizedIcon === 'N/A' || normalizedIcon === 'NULL') {
+      return fallback;
+    }
+
+    const pack = icon === 'settings_b_roll'
+      ? 'material-icons'
+      : 'material-symbols-outlined';
+
+    return { icon, pack };
   }
 
   private matchesGroup(item: any, groupConfig: { parentTitles: string[]; linkPrefixes: string[] }): boolean {
@@ -387,7 +403,7 @@ export class PagesComponent implements OnInit, OnDestroy {
     });
 
     const setupLauncher = {
-      title: 'Setup',
+      title: 'Settings',
       icon: 'settings-2-outline',
       ariaRole: 'button',
       data: { navigationAction: 'open-settings' }
