@@ -34,3 +34,41 @@ exports.getAll = async (req, res) => {
     );
   }
 };
+
+exports.fetchRoleAccessBasedOnRoleId = async (req, res) => {
+  try {
+    const { role_id } = req.query;
+    const role = await RoleService.fetchRoleAccessBasedOnRoleId(
+      req.user.tenant_id,
+      role_id
+    );
+
+    return res.success(
+      200,
+      "Role access fetched successfully",
+      role
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch role access"
+    );
+  }
+};
+
+exports.edit = async (req, res) => {
+  try {
+    const role = await RoleService.edit(req.body, req.user.tenant_id);
+
+    return res.success(
+      200,
+      "Role updated successfully",
+      role
+    );
+  } catch (err) {
+    return res.error(
+      400,
+      err.message || "Failed to update role"
+    );
+  }
+};
