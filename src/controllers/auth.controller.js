@@ -16,6 +16,7 @@ exports.login = async (req, res) => {
         u.id,
         u.tenant_id,
         u.role_id,
+        COALESCE(r.role_name, "superadmin") AS role_name,
         u.email,
         u.name,
         u.password,
@@ -42,6 +43,7 @@ exports.login = async (req, res) => {
       FROM users u
       JOIN tenants c ON c.id = u.tenant_id
       LEFT JOIN packages p ON p.id = c.package_id
+      LEFT JOIN roles r ON r.id = u.role_id AND r.tenant_id = u.tenant_id
       WHERE u.email = ?
     `, [email]);
     console.log(result.length,email);
