@@ -19,6 +19,7 @@ exports.login = async (req, res) => {
         COALESCE(r.role_name, "superadmin") AS role_name,
         u.email,
         u.name,
+        u.phone,
         u.password,
         u.is_system_super_admin,
         u.is_company_super_admin,
