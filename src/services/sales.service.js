@@ -1405,6 +1405,7 @@ exports.createCustomer = async (
       doi,
       website,
       group,
+      customer_group,
       gst_treatment,
       source_of_supply,
       pan,
@@ -1484,7 +1485,7 @@ exports.createCustomer = async (
         formatDateForDb(dob),
         formatDateForDb(doi),
         website,
-        group,
+        customer_group ?? group,
         gst_treatment,
         source_of_supply,
         pan,
@@ -1601,6 +1602,7 @@ exports.editCustomer = async (
       doi,
       website,
       group,
+      customer_group,
       gst_treatment,
       source_of_supply,
       pan,
@@ -1667,7 +1669,11 @@ exports.editCustomer = async (
     addUpdate("dob", formatDateForDb(dob), hasOwn(data, "dob"));
     addUpdate("doi", formatDateForDb(doi), hasOwn(data, "doi"));
     addUpdate("website", website, hasOwn(data, "website"));
-    addUpdate("customer_group", group, hasOwn(data, "group"));
+    addUpdate(
+      "customer_group",
+      customer_group ?? group,
+      hasOwn(data, "customer_group") || hasOwn(data, "group")
+    );
     addUpdate("gst_treatment", gst_treatment, hasOwn(data, "gst_treatment"));
     addUpdate("source_of_supply", source_of_supply, hasOwn(data, "source_of_supply"));
     addUpdate("pan", pan, hasOwn(data, "pan"));
