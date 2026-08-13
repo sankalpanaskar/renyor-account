@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./customers-list.component.scss']
 })
 export class CustomersListComponent implements OnInit, OnDestroy {
+  private readonly customerModuleId = environment.moduleIds.customer;
 
   showCustomerPopup = false;
   showDocumentViewer = false;
@@ -182,7 +183,7 @@ export class CustomersListComponent implements OnInit, OnDestroy {
 
   getCustomerList() {
     this.loading = true;
-    this.globalService.getCustomerListByTenant(34).subscribe({
+    this.globalService.getCustomerListByTenant(this.customerModuleId).subscribe({
       next: (res: any) => {
         console.log("customer list response", res);
         this.allCustomers = res?.data || [];

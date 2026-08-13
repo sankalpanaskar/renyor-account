@@ -3,6 +3,7 @@ import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { GstTaxRateOption } from '../../shared/gst-tax-rate-popup/gst-tax-rate-popup.component';
 import { UnitOption } from '../../shared/unit-popup/unit-popup.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'ngx-add-item',
@@ -10,6 +11,9 @@ import { UnitOption } from '../../shared/unit-popup/unit-popup.component';
   styleUrls: ['./add-item.component.scss']
 })
 export class AddItemComponent implements OnInit {
+  private readonly itemModuleId = environment.moduleIds.item;
+  private readonly vendorModuleId = environment.moduleIds.vendor;
+
   model: any = this.getEmptyModel();
   isSubmitting: boolean = false;
   customFieldsLoading: boolean = false;
@@ -44,7 +48,7 @@ export class AddItemComponent implements OnInit {
 
   getCustomFields(): void {
     this.customFieldsLoading = true;
-    this.globalService.fetchCustomFieldsByModule(37).subscribe({
+    this.globalService.fetchCustomFieldsByModule(this.itemModuleId).subscribe({
       next: (res: any) => {
         const fields = Array.isArray(res?.data)
           ? res.data
@@ -286,7 +290,7 @@ export class AddItemComponent implements OnInit {
   }
 
   getVendorList(): void {
-    this.globalService.getVendorListByTenant(46).subscribe({
+    this.globalService.getVendorListByTenant(this.vendorModuleId).subscribe({
       next: (res: any) => {
         this.vendorOptions = Array.isArray(res?.data)
           ? res.data.map((item: any) => ({
@@ -481,7 +485,7 @@ export class AddItemComponent implements OnInit {
         delete payload[fieldName];
       });
 
-      payload.module_id = 37;
+      payload.module_id = this.itemModuleId;
       if (Object.keys(customFieldData).length > 0) {
         payload.custom_field = customFieldData;
       }

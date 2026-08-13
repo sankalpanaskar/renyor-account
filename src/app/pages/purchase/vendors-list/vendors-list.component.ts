@@ -12,6 +12,8 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./vendors-list.component.scss']
 })
 export class VendorsListComponent implements OnInit, OnDestroy {
+  private readonly vendorModuleId = environment.moduleIds.vendor;
+
   showVendorPopup = false;
   showDocumentViewer = false;
   selectedDocumentUrl = '';
@@ -81,7 +83,7 @@ export class VendorsListComponent implements OnInit, OnDestroy {
 
   getVendorList(): void {
     this.loading = true;
-    this.globalService.getVendorListByTenant(46).subscribe({
+    this.globalService.getVendorListByTenant(this.vendorModuleId).subscribe({
       next: (res: any) => {
         this.allVendors = Array.isArray(res?.data) ? res.data : [];
         this.apiData = [...this.allVendors];

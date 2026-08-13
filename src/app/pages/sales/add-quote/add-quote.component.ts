@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
 import { Router } from '@angular/router';
 import { GlobalService } from '../../../services/global.service';
+import { environment } from '../../../../environments/environment';
 
 interface QuoteItemRow {
   item_id: string | number;
@@ -80,6 +81,9 @@ interface QuoteItemOption {
   styleUrls: ['./add-quote.component.scss']
 })
 export class AddQuoteComponent implements OnInit {
+  private readonly customerModuleId = environment.moduleIds.customer;
+  private readonly quotationModuleId = environment.moduleIds.quotation;
+
   isSubmitting = false;
   customFieldsLoading = false;
   isEditMode = false;
@@ -101,8 +105,6 @@ export class AddQuoteComponent implements OnInit {
     { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' }
   ];
   customFields: any[] = [];
-  private readonly quotationModuleId = 52;
-
   model: any = {
     customer_id: '',
     quote_no: '',
@@ -387,7 +389,7 @@ export class AddQuoteComponent implements OnInit {
   }
 
   fetchCustomers(): void {
-    this.globalService.getCustomerListByTenant(34).subscribe({
+    this.globalService.getCustomerListByTenant(this.customerModuleId).subscribe({
       next: (res: any) => {
         const customers = Array.isArray(res?.data) ? res.data : [];
         this.customerOptions = customers

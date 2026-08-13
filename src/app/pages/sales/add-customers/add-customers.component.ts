@@ -17,6 +17,8 @@ type DocumentPreviewType = 'image' | 'pdf' | 'file';
   styleUrls: ['./add-customers.component.scss']
 })
 export class AddCustomersComponent implements OnInit, OnDestroy {
+  private readonly customerModuleId = environment.moduleIds.customer;
+
   isEditMode = false;
   pageTitle = 'Add Customer';
   submitButtonLabel = 'Save';
@@ -198,7 +200,7 @@ export class AddCustomersComponent implements OnInit, OnDestroy {
   }
 
   getCustomFields(){
-    this.globalService.fetchCustomFieldsByModule(34).subscribe({
+    this.globalService.fetchCustomFieldsByModule(this.customerModuleId).subscribe({
       next: (res: any) => {
         const fields = Array.isArray(res?.data) ? res.data : [];
         this.customFields = fields
@@ -665,7 +667,7 @@ export class AddCustomersComponent implements OnInit, OnDestroy {
       const dateKey = customerType === 'Business' ? 'doi' : 'dob';
       const formattedDate = this.formatDateForPayload(payload.dob_doi);
 
-      payload.module_id = 34;
+      payload.module_id = this.customerModuleId;
       if (this.isEditMode && this.model.customer_id) {
         payload.customer_id = this.model.customer_id;
       }

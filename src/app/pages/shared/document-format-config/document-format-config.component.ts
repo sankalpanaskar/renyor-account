@@ -73,6 +73,10 @@ interface DocumentFormatConfiguration {
   styleUrls: ['./document-format-config.component.scss'],
 })
 export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
+  private readonly invoiceModuleId = environment.moduleIds.invoice;
+  private readonly quotationModuleId = environment.moduleIds.quotation;
+  private readonly salesOrderModuleId = environment.moduleIds.salesOrder;
+
   documentOptions: FormatDocumentOption[] = [
     {
       key: 'invoice',
@@ -119,9 +123,9 @@ export class DocumentFormatConfigComponent implements OnInit, OnDestroy {
   configurationSaving = false;
   private previewTimer?: ReturnType<typeof setTimeout>;
   private readonly documentModuleIds: { [key in DocumentFormatType]: number } = {
-    invoice: 54,
-    quote: 52,
-    'sales-order': 57,
+    invoice: this.invoiceModuleId,
+    quote: this.quotationModuleId,
+    'sales-order': this.salesOrderModuleId,
   };
   private readonly documentApiTypes: { [key in DocumentFormatType]: string } = {
     invoice: 'invoice',

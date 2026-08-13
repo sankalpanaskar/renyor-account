@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
 import { GlobalService } from '../../../services/global.service';
 import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 interface SalesOrderItemRow {
   item_id: string | number;
@@ -80,6 +81,9 @@ interface SalesOrderItemOption {
   styleUrls: ['./add-sales-order.component.scss']
 })
 export class AddSalesOrderComponent implements OnInit {
+  private readonly customerModuleId = environment.moduleIds.customer;
+  private readonly salesOrderModuleId = environment.moduleIds.salesOrder;
+
   isSubmitting = false;
   customFieldsLoading = false;
   isEditMode = false;
@@ -107,8 +111,6 @@ export class AddSalesOrderComponent implements OnInit {
     'Express Shipping',
     'Pickup',
   ];
-  private readonly salesOrderModuleId = 57;
-
   model: any = {
     customer_id: '',
     sales_order_no: '',
@@ -400,7 +402,7 @@ export class AddSalesOrderComponent implements OnInit {
   }
 
   fetchCustomers(): void {
-    this.globalService.getCustomerListByTenant(34).subscribe({
+    this.globalService.getCustomerListByTenant(this.customerModuleId).subscribe({
       next: (res: any) => {
         const customers = Array.isArray(res?.data) ? res.data : [];
         this.customerOptions = customers

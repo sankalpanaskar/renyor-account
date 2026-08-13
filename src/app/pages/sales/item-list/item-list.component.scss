@@ -591,6 +591,7 @@
 
 .item-table tbody tr:not(.item-row) {
   display: block;
+  width: 100%;
 }
 
 .item-row {
@@ -751,6 +752,9 @@
 }
 
 .empty-state {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
   text-align: center;
   padding: 0 !important;
 }

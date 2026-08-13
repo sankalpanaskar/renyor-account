@@ -13,7 +13,6 @@ import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
 import { SharedModule } from '../shared/shared.module';
 import { ThemeModule } from '../../@theme/theme.module';
-import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
 import { AddInvoiceComponent } from './add-invoice/add-invoice.component';
 import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 import { AddQuoteComponent } from './add-quote/add-quote.component';
@@ -29,7 +28,6 @@ import { SalesOrderListComponent } from './sales-order-list/sales-order-list.com
     CustomersListComponent,
     AddItemComponent,
     ItemListComponent,
-    AddEstimatesComponent,
     AddInvoiceComponent,
     AddSalesOrderComponent,
     AddQuoteComponent,

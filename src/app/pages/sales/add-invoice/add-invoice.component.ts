@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { NbToastrService } from '@nebular/theme';
 import { GlobalService } from '../../../services/global.service';
 import { Router } from '@angular/router';
+import { environment } from '../../../../environments/environment';
 
 interface InvoiceItemRow {
   item_id: string | number;
@@ -67,6 +68,9 @@ interface InvoiceItemOption {
   styleUrls: ['./add-invoice.component.scss']
 })
 export class AddInvoiceComponent implements OnInit {
+  private readonly customerModuleId = environment.moduleIds.customer;
+  private readonly invoiceModuleId = environment.moduleIds.invoice;
+
   isSubmitting = false;
   customFieldsLoading = false;
   isSavingInvoiceNumberPreference = false;
@@ -86,8 +90,6 @@ export class AddInvoiceComponent implements OnInit {
     { label: 'Non-Taxable', rate: 0, taxName: 'Non-Taxable' }
   ];
   customFields: any[] = [];
-  private readonly invoiceModuleId = 54;
-
   model: any = {
     customer_id: '',
     invoice_no: '',
@@ -380,7 +382,7 @@ export class AddInvoiceComponent implements OnInit {
   }
 
   fetchCustomers(): void {
-    this.globalService.getCustomerListByTenant(34).subscribe({
+    this.globalService.getCustomerListByTenant(this.customerModuleId).subscribe({
       next: (res: any) => {
         const customers = Array.isArray(res?.data) ? res.data : [];
         this.customerOptions = customers

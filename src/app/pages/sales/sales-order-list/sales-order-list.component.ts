@@ -13,6 +13,8 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./sales-order-list.component.scss'],
 })
 export class SalesOrderListComponent implements OnInit, OnDestroy {
+  private readonly salesOrderModuleId = environment.moduleIds.salesOrder;
+
   allSalesOrders: any[] = [];
   apiData: any[] = [];
   searchText = '';
@@ -75,7 +77,7 @@ export class SalesOrderListComponent implements OnInit, OnDestroy {
   }
 
   private fetchSalesOrderCustomFields(): void {
-    this.globalService.fetchCustomFieldsByModule(57).subscribe({
+    this.globalService.fetchCustomFieldsByModule(this.salesOrderModuleId).subscribe({
       next: (res: any) => {
         const fields = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
         this.salesOrderCustomFields = fields
@@ -105,7 +107,7 @@ export class SalesOrderListComponent implements OnInit, OnDestroy {
   fetchSalesOrders(): void {
     this.loading = true;
     this.loadError = '';
-    this.globalService.fetchSalesOrders(57).subscribe({
+    this.globalService.fetchSalesOrders(this.salesOrderModuleId).subscribe({
       next: (res: any) => {
         const salesOrders = this.extractSalesOrders(res);
         this.allSalesOrders = [...salesOrders];

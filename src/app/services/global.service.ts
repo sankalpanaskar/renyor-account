@@ -288,7 +288,7 @@ export class GlobalService {
     }
 
     public fetchItems(): Observable<any> {
-      return this.http.get(`${this.salesUrl}/fetch-items?module_id=37`);
+      return this.http.get(`${this.salesUrl}/fetch-items?module_id=${environment.moduleIds.item}`);
     }
 
     public getAccountHeadType(): Observable<any> {
@@ -382,15 +382,15 @@ export class GlobalService {
       );
     }
 
-    public fetchInvoices(moduleId: number = 54): Observable<any> {
+    public fetchInvoices(moduleId: number = environment.moduleIds.invoice): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-invoice?module_id=${moduleId}`);
     }
 
-    public fetchQuotations(moduleId: number = 52): Observable<any> {
+    public fetchQuotations(moduleId: number = environment.moduleIds.quotation): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-quotation?module_id=${moduleId}`);
     }
 
-    public fetchSalesOrders(moduleId: number = 57): Observable<any> {
+    public fetchSalesOrders(moduleId: number = environment.moduleIds.salesOrder): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-sales-order?module_id=${moduleId}`);
     }
 

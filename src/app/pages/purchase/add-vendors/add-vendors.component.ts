@@ -18,6 +18,8 @@ type VendorDocumentPreviewType = 'image' | 'pdf' | 'file';
   styleUrls: ['./add-vendors.component.scss']
 })
 export class AddVendorsComponent implements OnInit, OnDestroy {
+  private readonly vendorModuleId = environment.moduleIds.vendor;
+
   model: any = { bank_accounts: [] };
   isSubmitting: boolean = false;
   showAccountNumber: boolean[] = [];
@@ -74,7 +76,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
 
   private loadVendorForEdit(vendorId: number): void {
     this.isSubmitting = true;
-    this.globalService.getVendorListByTenant(46).subscribe({
+    this.globalService.getVendorListByTenant(this.vendorModuleId).subscribe({
       next: (res: any) => {
         const vendors = Array.isArray(res?.data) ? res.data : [];
         const matchedVendor = vendors.find((vendor: any) => Number(vendor?.id) === Number(vendorId));
@@ -313,7 +315,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
   }
 
   getCustomFields(){
-    this.globalService.fetchCustomFieldsByModule(34).subscribe({
+    this.globalService.fetchCustomFieldsByModule(this.vendorModuleId).subscribe({
       next: (res: any) => {
         const fields = Array.isArray(res?.data) ? res.data : [];
         this.customFields = fields
@@ -751,7 +753,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
         }
       });
 
-      payload.module_id = 46;
+      payload.module_id = this.vendorModuleId;
 
       // Extract custom fields from payload
       customFieldNames.forEach((fieldName: string) => {

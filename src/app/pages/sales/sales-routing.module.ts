@@ -6,7 +6,6 @@ import { authGuard } from '../../auth/auth.guard';
 import { CustomersListComponent } from './customers-list/customers-list.component';
 import { AddItemComponent } from './add-item/add-item.component';
 import { ItemListComponent } from './item-list/item-list.component';
-import { AddEstimatesComponent } from './add-estimates/add-estimates.component';
 import { AddInvoiceComponent } from './add-invoice/add-invoice.component';
 import { AddSalesOrderComponent } from './add-sales-order/add-sales-order.component';
 import { AddQuoteComponent } from './add-quote/add-quote.component';
@@ -42,11 +41,6 @@ const routes: Routes = [
       {
         path:'item-list',
         component:ItemListComponent,
-        canActivate: [authGuard]
-      },
-      {
-        path:'add-estimate',
-        component:AddEstimatesComponent,
         canActivate: [authGuard]
       },
       {

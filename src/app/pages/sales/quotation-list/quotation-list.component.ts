@@ -13,6 +13,8 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./quotation-list.component.scss'],
 })
 export class QuotationListComponent implements OnInit, OnDestroy {
+  private readonly quotationModuleId = environment.moduleIds.quotation;
+
   allQuotations: any[] = [];
   apiData: any[] = [];
   searchText = '';
@@ -75,7 +77,7 @@ export class QuotationListComponent implements OnInit, OnDestroy {
   }
 
   private fetchQuotationCustomFields(): void {
-    this.globalService.fetchCustomFieldsByModule(52).subscribe({
+    this.globalService.fetchCustomFieldsByModule(this.quotationModuleId).subscribe({
       next: (res: any) => {
         const fields = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
         this.quotationCustomFields = fields
@@ -105,7 +107,7 @@ export class QuotationListComponent implements OnInit, OnDestroy {
   fetchQuotations(): void {
     this.loading = true;
     this.loadError = '';
-    this.globalService.fetchQuotations(52).subscribe({
+    this.globalService.fetchQuotations(this.quotationModuleId).subscribe({
       next: (res: any) => {
         const quotations = this.extractQuotations(res);
         this.allQuotations = [...quotations];

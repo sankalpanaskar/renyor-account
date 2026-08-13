@@ -13,6 +13,8 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./invoice-list.component.scss'],
 })
 export class InvoiceListComponent implements OnInit, OnDestroy {
+  private readonly invoiceModuleId = environment.moduleIds.invoice;
+
   allInvoices: any[] = [];
   apiData: any[] = [];
   searchText = '';
@@ -75,7 +77,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   }
 
   private fetchInvoiceCustomFields(): void {
-    this.globalService.fetchCustomFieldsByModule(54).subscribe({
+    this.globalService.fetchCustomFieldsByModule(this.invoiceModuleId).subscribe({
       next: (res: any) => {
         const fields = Array.isArray(res?.data) ? res.data : (Array.isArray(res) ? res : []);
         this.invoiceCustomFields = fields
@@ -102,7 +104,7 @@ export class InvoiceListComponent implements OnInit, OnDestroy {
   fetchInvoices(): void {
     this.loading = true;
     this.loadError = '';
-    this.globalService.fetchInvoices(54).subscribe({
+    this.globalService.fetchInvoices(this.invoiceModuleId).subscribe({
       next: (res: any) => {
         const invoices = this.extractInvoices(res);
         this.allInvoices = [...invoices];
