@@ -278,7 +278,8 @@ exports.assignCustomFieldModules = async (req, res) => {
   try {
     const assignment = await SuperadminService.assignCustomFieldModules({
       ...req.body,
-      tenant_id: req.user.tenant_id
+      tenant_id: req.user.tenant_id,
+      user_id: req.user.id
     });
 
     return res.success(

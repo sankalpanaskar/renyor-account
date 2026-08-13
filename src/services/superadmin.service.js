@@ -471,7 +471,8 @@ exports.assignCustomFieldModules = async (data) => {
       data?.custome_field_id ?? data?.custom_field_id
     );
     const tenantId = normalizeScalar(data?.tenant_id);
-    const moduleIds = normalizeModuleIds(data?.module_id);
+    const userId = normalizeScalar(data?.user_id);
+    const moduleIds = normalizeModuleIds(data?.modules ?? data?.module_id);
     const statusValue = normalizeTinyIntValue(
       hasOwn(data, "status") ? data.status : 1
     );
@@ -510,16 +511,16 @@ exports.assignCustomFieldModules = async (data) => {
       if (assignmentRows.length > 0) {
         await connection.query(
           `UPDATE custom_field_module_assignment
-           SET status = ?, updated_at = CURRENT_TIMESTAMP
+           SET status = ?, user_id = ?, updated_at = CURRENT_TIMESTAMP
            WHERE id = ?`,
-          [status, assignmentRows[0].id]
+          [status, userId ?? null, assignmentRows[0].id]
         );
       } else {
         await connection.query(
           `INSERT INTO custom_field_module_assignment
-           (tenant_id, module_id, custome_field_id, status)
-           VALUES (?, ?, ?, ?)`,
-          [tenantId, moduleId, customeFieldId, status]
+           (tenant_id, user_id, module_id, custome_field_id, status)
+           VALUES (?, ?, ?, ?, ?)`,
+          [tenantId, userId ?? null, moduleId, customeFieldId, status]
         );
       }
     }
@@ -528,6 +529,7 @@ exports.assignCustomFieldModules = async (data) => {
       `SELECT
           cfma.id,
           cfma.custome_field_id,
+          cfma.user_id,
           cfma.module_id,
           mm.menu_name,
           cfma.status
@@ -544,6 +546,7 @@ exports.assignCustomFieldModules = async (data) => {
     return {
       custome_field_id: customeFieldId,
       tenant_id: tenantId,
+      user_id: userId ?? null,
       module_id: moduleIds,
       assignments
     };
