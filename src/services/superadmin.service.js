@@ -217,6 +217,7 @@ exports.createMenuSubmenu = async (data) => {
 exports.customFieldCreate = async (data) => {
   const {
     tenant_id,
+    user_id,
     field_name,
     field_label,
     field_type,
@@ -271,6 +272,7 @@ exports.customFieldCreate = async (data) => {
     `INSERT INTO custom_fields
     (
       tenant_id,
+      user_id,
       field_name,
       field_label,
       field_type,
@@ -286,9 +288,10 @@ exports.customFieldCreate = async (data) => {
       show_in_list,
       status
     )
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [
       tenant_id,
+      user_id ?? null,
       field_name,
       field_label,
       finalFieldType,
@@ -310,6 +313,7 @@ exports.customFieldCreate = async (data) => {
   return {
     id: result.insertId,
     tenant_id,
+    user_id: user_id ?? null,
     field_name,
     field_label,
     field_type: finalFieldType,
@@ -466,6 +470,7 @@ exports.assignCustomFieldModules = async (data) => {
     const customeFieldId = normalizeScalar(
       data?.custome_field_id ?? data?.custom_field_id
     );
+    const tenantId = normalizeScalar(data?.tenant_id);
     const moduleIds = normalizeModuleIds(data?.module_id);
     const statusValue = normalizeTinyIntValue(
       hasOwn(data, "status") ? data.status : 1
@@ -474,6 +479,10 @@ exports.assignCustomFieldModules = async (data) => {
 
     if (!customeFieldId) {
       throw new Error("custome_field_id is required");
+    }
+
+    if (!tenantId) {
+      throw new Error("tenant_id is required");
     }
 
     if (!moduleIds.length) {
@@ -493,9 +502,9 @@ exports.assignCustomFieldModules = async (data) => {
       const [assignmentRows] = await connection.query(
         `SELECT id
          FROM custom_field_module_assignment
-         WHERE custome_field_id = ? AND module_id = ?
+         WHERE custome_field_id = ? AND module_id = ? AND tenant_id = ?
          LIMIT 1`,
-        [customeFieldId, moduleId]
+        [customeFieldId, moduleId, tenantId]
       );
 
       if (assignmentRows.length > 0) {
@@ -508,9 +517,9 @@ exports.assignCustomFieldModules = async (data) => {
       } else {
         await connection.query(
           `INSERT INTO custom_field_module_assignment
-           (module_id, custome_field_id, status)
-           VALUES (?, ?, ?)`,
-          [moduleId, customeFieldId, status]
+           (tenant_id, module_id, custome_field_id, status)
+           VALUES (?, ?, ?, ?)`,
+          [tenantId, moduleId, customeFieldId, status]
         );
       }
     }
@@ -525,15 +534,16 @@ exports.assignCustomFieldModules = async (data) => {
        FROM custom_field_module_assignment cfma
        LEFT JOIN menu_modules mm
          ON mm.id = cfma.module_id
-       WHERE cfma.custome_field_id = ?
+       WHERE cfma.custome_field_id = ? AND cfma.tenant_id = ?
        ORDER BY cfma.module_id ASC`,
-      [customeFieldId]
+      [customeFieldId, tenantId]
     );
 
     await connection.commit();
 
     return {
       custome_field_id: customeFieldId,
+      tenant_id: tenantId,
       module_id: moduleIds,
       assignments
     };

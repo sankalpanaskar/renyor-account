@@ -236,7 +236,11 @@ exports.fetchSubMenuBasedOnParentMenu = async (req, res) => {
 
 exports.customFieldCreate = async (req, res) => {
   try {
-    const fields = await SuperadminService.customFieldCreate(req.body);
+    const fields = await SuperadminService.customFieldCreate({
+      ...req.body,
+      tenant_id: req.user.tenant_id,
+      user_id: req.user.id
+    });
     console.log(fields);
     
     return res.success(
@@ -272,7 +276,10 @@ exports.customFieldUpdate = async (req, res) => {
 
 exports.assignCustomFieldModules = async (req, res) => {
   try {
-    const assignment = await SuperadminService.assignCustomFieldModules(req.body);
+    const assignment = await SuperadminService.assignCustomFieldModules({
+      ...req.body,
+      tenant_id: req.user.tenant_id
+    });
 
     return res.success(
       200,
