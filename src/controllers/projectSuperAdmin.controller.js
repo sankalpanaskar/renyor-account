@@ -297,7 +297,11 @@ exports.assignCustomFieldModules = async (req, res) => {
 
 exports.deassignCustomFieldModules = async (req, res) => {
   try {
-    const assignment = await SuperadminService.deassignCustomFieldModules(req.body);
+    const assignment = await SuperadminService.deassignCustomFieldModules({
+      ...req.body,
+      tenant_id: req.user.tenant_id,
+      user_id: req.user.id
+    });
 
     return res.success(
       200,
