@@ -2642,7 +2642,7 @@ exports.createItem = async (
   }
 };
 
-exports.editItem = async (
+exports.updateItem = async (
   data,
   tenant_id,
   user_id,

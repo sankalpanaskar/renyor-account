@@ -253,7 +253,7 @@ exports.createItem = async (req, res) => {
   }
 };
 
-exports.editItem = async (req, res) => {
+exports.updateItem = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
     const user_id = req.user.userId;
@@ -263,7 +263,7 @@ exports.editItem = async (req, res) => {
       req.files?.item_image?.[0]
     );
 
-    const items = await sales.editItem(
+    const items = await sales.updateItem(
       req.body,
       tenant_id,
       user_id,

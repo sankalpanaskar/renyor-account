@@ -72,12 +72,12 @@ router.post(
 );
 
 router.post(
-  '/edit-item',
+  '/update-item',
   auth,
   tenantUpload('items', [
     { name: 'item_image', maxCount: 1 }
   ]),
-  salesController.editItem
+  salesController.updateItem
 );
 
 
