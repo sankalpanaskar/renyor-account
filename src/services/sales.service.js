@@ -2854,6 +2854,15 @@ exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
   const [items] = await db.query(
     `SELECT
         i.*,
+        (
+          SELECT sb.unit_cost
+          FROM stock_batches sb
+          WHERE sb.item_id = i.id
+            AND sb.tenant_id = i.tenant_id
+            AND sb.source_type = 'OPENING'
+          ORDER BY sb.id ASC
+          LIMIT 1
+        ) AS unit_cost,
         tr.tax_rate_name,
         tr.tax_rate_percentage,
         coa.account_name AS sales_chartofaccounts_name,
@@ -2909,6 +2918,16 @@ exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
     ...item,
     custom_field: customFieldMap[item.id] || {}
   }));
+};
+
+exports.fetchItem = async (tenant_id, item_id, module_id) => {
+  if (item_id === undefined || item_id === null || item_id === "") {
+    throw new Error("id is required");
+  }
+
+  const items = await exports.fetchItems(tenant_id, item_id, module_id);
+
+  return items[0] || null;
 };
 
 exports.getchartofaccountsHeadType = async (req, res) => {
