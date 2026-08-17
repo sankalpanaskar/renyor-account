@@ -2642,6 +2642,330 @@ exports.createItem = async (
   }
 };
 
+exports.editItem = async (
+  data,
+  tenant_id,
+  user_id,
+  uploaded_item_image = null
+) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      item_id,
+      id,
+      type,
+      unit,
+      hsn_code,
+      sac,
+      tax_preference,
+      gst_rates_id,
+      tax_rate_id,
+      selling_price,
+      sales_account_id,
+      chartofaccounts_name_id_sales,
+      sales_account_description,
+      cost_price,
+      current_quantity,
+      current_stock_value,
+      unit_cost,
+      purchase_account_id,
+      chartofaccounts_name_id_purchase,
+      purchase_account_description,
+      prefered_vendor_id,
+      vendor_master_id,
+      name,
+      enable_sales_information,
+      enable_purchase_information,
+      item_image: body_item_image,
+      custom_field,
+      module_id
+    } = data || {};
+
+    const itemId = normalizeFormValue(item_id ?? id);
+    const moduleId = normalizeFormValue(module_id);
+
+    if (!itemId) {
+      throw new Error('item_id is required');
+    }
+
+    const emptyToNull = (value) => {
+      const normalized = normalizeFormValue(value);
+      return normalized === undefined || normalized === null || normalized === ''
+        ? null
+        : normalized;
+    };
+
+    const numberOrZero = (value, fieldName) => {
+      const normalized = emptyToNull(value);
+
+      if (normalized === null) {
+        return 0;
+      }
+
+      const numericValue = Number(normalized);
+
+      if (!Number.isFinite(numericValue)) {
+        throw new Error(`${fieldName} must be a valid number`);
+      }
+
+      return numericValue;
+    };
+
+    const booleanFlag = (value) => {
+      const normalized = emptyToNull(value);
+
+      if (normalized === null) {
+        return 0;
+      }
+
+      if (typeof normalized === 'boolean') {
+        return normalized ? 1 : 0;
+      }
+
+      return ['1', 'true', 'yes', 'on'].includes(
+        String(normalized).trim().toLowerCase()
+      )
+        ? 1
+        : 0;
+    };
+
+    const [existingRows] = await connection.query(
+      `SELECT
+          i.id,
+          i.current_quantity,
+          i.current_stock_value,
+          (
+            SELECT sb.unit_cost
+            FROM stock_batches sb
+            WHERE sb.item_id = i.id
+              AND sb.tenant_id = i.tenant_id
+              AND sb.source_type = 'OPENING'
+            ORDER BY sb.id ASC
+            LIMIT 1
+          ) AS opening_unit_cost
+       FROM items i
+       WHERE i.id = ? AND i.tenant_id = ?
+       FOR UPDATE`,
+      [itemId, tenant_id]
+    );
+
+    if (!existingRows.length) {
+      throw new Error('Item not found');
+    }
+
+    const existingItem = existingRows[0];
+
+    const updates = [];
+    const values = [];
+    const addUpdate = (column, value, shouldUpdate) => {
+      if (!shouldUpdate) {
+        return;
+      }
+
+      updates.push(`${column} = ?`);
+      values.push(value);
+    };
+
+    addUpdate('type', emptyToNull(type), hasOwn(data, 'type'));
+    addUpdate('unit', emptyToNull(unit), hasOwn(data, 'unit'));
+    addUpdate('hsn_code', emptyToNull(hsn_code), hasOwn(data, 'hsn_code'));
+    addUpdate('sac', emptyToNull(sac), hasOwn(data, 'sac'));
+    addUpdate('tax_preference', emptyToNull(tax_preference), hasOwn(data, 'tax_preference'));
+    addUpdate(
+      'tax_rate_id',
+      emptyToNull(gst_rates_id) ?? emptyToNull(tax_rate_id),
+      hasOwn(data, 'gst_rates_id') || hasOwn(data, 'tax_rate_id')
+    );
+    addUpdate('selling_price', numberOrZero(selling_price, 'selling_price'), hasOwn(data, 'selling_price'));
+    addUpdate(
+      'chartofaccounts_name_id_sales',
+      emptyToNull(sales_account_id) ?? emptyToNull(chartofaccounts_name_id_sales),
+      hasOwn(data, 'sales_account_id') || hasOwn(data, 'chartofaccounts_name_id_sales')
+    );
+    addUpdate('sales_account_description', emptyToNull(sales_account_description), hasOwn(data, 'sales_account_description'));
+    addUpdate('cost_price', numberOrZero(cost_price, 'cost_price'), hasOwn(data, 'cost_price'));
+    addUpdate(
+      'chartofaccounts_name_id_purchase',
+      emptyToNull(purchase_account_id) ?? emptyToNull(chartofaccounts_name_id_purchase),
+      hasOwn(data, 'purchase_account_id') || hasOwn(data, 'chartofaccounts_name_id_purchase')
+    );
+    addUpdate('purchase_account_description', emptyToNull(purchase_account_description), hasOwn(data, 'purchase_account_description'));
+    addUpdate(
+      'vendor_master_id',
+      emptyToNull(prefered_vendor_id) ?? emptyToNull(vendor_master_id),
+      hasOwn(data, 'prefered_vendor_id') || hasOwn(data, 'vendor_master_id')
+    );
+    addUpdate('name', emptyToNull(name), hasOwn(data, 'name'));
+    addUpdate('enable_sales_information', booleanFlag(enable_sales_information), hasOwn(data, 'enable_sales_information'));
+    addUpdate('enable_purchase_information', booleanFlag(enable_purchase_information), hasOwn(data, 'enable_purchase_information'));
+    addUpdate(
+      'item_image',
+      uploaded_item_image ?? emptyToNull(body_item_image),
+      uploaded_item_image !== null || hasOwn(data, 'item_image')
+    );
+
+    const hasStockUpdate =
+      hasOwn(data, 'current_quantity') ||
+      hasOwn(data, 'current_stock_value') ||
+      hasOwn(data, 'unit_cost');
+
+    if (hasStockUpdate) {
+      const quantity = hasOwn(data, 'current_quantity')
+        ? numberOrZero(current_quantity, 'current_quantity')
+        : Number(existingItem.current_quantity || 0);
+      const stockValue = hasOwn(data, 'current_stock_value')
+        ? numberOrZero(current_stock_value, 'current_stock_value')
+        : Number(existingItem.current_stock_value || 0);
+      const unitCost = hasOwn(data, 'unit_cost')
+        ? numberOrZero(unit_cost, 'unit_cost')
+        : Number(existingItem.opening_unit_cost || 0);
+
+      if (quantity < 0) {
+        throw new Error('current_quantity cannot be negative');
+      }
+
+      if (stockValue < 0) {
+        throw new Error('current_stock_value cannot be negative');
+      }
+
+      if (unitCost < 0) {
+        throw new Error('unit_cost cannot be negative');
+      }
+
+      if ((quantity > 0 && stockValue <= 0) || (stockValue > 0 && quantity <= 0)) {
+        throw new Error(
+          'current_quantity and current_stock_value are both required for opening stock'
+        );
+      }
+
+      if (quantity > 0 && unitCost <= 0) {
+        throw new Error('unit_cost is required for opening stock');
+      }
+
+      addUpdate('current_quantity', quantity, true);
+      addUpdate('current_stock_value', stockValue, true);
+
+      if (quantity > 0 && stockValue > 0) {
+        const [stockRows] = await connection.query(
+          `SELECT id FROM stock_batches
+           WHERE item_id = ? AND tenant_id = ? AND source_type = 'OPENING'
+           LIMIT 1`,
+          [itemId, tenant_id]
+        );
+
+        if (stockRows.length) {
+          await connection.query(
+            `UPDATE stock_batches
+             SET quantity = ?,
+                 remaining_quantity = ?,
+                 unit_cost = ?,
+                 total_cost = ?,
+                 batch_date = NOW()
+             WHERE id = ? AND tenant_id = ?`,
+            [quantity, quantity, unitCost, stockValue, stockRows[0].id, tenant_id]
+          );
+        } else {
+          await connection.query(
+            `INSERT INTO stock_batches (
+              item_id,
+              source_type,
+              source_id,
+              quantity,
+              remaining_quantity,
+              unit_cost,
+              total_cost,
+              batch_date,
+              tenant_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)`,
+            [
+              itemId,
+              'OPENING',
+              null,
+              quantity,
+              quantity,
+              unitCost,
+              stockValue,
+              tenant_id
+            ]
+          );
+        }
+      } else {
+        await connection.query(
+          `DELETE FROM stock_batches
+           WHERE item_id = ? AND tenant_id = ? AND source_type = 'OPENING'`,
+          [itemId, tenant_id]
+        );
+      }
+    }
+
+    if (hasOwn(data, 'name') && !String(emptyToNull(name) || '').trim()) {
+      throw new Error('name is required');
+    }
+
+    if (updates.length > 0) {
+      await connection.query(
+        `UPDATE items
+         SET ${updates.join(', ')}
+         WHERE id = ? AND tenant_id = ?`,
+        [...values, itemId, tenant_id]
+      );
+    }
+
+    if (hasOwn(data, 'custom_field') && custom_field !== undefined && custom_field !== null && custom_field !== '') {
+      const customFieldValues = parseCustomFieldForUpdate(custom_field);
+
+      if (!moduleId) {
+        throw new Error('module_id is required when custom_field is provided');
+      }
+
+      await connection.query(
+        `DELETE FROM custom_field_values
+         WHERE module_id = ? AND tenant_id = ? AND record_id = ?`,
+        [moduleId, tenant_id, itemId]
+      );
+
+      if (customFieldValues && Object.keys(customFieldValues).length > 0) {
+        await handleCustomFields({
+          connection,
+          custom_field: customFieldValues,
+          module_id: moduleId,
+          tenant_id,
+          record_id: itemId
+        });
+      }
+    }
+
+    const [rows] = await connection.query(
+      `SELECT
+          i.*,
+          (
+            SELECT sb.unit_cost
+            FROM stock_batches sb
+            WHERE sb.item_id = i.id
+              AND sb.tenant_id = i.tenant_id
+              AND sb.source_type = 'OPENING'
+            ORDER BY sb.id ASC
+            LIMIT 1
+          ) AS unit_cost
+       FROM items i
+       WHERE i.id = ? AND i.tenant_id = ?`,
+      [itemId, tenant_id]
+    );
+
+    await connection.commit();
+
+    return rows[0];
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 exports.createPurchaseInvoice = async (
   data,
   tenant_id,

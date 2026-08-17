@@ -253,6 +253,29 @@ exports.createItem = async (req, res) => {
   }
 };
 
+exports.editItem = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const item_image = buildItemUploadPath(
+      tenant_id,
+      req.files?.item_image?.[0]
+    );
+
+    const items = await sales.editItem(
+      req.body,
+      tenant_id,
+      user_id,
+      item_image
+    );
+
+    return res.success(200, "Item updated successfully", items);
+  } catch (err) {
+    return res.error(500, err.message);
+  }
+};
+
 exports.fetchItems = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;

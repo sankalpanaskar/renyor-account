@@ -71,6 +71,15 @@ router.post(
   salesController.createItem
 );
 
+router.post(
+  '/edit-item',
+  auth,
+  tenantUpload('items', [
+    { name: 'item_image', maxCount: 1 }
+  ]),
+  salesController.editItem
+);
+
 
 
 
