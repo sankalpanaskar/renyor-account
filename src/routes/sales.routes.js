@@ -118,6 +118,7 @@ router.post(
   ]),
   salesController.createSalesOrder
 );
+router.post('/create-purchase-invoice', auth, formDataUpload.none(), salesController.createPurchaseInvoice);
 router.get('/fetch-invoice', auth, salesController.fetchInvoice);
 router.get('/fetch-quotation', auth, salesController.fetchQuotation);
 router.get('/fetch-sales-order', auth, salesController.fetchSalesOrder);

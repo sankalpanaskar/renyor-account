@@ -2193,6 +2193,8 @@ exports.updateVendor = async (
   }
 };
 
+
+
 exports.createItem = async (
   data,
   tenant_id,
@@ -2217,6 +2219,8 @@ exports.createItem = async (
       chartofaccounts_name_id_sales,
       sales_account_description,
       cost_price,
+      current_quantity,
+      current_stock_value,
       purchase_account_id,
       chartofaccounts_name_id_purchase,
       purchase_account_description,
@@ -2230,32 +2234,125 @@ exports.createItem = async (
       module_id
     } = data || {};
 
-    const normalizedData = {
-      type: type ?? null,
-      unit: unit ?? null,
-      hsn_code: hsn_code ?? null,
-      sac: sac ?? null,
-      tax_preference: tax_preference ?? null,
-      tax_rate_id: gst_rates_id ?? tax_rate_id ?? null,
-      selling_price: selling_price ?? 0,
-      chartofaccounts_name_id_sales: sales_account_id ?? chartofaccounts_name_id_sales ?? null,
-      sales_account_description: sales_account_description ?? null,
-      cost_price: cost_price ?? 0,
-      chartofaccounts_name_id_purchase: purchase_account_id ?? chartofaccounts_name_id_purchase ?? null,
-      purchase_account_description: purchase_account_description ?? null,
-      vendor_master_id: prefered_vendor_id ?? vendor_master_id ?? null,
-      name: name ?? null,
-      enable_sales_information: enable_sales_information ? 1 : 0,
-      enable_purchase_information: enable_purchase_information ? 1 : 0,
-      item_image: uploaded_item_image ?? body_item_image ?? null,
-      tenant_id,
-      user_id,
-      custom_field
+    const emptyToNull = (value) => {
+      const normalized = normalizeFormValue(value);
+      return normalized === undefined || normalized === null || normalized === ''
+        ? null
+        : normalized;
     };
 
-    if (!normalizedData.name) {
+    const numberOrZero = (value, fieldName) => {
+      const normalized = emptyToNull(value);
+
+      if (normalized === null) {
+        return 0;
+      }
+
+      const numericValue = Number(normalized);
+
+      if (Number.isNaN(numericValue)) {
+        throw new Error(`${fieldName} must be a valid number`);
+      }
+
+      return numericValue;
+    };
+
+    const booleanFlag = (value) => {
+      const normalized = emptyToNull(value);
+
+      if (normalized === null) {
+        return 0;
+      }
+
+      if (typeof normalized === 'boolean') {
+        return normalized ? 1 : 0;
+      }
+
+      return ['1', 'true', 'yes', 'on'].includes(
+        String(normalized).trim().toLowerCase()
+      )
+        ? 1
+        : 0;
+    };
+
+    const quantity = numberOrZero(current_quantity, 'current_quantity');
+    const stockValue = numberOrZero(current_stock_value, 'current_stock_value');
+    const customFieldValues = parseCustomFieldForUpdate(custom_field);
+    const moduleId = normalizeFormValue(module_id);
+
+    /*
+     * Opening stock validation
+     *
+     * Both quantity and stock value must be provided together.
+     */
+    if (quantity < 0) {
+      throw new Error('current_quantity cannot be negative');
+    }
+
+    if (stockValue < 0) {
+      throw new Error('current_stock_value cannot be negative');
+    }
+
+    if ((quantity > 0 && stockValue <= 0) ||
+        (stockValue > 0 && quantity <= 0)) {
+      throw new Error(
+        'current_quantity and current_stock_value are both required for opening stock'
+      );
+    }
+
+    const normalizedData = {
+      type: emptyToNull(type),
+      unit: emptyToNull(unit),
+      hsn_code: emptyToNull(hsn_code),
+      sac: emptyToNull(sac),
+      tax_preference: emptyToNull(tax_preference),
+      tax_rate_id: emptyToNull(gst_rates_id) ?? emptyToNull(tax_rate_id),
+      selling_price: numberOrZero(selling_price, 'selling_price'),
+
+      chartofaccounts_name_id_sales:
+        emptyToNull(sales_account_id) ?? emptyToNull(chartofaccounts_name_id_sales),
+
+      sales_account_description:
+        emptyToNull(sales_account_description),
+
+      cost_price: numberOrZero(cost_price, 'cost_price'),
+
+      current_quantity: quantity,
+      current_stock_value: stockValue,
+
+      chartofaccounts_name_id_purchase:
+        emptyToNull(purchase_account_id) ?? emptyToNull(chartofaccounts_name_id_purchase),
+
+      purchase_account_description:
+        emptyToNull(purchase_account_description),
+
+      vendor_master_id:
+        emptyToNull(prefered_vendor_id) ?? emptyToNull(vendor_master_id),
+
+      name: emptyToNull(name),
+
+      enable_sales_information:
+        booleanFlag(enable_sales_information),
+
+      enable_purchase_information:
+        booleanFlag(enable_purchase_information),
+
+      item_image:
+        uploaded_item_image ?? emptyToNull(body_item_image),
+
+      tenant_id,
+      user_id
+    };
+
+    if (!String(normalizedData.name || '').trim()) {
       throw new Error('name is required');
     }
+
+    /*
+     * ---------------------------------------------------------
+     * 1. INSERT ITEM
+     * ---------------------------------------------------------
+     */
 
     const columns = [
       'type',
@@ -2268,6 +2365,8 @@ exports.createItem = async (
       'chartofaccounts_name_id_sales',
       'sales_account_description',
       'cost_price',
+      'current_quantity',
+      'current_stock_value',
       'chartofaccounts_name_id_purchase',
       'purchase_account_description',
       'vendor_master_id',
@@ -2279,41 +2378,460 @@ exports.createItem = async (
       'user_id'
     ];
 
-    const values = columns.map((column) => normalizedData[column]);
+    const values = columns.map(
+      (column) => normalizedData[column]
+    );
 
     const [result] = await connection.query(
-      `INSERT INTO items (${columns.join(', ')}) VALUES (${columns.map(() => '?').join(', ')})`,
+      `
+      INSERT INTO items
+      (${columns.join(', ')})
+      VALUES (${columns.map(() => '?').join(', ')})
+      `,
       values
     );
 
     const recordId = result.insertId;
 
-    const customFieldValues =
-      typeof custom_field === 'string' ? JSON.parse(custom_field) : custom_field;
+    /*
+     * ---------------------------------------------------------
+     * 2. INSERT OPENING STOCK BATCH
+     * ---------------------------------------------------------
+     *
+     * Only when both:
+     * current_quantity > 0
+     * current_stock_value > 0
+     */
+
+    if (quantity > 0 && stockValue > 0) {
+
+      const unitCost = stockValue / quantity;
+
+      await connection.query(
+        `
+        INSERT INTO stock_batches
+        (
+          item_id,
+          source_type,
+          source_id,
+          quantity,
+          remaining_quantity,
+          unit_cost,
+          total_cost,
+          batch_date,
+          tenant_id
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), ?)
+        `,
+        [
+          recordId,
+          'OPENING',
+          null,
+          quantity,
+          quantity,
+          unitCost,
+          stockValue,
+          tenant_id
+        ]
+      );
+    }
+
+    /*
+     * ---------------------------------------------------------
+     * 3. CUSTOM FIELDS
+     * ---------------------------------------------------------
+     */
 
     if (customFieldValues) {
       await handleCustomFields({
         connection,
         custom_field: customFieldValues,
-        module_id,
+        module_id: moduleId,
         tenant_id,
         record_id: recordId
       });
     }
 
+    /*
+     * ---------------------------------------------------------
+     * 4. FETCH CREATED ITEM
+     * ---------------------------------------------------------
+     */
+
     const [rows] = await connection.query(
-      `SELECT * FROM items WHERE id = ? AND tenant_id = ?`,
+      `
+      SELECT *
+      FROM items
+      WHERE id = ?
+        AND tenant_id = ?
+      `,
       [recordId, tenant_id]
     );
 
     await connection.commit();
 
     return rows[0];
+
   } catch (error) {
+
     await connection.rollback();
     throw error;
+
   } finally {
+
     connection.release();
+
+  }
+};
+
+exports.createPurchaseInvoice = async (
+  data,
+  tenant_id,
+  user_id
+) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      vendor_id,
+      purchase_invoice_no,
+      invoice_no,
+      bill_no,
+      invoice_date,
+      bill_date,
+      due_date,
+      payment_term,
+      term,
+      order_no,
+      reverse_charge,
+      is_reverse_charge,
+      subject,
+      vendor_notes,
+      terms_and_conditions,
+      additional_tax,
+      additional_tax_rate,
+      sub_total,
+      tax_amount,
+      cgst_amount,
+      sgst_amount,
+      igst_amount,
+      tax_mode,
+      vendor_state,
+      adjustment_label,
+      adjustment_value,
+      total,
+      custom_field,
+      module_id,
+      items: purchaseItems
+    } = data || {};
+
+    const items = parseInvoiceItems(purchaseItems);
+    const purchaseInvoiceNo = normalizeFormValue(
+      purchase_invoice_no ?? invoice_no ?? bill_no
+    );
+    const purchaseInvoiceDate = formatDateForDb(invoice_date ?? bill_date);
+    const vendorId = normalizeFormValue(vendor_id);
+    const customFieldValues = parseCustomFieldForUpdate(custom_field);
+    const moduleId = normalizeFormValue(module_id);
+    const toNumber = (value, fieldName, defaultValue = 0) => {
+      const normalized = normalizeFormValue(value);
+
+      if (normalized === undefined || normalized === null || normalized === "") {
+        return defaultValue;
+      }
+
+      const numberValue = Number(normalized);
+
+      if (!Number.isFinite(numberValue)) {
+        throw new Error(`${fieldName} must be a valid number`);
+      }
+
+      return numberValue;
+    };
+    const boolFlag = (value) => {
+      const normalized = normalizeFormValue(value);
+
+      if (typeof normalized === "boolean") {
+        return normalized ? 1 : 0;
+      }
+
+      return ["1", "true", "yes", "on"].includes(
+        String(normalized || "").trim().toLowerCase()
+      )
+        ? 1
+        : 0;
+    };
+
+    if (vendorId === undefined || vendorId === null || vendorId === "") {
+      throw new Error('vendor_id is required');
+    }
+
+    if (!purchaseInvoiceNo) {
+      throw new Error('invoice_no is required');
+    }
+
+    if (!purchaseInvoiceDate) {
+      throw new Error('invoice_date is required');
+    }
+
+    if (!items.length) {
+      throw new Error('At least one purchase item is required');
+    }
+
+    const [vendorRows] = await connection.query(
+      `SELECT id FROM vendor_master WHERE id = ? AND tenant_id = ? LIMIT 1`,
+      [vendorId, tenant_id]
+    );
+
+    if (vendorRows.length === 0) {
+      throw new Error('Vendor not found');
+    }
+
+    const [duplicateInvoice] = await connection.query(
+      `SELECT id FROM purchase_invoice_master WHERE invoice_no = ? AND tenant_id = ? LIMIT 1`,
+      [purchaseInvoiceNo, tenant_id]
+    );
+
+    if (duplicateInvoice.length > 0) {
+      throw new Error('Purchase invoice already exists');
+    }
+
+    for (const item of items) {
+      const itemId = normalizeFormValue(item?.item_id);
+      const quantity = toNumber(item?.quantity, 'quantity');
+      const rate = toNumber(item?.rate, 'rate');
+
+      if (itemId === undefined || itemId === null || itemId === "") {
+        throw new Error('item_id is required');
+      }
+
+      if (quantity <= 0) {
+        throw new Error(`Invalid quantity for item ${itemId}`);
+      }
+
+      if (rate < 0) {
+        throw new Error(`Invalid rate for item ${itemId}`);
+      }
+
+      const [itemRows] = await connection.query(
+        `SELECT id FROM items WHERE id = ? AND tenant_id = ? LIMIT 1`,
+        [itemId, tenant_id]
+      );
+
+      if (itemRows.length === 0) {
+        throw new Error(`Item not found: ${itemId}`);
+      }
+    }
+
+    const masterColumns = [
+      'vendor_id',
+      'invoice_no',
+      'invoice_date',
+      'due_date',
+      'payment_term',
+      'term',
+      'order_no',
+      'reverse_charge',
+      'is_reverse_charge',
+      'subject',
+      'vendor_notes',
+      'terms_and_conditions',
+      'additional_tax',
+      'additional_tax_rate',
+      'sub_total',
+      'tax_amount',
+      'cgst_amount',
+      'sgst_amount',
+      'igst_amount',
+      'tax_mode',
+      'vendor_state',
+      'adjustment_label',
+      'adjustment_value',
+      'total',
+      'tenant_id',
+      'user_id'
+    ];
+
+    const masterValues = [
+      vendorId,
+      purchaseInvoiceNo,
+      purchaseInvoiceDate,
+      formatDateForDb(due_date),
+      normalizeFormValue(payment_term) ?? null,
+      normalizeFormValue(term) ?? null,
+      normalizeFormValue(order_no) ?? null,
+      boolFlag(reverse_charge),
+      boolFlag(is_reverse_charge),
+      normalizeFormValue(subject) ?? null,
+      normalizeFormValue(vendor_notes) ?? null,
+      normalizeFormValue(terms_and_conditions) ?? null,
+      normalizeFormValue(additional_tax) ?? null,
+      toNumber(additional_tax_rate, 'additional_tax_rate'),
+      toNumber(sub_total, 'sub_total'),
+      toNumber(tax_amount, 'tax_amount'),
+      toNumber(cgst_amount, 'cgst_amount'),
+      toNumber(sgst_amount, 'sgst_amount'),
+      toNumber(igst_amount, 'igst_amount'),
+      normalizeFormValue(tax_mode) ?? null,
+      normalizeFormValue(vendor_state) ?? null,
+      normalizeFormValue(adjustment_label) ?? null,
+      toNumber(adjustment_value, 'adjustment_value'),
+      toNumber(total, 'total'),
+      tenant_id,
+      user_id
+    ];
+
+    const [invoiceResult] = await connection.query(
+      `INSERT INTO purchase_invoice_master (${masterColumns.join(', ')})
+       VALUES (${masterColumns.map(() => '?').join(', ')})`,
+      masterValues
+    );
+
+    const invoiceId = invoiceResult.insertId;
+
+    for (const item of items) {
+      const itemId = normalizeFormValue(item.item_id);
+      const quantity = toNumber(item.quantity, 'quantity');
+      const rate = toNumber(item.rate, 'rate');
+      const amount = quantity * rate;
+
+      await connection.query(
+        `INSERT INTO purchase_invoice_items (
+          purchase_invoice_master_id,
+          item_id,
+          item_name,
+          item_description,
+          item_type,
+          hsn_sac,
+          quantity,
+          rate,
+          tax,
+          unit,
+          amount,
+          tenant_id,
+          user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          invoiceId,
+          itemId,
+          normalizeFormValue(item.item_name) ?? null,
+          normalizeFormValue(item.item_description) ?? null,
+          normalizeFormValue(item.item_type) ?? null,
+          normalizeFormValue(item.hsn_sac) ?? null,
+          quantity,
+          rate,
+          normalizeFormValue(item.tax) ?? null,
+          normalizeFormValue(item.unit) ?? null,
+          amount,
+          tenant_id,
+          user_id
+        ]
+      );
+
+      await connection.query(
+        `INSERT INTO stock_batches (
+          item_id,
+          source_type,
+          source_id,
+          quantity,
+          remaining_quantity,
+          unit_cost,
+          total_cost,
+          batch_date,
+          tenant_id
+        ) VALUES (?, 'PURCHASE_INVOICE', ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          itemId,
+          invoiceId,
+          quantity,
+          quantity,
+          rate,
+          amount,
+          purchaseInvoiceDate,
+          tenant_id
+        ]
+      );
+
+      await connection.query(
+        `UPDATE items
+        SET
+          current_quantity = current_quantity + ?,
+          current_stock_value = current_stock_value + ?
+        WHERE id = ? AND tenant_id = ?`,
+        [
+          quantity,
+          amount,
+          itemId,
+          tenant_id
+        ]
+      );
+
+      await connection.query(
+        `INSERT INTO stock_movements (
+          item_id,
+          transaction_type,
+          transaction_id,
+          quantity,
+          unit_cost,
+          total_cost,
+          movement_date,
+          tenant_id
+        ) VALUES (?, 'PURCHASE_INVOICE', ?, ?, ?, ?, ?, ?)`,
+        [
+          itemId,
+          invoiceId,
+          quantity,
+          rate,
+          amount,
+          purchaseInvoiceDate,
+          tenant_id
+        ]
+      );
+    }
+
+    if (customFieldValues && Object.keys(customFieldValues).length > 0) {
+      if (!moduleId) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      await handleCustomFields({
+        connection,
+        custom_field: customFieldValues,
+        module_id: moduleId,
+        tenant_id,
+        record_id: invoiceId
+      });
+    }
+
+    const [masterRows] = await connection.query(
+      `SELECT * FROM purchase_invoice_master WHERE id = ? AND tenant_id = ?`,
+      [invoiceId, tenant_id]
+    );
+
+    const [itemRows] = await connection.query(
+      `SELECT * FROM purchase_invoice_items WHERE purchase_invoice_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
+      [invoiceId, tenant_id]
+    );
+
+    await connection.commit();
+
+    return {
+      ...masterRows[0],
+      items: itemRows
+    };
+
+  } catch (error) {
+
+    await connection.rollback();
+
+    throw error;
+
+  } finally {
+
+    connection.release();
+
   }
 };
 
