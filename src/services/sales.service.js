@@ -3317,6 +3317,419 @@ exports.createPurchaseInvoice = async (
   }
 };
 
+exports.updatePurchaseInvoice = async (
+  data,
+  tenant_id,
+  user_id
+) => {
+  const connection = await db.getConnection();
+
+  try {
+    await connection.beginTransaction();
+
+    const {
+      purchase_invoice_id,
+      id,
+      vendor_id,
+      purchase_invoice_no,
+      invoice_no,
+      bill_no,
+      invoice_date,
+      bill_date,
+      due_date,
+      payment_term,
+      term,
+      order_no,
+      reverse_charge,
+      is_reverse_charge,
+      subject,
+      vendor_notes,
+      terms_and_conditions,
+      additional_tax,
+      additional_tax_rate,
+      sub_total,
+      tax_amount,
+      cgst_amount,
+      sgst_amount,
+      igst_amount,
+      tax_mode,
+      vendor_state,
+      adjustment_label,
+      adjustment_value,
+      total,
+      custom_field,
+      module_id,
+      items: purchaseItems
+    } = data || {};
+
+    const invoiceId = normalizeFormValue(purchase_invoice_id ?? id);
+    const items = parseInvoiceItems(purchaseItems);
+    const purchaseInvoiceNo = normalizeFormValue(
+      purchase_invoice_no ?? invoice_no ?? bill_no
+    );
+    const purchaseInvoiceDate = formatDateForDb(invoice_date ?? bill_date);
+    const vendorId = normalizeFormValue(vendor_id);
+    const customFieldValues = parseCustomFieldForUpdate(custom_field);
+    const moduleId = normalizeFormValue(module_id);
+    const toNumber = (value, fieldName, defaultValue = 0) => {
+      const normalized = normalizeFormValue(value);
+
+      if (normalized === undefined || normalized === null || normalized === "") {
+        return defaultValue;
+      }
+
+      const numberValue = Number(normalized);
+
+      if (!Number.isFinite(numberValue)) {
+        throw new Error(`${fieldName} must be a valid number`);
+      }
+
+      return numberValue;
+    };
+    const boolFlag = (value) => {
+      const normalized = normalizeFormValue(value);
+
+      if (typeof normalized === "boolean") {
+        return normalized ? 1 : 0;
+      }
+
+      return ["1", "true", "yes", "on"].includes(
+        String(normalized || "").trim().toLowerCase()
+      )
+        ? 1
+        : 0;
+    };
+
+    if (!invoiceId) {
+      throw new Error('purchase_invoice_id is required');
+    }
+
+    if (vendorId === undefined || vendorId === null || vendorId === "") {
+      throw new Error('vendor_id is required');
+    }
+
+    if (!purchaseInvoiceNo) {
+      throw new Error('invoice_no is required');
+    }
+
+    if (!purchaseInvoiceDate) {
+      throw new Error('invoice_date is required');
+    }
+
+    if (!items.length) {
+      throw new Error('At least one purchase item is required');
+    }
+
+    const [existingInvoiceRows] = await connection.query(
+      `SELECT id
+       FROM purchase_invoice_master
+       WHERE id = ? AND tenant_id = ?
+       FOR UPDATE`,
+      [invoiceId, tenant_id]
+    );
+
+    if (!existingInvoiceRows.length) {
+      throw new Error('Purchase invoice not found');
+    }
+
+    const [vendorRows] = await connection.query(
+      `SELECT id FROM vendor_master WHERE id = ? AND tenant_id = ? LIMIT 1`,
+      [vendorId, tenant_id]
+    );
+
+    if (vendorRows.length === 0) {
+      throw new Error('Vendor not found');
+    }
+
+    const [duplicateInvoice] = await connection.query(
+      `SELECT id
+       FROM purchase_invoice_master
+       WHERE invoice_no = ?
+         AND tenant_id = ?
+         AND id <> ?
+       LIMIT 1`,
+      [purchaseInvoiceNo, tenant_id, invoiceId]
+    );
+
+    if (duplicateInvoice.length > 0) {
+      throw new Error('Purchase invoice already exists');
+    }
+
+    for (const item of items) {
+      const itemId = normalizeFormValue(item?.item_id);
+      const quantity = toNumber(item?.quantity, 'quantity');
+      const rate = toNumber(item?.rate, 'rate');
+
+      if (itemId === undefined || itemId === null || itemId === "") {
+        throw new Error('item_id is required');
+      }
+
+      if (quantity <= 0) {
+        throw new Error(`Invalid quantity for item ${itemId}`);
+      }
+
+      if (rate < 0) {
+        throw new Error(`Invalid rate for item ${itemId}`);
+      }
+
+      const [itemRows] = await connection.query(
+        `SELECT id FROM items WHERE id = ? AND tenant_id = ? LIMIT 1`,
+        [itemId, tenant_id]
+      );
+
+      if (itemRows.length === 0) {
+        throw new Error(`Item not found: ${itemId}`);
+      }
+    }
+
+    const [oldItemRows] = await connection.query(
+      `SELECT item_id, quantity, amount
+       FROM purchase_invoice_items
+       WHERE purchase_invoice_master_id = ?
+         AND tenant_id = ?`,
+      [invoiceId, tenant_id]
+    );
+
+    for (const oldItem of oldItemRows) {
+      await connection.query(
+        `UPDATE items
+         SET current_quantity = current_quantity - ?,
+             current_stock_value = current_stock_value - ?
+         WHERE id = ? AND tenant_id = ?`,
+        [
+          oldItem.quantity,
+          oldItem.amount,
+          oldItem.item_id,
+          tenant_id
+        ]
+      );
+    }
+
+    await connection.query(
+      `DELETE FROM purchase_invoice_items
+       WHERE purchase_invoice_master_id = ?
+         AND tenant_id = ?`,
+      [invoiceId, tenant_id]
+    );
+
+    await connection.query(
+      `DELETE FROM stock_batches
+       WHERE source_type = 'PURCHASE_INVOICE'
+         AND source_id = ?
+         AND tenant_id = ?`,
+      [invoiceId, tenant_id]
+    );
+
+    await connection.query(
+      `DELETE FROM stock_movements
+       WHERE transaction_type = 'PURCHASE_INVOICE'
+         AND transaction_id = ?
+         AND tenant_id = ?`,
+      [invoiceId, tenant_id]
+    );
+
+    await connection.query(
+      `UPDATE purchase_invoice_master
+       SET vendor_id = ?,
+           invoice_no = ?,
+           invoice_date = ?,
+           due_date = ?,
+           payment_term = ?,
+           term = ?,
+           order_no = ?,
+           reverse_charge = ?,
+           is_reverse_charge = ?,
+           subject = ?,
+           vendor_notes = ?,
+           terms_and_conditions = ?,
+           additional_tax = ?,
+           additional_tax_rate = ?,
+           sub_total = ?,
+           tax_amount = ?,
+           cgst_amount = ?,
+           sgst_amount = ?,
+           igst_amount = ?,
+           tax_mode = ?,
+           vendor_state = ?,
+           adjustment_label = ?,
+           adjustment_value = ?,
+           total = ?,
+           user_id = ?
+       WHERE id = ? AND tenant_id = ?`,
+      [
+        vendorId,
+        purchaseInvoiceNo,
+        purchaseInvoiceDate,
+        formatDateForDb(due_date),
+        normalizeFormValue(payment_term) ?? null,
+        normalizeFormValue(term) ?? null,
+        normalizeFormValue(order_no) ?? null,
+        boolFlag(reverse_charge),
+        boolFlag(is_reverse_charge),
+        normalizeFormValue(subject) ?? null,
+        normalizeFormValue(vendor_notes) ?? null,
+        normalizeFormValue(terms_and_conditions) ?? null,
+        normalizeFormValue(additional_tax) ?? null,
+        toNumber(additional_tax_rate, 'additional_tax_rate'),
+        toNumber(sub_total, 'sub_total'),
+        toNumber(tax_amount, 'tax_amount'),
+        toNumber(cgst_amount, 'cgst_amount'),
+        toNumber(sgst_amount, 'sgst_amount'),
+        toNumber(igst_amount, 'igst_amount'),
+        normalizeFormValue(tax_mode) ?? null,
+        normalizeFormValue(vendor_state) ?? null,
+        normalizeFormValue(adjustment_label) ?? null,
+        toNumber(adjustment_value, 'adjustment_value'),
+        toNumber(total, 'total'),
+        user_id,
+        invoiceId,
+        tenant_id
+      ]
+    );
+
+    for (const item of items) {
+      const itemId = normalizeFormValue(item.item_id);
+      const quantity = toNumber(item.quantity, 'quantity');
+      const rate = toNumber(item.rate, 'rate');
+      const amount = quantity * rate;
+
+      await connection.query(
+        `INSERT INTO purchase_invoice_items (
+          purchase_invoice_master_id,
+          item_id,
+          item_name,
+          item_description,
+          item_type,
+          hsn_sac,
+          quantity,
+          rate,
+          tax,
+          unit,
+          amount,
+          tenant_id,
+          user_id
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          invoiceId,
+          itemId,
+          normalizeFormValue(item.item_name) ?? null,
+          normalizeFormValue(item.item_description) ?? null,
+          normalizeFormValue(item.item_type) ?? null,
+          normalizeFormValue(item.hsn_sac) ?? null,
+          quantity,
+          rate,
+          normalizeFormValue(item.tax) ?? null,
+          normalizeFormValue(item.unit) ?? null,
+          amount,
+          tenant_id,
+          user_id
+        ]
+      );
+
+      await connection.query(
+        `INSERT INTO stock_batches (
+          item_id,
+          source_type,
+          source_id,
+          quantity,
+          remaining_quantity,
+          unit_cost,
+          total_cost,
+          batch_date,
+          tenant_id
+        ) VALUES (?, 'PURCHASE_INVOICE', ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          itemId,
+          invoiceId,
+          quantity,
+          quantity,
+          rate,
+          amount,
+          purchaseInvoiceDate,
+          tenant_id
+        ]
+      );
+
+      await connection.query(
+        `UPDATE items
+         SET current_quantity = current_quantity + ?,
+             current_stock_value = current_stock_value + ?
+         WHERE id = ? AND tenant_id = ?`,
+        [
+          quantity,
+          amount,
+          itemId,
+          tenant_id
+        ]
+      );
+
+      await connection.query(
+        `INSERT INTO stock_movements (
+          item_id,
+          transaction_type,
+          transaction_id,
+          quantity,
+          unit_cost,
+          total_cost,
+          movement_date,
+          tenant_id
+        ) VALUES (?, 'PURCHASE_INVOICE', ?, ?, ?, ?, ?, ?)`,
+        [
+          itemId,
+          invoiceId,
+          quantity,
+          rate,
+          amount,
+          purchaseInvoiceDate,
+          tenant_id
+        ]
+      );
+    }
+
+    if (customFieldValues && Object.keys(customFieldValues).length > 0) {
+      if (!moduleId) {
+        throw new Error("module_id is required when custom_field is provided");
+      }
+
+      await connection.query(
+        `DELETE FROM custom_field_values
+         WHERE module_id = ? AND tenant_id = ? AND record_id = ?`,
+        [moduleId, tenant_id, invoiceId]
+      );
+
+      await handleCustomFields({
+        connection,
+        custom_field: customFieldValues,
+        module_id: moduleId,
+        tenant_id,
+        record_id: invoiceId
+      });
+    }
+
+    const [masterRows] = await connection.query(
+      `SELECT * FROM purchase_invoice_master WHERE id = ? AND tenant_id = ?`,
+      [invoiceId, tenant_id]
+    );
+
+    const [itemRows] = await connection.query(
+      `SELECT * FROM purchase_invoice_items WHERE purchase_invoice_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
+      [invoiceId, tenant_id]
+    );
+
+    await connection.commit();
+
+    return {
+      ...masterRows[0],
+      items: itemRows
+    };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+};
+
 exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
   const conditions = ['i.tenant_id = ?'];
   const params = [tenant_id];

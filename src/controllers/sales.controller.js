@@ -685,6 +685,37 @@ exports.createPurchaseInvoice = async (req, res) => {
   }
 };
 
+exports.updatePurchaseInvoice = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const user_id = req.user.userId;
+
+    const purchaseInvoice = await sales.updatePurchaseInvoice(
+      req.body,
+      tenant_id,
+      user_id
+    );
+
+    return res.success(
+      200,
+      "Purchase invoice updated successfully",
+      purchaseInvoice
+    );
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') {
+      return res.error(
+        409,
+        "Purchase Invoice No already Exist."
+      );
+    }
+
+    return res.error(
+      400,
+      err.message
+    );
+  }
+};
+
 exports.fetchInvoice = async (req, res) => {
   try {
     const tenant_id = req.user.tenant_id;
