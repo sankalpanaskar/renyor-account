@@ -1273,6 +1273,157 @@ exports.fetchSalesOrder = async (tenant_id, sales_order_id = null, module_id = n
   return sales_order_id ? salesOrdersWithCustomFields[0] : salesOrdersWithCustomFields;
 };
 
+exports.fetchPurchaseInvoice = async (tenant_id, purchase_invoice_id = null, module_id = null) => {
+  const masterParams = [tenant_id];
+  let masterWhereClause = "WHERE pim.tenant_id = ?";
+
+  if (
+    purchase_invoice_id !== undefined &&
+    purchase_invoice_id !== null &&
+    purchase_invoice_id !== ""
+  ) {
+    masterWhereClause += " AND pim.id = ?";
+    masterParams.push(purchase_invoice_id);
+  }
+
+  const [masterRows] = await db.query(
+    `SELECT
+        pim.*,
+        pim.status AS status,
+        vm.display_name AS vendor_display_name,
+        vm.company_name AS vendor_company_name,
+        vm.primary_contact_f_name AS vendor_first_name,
+        vm.primary_contact_l_name AS vendor_last_name,
+        vm.email AS vendor_email,
+        vm.work_phone AS vendor_work_phone,
+        vm.mobile_no AS vendor_mobile_no,
+        vm.billing_address AS billing_address,
+        vm.billing_country AS billing_country,
+        vm.billing_city AS billing_city,
+        vm.billing_state AS billing_state,
+        vm.billing_pin AS billing_pin,
+        vm.shipping_address AS shipping_address,
+        vm.shipping_country AS shipping_country,
+        vm.shipping_city AS shipping_city,
+        vm.shipping_state AS shipping_state,
+        vm.shipping_pin AS shipping_pin
+     FROM purchase_invoice_master pim
+     LEFT JOIN vendor_master vm
+       ON vm.id = pim.vendor_id
+      AND vm.tenant_id = pim.tenant_id
+     ${masterWhereClause}
+     ORDER BY pim.id DESC`,
+    masterParams
+  );
+
+  if (!masterRows.length) {
+    return purchase_invoice_id ? null : [];
+  }
+
+  const purchaseInvoiceIds = masterRows.map((row) => row.id);
+  const [itemRows] = await db.query(
+    `SELECT *
+     FROM purchase_invoice_items
+     WHERE tenant_id = ?
+       AND purchase_invoice_master_id IN (?)
+     ORDER BY purchase_invoice_master_id ASC, id ASC`,
+    [tenant_id, purchaseInvoiceIds]
+  );
+
+  const itemsByPurchaseInvoiceId = itemRows.reduce((acc, item) => {
+    if (!acc[item.purchase_invoice_master_id]) {
+      acc[item.purchase_invoice_master_id] = [];
+    }
+
+    acc[item.purchase_invoice_master_id].push(item);
+    return acc;
+  }, {});
+
+  const purchaseInvoices = masterRows.map((row) => {
+    const {
+      vendor_display_name,
+      vendor_company_name,
+      vendor_first_name,
+      vendor_last_name,
+      vendor_email,
+      vendor_work_phone,
+      vendor_mobile_no,
+      billing_address,
+      billing_country,
+      billing_city,
+      billing_state,
+      billing_pin,
+      shipping_address,
+      shipping_country,
+      shipping_city,
+      shipping_state,
+      shipping_pin,
+      ...purchaseInvoice
+    } = row;
+
+    return {
+      ...purchaseInvoice,
+      vendor: {
+        display_name: vendor_display_name || null,
+        company_name: vendor_company_name || null,
+        first_name: vendor_first_name || null,
+        last_name: vendor_last_name || null,
+        email: vendor_email || null,
+        work_phone: vendor_work_phone || null,
+        mobile_no: vendor_mobile_no || null,
+        billing_address: billing_address || null,
+        billing_country: billing_country || null,
+        billing_city: billing_city || null,
+        billing_state: billing_state || null,
+        billing_pin: billing_pin || null,
+        shipping_address: shipping_address || null,
+        shipping_country: shipping_country || null,
+        shipping_city: shipping_city || null,
+        shipping_state: shipping_state || null,
+        shipping_pin: shipping_pin || null
+      },
+      items: itemsByPurchaseInvoiceId[row.id] || []
+    };
+  });
+
+  if (!module_id) {
+    return purchase_invoice_id ? purchaseInvoices[0] : purchaseInvoices;
+  }
+
+  const [customRows] = await db.query(
+    `SELECT
+        cfv.record_id,
+        cf.field_name,
+        cfv.field_value
+      FROM custom_field_values cfv
+      INNER JOIN custom_fields cf
+        ON cf.id = cfv.field_id
+      WHERE cfv.module_id = ?
+        AND cfv.tenant_id = ?
+        AND cfv.record_id IN (?)`,
+    [module_id, tenant_id, purchaseInvoiceIds]
+  );
+
+  const customFieldMap = {};
+
+  for (const row of customRows) {
+    if (!customFieldMap[row.record_id]) {
+      customFieldMap[row.record_id] = {};
+    }
+
+    customFieldMap[row.record_id][row.field_name] = row.field_value;
+  }
+
+  const purchaseInvoicesWithCustomFields = purchaseInvoices.map((purchaseInvoice) => ({
+    ...purchaseInvoice,
+    custom_field: customFieldMap[purchaseInvoice.id] || {}
+  }));
+
+  return purchase_invoice_id
+    ? purchaseInvoicesWithCustomFields[0]
+    : purchaseInvoicesWithCustomFields;
+};
+
 exports.fetchAllCustomers = async (tenant_id, module_id) => {
   const [customers] = await db.query(
     "SELECT * FROM customers WHERE tenant_id = ? ORDER BY id DESC",
@@ -2918,16 +3069,6 @@ exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
     ...item,
     custom_field: customFieldMap[item.id] || {}
   }));
-};
-
-exports.fetchItem = async (tenant_id, item_id, module_id) => {
-  if (item_id === undefined || item_id === null || item_id === "") {
-    throw new Error("id is required");
-  }
-
-  const items = await exports.fetchItems(tenant_id, item_id, module_id);
-
-  return items[0] || null;
 };
 
 exports.getchartofaccountsHeadType = async (req, res) => {

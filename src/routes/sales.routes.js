@@ -79,7 +79,6 @@ router.get('/fetch-vendors', auth, salesController.fetchVendors);
 router.post('/document-number-settings', auth, formDataUpload.none(),salesController.documentNumberSettings);
 
 router.get('/fetch-items', auth, salesController.fetchItems);
-router.get('/fetch-item', auth, salesController.fetchItem);
 //router.post('/create-customer', auth, upload.none(),salesController.createCustomer);
 router.get('/fetch-chartofaccounts-head-type', auth, salesController.getchartofaccountsHeadType);
 router.post('/create-chartofaccounts', auth, formDataUpload.none(),salesController.createchartofaccounts);
@@ -123,6 +122,7 @@ router.post('/create-purchase-invoice', auth, formDataUpload.none(), salesContro
 router.get('/fetch-invoice', auth, salesController.fetchInvoice);
 router.get('/fetch-quotation', auth, salesController.fetchQuotation);
 router.get('/fetch-sales-order', auth, salesController.fetchSalesOrder);
+router.get('/fetch-purchase-invoice', auth, salesController.fetchPurchaseInvoice);
 router.post('/generate-pdf', auth, salesController.createDocumentPdf);
 
 router.get('/fetch-tax-rate', auth, salesController.fetchTaxRate);

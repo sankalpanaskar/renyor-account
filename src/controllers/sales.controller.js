@@ -265,23 +265,6 @@ exports.fetchItems = async (req, res) => {
   }
 };
 
-exports.fetchItem = async (req, res) => {
-  try {
-    const tenant_id = req.user.tenant_id;
-    const { module_id, id } = req.query;
-
-    const item = await sales.fetchItem(tenant_id, id, module_id);
-
-    if (!item) {
-      return res.error(404, "Item not found");
-    }
-
-    return res.success(200, "Item fetched successfully", item);
-  } catch (err) {
-    return res.error(500, err.message || "Failed to fetch item");
-  }
-};
-
 exports.getchartofaccountsHeadType = async (req, res) => {
   try {
     
@@ -735,6 +718,26 @@ exports.fetchSalesOrder = async (req, res) => {
     return res.error(
       500,
       err.message || "Failed to fetch sales order"
+    );
+  }
+};
+
+exports.fetchPurchaseInvoice = async (req, res) => {
+  try {
+    const tenant_id = req.user.tenant_id;
+    const { id, module_id } = req.query;
+
+    const purchaseInvoices = await sales.fetchPurchaseInvoice(tenant_id, id, module_id);
+
+    return res.success(
+      200,
+      id ? "Purchase invoice fetched successfully" : "Purchase invoices fetched successfully",
+      purchaseInvoices
+    );
+  } catch (err) {
+    return res.error(
+      500,
+      err.message || "Failed to fetch purchase invoice"
     );
   }
 };
