@@ -2221,6 +2221,7 @@ exports.createItem = async (
       cost_price,
       current_quantity,
       current_stock_value,
+      unit_cost,
       purchase_account_id,
       chartofaccounts_name_id_purchase,
       purchase_account_description,
@@ -2277,6 +2278,7 @@ exports.createItem = async (
 
     const quantity = numberOrZero(current_quantity, 'current_quantity');
     const stockValue = numberOrZero(current_stock_value, 'current_stock_value');
+    const unitCost = numberOrZero(unit_cost, 'unit_cost');
     const customFieldValues = parseCustomFieldForUpdate(custom_field);
     const moduleId = normalizeFormValue(module_id);
 
@@ -2293,11 +2295,19 @@ exports.createItem = async (
       throw new Error('current_stock_value cannot be negative');
     }
 
+    if (unitCost < 0) {
+      throw new Error('unit_cost cannot be negative');
+    }
+
     if ((quantity > 0 && stockValue <= 0) ||
         (stockValue > 0 && quantity <= 0)) {
       throw new Error(
         'current_quantity and current_stock_value are both required for opening stock'
       );
+    }
+
+    if (quantity > 0 && unitCost <= 0) {
+      throw new Error('unit_cost is required for opening stock');
     }
 
     const normalizedData = {
@@ -2404,9 +2414,6 @@ exports.createItem = async (
      */
 
     if (quantity > 0 && stockValue > 0) {
-
-      const unitCost = stockValue / quantity;
-
       await connection.query(
         `
         INSERT INTO stock_batches
