@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import industriesData from '../rawData/industries.json';
 import statesData from '../rawData/state.json';
@@ -159,16 +160,36 @@ export class GlobalService {
       return this.http.post(`${this.systemUrl}/create-project-package`,data);
     }
 
-    public gePackageList() {
-      return this.http.get(`${this.systemUrl}/fetch-package`,);
+    public gePackageList(): Observable<any> {
+      return this.http.get<any>(`${this.systemUrl}/fetch-package`).pipe(
+        map((response: any) => {
+          if (Array.isArray(response)) {
+            return response.filter((item: any) => !this.isLifetimePackage(item));
+          }
+
+          if (Array.isArray(response?.data)) {
+            return {
+              ...response,
+              data: response.data.filter((item: any) => !this.isLifetimePackage(item)),
+            };
+          }
+
+          return response;
+        }),
+      );
+    }
+
+    private isLifetimePackage(item: any): boolean {
+      const packageType = `${item?.package_type || ''}`
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_-]+/g, '');
+
+      return packageType === 'lifetime';
     }
 
     public getParentMenuList() {
       return this.http.get(`${this.systemUrl}/fetch-parent-menu`,);
-    }
-
-    public getAllModule() {
-      return this.http.get(`${this.systemUrl}/fetch-child-menu`,);
     }
 
     public addMenu(data:any): Observable<any> {
@@ -287,8 +308,12 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/create-item`,data);
     }
 
-    public fetchItems(): Observable<any> {
-      return this.http.get(`${this.salesUrl}/fetch-items?module_id=${environment.moduleIds.item}`);
+    public updateItem(data: any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/update-item`, data);
+    }
+
+    public fetchItems(moduleId: number = environment.moduleIds.item): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-items?module_id=${moduleId}`);
     }
 
     public getAccountHeadType(): Observable<any> {
@@ -351,6 +376,10 @@ export class GlobalService {
       return this.http.post(`${this.salesUrl}/create-invoice`, data);
     }
 
+    public createPurchaseInvoice(data: any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/create-purchase-invoice`, data);
+    }
+
     public saveDocumentNumberSettings(data: {
       document_type: string;
       type: 'A' | 'M';
@@ -384,6 +413,20 @@ export class GlobalService {
 
     public fetchInvoices(moduleId: number = environment.moduleIds.invoice): Observable<any> {
       return this.http.get(`${this.salesUrl}/fetch-invoice?module_id=${moduleId}`);
+    }
+
+    public fetchPurchaseInvoices(moduleId: number = environment.moduleIds.purchaseInvoice): Observable<any> {
+      return this.http.get(`${this.salesUrl}/fetch-purchase-invoice?module_id=${moduleId}`);
+    }
+
+    public updatePurchaseInvoice(data: any): Observable<any> {
+      return this.http.post(`${this.salesUrl}/update-purchase-invoice`, data);
+    }
+
+    public deletePurchaseInvoice(purchaseInvoiceId: string | number): Observable<any> {
+      return this.http.post(`${this.salesUrl}/delete-purchase-invoice`, {
+        purchase_invoice_id: purchaseInvoiceId,
+      });
     }
 
     public fetchQuotations(moduleId: number = environment.moduleIds.quotation): Observable<any> {

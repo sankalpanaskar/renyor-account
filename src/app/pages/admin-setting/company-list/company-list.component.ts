@@ -274,6 +274,17 @@ export class CompanyListComponent implements OnInit {
     return this.isPackageActive(packageItem) ? 'Active' : 'Inactive';
   }
 
+  getPackageEndDate(packageItem: any): any {
+    const packageType = `${packageItem?.package_type || ''}`
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, '');
+
+    return packageType === 'lifetime'
+      ? new Date()
+      : packageItem?.end_date;
+  }
+
   isPaymentPaid(packageItem: any): boolean {
     return `${packageItem?.payment_status ?? ''}`.trim().toLowerCase() === 'paid';
   }

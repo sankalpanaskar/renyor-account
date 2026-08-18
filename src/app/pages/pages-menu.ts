@@ -41,19 +41,35 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
     },
     {
       title: 'Subscription',
-      icon: { icon: 'subscriptions', pack: 'material-icons' },
+      icon: { icon: 'payments', pack: 'material-icons' },
       link: '/pages/organization-setting/subscriptions',
     },
     {
-      title: 'Report Configuration',
-      icon: { icon: 'article', pack: 'material-icons' },
+      title: 'Report Format Configuration',
+      icon: { icon: 'assignment', pack: 'material-icons' },
       link: '/pages/document-format-configuration',
     },
     {
       title: 'Custom Field',
       icon: { icon: 'tune', pack: 'material-icons' },
       link: '/pages/admin-setting/custom-field-list'
-    }
+    },
+    {
+        title: 'Accountant',
+        icon: { icon: 'account_tree', pack: 'material-icons' },
+        children: [
+          {
+            title: 'Chart of Account',
+            icon: { icon: 'account_tree', pack: 'material-icons' },
+            link: '/pages/accountant/chart-of-account',
+          },
+          ...(isSystemSuperAdmin ? [{
+            title: 'Account Type',
+            icon: { icon: 'add_chart', pack: 'material-icons' },
+            link: '/pages/accountant/chart-of-account-type',
+          }] : [])
+        ],
+      },
   );
   }
 
@@ -86,17 +102,6 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
         title: 'Company',
         icon: { icon: 'add_business', pack: 'material-icons' },
         link: '/pages/admin-setting/company-list',
-      },
-      {
-        title: 'Chart Of Account',
-        icon: { icon: 'account_tree', pack: 'material-icons' },
-        children: [
-          {
-            title: 'Account Type',
-            icon: { icon: 'add_chart', pack: 'material-icons' },
-            link: '/pages/accountant/chart-of-account-type',
-          }
-        ],
       },
     );
   }

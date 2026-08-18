@@ -1,6 +1,6 @@
 <form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate id="leadForm" style="width: 100%;margin: 0 auto;">      
     <nb-card class="add-form-card">
-        <nb-card-header>Add Item</nb-card-header>
+        <nb-card-header>{{ pageTitle }}</nb-card-header>
             <nb-card-body [nbSpinner]="isSubmitting || customFieldsLoading" nbSpinnerStatus="primary">
                 <div class="row">
                     <div class="col-lg-6 mb-10">
@@ -33,12 +33,15 @@
                             Unit
                         </label>
                         <div class="payment-terms-control">
-                            <nb-select shape="semi-round" placeholder="Select Unit" name="unit"
-                                 #unit="ngModel" [(ngModel)]="model.unit">
-                                <nb-option *ngFor="let option of unitOptions" [value]="option.symbol">
-                                    {{ option.label || (option.symbol + ' (' + option.unitName + ')') }}
-                                </nb-option>
-                            </nb-select>
+                            <ngx-search-select
+                                name="unit"
+                                [placeholder]="'Select Unit'"
+                                [options]="unitOptions"
+                                [(ngModel)]="model.unit"
+                                displayKey="label"
+                                valueKey="symbol"
+                                #unit="ngModel"
+                            ></ngx-search-select>
                             <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
                                 (click)="openUnitPopup()" aria-label="Add unit">
                                 <nb-icon icon="plus-circle"></nb-icon>
@@ -119,6 +122,47 @@
                         <div *ngIf="fm.submitted && gst_rates.invalid" class="error-message">
                             GST Rates is required
                         </div>
+                    </div>
+                    <div class="col-lg-3 mb-10">
+                        <label class="small-label" id="label-opening-stock-qty">Opening Stock Qty</label>
+                        <input
+                            type="number"
+                            nbInput
+                            fullWidth
+                            shape="semi-round"
+                            min="0"
+                            step="any"
+                            placeholder="Enter opening stock quantity"
+                            name="opening_stock_qty"
+                            [(ngModel)]="model.opening_stock_qty"
+                            (ngModelChange)="updateOpeningStockValue()">
+                    </div>
+                    <div class="col-lg-3 mb-10">
+                        <label class="small-label" id="label-opening-rate">Opening Rate / Cost</label>
+                        <input
+                            type="number"
+                            nbInput
+                            fullWidth
+                            shape="semi-round"
+                            min="0"
+                            step="0.01"
+                            placeholder="Enter opening rate or cost"
+                            name="opening_rate"
+                            [(ngModel)]="model.opening_rate"
+                            (ngModelChange)="updateOpeningStockValue()">
+                    </div>
+                    <div class="col-lg-6 mb-10">
+                        <label class="small-label" id="label-opening-stock-value">Opening Stock Value</label>
+                        <input
+                            type="number"
+                            nbInput
+                            fullWidth
+                            shape="semi-round"
+                            class="calculated-stock-value"
+                            placeholder="0.00"
+                            name="opening_stock_value"
+                            [(ngModel)]="model.opening_stock_value"
+                            readonly>
                     </div>
                     <div class="col-md-12 mb-10 information-toggle-row">
                         <nb-checkbox
@@ -206,14 +250,14 @@
                             Account is required
                         </div>
                     </div>
-                    <div class="col-lg-6 mb-10">
+                    <div class="col-lg-12 mb-10">
                         <label class="small-label" id="label-account">
                             Description
                         </label>
                         <textarea nbInput fullWidth shape="semi-round" name="purchase_account_description"
                             [(ngModel)]="model.purchase_account_description"></textarea>
                     </div>
-                    <div class="col-lg-6 mb-10">
+                    <div class="col-lg-12 mb-10">
                         <label class="small-label" id="label-prefered-vendor">
                             Preferred Vendor
                         </label>
@@ -300,9 +344,13 @@
                     <div class="col-lg-6 mb-10">
                         <label class="small-label" id="label-category">Item Image</label>
                         <ngx-file-upload
+                            #itemImageUpload
                             inputName="item_image"
                             helperText="PDF, Excel, Images (Max 10MB total)"
                             [required]="false"
+                            [existingFileUrl]="existingItemImageUrl"
+                            [existingFileName]="existingItemImageName"
+                            (existingFileError)="onExistingItemImageError()"
                             (filesChange)="onFileChange($event, 'item_image')"
                         ></ngx-file-upload>
                     </div>
@@ -312,7 +360,7 @@
             <div class="mt-3" style="display:flex; justify-content:flex-end; gap:8px;">
                 <button nbButton status="primary" shape="semi-round" hero type="submit"
                     [disabled]="isSubmitting">
-                    Save
+                    {{ submitButtonLabel }}
                 </button>
             </div>
         </nb-card-footer>

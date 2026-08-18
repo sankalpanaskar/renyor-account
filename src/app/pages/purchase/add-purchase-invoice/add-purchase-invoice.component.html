@@ -1,0 +1,385 @@
+<form #fm="ngForm" (ngSubmit)="onSubmit(fm)" novalidate class="invoice-form-shell purchase-invoice-form-shell">
+  <nb-card class="invoice-form-card add-form-card">
+    <nb-card-header>{{ pageTitle }}</nb-card-header>
+
+    <nb-card-body class="invoice-form-body" [nbSpinner]="isSubmitting || customFieldsLoading" nbSpinnerStatus="primary">
+      <div class="row">
+        <div class="col-lg-12 mb-10">
+          <label class="small-label">Vendor Name <span class="required">*</span></label>
+          <ngx-search-select
+            name="vendor_id"
+            [placeholder]="'Select a vendor'"
+            [options]="customerOptions"
+            [(ngModel)]="model.customer_id"
+            displayKey="label"
+            valueKey="id"
+            [required]="true"
+          ></ngx-search-select>
+          <div *ngIf="fm.submitted && !model.customer_id" class="error-message">Vendor name is required</div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Invoice No <span class="required">*</span></label>
+          <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter invoice number"
+            name="invoice_no" required #invoice_no="ngModel" [(ngModel)]="model.invoice_no">
+          <div *ngIf="fm.submitted && invoice_no.invalid" class="error-message">Invoice number is required</div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Invoice Date <span class="required">*</span></label>
+          <input nbInput fullWidth shape="semi-round" placeholder="Select invoice date"
+            [nbDatepicker]="invoiceDatePicker" name="invoice_date" required #invoice_date="ngModel"
+            [(ngModel)]="model.invoice_date" (ngModelChange)="onInvoiceDateChange($event)">
+          <nb-datepicker #invoiceDatePicker></nb-datepicker>
+          <div *ngIf="fm.submitted && invoice_date.invalid" class="error-message">Invoice date is required</div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Due Date</label>
+          <input nbInput fullWidth shape="semi-round" placeholder="Select due date"
+            [nbDatepicker]="dueDatePicker" name="due_date" [(ngModel)]="model.due_date">
+          <nb-datepicker #dueDatePicker [min]="dueDateMin"></nb-datepicker>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Payment Term</label>
+          <div class="payment-terms-control">
+            <ngx-search-select
+              name="term"
+              [placeholder]="'Select payment term'"
+              [options]="paymentTerms"
+              [(ngModel)]="model.term"
+              displayKey="termName"
+              valueKey="termName"
+              (ngModelChange)="onPaymentTermSelected($event)"
+            ></ngx-search-select>
+            <button type="button" nbButton ghost status="primary" class="payment-term-add-btn"
+              (click)="openPaymentTermsPopup()" aria-label="Configure payment terms">
+              <nb-icon icon="settings-2-outline"></nb-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <label class="small-label">Order No</label>
+          <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter order number"
+            name="order_no" [(ngModel)]="model.order_no">
+        </div>
+
+        <div class="col-lg-12 mb-10 reverse-charge-field">
+          <nb-checkbox name="reverse_charge" [(ngModel)]="model.reverse_charge">
+            This transaction is applicable for reverse charge
+          </nb-checkbox>
+        </div>
+
+        <div class="col-lg-12" *ngIf="customFields.length > 0">
+          <section class="invoice-custom-fields">
+            <div class="invoice-custom-fields-header">
+              <div>
+                <h3>Custom Fields</h3>
+                <p>Additional purchase invoice information</p>
+              </div>
+              <span>{{ customFields.length }} field{{ customFields.length === 1 ? '' : 's' }}</span>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-6 mb-10" *ngFor="let field of customFields">
+                <label class="small-label">
+                  {{ field.field_label || field.field_name }}
+                  <span *ngIf="isFieldRequired(field)" class="required">*</span>
+                </label>
+
+                <ng-container [ngSwitch]="getFieldType(field)">
+                  <textarea *ngSwitchCase="'textarea'" nbInput fullWidth shape="semi-round" rows="3"
+                    [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                    [name]="field.field_name" [required]="isFieldRequired(field)"
+                    [attr.minlength]="field.min_length || null" [attr.maxlength]="field.max_length || null"
+                    [ngModel]="model[field.field_name]"
+                    (ngModelChange)="model[field.field_name] = $event"></textarea>
+
+                  <nb-select *ngSwitchCase="'select'" shape="semi-round"
+                    [placeholder]="field.placeholder || 'Select ' + (field.field_label || field.field_name)"
+                    [name]="field.field_name" [required]="isFieldRequired(field)"
+                    [ngModel]="model[field.field_name]"
+                    (ngModelChange)="model[field.field_name] = $event">
+                    <nb-option *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-option>
+                  </nb-select>
+
+                  <nb-radio-group *ngSwitchCase="'radio'" class="invoice-custom-options"
+                    [name]="field.field_name" [required]="isFieldRequired(field)"
+                    [ngModel]="model[field.field_name]"
+                    (ngModelChange)="model[field.field_name] = $event">
+                    <nb-radio *ngFor="let option of getFieldOptions(field)" [value]="option">{{ option }}</nb-radio>
+                  </nb-radio-group>
+
+                  <div *ngSwitchCase="'checkbox'" class="invoice-custom-options invoice-custom-checkboxes">
+                    <nb-checkbox *ngFor="let option of getFieldOptions(field)"
+                      [checked]="isCheckboxChecked(field.field_name, option)"
+                      (checkedChange)="onCheckboxOptionChange(field.field_name, option, $event)">
+                      {{ option }}
+                    </nb-checkbox>
+                  </div>
+
+                  <input *ngSwitchDefault nbInput fullWidth shape="semi-round"
+                    [type]="getFieldType(field)"
+                    [placeholder]="field.placeholder || 'Enter ' + (field.field_label || field.field_name)"
+                    [name]="field.field_name" [required]="isFieldRequired(field)"
+                    [attr.minlength]="field.min_length || null" [attr.maxlength]="field.max_length || null"
+                    [ngModel]="model[field.field_name]"
+                    (ngModelChange)="model[field.field_name] = $event">
+                </ng-container>
+
+                <div *ngIf="hasFieldError(fm, field)" class="error-message">
+                  {{ field.field_label || field.field_name }} is required.
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div class="col-lg-12 mb-10">
+          <label class="small-label">Subject</label>
+          <textarea nbInput fullWidth shape="semi-round" rows="2"
+            placeholder="Enter the subject for this purchase invoice"
+            name="subject" [(ngModel)]="model.subject"></textarea>
+        </div>
+
+        <div class="col-lg-12 mb-10">
+          <div class="table-card">
+            <div class="table-card-header"><span>Item Table</span></div>
+
+            <div class="item-table-wrapper">
+              <table class="item-table purchase-item-table">
+                <colgroup>
+                  <col class="col-sl-no">
+                  <col class="col-item-details">
+                  <col class="col-account">
+                  <col class="col-quantity">
+                  <col class="col-rate">
+                  <col class="col-tax">
+                  <col class="col-amount">
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Sl</th>
+                    <th>Item Details</th>
+                    <th>Accounts</th>
+                    <th>Qty</th>
+                    <th>Rate</th>
+                    <th>Tax</th>
+                    <th>Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let row of itemRows; let i = index; trackBy: trackByIndex">
+                    <td>{{ i + 1 }}</td>
+                    <td>
+                      <div class="item-cell-shell" [class.has-selection]="!!row.item_id">
+                        <ng-container *ngIf="row.item_id; else itemAutocomplete">
+                          <div class="selected-item-card">
+                            <div class="selected-item-head">
+                              <ng-container *ngIf="row.item_is_manual; else selectedItemTitle">
+                                <textarea nbInput fullWidth class="manual-item-title-input" rows="1" wrap="soft"
+                                  [id]="'manual-item-title-' + i" [name]="'manual_item_title_' + i"
+                                  [(ngModel)]="row.item_details" (input)="autoGrowTextarea($event)"
+                                  placeholder="Type item name"></textarea>
+                              </ng-container>
+                              <ng-template #selectedItemTitle>
+                                <div class="selected-item-title">{{ row.item_details }}</div>
+                              </ng-template>
+                              <div class="selected-item-actions">
+                                <button type="button" class="selected-item-icon-btn" (click)="clearItemRow(row)" aria-label="Clear item">
+                                  <nb-icon icon="close-outline"></nb-icon>
+                                </button>
+                              </div>
+                            </div>
+
+                            <div class="selected-item-description-wrap">
+                              <label class="selected-item-description-label">Description</label>
+                              <textarea nbInput fullWidth class="selected-item-description-input" rows="2" wrap="soft"
+                                [name]="'item_description_' + i" [(ngModel)]="row.item_description"
+                                (input)="autoGrowTextarea($event)" placeholder="Enter description"></textarea>
+                            </div>
+
+                            <div class="selected-item-meta">
+                              <span class="selected-item-type">{{ row.item_type || 'Goods' }}</span>
+                              <span class="selected-item-hsn" *ngIf="!row.item_is_manual">
+                                HSN Code: <strong>{{ row.hsn_sac || '-' }}</strong>
+                              </span>
+                              <label class="manual-sac-field" *ngIf="row.item_is_manual">
+                                <span>SAC No:</span>
+                                <input type="text" nbInput fullWidth [name]="'manual_sac_' + i"
+                                  [(ngModel)]="row.hsn_sac" placeholder="Enter SAC No">
+                              </label>
+                            </div>
+                          </div>
+                        </ng-container>
+
+                        <ng-template #itemAutocomplete>
+                          <div class="autocomplete-wrap">
+                            <textarea nbInput fullWidth shape="semi-round" class="autocomplete-input"
+                              [id]="'item-details-' + i" rows="1" wrap="soft" [name]="'item_details_' + i"
+                              placeholder="Type or click to select an item." [ngModel]="row.item_details"
+                              (ngModelChange)="onItemInputChange(row, $event)" (input)="autoGrowTextarea($event)"
+                              (focus)="onItemInputFocus(row)" (blur)="onItemInputBlur(row)" autocomplete="off"></textarea>
+
+                            <div class="autocomplete-panel" *ngIf="row.item_list_open && getFilteredItems(row.item_details).length">
+                              <button type="button" class="autocomplete-option"
+                                *ngFor="let item of getFilteredItems(row.item_details)"
+                                (mousedown)="selectItemFromAutocomplete(row, item, i)">
+                                {{ item.label }}
+                              </button>
+                            </div>
+                          </div>
+                        </ng-template>
+                      </div>
+                    </td>
+                    <td class="account-cell">
+                      <ngx-search-select
+                        [name]="'account_id_' + i"
+                        [placeholder]="'Select Account'"
+                        [options]="accountOptions"
+                        [(ngModel)]="row.account_id"
+                        displayKey="account_item"
+                        valueKey="id"
+                        [required]="!!row.item_details"
+                      ></ngx-search-select>
+                    </td>
+                    <td class="quantity-cell">
+                      <div class="quantity-cell-inner">
+                        <input type="text" nbInput fullWidth shape="semi-round" inputmode="numeric" autocomplete="off"
+                          [name]="'quantity_' + i" (keydown)="allowIntegerOnly($event)" [(ngModel)]="row.quantity">
+                        <div class="cell-subtext">{{ row.item_unit || '' }}</div>
+                      </div>
+                    </td>
+                    <td class="rate-cell">
+                      <input type="text" nbInput fullWidth shape="semi-round" inputmode="decimal" autocomplete="off"
+                        [name]="'rate_' + i" (keydown)="allowDecimalOnly($event)"
+                        (blur)="formatRateOnBlur(row)" [(ngModel)]="row.rate">
+                    </td>
+                    <td class="tax-cell">
+                      <ng-container *ngIf="row.item_id; else editableTax">
+                        <span class="tax-label">{{ getTaxDisplayLabel(row.tax) }}</span>
+                      </ng-container>
+                      <ng-template #editableTax>
+                        <nb-select fullWidth shape="semi-round" [name]="'tax_' + i"
+                          [ngModel]="row.tax_rate" (selectedChange)="onRowTaxRateChange(row, $event)">
+                          <nb-option *ngFor="let tax of taxOptions" [value]="tax.rate">
+                            {{ getTaxDisplayLabel(tax.label) }}
+                          </nb-option>
+                        </nb-select>
+                      </ng-template>
+                    </td>
+                    <td class="amount-cell">{{ getRowAmount(row) | number:'1.2-2' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="table-actions">
+              <button type="button" nbButton status="basic" shape="semi-round" (click)="addRow()">
+                <nb-icon icon="plus-outline"></nb-icon>
+                Add New Row
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-6 mb-10">
+          <div class="notes-panel">
+            <label class="small-label">Vendor Notes</label>
+            <textarea nbInput fullWidth shape="semi-round" rows="4"
+              name="vendor_notes" [(ngModel)]="model.customer_notes"></textarea>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <div class="summary-card">
+            <div class="summary-row strong">
+              <span>Sub Total</span>
+              <span>{{ getSubTotal() | number:'1.2-2' }}</span>
+            </div>
+            <div class="summary-row muted" *ngIf="isInterState()">
+              <span>IGST</span>
+              <span>{{ getIGST() | number:'1.2-2' }}</span>
+            </div>
+            <ng-container *ngIf="!isInterState()">
+              <div class="summary-row muted">
+                <span>CGST</span>
+                <span>{{ getCGST() | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-row muted">
+                <span>SGST</span>
+                <span>{{ getSGST() | number:'1.2-2' }}</span>
+              </div>
+            </ng-container>
+            <div class="summary-row adjustment-row">
+              <div class="adjustment-label-box">{{ model.adjustment_label || 'Adjustment' }}</div>
+              <div class="adjustment-input-box">
+                <input type="text" nbInput class="summary-amount-input" inputmode="decimal" autocomplete="off"
+                  name="adjustment_value" [(ngModel)]="model.adjustment_value"
+                  (keydown)="allowSignedDecimalOnly($event)" placeholder="0.00">
+              </div>
+              <button type="button" class="adjustment-help-btn" aria-label="Adjustment help"
+                nbTooltip="+100 and -100 enter for adjustment." nbTooltipPlacement="top"
+                nbTooltipStatus="basic" nbTooltipTrigger="click">
+                <nb-icon icon="question-mark-circle-outline"></nb-icon>
+              </button>
+              <div class="adjustment-preview"
+                [class.positive]="getAdjustmentValue() > 0"
+                [class.negative]="getAdjustmentValue() < 0"
+                [class.neutral]="getAdjustmentValue() === 0">
+                {{ getAdjustmentValue() | number:'1.2-2' }}
+              </div>
+            </div>
+            <div class="summary-row total-row">
+              <span>Total ( Rs )</span>
+              <span>{{ getTotal() | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row invoice-additional-details-row">
+        <div class="col-lg-6 mb-10">
+          <div class="notes-panel">
+            <label class="small-label">Terms &amp; Conditions</label>
+            <textarea nbInput fullWidth shape="semi-round" rows="4"
+              placeholder="Enter the terms and conditions to be displayed on the invoice"
+              name="terms_and_conditions" [(ngModel)]="model.terms_and_conditions"></textarea>
+          </div>
+        </div>
+
+        <div class="col-lg-6 mb-10">
+          <div class="notes-panel">
+            <label class="small-label">Attach File to Purchase Invoice</label>
+            <ngx-file-upload inputName="invoice_attachment"
+              helperText="Upload one PDF, Excel file, or image" [multiple]="false"
+              (filesChange)="onInvoiceFilesChange($event)">
+            </ngx-file-upload>
+          </div>
+        </div>
+      </div>
+    </nb-card-body>
+
+    <nb-card-footer>
+      <div class="footer-actions">
+        <button nbButton status="primary" shape="semi-round" hero type="submit"
+          [disabled]="isSubmitting || customFieldsLoading">
+          {{ submitButtonLabel }}
+        </button>
+      </div>
+    </nb-card-footer>
+  </nb-card>
+</form>
+
+<ngx-payment-terms-popup
+  [open]="showPaymentTermsPopup"
+  [title]="'Configure Payment Terms'"
+  [terms]="paymentTerms"
+  (close)="closePaymentTermsPopup()"
+  (termsChange)="onPaymentTermsChanged($event)"
+  (termSelected)="onPaymentTermSelected($event)"
+></ngx-payment-terms-popup>

@@ -174,7 +174,8 @@
                 <th>Selling rate</th>
                 <th>HSN/SAC</th>
                 <th>Tax</th>
-                <th>Unit</th>
+                <th>Stock Qty</th>
+                <th>Stock Value</th>
                 <th class="actions-heading">Actions</th>
               </tr>
             </thead>
@@ -200,7 +201,8 @@
                 <td data-label="Selling rate"><span class="money-value selling-value">{{ formatCurrency(item?.selling_price) }}</span></td>
                 <td data-label="HSN/SAC"><span class="code-pill">{{ getHsnSac(item) }}</span></td>
                 <td data-label="Tax"><span class="tax-pill">{{ getTaxRate(item) }}</span></td>
-                <td data-label="Unit"><span class="unit-pill">{{ getUnit(item) }}</span></td>
+                <td data-label="Current Quantity"><span class="stock-quantity">{{ formatValue(item?.current_quantity) }}</span></td>
+                <td data-label="Current Stock Value"><span class="money-value stock-value">{{ formatCurrency(item?.current_stock_value) }}</span></td>
                 <td data-label="Actions" class="actions-cell">
                   <div class="action-group">
                     <button *ngIf="canView" type="button" class="action-icon view-action" nbTooltip="View item" aria-label="View item"
@@ -220,7 +222,7 @@
               </tr>
 
               <tr *ngIf="!apiData || apiData.length === 0">
-                <td colspan="7" class="empty-state">
+                <td colspan="8" class="empty-state">
                   <div class="empty-state-panel">
                     <div class="empty-state-icon"><nb-icon icon="search-outline"></nb-icon></div>
                     <h3>{{ searchText ? 'No matching items' : 'Your catalogue is empty' }}</h3>

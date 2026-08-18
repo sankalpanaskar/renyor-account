@@ -1,9 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
 import { GstTaxRateOption } from '../../shared/gst-tax-rate-popup/gst-tax-rate-popup.component';
 import { UnitOption } from '../../shared/unit-popup/unit-popup.component';
 import { environment } from '../../../../environments/environment';
+import { FileUploadComponent } from '../../../@theme/components/file-upload/file-upload.component';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'ngx-add-item',
@@ -11,14 +13,25 @@ import { environment } from '../../../../environments/environment';
   styleUrls: ['./add-item.component.scss']
 })
 export class AddItemComponent implements OnInit {
+  @ViewChild('itemImageUpload') itemImageUpload?: FileUploadComponent;
+
   private readonly itemModuleId = environment.moduleIds.item;
   private readonly vendorModuleId = environment.moduleIds.vendor;
 
+  isEditMode = false;
+  itemId: string | number | null = null;
+  pageTitle = 'Add Item';
+  submitButtonLabel = 'Save';
+  private editItemData: any = null;
   model: any = this.getEmptyModel();
   isSubmitting: boolean = false;
   customFieldsLoading: boolean = false;
   customFields: any[] = [];
   itemImageFile: File | null = null;
+  existingItemImageUrl = '';
+  existingItemImageName = 'Current item image';
+  private existingItemImageCandidates: string[] = [];
+  private existingItemImageCandidateIndex = 0;
   showGstTaxRatePopup: boolean = false;
   showUnitPopup: boolean = false;
   gstTaxRates: GstTaxRateOption[] = this.getDefaultGstTaxRates();
@@ -35,15 +48,192 @@ export class AddItemComponent implements OnInit {
 
   constructor(
     private globalService: GlobalService,
-    private toastrService: NbToastrService
+    private toastrService: NbToastrService,
+    private router: Router,
   ) { }
 
   ngOnInit(): void {
+    this.restoreEditState();
     this.getAccountItem();
     this.fetchGstTaxRates();
     this.fetchUnits();
     this.getVendorList();
     this.getCustomFields();
+  }
+
+  private restoreEditState(): void {
+    const navigationState = history.state || {};
+    const itemData = navigationState?.itemData;
+    const itemId = itemData?.id ?? itemData?.item_id;
+    if (!navigationState?.isEditMode || !itemData || itemId === undefined || itemId === null) {
+      return;
+    }
+
+    const salesAccount = itemData?.sales_account_id ?? itemData?.sales_account ?? '';
+    const purchaseAccount = itemData?.purchase_account_id ?? itemData?.purchase_account ?? '';
+    const customFieldValues = this.parseCustomFieldValues(itemData?.custom_field);
+
+    this.isEditMode = true;
+    this.itemId = itemId;
+    this.editItemData = itemData;
+    this.pageTitle = 'Update Item';
+    this.submitButtonLabel = 'Update';
+    this.existingItemImageCandidates = this.getItemImageUrlCandidates(itemData);
+    this.existingItemImageCandidateIndex = 0;
+    this.existingItemImageUrl = this.existingItemImageCandidates[0] || '';
+    this.existingItemImageName = this.getItemImageName(this.existingItemImageUrl);
+    this.model = {
+      ...this.getEmptyModel(),
+      type: itemData?.type || itemData?.item_type || 'Goods',
+      name: itemData?.name || itemData?.item_name || '',
+      unit: itemData?.unit || '',
+      hsn_code: itemData?.hsn_code || '',
+      sac: itemData?.sac || '',
+      tax_preference: itemData?.tax_preference || '',
+      exemption_reason: itemData?.exemption_reason || '',
+      gst_rates: itemData?.gst_rates_id
+        ?? itemData?.gst_rate_id
+        ?? itemData?.tax_rate_id
+        ?? itemData?.gst_rates?.id
+        ?? itemData?.gst_rates
+        ?? '',
+      opening_stock_qty: itemData?.current_quantity ?? itemData?.opening_stock_qty ?? '',
+      opening_rate: itemData?.unit_cost ?? itemData?.opening_rate ?? '',
+      opening_stock_value: itemData?.current_stock_value ?? itemData?.opening_stock_value ?? '',
+      enable_sales_information: this.normalizeToggleValue(
+        itemData?.enable_sales_information,
+        this.hasAnyValue(itemData?.selling_price, salesAccount, itemData?.sales_account_description),
+      ),
+      enable_purchase_information: this.normalizeToggleValue(
+        itemData?.enable_purchase_information,
+        this.hasAnyValue(itemData?.cost_price, purchaseAccount, itemData?.purchase_account_description),
+      ),
+      selling_price: itemData?.selling_price ?? '',
+      sales_account: salesAccount,
+      sales_account_description: itemData?.sales_account_description || '',
+      cost_price: itemData?.cost_price ?? '',
+      purchase_account: purchaseAccount,
+      purchase_account_description: itemData?.purchase_account_description || '',
+      prefered_vendor_id: itemData?.prefered_vendor_id ?? itemData?.preferred_vendor_id ?? '',
+      ...customFieldValues,
+    };
+  }
+
+  private parseCustomFieldValues(value: any): Record<string, any> {
+    if (!value) {
+      return {};
+    }
+    if (typeof value === 'string') {
+      try {
+        return this.parseCustomFieldValues(JSON.parse(value));
+      } catch {
+        return {};
+      }
+    }
+    if (Array.isArray(value)) {
+      return value.reduce((values: Record<string, any>, field: any) => {
+        const fieldName = field?.field_name ?? field?.name ?? field?.key;
+        if (fieldName) {
+          values[fieldName] = field?.field_value ?? field?.value ?? '';
+        }
+        return values;
+      }, {});
+    }
+    return typeof value === 'object' ? { ...value } : {};
+  }
+
+  private normalizeToggleValue(value: any, fallback: boolean): boolean {
+    if (value === undefined || value === null || value === '') {
+      return fallback;
+    }
+    return value === true || Number(value) === 1 || `${value}`.trim().toLowerCase() === 'true';
+  }
+
+  private hasAnyValue(...values: any[]): boolean {
+    return values.some((value: any) => value !== undefined && value !== null && `${value}`.trim() !== '');
+  }
+
+  private getItemImageUrlCandidates(itemData: any): string[] {
+    const directImage = itemData?.item_image_url
+      ?? itemData?.image_url
+      ?? itemData?.item_image_path
+      ?? itemData?.image_path
+      ?? itemData?.item_image
+      ?? itemData?.image
+      ?? itemData?.photo
+      ?? itemData?.thumbnail_url
+      ?? itemData?.thumbnail;
+    const dynamicImageKey = Object.keys(itemData || {}).find((key: string) =>
+      /(item.*image|image.*item|image|photo|thumbnail)/i.test(key) && !!itemData?.[key],
+    );
+    const imagePath = this.extractItemImagePath(directImage ?? itemData?.[dynamicImageKey || '']);
+
+    if (!imagePath) {
+      return [];
+    }
+    if (/^(https?:)?\/\//i.test(imagePath) || /^(data|blob):/i.test(imagePath)) {
+      return [imagePath];
+    }
+
+    const apiBaseUrl = `${environment.apiBaseUrl || ''}`.replace(/\/+$/, '');
+    const cleanPath = imagePath.replace(/^\/+/, '');
+    const publicPath = cleanPath.replace(/^public\//i, '');
+    const fileName = publicPath.split('/').pop() || publicPath;
+    return Array.from(new Set([
+      `${apiBaseUrl}/${cleanPath}`,
+      `${apiBaseUrl}/${publicPath}`,
+      `${apiBaseUrl}/uploads/item_image/${fileName}`,
+      `${apiBaseUrl}/uploads/items/${fileName}`,
+      `${apiBaseUrl}/storage/${publicPath.replace(/^storage\//i, '')}`,
+    ]));
+  }
+
+  private extractItemImagePath(value: any): string {
+    if (Array.isArray(value)) {
+      return this.extractItemImagePath(value[0]);
+    }
+    if (value && typeof value === 'object') {
+      return this.extractItemImagePath(
+        value?.url
+          ?? value?.path
+          ?? value?.src
+          ?? value?.file_url
+          ?? value?.file_path
+          ?? value?.image_url
+          ?? value?.image_path
+          ?? value?.name,
+      );
+    }
+
+    const imagePath = `${value || ''}`.trim();
+    if (!imagePath) {
+      return '';
+    }
+    if ((imagePath.startsWith('{') && imagePath.endsWith('}'))
+      || (imagePath.startsWith('[') && imagePath.endsWith(']'))
+      || (imagePath.startsWith('"') && imagePath.endsWith('"'))) {
+      try {
+        return this.extractItemImagePath(JSON.parse(imagePath));
+      } catch {
+        return imagePath;
+      }
+    }
+    return imagePath;
+  }
+
+  onExistingItemImageError(): void {
+    this.existingItemImageCandidateIndex += 1;
+    this.existingItemImageUrl = this.existingItemImageCandidates[
+      this.existingItemImageCandidateIndex
+    ] || '';
+  }
+
+  private getItemImageName(imageUrl: string): string {
+    if (!imageUrl || imageUrl.startsWith('data:') || imageUrl.startsWith('blob:')) {
+      return 'Current item image';
+    }
+    const fileName = imageUrl.split('?')[0].split('/').pop();
+    return fileName || 'Current item image';
   }
 
   getCustomFields(): void {
@@ -248,6 +438,7 @@ export class AddItemComponent implements OnInit {
             };
           })
           .filter((item: any) => item.id > 0 && !!item.account_item);
+        this.restoreEditAccountSelections();
       },
       error: (error: any) => {
         console.error('Failed to fetch account items:', error);
@@ -260,13 +451,18 @@ export class AddItemComponent implements OnInit {
     this.globalService.getTaxRates().subscribe({
       next: (res: any) => {
         this.gstTaxRates = Array.isArray(res?.data)
-          ? res.data.map((item: any) => ({
-              id: item.id,
-              taxName: item.tax_rate_name,
-              rate: item.tax_rate_percentage,
-              label: item.tax_rate_name
-            }))
+          ? res.data.map((item: any) => {
+              const taxName = `${item?.tax_rate_name || ''}`.trim();
+              const rate = Number(item?.tax_rate_percentage || 0);
+              return {
+                id: item.id,
+                taxName,
+                rate,
+                label: this.formatGstRateLabel(taxName, rate),
+              };
+            })
           : this.getDefaultGstTaxRates();
+        this.restoreEditGstRateSelection();
       },
       error: (error: any) => {
         console.error('Failed to fetch GST tax rates:', error);
@@ -309,6 +505,51 @@ export class AddItemComponent implements OnInit {
     });
   }
 
+  private restoreEditAccountSelections(): void {
+    if (!this.isEditMode || !this.editItemData) {
+      return;
+    }
+
+    if (!this.model.sales_account) {
+      const salesAccountName = `${
+        this.editItemData?.sales_chartofaccounts_item
+          || this.editItemData?.sales_account_name
+          || ''
+      }`.trim().toLowerCase();
+      this.model.sales_account = this.accountItemOptions.find((account: any) =>
+        account.account_item.toLowerCase() === salesAccountName,
+      )?.id || '';
+    }
+
+    if (!this.model.purchase_account) {
+      const purchaseAccountName = `${
+        this.editItemData?.purchase_chartofaccounts_item
+          || this.editItemData?.purchase_account_name
+          || ''
+      }`.trim().toLowerCase();
+      this.model.purchase_account = this.accountItemOptions.find((account: any) =>
+        account.account_item.toLowerCase() === purchaseAccountName,
+      )?.id || '';
+    }
+  }
+
+  private restoreEditGstRateSelection(): void {
+    if (!this.isEditMode || !this.editItemData || this.model.gst_rates) {
+      return;
+    }
+
+    const taxName = `${this.editItemData?.tax_rate_name || ''}`.trim().toLowerCase();
+    const rawTaxRate = this.editItemData?.tax_rate_percentage;
+    const hasTaxRate = rawTaxRate !== undefined && rawTaxRate !== null && `${rawTaxRate}`.trim() !== '';
+    const taxRate = Number(rawTaxRate);
+    const matchedRate = this.gstTaxRates.find((rate: GstTaxRateOption) => {
+      const nameMatches = !taxName || `${rate.taxName || ''}`.trim().toLowerCase() === taxName;
+      const rateMatches = !hasTaxRate || Number(rate.rate) === taxRate;
+      return nameMatches && rateMatches;
+    });
+    this.model.gst_rates = matchedRate?.id ?? '';
+  }
+
   private getEmptyModel(): any {
     return {
       type: 'Goods',
@@ -317,6 +558,9 @@ export class AddItemComponent implements OnInit {
       sac: '',
       tax_preference: '',
       gst_rates: '',
+      opening_stock_qty: '',
+      opening_rate: '',
+      opening_stock_value: '',
       enable_sales_information: true,
       enable_purchase_information: true,
       selling_price: '',
@@ -331,6 +575,15 @@ export class AddItemComponent implements OnInit {
 
   private getDefaultGstTaxRates(): GstTaxRateOption[] {
     return [];
+  }
+
+  private formatGstRateLabel(taxName: string, rate: string | number): string {
+    const rateText = `${Number(rate || 0)}`;
+    const nameWithoutRate = `${taxName || ''}`
+      .trim()
+      .replace(/\s*[\[(]?\s*\d+(?:\.\d+)?\s*%?\s*[\])]?\s*$/, '')
+      .trim();
+    return `${nameWithoutRate || 'GST'} ${rateText}%`;
   }
 
   private getDefaultUnitOptions(): UnitOption[] {
@@ -397,6 +650,17 @@ export class AddItemComponent implements OnInit {
 
   onUnitSelected(symbol: string): void {
     this.model.unit = symbol;
+  }
+
+  updateOpeningStockValue(): void {
+    const quantity = Number(this.model.opening_stock_qty || 0);
+    const rate = Number(this.model.opening_rate || 0);
+    const hasOpeningStockInput = `${this.model.opening_stock_qty ?? ''}`.trim() !== ''
+      || `${this.model.opening_rate ?? ''}`.trim() !== '';
+
+    this.model.opening_stock_value = hasOpeningStockInput
+      ? Number((quantity * rate).toFixed(2))
+      : '';
   }
   
   typeChange(value: string) {
@@ -486,6 +750,9 @@ export class AddItemComponent implements OnInit {
       });
 
       payload.module_id = this.itemModuleId;
+      if (this.isEditMode && this.itemId !== null) {
+        payload.item_id = this.itemId;
+      }
       if (Object.keys(customFieldData).length > 0) {
         payload.custom_field = customFieldData;
       }
@@ -518,6 +785,21 @@ export class AddItemComponent implements OnInit {
         delete payload.purchase_account;
       }
 
+      if (payload.hasOwnProperty('opening_stock_qty')) {
+        payload.current_quantity = payload.opening_stock_qty;
+        delete payload.opening_stock_qty;
+      }
+
+      if (payload.hasOwnProperty('opening_rate')) {
+        payload.unit_cost = payload.opening_rate;
+        delete payload.opening_rate;
+      }
+
+      if (payload.hasOwnProperty('opening_stock_value')) {
+        payload.current_stock_value = payload.opening_stock_value;
+        delete payload.opening_stock_value;
+      }
+
       const formData = new FormData();
       Object.keys(payload).forEach((key: string) => {
         this.appendFormDataValue(formData, key, payload[key]);
@@ -527,11 +809,23 @@ export class AddItemComponent implements OnInit {
         formData.append('item_image', this.itemImageFile, this.itemImageFile.name);
       }
 
-      this.globalService.addItem(formData).subscribe({
+      const itemRequest$ = this.isEditMode
+        ? this.globalService.updateItem(formData)
+        : this.globalService.addItem(formData);
+
+      itemRequest$.subscribe({
         next: (res: any) => {
+          if (this.isEditMode) {
+            this.toastrService.success(res?.message || 'Item updated successfully.', 'Updated');
+            this.isSubmitting = false;
+            this.router.navigate(['/pages/sales/item-list']);
+            return;
+          }
+
           this.model = this.getEmptyModel();
           this.applyCustomFieldDefaults();
           this.itemImageFile = null;
+          this.itemImageUpload?.reset();
           fm.resetForm(this.model);
           this.toastrService.success(res?.message || 'Item added successfully.', 'Added');
           this.isSubmitting = false;
@@ -541,9 +835,12 @@ export class AddItemComponent implements OnInit {
           const errorMessage =
             err?.error?.message ||
             err?.message ||
-            'Add item failed. Please try again.';
+            `${this.isEditMode ? 'Update' : 'Add'} item failed. Please try again.`;
 
-          this.toastrService.danger(errorMessage, 'Add Item Failed');
+          this.toastrService.danger(
+            errorMessage,
+            this.isEditMode ? 'Update Item Failed' : 'Add Item Failed',
+          );
           this.isSubmitting = false;
         },
       });

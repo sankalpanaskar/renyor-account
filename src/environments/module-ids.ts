@@ -5,4 +5,5 @@ export const moduleIds = {
   salesOrder: 6,
   invoice: 7,
   vendor: 8,
+  purchaseInvoice: 10,
 } as const;

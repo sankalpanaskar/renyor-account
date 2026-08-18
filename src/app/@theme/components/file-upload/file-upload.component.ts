@@ -13,14 +13,25 @@ export class FileUploadComponent implements OnDestroy {
   @Input() accept = '.pdf,.xls,.xlsx,.png,.jpg,.jpeg';
   @Input() multiple = false;
   @Input() required = false;
+  @Input() existingFileUrl = '';
+  @Input() existingFileName = 'Existing file';
 
   @Output() filesChange = new EventEmitter<File[]>();
+  @Output() existingFileError = new EventEmitter<void>();
 
   selectedFiles: File[] = [];
   private previewUrls = new Map<File, string>();
 
   ngOnDestroy(): void {
     this.clearPreviewUrls();
+  }
+
+  reset(): void {
+    this.clearPreviewUrls();
+    this.selectedFiles = [];
+    if (this.fileInput?.nativeElement) {
+      this.fileInput.nativeElement.value = '';
+    }
   }
 
   onInputChange(event: Event): void {
@@ -72,6 +83,10 @@ export class FileUploadComponent implements OnDestroy {
   onPreviewAreaClick(event: MouseEvent): void {
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  onExistingFileError(): void {
+    this.existingFileError.emit();
   }
 
   removeFile(file: File, event: MouseEvent): void {

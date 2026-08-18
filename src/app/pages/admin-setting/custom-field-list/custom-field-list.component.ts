@@ -52,8 +52,10 @@ export class CustomFieldListComponent implements OnInit {
   private parseAssignedModules(field: any): any[] {
     const moduleIds = `${field?.module_id || ''}`
       .split(',')
-      .map((value: string) => Number(value.trim()))
-      .filter((value: number) => !Number.isNaN(value));
+      .map((value: string) => value.trim())
+      .filter((value: string) => value !== '')
+      .map((value: string) => Number(value))
+      .filter((value: number) => !Number.isNaN(value) && value > 0);
 
     const moduleNames = `${field?.menu_name || field?.module_name || ''}`
       .split(',')
@@ -76,28 +78,66 @@ export class CustomFieldListComponent implements OnInit {
     this.moduleList = this.allModuleList.filter((module: any) => !selectedIds.has(Number(module?.id)));
   }
 
-  getAllModule(): void {
+  private hasNavigableLink(item: any): boolean {
+    const link = `${item?.link || item?.url || item?.route || ''}`.trim().toLowerCase();
+    return !!link && !['na', 'n/a', 'null', '#'].includes(link);
+  }
+
+  private getMenuChildren(item: any): any[] {
+    const children = [
+      item?.children,
+      item?.items,
+      item?.submenus,
+      item?.submenu,
+      item?.sub_menu,
+      item?.modules,
+    ].find((candidate: any) => Array.isArray(candidate));
+
+    return Array.isArray(children) ? children : [];
+  }
+
+  private flattenMenuModules(menuItems: any[]): any[] {
+    const modules: any[] = [];
+    const seenIds = new Set<string>();
+
+    const visit = (items: any[]): void => {
+      (items || []).forEach((item: any) => {
+        const rawId = item?.module_id ?? item?.menu_id ?? item?.id;
+        const label = this.getModuleOptionLabel(item);
+
+        // A primary menu with its own route is a selectable module. Menus
+        // whose route is NA are grouping nodes, so their linked children are used.
+        if (this.hasNavigableLink(item) && rawId !== null && rawId !== undefined && `${rawId}`.trim() !== '' && label) {
+          const id = Number(rawId);
+          const key = String(rawId);
+          if (!Number.isNaN(id) && id > 0 && !seenIds.has(key)) {
+            seenIds.add(key);
+            modules.push({ ...item, id, menu_name: label });
+          }
+        }
+
+        const children = this.getMenuChildren(item);
+        if (children.length > 0) {
+          visit(children);
+        }
+      });
+    };
+
+    visit(menuItems);
+    return modules;
+  }
+
+  loadMenuModules(): void {
     this.isSubmitting = true;
-    this.globalService.getAllModule().subscribe({
+    this.globalService.getMenuByUser().subscribe({
       next: (res: any) => {
-        const modules = Array.isArray(res?.data)
+        const menuItems = Array.isArray(res?.data)
           ? res.data
           : Array.isArray(res)
             ? res
             : [];
 
-        const normalizedModules = modules
-          .map((item: any) => ({
-            ...item,
-            menu_name: this.getModuleOptionLabel(item),
-          }))
-          .filter((item: any) => !!item.menu_name);
-
-        const addModules = normalizedModules.filter((item: any) =>
-          item.menu_name.toLowerCase().startsWith('add')
-        );
-
-        this.allModuleList = addModules.length ? addModules : normalizedModules;
+        this.allModuleList = this.flattenMenuModules(menuItems);
         this.selectedAssignModules = this.selectedAssignModules.map((selectedModule: any) => {
           const matchedModule = this.allModuleList.find((module: any) => Number(module?.id) === Number(selectedModule?.id));
           return matchedModule || selectedModule;
@@ -106,7 +146,7 @@ export class CustomFieldListComponent implements OnInit {
         this.isSubmitting = false;
       },
       error: (err: any) => {
-        this.toastrService.danger(err?.error?.message || 'Failed to load modules', 'Modules');
+        this.toastrService.danger(err?.error?.message || 'Failed to load menu modules', 'Modules');
         this.isSubmitting = false;
       },
     });
@@ -219,7 +259,7 @@ export class CustomFieldListComponent implements OnInit {
     this.selectedAssignModules = this.parseAssignedModules(field?.fullData);
     this.allModuleList = [];
     this.moduleList = [];
-    this.getAllModule();
+    this.loadMenuModules();
   }
 
   onEdit(field: any, event?: Event): void {
@@ -260,7 +300,12 @@ export class CustomFieldListComponent implements OnInit {
 
   onAssignModuleSelected(moduleId: any): void {
     this.selectedAssignModuleId = '';
-    const matchedModule = this.moduleList.find((module: any) => Number(module?.id) === Number(moduleId));
+    const normalizedModuleId = Number(moduleId);
+    if (`${moduleId ?? ''}`.trim() === '' || Number.isNaN(normalizedModuleId) || normalizedModuleId <= 0) {
+      return;
+    }
+
+    const matchedModule = this.moduleList.find((module: any) => Number(module?.id) === normalizedModuleId);
     if (!matchedModule) {
       return;
     }
@@ -318,7 +363,7 @@ export class CustomFieldListComponent implements OnInit {
       custom_field_id: Number(customFieldId),
       modules: this.selectedAssignModules
         .map((module: any) => Number(module?.id))
-        .filter((moduleId: number) => !Number.isNaN(moduleId)),
+        .filter((moduleId: number) => !Number.isNaN(moduleId) && moduleId > 0),
     };
 
     if (!payload.modules.length) {

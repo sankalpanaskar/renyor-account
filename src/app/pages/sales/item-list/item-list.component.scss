@@ -533,7 +533,7 @@
 .item-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 940px;
+  min-width: 1120px;
   display: block;
 }
 
@@ -553,15 +553,16 @@
     minmax(125px, 0.85fr)
     minmax(100px, 0.65fr)
     minmax(90px, 0.6fr)
-    minmax(75px, 0.5fr)
+    minmax(115px, 0.7fr)
+    minmax(155px, 0.95fr)
     minmax(115px, 0.75fr);
 }
 
 .item-table tbody {
-  max-height: calc(100vh - 315px);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  max-height: none;
+  overflow: visible;
+  overscroll-behavior: auto;
+  scrollbar-gutter: auto;
 }
 
 .item-table thead th {
@@ -583,6 +584,48 @@
   color: #2d3958;
   font-size: 13px;
   vertical-align: middle;
+}
+
+@media (min-width: 992px) {
+  .item-table thead th,
+  .item-table tbody .item-row > td {
+    min-width: 0;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+  }
+
+  .item-table thead th:nth-child(1),
+  .item-table tbody .item-row > td:nth-child(1) {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .item-table thead th:nth-child(2),
+  .item-table thead th:nth-child(3),
+  .item-table thead th:nth-child(6),
+  .item-table thead th:nth-child(7),
+  .item-table tbody .item-row > td:nth-child(2),
+  .item-table tbody .item-row > td:nth-child(3),
+  .item-table tbody .item-row > td:nth-child(6),
+  .item-table tbody .item-row > td:nth-child(7) {
+    justify-content: flex-end;
+    text-align: right;
+  }
+
+  .item-table thead th:nth-child(4),
+  .item-table thead th:nth-child(5),
+  .item-table tbody .item-row > td:nth-child(4),
+  .item-table tbody .item-row > td:nth-child(5) {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .item-table thead th:nth-child(8),
+  .item-table tbody .item-row > td:nth-child(8) {
+    justify-content: flex-end;
+    text-align: right;
+  }
 }
 
 .item-table tbody tr:last-child td {
@@ -796,6 +839,14 @@
   color: #8a96ae;
   font-size: 13px;
   font-weight: 400;
+}
+
+@media (max-width: 1199px) {
+  .item-table thead th {
+    white-space: normal;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (max-width: 991px) {

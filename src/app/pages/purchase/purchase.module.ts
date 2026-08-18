@@ -10,13 +10,17 @@ import { NbAccordionModule, NbButtonModule, NbCardModule, NbCheckboxModule, NbDa
 import { FormsModule } from '@angular/forms';
 import { SharedModule } from '../shared/shared.module';
 import { ThemeModule } from '../../@theme/theme.module';
+import { AddPurchaseInvoiceComponent } from './add-purchase-invoice/add-purchase-invoice.component';
+import { PurchaseInvoiceListComponent } from './purchase-invoice-list/purchase-invoice-list.component';
 
 
 @NgModule({
   declarations: [
     PurchaseComponent,
     AddVendorsComponent,
-    VendorsListComponent
+    VendorsListComponent,
+    AddPurchaseInvoiceComponent,
+    PurchaseInvoiceListComponent
   ],
   imports: [
     CommonModule,

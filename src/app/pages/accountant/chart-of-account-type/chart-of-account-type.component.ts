@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { GlobalService } from '../../../services/global.service';
 import { NbToastrService } from '@nebular/theme';
+import { normalizeAccountHeadName, STATIC_ACCOUNT_HEAD_NAMES } from '../static-account-heads';
 
 interface AccountHeadType {
   id: number;
@@ -64,8 +65,7 @@ export class ChartOfAccountTypeComponent implements OnInit {
       error: (error: any) => {
         console.error('Failed to fetch account head type list:', error);
         this.accountGroups = [];
-        this.accountHeads = [];
-        this.accountTree = [];
+        this.buildAccountTree();
         this.fetchError = 'Unable to load account head types.';
         this.loading = false;
       },
@@ -142,7 +142,17 @@ export class ChartOfAccountTypeComponent implements OnInit {
   }
 
   private buildAccountTree(): void {
-    this.accountHeads = this.accountGroups.filter((group: AccountHeadType) => group.parent_id === 0);
+    const fetchedAccountHeads = this.accountGroups.filter((group: AccountHeadType) => group.parent_id === 0);
+    this.accountHeads = STATIC_ACCOUNT_HEAD_NAMES.map((headName: string, index: number) => {
+      const fetchedHead = fetchedAccountHeads.find((group: AccountHeadType) =>
+        normalizeAccountHeadName(group.group_name) === normalizeAccountHeadName(headName)
+      );
+      return fetchedHead || {
+        id: -(index + 1),
+        group_name: headName,
+        parent_id: 0,
+      };
+    });
     this.accountTree = this.accountHeads.map((head: AccountHeadType) => ({
       ...head,
       children: this.accountGroups.filter((group: AccountHeadType) => group.parent_id === head.id),

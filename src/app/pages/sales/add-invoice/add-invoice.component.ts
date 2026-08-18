@@ -16,6 +16,7 @@ interface InvoiceItemRow {
   item_type?: string;
   item_list_open?: boolean;
   item_is_manual?: boolean;
+  account_id?: string | number;
 }
 
 interface InvoiceCustomerOption {
@@ -50,6 +51,7 @@ interface InvoiceItemOption {
   name?: string;
   type?: string;
   selling_price?: number | string;
+  cost_price?: number | string;
   hsn_code?: string;
   sac?: string;
   unit?: string;
@@ -58,6 +60,8 @@ interface InvoiceItemOption {
   tax_rate_percentage?: number | string;
   sales_account_description?: string;
   purchase_account_description?: string;
+  purchase_account_id?: string | number;
+  purchase_chartofaccounts_item?: string;
   description?: string;
   item_description?: string;
 }

@@ -1,0 +1,70 @@
+@import '../../sales/add-invoice/add-invoice.component.scss';
+
+.reverse-charge-field {
+  min-height: 52px;
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  border: 1px solid #e3e8f2;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.purchase-item-table .col-item-details {
+  width: 31%;
+}
+
+.purchase-item-table .col-account {
+  width: 18%;
+}
+
+.purchase-item-table .col-quantity {
+  width: 9%;
+}
+
+.purchase-item-table .col-rate {
+  width: 11%;
+}
+
+.purchase-item-table .col-tax {
+  width: 12%;
+}
+
+.purchase-item-table .col-amount {
+  width: 15%;
+}
+
+.purchase-item-table th:nth-child(3),
+.purchase-item-table td:nth-child(3) {
+  text-align: left;
+}
+
+.purchase-item-table th:nth-child(4),
+.purchase-item-table td:nth-child(4) {
+  text-align: center;
+}
+
+.purchase-item-table th:nth-child(5),
+.purchase-item-table td:nth-child(5),
+.purchase-item-table th:nth-child(7),
+.purchase-item-table td:nth-child(7) {
+  text-align: right;
+}
+
+.purchase-item-table th:nth-child(6),
+.purchase-item-table td:nth-child(6) {
+  text-align: left;
+}
+
+.account-cell,
+.purchase-item-table .quantity-cell,
+.purchase-item-table .rate-cell,
+.purchase-item-table .tax-cell,
+.purchase-item-table .amount-cell {
+  min-width: 0;
+  vertical-align: top !important;
+}
+
+.purchase-item-table .quantity-cell-inner {
+  justify-content: flex-start;
+}

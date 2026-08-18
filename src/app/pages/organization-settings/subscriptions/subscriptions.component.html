@@ -33,7 +33,7 @@
     </article>
     <article class="summary-card">
       <div class="summary-icon violet"><nb-icon icon="calendar-outline"></nb-icon></div>
-      <div><span>End date</span><strong>{{ formatDate(subscription?.end_date) }}</strong></div>
+      <div><span>End date</span><strong>{{ formatDate(getSubscriptionEndDate(subscription)) }}</strong></div>
     </article>
     <article class="summary-card">
       <div class="summary-icon green"><nb-icon icon="checkmark-circle-2-outline"></nb-icon></div>
@@ -104,7 +104,7 @@
           <div class="history-icon"><nb-icon icon="award-outline"></nb-icon></div>
           <div>
             <strong>{{ getPlanName(item) }}</strong>
-            <span>{{ formatDate(item?.start_date) }} – {{ formatDate(item?.end_date) }}</span>
+            <span>{{ formatDate(item?.start_date) }} – {{ formatDate(getSubscriptionEndDate(item)) }}</span>
           </div>
         </div>
         <div class="history-payment">

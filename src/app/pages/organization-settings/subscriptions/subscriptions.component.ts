@@ -67,6 +67,12 @@ export class SubscriptionsComponent implements OnInit {
     return subscription?.package_type || 'Standard';
   }
 
+  getSubscriptionEndDate(subscription: any): any {
+    return this.isLifetimePackage(subscription)
+      ? new Date()
+      : subscription?.end_date;
+  }
+
   getSubscriptionAmount(subscription: any): any {
     return subscription?.amount ?? subscription?.final_price ?? subscription?.offer_price ?? subscription?.base_price;
   }
@@ -127,6 +133,15 @@ export class SubscriptionsComponent implements OnInit {
 
   trackBySubscription(index: number, subscription: any): number | string {
     return subscription?.id ?? index;
+  }
+
+  private isLifetimePackage(subscription: any): boolean {
+    const packageType = `${subscription?.package_type || ''}`
+      .trim()
+      .toLowerCase()
+      .replace(/[\s_-]+/g, '');
+
+    return packageType === 'lifetime';
   }
 
   private extractArray(response: any): any[] {

@@ -195,7 +195,9 @@ export class ItemListComponent implements OnInit, OnDestroy {
       { label: 'HSN/SAC', value: item?.hsn_code || item?.sac || '-' },
       { label: 'Tax Preference', value: item?.tax_preference || '-' },
       { label: 'Tax Rate Name', value: item?.tax_rate_name || '-' },
-      { label: 'Tax Rate Percentage', value: item?.tax_rate_percentage ?? '-' }
+      { label: 'Tax Rate Percentage', value: item?.tax_rate_percentage ?? '-' },
+      { label: 'Current Quantity', value: item?.current_quantity ?? '-' },
+      { label: 'Current Stock Value', value: this.formatCurrency(item?.current_stock_value) }
     ];
   }
 
@@ -307,7 +309,13 @@ export class ItemListComponent implements OnInit, OnDestroy {
     if (!this.canEdit) {
       return;
     }
-    console.log('edit-item', item);
+    this.closeItemPopup();
+    this.router.navigate(['/pages/sales/update-item'], {
+      state: {
+        isEditMode: true,
+        itemData: item,
+      },
+    });
   }
 
   deleteItem(item: any): void {

@@ -22,7 +22,7 @@
         <div class="upload-helper" *ngIf="helperText">{{ helperText }}</div>
       </div>
 
-      <div class="upload-previews" *ngIf="selectedFiles.length" aria-label="Selected file previews"
+      <div class="upload-previews" *ngIf="selectedFiles.length || existingFileUrl" aria-label="Selected file previews"
         (click)="onPreviewAreaClick($event)">
         <div class="upload-preview" *ngFor="let file of selectedFiles" [title]="file.name">
           <img *ngIf="isImageFile(file)" [src]="getPreviewUrl(file)" [alt]="file.name">
@@ -31,6 +31,10 @@
             title="Remove file" (click)="removeFile(file, $event)">
             <nb-icon icon="close-outline"></nb-icon>
           </button>
+        </div>
+        <div *ngIf="!selectedFiles.length && existingFileUrl" class="upload-preview existing-file-preview"
+          [title]="existingFileName">
+          <img [src]="existingFileUrl" [alt]="existingFileName" (error)="onExistingFileError()">
         </div>
       </div>
     </div>

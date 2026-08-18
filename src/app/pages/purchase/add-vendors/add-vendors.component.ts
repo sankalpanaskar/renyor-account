@@ -52,8 +52,8 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    this.model.bank_accounts = [this.getEmptyBankAccount()];
-    this.showAccountNumber = [false];
+    this.model.bank_accounts = [];
+    this.showAccountNumber = [];
     this.getState();
     this.getCustomFields();
     this.fetchTdsTerms();
@@ -97,7 +97,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
               re_enter_account_number: bank?.account_number || bank?.re_enter_account_number || '',
               ifsc: bank?.ifsc || '',
             }))
-          : [this.getEmptyBankAccount()];
+          : [];
 
         this.model = {
           ...this.model,
@@ -218,7 +218,7 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
   }
 
   removeBankAccount(index: number): void {
-    if (!Array.isArray(this.model.bank_accounts) || this.model.bank_accounts.length <= 1) {
+    if (!Array.isArray(this.model.bank_accounts) || this.model.bank_accounts.length === 0) {
       return;
     }
 
@@ -727,7 +727,22 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
     }
 
     if (!this.isDocumentValid()) {
-      this.toastrService.danger('Document 1 and Document 2 name and file are required.', 'Validation Failed');
+      this.toastrService.danger(
+        'For each document, provide both its name and file, or leave both empty.',
+        'Validation Failed'
+      );
+      return;
+    }
+
+    if (!fm.valid) {
+      Object.values(fm?.controls || {}).forEach((control: any) => control?.markAsTouched?.());
+      const invalidFields = Object.keys(fm?.controls || {})
+        .filter((fieldName: string) => fm.controls[fieldName]?.invalid)
+        .map((fieldName: string) => this.getFormFieldLabel(fieldName));
+      const message = invalidFields.length
+        ? `Complete the required fields: ${Array.from(new Set(invalidFields)).join(', ')}.`
+        : 'Complete all required fields.';
+      this.toastrService.danger(message, 'Validation Failed');
       return;
     }
 
@@ -799,8 +814,8 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
             this.toastrService.success(res.message, 'Updated');
             this.router.navigate(['pages/purchase/vendor-list']);
           } else {
-            this.model = { bank_accounts: [this.getEmptyBankAccount()] };
-            this.showAccountNumber = [false];
+            this.model = { bank_accounts: [] };
+            this.showAccountNumber = [];
             this.document1File = null;
             this.document2File = null;
             this.closeDocumentPreview();
@@ -833,6 +848,17 @@ export class AddVendorsComponent implements OnInit, OnDestroy {
     const hasDocument1 = !!this.document1File || !!`${this.model?.document_1 || ''}`.trim();
     const hasDocument2 = !!this.document2File || !!`${this.model?.document_2 || ''}`.trim();
 
-    return !!doc1Name && !!doc2Name && hasDocument1 && hasDocument2;
+    const isDocument1Valid = (!doc1Name && !hasDocument1) || (!!doc1Name && hasDocument1);
+    const isDocument2Valid = (!doc2Name && !hasDocument2) || (!!doc2Name && hasDocument2);
+    return isDocument1Valid && isDocument2Valid;
+  }
+
+  private getFormFieldLabel(fieldName: string): string {
+    return `${fieldName || ''}`
+      .replace(/_\d+$/, '')
+      .split('_')
+      .filter(Boolean)
+      .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
   }
 }

@@ -54,6 +54,56 @@ export class PagesComponent implements OnInit, OnDestroy {
   private subscription?: Subscription;
   private routerSubscription?: Subscription;
   private menuClickSubscription?: Subscription;
+  private readonly menuRouteAliases: Array<{ menuRoute: string; pageRoutes: string[] }> = [
+    {
+      menuRoute: '/pages/sales/customer-list',
+      pageRoutes: ['/pages/sales/add-customer', '/pages/sales/update-customer'],
+    },
+    {
+      menuRoute: '/pages/sales/item-list',
+      pageRoutes: ['/pages/sales/add-item', '/pages/sales/update-item'],
+    },
+    {
+      menuRoute: '/pages/sales/invoice-list',
+      pageRoutes: ['/pages/sales/add-invoice', '/pages/sales/update-invoice'],
+    },
+    {
+      menuRoute: '/pages/sales/quotation-list',
+      pageRoutes: ['/pages/sales/add-quote', '/pages/sales/update-quotation'],
+    },
+    {
+      menuRoute: '/pages/sales/sales-order-list',
+      pageRoutes: ['/pages/sales/add-sales-order', '/pages/sales/update-sales-order'],
+    },
+    {
+      menuRoute: '/pages/purchase/vendor-list',
+      pageRoutes: ['/pages/purchase/add-vendor', '/pages/purchase/update-vendor'],
+    },
+    {
+      menuRoute: '/pages/purchase/purchase-invoice-list',
+      pageRoutes: ['/pages/purchase/add-purchase-invoice', '/pages/purchase/update-purchase-invoice'],
+    },
+    {
+      menuRoute: '/pages/admin-setting/package-list',
+      pageRoutes: ['/pages/admin-setting/add-package', '/pages/admin-setting/update-package'],
+    },
+    {
+      menuRoute: '/pages/admin-setting/company-list',
+      pageRoutes: ['/pages/admin-setting/add-company', '/pages/admin-setting/update-company'],
+    },
+    {
+      menuRoute: '/pages/admin-setting/custom-field-list',
+      pageRoutes: ['/pages/admin-setting/add-custom-field', '/pages/admin-setting/update-custom-field'],
+    },
+    {
+      menuRoute: '/pages/organization-setting/roles',
+      pageRoutes: ['/pages/organization-setting/add-roles'],
+    },
+    {
+      menuRoute: '/pages/organization-setting/user-list',
+      pageRoutes: ['/pages/organization-setting/add-user', '/pages/organization-setting/update-user'],
+    },
+  ];
 
   // Manual grouping for API-driven menus. Add more groups or parent menu titles here.
   private dynamicMenuGroups: Array<{ groupTitle: string; parentTitles: string[]; linkPrefixes: string[] }> = [
@@ -438,7 +488,10 @@ export class PagesComponent implements OnInit, OnDestroy {
   }
 
   private syncMenuModeForRoute(url: string): void {
-    const shouldShowSettings = this.containsMatchingRoute(this.settingsMenu, this.normalizeUrl(url));
+    const currentUrl = this.normalizeUrl(url);
+    const menuSelectionUrl = this.resolveMenuSelectionUrl(currentUrl);
+    const shouldShowSettings = this.containsMatchingRoute(this.settingsMenu, menuSelectionUrl)
+      || (menuSelectionUrl !== currentUrl && this.containsMatchingRoute(this.settingsMenu, currentUrl));
     if (this.isSettingsMenuOpen !== shouldShowSettings) {
       this.isSettingsMenuOpen = shouldShowSettings;
     }
@@ -465,11 +518,15 @@ export class PagesComponent implements OnInit, OnDestroy {
     }
 
     const currentUrl = this.normalizeUrl(this.router.url);
+    const menuSelectionUrl = this.resolveMenuSelectionUrl(currentUrl);
     this.clearMenuState(this.menu);
 
-    const selectedByLink = this.selectByLink(this.menu, currentUrl);
-    if (!selectedByLink) {
-      this.selectByRoutePrefix(this.menu, currentUrl);
+    const selectedByAlias = this.selectByLink(this.menu, menuSelectionUrl);
+    const selectedByCurrentRoute = !selectedByAlias && menuSelectionUrl !== currentUrl
+      ? this.selectByLink(this.menu, currentUrl)
+      : false;
+    if (!selectedByAlias && !selectedByCurrentRoute) {
+      this.selectByRoutePrefix(this.menu, menuSelectionUrl);
     }
   }
 
@@ -549,6 +606,13 @@ export class PagesComponent implements OnInit, OnDestroy {
 
   private normalizeUrl(url: any): string {
     return `${url || ''}`.split('?')[0].split('#')[0].replace(/\/+$/, '');
+  }
+
+  private resolveMenuSelectionUrl(currentUrl: string): string {
+    const routeAlias = this.menuRouteAliases.find((alias) =>
+      alias.pageRoutes.some((pageRoute: string) => this.urlMatches(currentUrl, pageRoute))
+    );
+    return routeAlias?.menuRoute || currentUrl;
   }
 
   private urlMatches(currentUrl: string, itemUrl: string): boolean {

@@ -183,6 +183,12 @@ nb-card-body {
   flex: 0 0 auto;
 }
 
+.calculated-stock-value[readonly] {
+  color: #52617d;
+  background: #f3f6fb;
+  cursor: default;
+}
+
 .information-toggle-row {
   padding-top: 3px;
   padding-bottom: 3px;

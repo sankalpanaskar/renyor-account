@@ -80,7 +80,7 @@ export class GstTaxRatePopupComponent {
           id: res?.data?.id,
           taxName,
           rate,
-          label: `${taxName} [${rate}%]`,
+          label: this.formatRateLabel(taxName, rate),
         };
         const nextRates = [...(this.rates || []), createdRate];
 
@@ -105,6 +105,15 @@ export class GstTaxRatePopupComponent {
   selectRate(rate: GstTaxRateOption): void {
     this.rateSelected.emit(rate.id);
     this.closePopup();
+  }
+
+  private formatRateLabel(taxName: string, rate: string | number): string {
+    const rateText = `${Number(rate || 0)}`;
+    const nameWithoutRate = `${taxName || ''}`
+      .trim()
+      .replace(/\s*[\[(]?\s*\d+(?:\.\d+)?\s*%?\s*[\])]?\s*$/, '')
+      .trim();
+    return `${nameWithoutRate || 'GST'} ${rateText}%`;
   }
 
   private resetForm(): void {
