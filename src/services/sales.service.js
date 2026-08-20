@@ -290,7 +290,12 @@ exports.createDocumentPdf = async (
 //   return menu;
 // };
 
-exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attachment = null) => {
+exports.createInvoice = async (
+  data,
+  tenant_id,
+  user_id,
+  uploaded_invoice_attachment = null
+) => {
   const connection = await db.getConnection();
 
   try {
@@ -322,11 +327,26 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
       module_id,
       items
     } = data || {};
-    
+
+    /*
+    |--------------------------------------------------------------------------
+    | Parse Invoice Items
+    |--------------------------------------------------------------------------
+    */
 
     const invoiceItems = parseInvoiceItems(items);
 
-    if (customer_id === undefined || customer_id === null || customer_id === "") {
+    /*
+    |--------------------------------------------------------------------------
+    | Basic Validation
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+      customer_id === undefined ||
+      customer_id === null ||
+      customer_id === ""
+    ) {
       throw new Error("customer_id is required");
     }
 
@@ -334,18 +354,36 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
       throw new Error("invoice_no is required");
     }
 
-    const normalizedDocumentType = String(normalizeFormValue(document_type) || 'invoice')
-      .toLowerCase()
-      .replace(/\s+/g, '');
-    const nextCurrentNumber = normalizeFormValue(current_number);
+    if (!invoice_date) {
+      throw new Error("invoice_date is required");
+    }
 
-    if (nextCurrentNumber === undefined || nextCurrentNumber === null || nextCurrentNumber === "") {
+    const normalizedDocumentType = String(
+      normalizeFormValue(document_type) || "invoice"
+    )
+      .toLowerCase()
+      .replace(/\s+/g, "");
+
+    const nextCurrentNumber =
+      normalizeFormValue(current_number);
+
+    if (
+      nextCurrentNumber === undefined ||
+      nextCurrentNumber === null ||
+      nextCurrentNumber === ""
+    ) {
       throw new Error("current_number is required");
     }
 
     if (!invoiceItems.length) {
       throw new Error("items are required");
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Insert Invoice Master
+    |--------------------------------------------------------------------------
+    */
 
     const invoiceMasterColumns = [
       "customer_id",
@@ -398,15 +436,48 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
     ];
 
     const [masterResult] = await connection.query(
-      `INSERT INTO invoice_master (${invoiceMasterColumns.join(", ")})
-       VALUES (${invoiceMasterColumns.map(() => "?").join(", ")})`,
+      `
+      INSERT INTO invoice_master
+      (${invoiceMasterColumns.join(", ")})
+      VALUES
+      (${invoiceMasterColumns.map(() => "?").join(", ")})
+      `,
       invoiceMasterValues
     );
 
     const invoiceMasterId = masterResult.insertId;
+
+    /*
+    |--------------------------------------------------------------------------
+    | Insert Invoice Items
+    | + FIFO Stock Deduction
+    |--------------------------------------------------------------------------
+    */
+
     for (const item of invoiceItems) {
-      await connection.query(
-        `INSERT INTO invoice_items (
+      /*
+      |--------------------------------------------------------------------------
+      | Validate Quantity
+      |--------------------------------------------------------------------------
+      */
+
+      const saleQuantity = Number(item.quantity || 0);
+
+      if (!Number.isFinite(saleQuantity) || saleQuantity <= 0) {
+        throw new Error(
+          `Invalid quantity for item ${item.item_id || item.item_name}`
+        );
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Insert Invoice Item
+      |--------------------------------------------------------------------------
+      */
+
+      const [invoiceItemResult] = await connection.query(
+        `
+        INSERT INTO invoice_items (
           invoice_master_id,
           item_id,
           item_name,
@@ -420,18 +491,383 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
           amount,
           tenant_id,
           user_id
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        buildInvoiceItemValues(invoiceMasterId, item, tenant_id, user_id)
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        buildInvoiceItemValues(
+          invoiceMasterId,
+          item,
+          tenant_id,
+          user_id
+        )
+      );
+
+      const invoiceItemId = invoiceItemResult.insertId;
+
+      /*
+      |--------------------------------------------------------------------------
+      | Determine Item Type
+      |--------------------------------------------------------------------------
+      */
+
+      const itemType = String(item.item_type || "")
+        .trim()
+        .toLowerCase();
+
+      const isStockItem =
+        itemType === "goods" ||
+        itemType === "product";
+
+      if (!isStockItem) {
+        continue;
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Validate Item ID
+      |--------------------------------------------------------------------------
+      */
+
+      const itemId = Number(item.item_id);
+
+      if (!Number.isFinite(itemId) || itemId <= 0) {
+        throw new Error(
+          `Valid item_id is required for goods item: ${item.item_name || ""}`
+        );
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Lock Item
+      |--------------------------------------------------------------------------
+      */
+
+      const [itemRows] = await connection.query(
+        `
+        SELECT
+          id,
+          name,
+          current_quantity,
+          current_stock_value
+        FROM items
+        WHERE id = ?
+          AND tenant_id = ?
+        FOR UPDATE
+        `,
+        [
+          itemId,
+          tenant_id
+        ]
+      );
+
+      if (!itemRows.length) {
+        throw new Error(
+          `Item not found: ${itemId}`
+        );
+      }
+
+      const itemRow = itemRows[0];
+
+      const currentQuantity = Number(
+        itemRow.current_quantity || 0
+      );
+
+      /*
+      |--------------------------------------------------------------------------
+      | Quick Stock Check
+      |--------------------------------------------------------------------------
+      */
+
+      if (currentQuantity < saleQuantity) {
+        throw new Error(
+          `Insufficient stock for "${itemRow.name}". Available: ${currentQuantity}, Requested: ${saleQuantity}`
+        );
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Fetch FIFO Stock Batches
+      |--------------------------------------------------------------------------
+      |
+      | Oldest batch first.
+      |
+      */
+
+      const [stockBatches] = await connection.query(
+        `
+        SELECT
+          id,
+          item_id,
+          source_type,
+          source_id,
+          quantity,
+          remaining_quantity,
+          unit_cost,
+          total_cost,
+          batch_date
+        FROM stock_batches
+        WHERE item_id = ?
+          AND tenant_id = ?
+          AND remaining_quantity > 0
+        ORDER BY batch_date ASC, id ASC
+        FOR UPDATE
+        `,
+        [
+          itemId,
+          tenant_id
+        ]
+      );
+
+      if (!stockBatches.length) {
+        throw new Error(
+          `No available stock batch found for "${itemRow.name}"`
+        );
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | FIFO Calculation
+      |--------------------------------------------------------------------------
+      */
+
+      let remainingToDeduct = saleQuantity;
+      let totalCogs = 0;
+
+      for (const batch of stockBatches) {
+        if (remainingToDeduct <= 0) {
+          break;
+        }
+
+        const batchRemainingQuantity = Number(
+          batch.remaining_quantity || 0
+        );
+
+        const batchUnitCost = Number(
+          batch.unit_cost || 0
+        );
+
+        if (batchRemainingQuantity <= 0) {
+          continue;
+        }
+
+        /*
+         * Example:
+         *
+         * Need = 15
+         * Batch available = 10
+         *
+         * deductQty = 10
+         */
+        const deductQty = Math.min(
+          remainingToDeduct,
+          batchRemainingQuantity
+        );
+
+        const batchCogs =
+          deductQty * batchUnitCost;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Deduct Stock Batch
+        |--------------------------------------------------------------------------
+        */
+
+        const [batchUpdateResult] = await connection.query(
+          `
+          UPDATE stock_batches
+          SET
+            remaining_quantity = remaining_quantity - ?
+          WHERE id = ?
+            AND item_id = ?
+            AND tenant_id = ?
+            AND remaining_quantity >= ?
+          `,
+          [
+            deductQty,
+            batch.id,
+            itemId,
+            tenant_id,
+            deductQty
+          ]
+        );
+
+        if (batchUpdateResult.affectedRows === 0) {
+          throw new Error(
+            `Unable to deduct stock batch ${batch.id}`
+          );
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Save Batch Allocation
+        |--------------------------------------------------------------------------
+        */
+
+        await connection.query(
+          `
+          INSERT INTO sale_item_batches
+          (
+            invoice_item_id,
+            stock_batch_id,
+            quantity,
+            unit_cost,
+            total_cost,
+            tenant_id
+          )
+          VALUES (?, ?, ?, ?, ?, ?)
+          `,
+          [
+            invoiceItemId,
+            batch.id,
+            deductQty,
+            batchUnitCost,
+            batchCogs,
+            tenant_id
+          ]
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update FIFO Calculation
+        |--------------------------------------------------------------------------
+        */
+
+        remainingToDeduct -= deductQty;
+        totalCogs += batchCogs;
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Final FIFO Stock Check
+      |--------------------------------------------------------------------------
+      */
+
+      if (remainingToDeduct > 0) {
+        throw new Error(
+          `Insufficient FIFO stock for "${itemRow.name}". Missing quantity: ${remainingToDeduct}`
+        );
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Update Item Summary
+      |--------------------------------------------------------------------------
+      */
+
+      const [itemUpdateResult] = await connection.query(
+        `
+        UPDATE items
+        SET
+          current_quantity =
+            current_quantity - ?,
+
+          current_stock_value =
+            current_stock_value - ?
+
+        WHERE id = ?
+          AND tenant_id = ?
+          AND current_quantity >= ?
+        `,
+        [
+          saleQuantity,
+          totalCogs,
+          itemId,
+          tenant_id,
+          saleQuantity
+        ]
+      );
+
+      if (itemUpdateResult.affectedRows === 0) {
+        throw new Error(
+          `Unable to update stock for "${itemRow.name}"`
+        );
+      }
+
+      /*
+      |--------------------------------------------------------------------------
+      | Save COGS In Invoice Item
+      |--------------------------------------------------------------------------
+      */
+
+      await connection.query(
+        `
+        UPDATE invoice_items
+        SET cogs = ?
+        WHERE id = ?
+          AND tenant_id = ?
+        `,
+        [
+          totalCogs,
+          invoiceItemId,
+          tenant_id
+        ]
+      );
+
+      /*
+      |--------------------------------------------------------------------------
+      | Stock Movement
+      |--------------------------------------------------------------------------
+      |
+      | Sale = negative quantity
+      | Sale COGS = negative inventory value
+      |
+      */
+
+      const effectiveUnitCost =
+        saleQuantity > 0
+          ? totalCogs / saleQuantity
+          : 0;
+
+      await connection.query(
+        `
+        INSERT INTO stock_movements
+        (
+          item_id,
+          transaction_type,
+          transaction_id,
+          quantity,
+          unit_cost,
+          total_cost,
+          movement_date,
+          tenant_id,
+          user_id
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+        [
+          itemId,
+          "SALE",
+          invoiceMasterId,
+          -saleQuantity,
+          effectiveUnitCost,
+          -totalCogs,
+          formatDateForDb(invoice_date),
+          tenant_id,
+          user_id
+        ]
       );
     }
 
-    const customFieldValues = parseCustomFieldForUpdate(custom_field);
+    /*
+    |--------------------------------------------------------------------------
+    | Custom Fields
+    |--------------------------------------------------------------------------
+    */
 
-    if (customFieldValues && Object.keys(customFieldValues).length > 0) {
-      const moduleId = normalizeFormValue(module_id);
+    const customFieldValues =
+      parseCustomFieldForUpdate(custom_field);
+
+    if (
+      customFieldValues &&
+      Object.keys(customFieldValues).length > 0
+    ) {
+      const moduleId =
+        normalizeFormValue(module_id);
 
       if (!moduleId) {
-        throw new Error("module_id is required when custom_field is provided");
+        throw new Error(
+          "module_id is required when custom_field is provided"
+        );
       }
 
       await handleCustomFields({
@@ -443,26 +879,79 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
       });
     }
 
-    const [settingsResult] = await connection.query(
-      `UPDATE document_number_settings
-       SET current_number = ?
-       WHERE tenant_id = ? AND document_type = ?`,
-      [nextCurrentNumber, tenant_id, normalizedDocumentType]
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Update Document Number
+    |--------------------------------------------------------------------------
+    */
+
+    const [settingsResult] =
+      await connection.query(
+        `
+        UPDATE document_number_settings
+        SET current_number = ?
+        WHERE tenant_id = ?
+          AND document_type = ?
+        `,
+        [
+          nextCurrentNumber,
+          tenant_id,
+          normalizedDocumentType
+        ]
+      );
 
     if (settingsResult.affectedRows === 0) {
-      throw new Error("Document number settings not found");
+      throw new Error(
+        "Document number settings not found"
+      );
     }
 
-    const [masterRows] = await connection.query(
-      `SELECT * FROM invoice_master WHERE id = ? AND tenant_id = ?`,
-      [invoiceMasterId, tenant_id]
-    );
+    /*
+    |--------------------------------------------------------------------------
+    | Get Created Invoice Master
+    |--------------------------------------------------------------------------
+    */
 
-    const [itemRows] = await connection.query(
-      `SELECT * FROM invoice_items WHERE invoice_master_id = ? AND tenant_id = ? ORDER BY id ASC`,
-      [invoiceMasterId, tenant_id]
-    );
+    const [masterRows] =
+      await connection.query(
+        `
+        SELECT *
+        FROM invoice_master
+        WHERE id = ?
+          AND tenant_id = ?
+        `,
+        [
+          invoiceMasterId,
+          tenant_id
+        ]
+      );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Get Created Invoice Items
+    |--------------------------------------------------------------------------
+    */
+
+    const [itemRows] =
+      await connection.query(
+        `
+        SELECT *
+        FROM invoice_items
+        WHERE invoice_master_id = ?
+          AND tenant_id = ?
+        ORDER BY id ASC
+        `,
+        [
+          invoiceMasterId,
+          tenant_id
+        ]
+      );
+
+    /*
+    |--------------------------------------------------------------------------
+    | Commit
+    |--------------------------------------------------------------------------
+    */
 
     await connection.commit();
 
@@ -470,9 +959,18 @@ exports.createInvoice = async (data, tenant_id, user_id, uploaded_invoice_attach
       ...masterRows[0],
       items: itemRows
     };
+
   } catch (error) {
+    /*
+    |--------------------------------------------------------------------------
+    | Rollback Everything
+    |--------------------------------------------------------------------------
+    */
+
     await connection.rollback();
+
     throw error;
+
   } finally {
     connection.release();
   }
