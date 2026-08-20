@@ -1018,7 +1018,7 @@ export class AddInvoiceComponent implements OnInit {
       },
       error: (error: any) => {
         this.isSavingInvoiceNumberPreference = false;
-        this.toastrService.danger(
+        this.toastrService.warning(
           error?.error?.message || error?.message || 'Invoice number preferences could not be saved.',
           'Save Failed',
         );
@@ -1342,9 +1342,9 @@ export class AddInvoiceComponent implements OnInit {
       },
       error: (error: any) => {
         this.isSubmitting = false;
-        this.toastrService.danger(
+        this.toastrService.warning(
           error?.error?.message || error?.message || 'Invoice could not be saved.',
-          'Save Failed',
+          'Warning!',
         );
       },
     });

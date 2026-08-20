@@ -527,13 +527,16 @@
 }
 
 .table-responsive {
-  overflow-x: auto;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .item-table {
   width: 100%;
+  max-width: 100%;
   border-collapse: collapse;
-  min-width: 1120px;
+  min-width: 0;
   display: block;
 }
 
@@ -548,14 +551,13 @@
   width: 100%;
   display: grid;
   grid-template-columns:
-    minmax(220px, 1.7fr)
-    minmax(125px, 0.85fr)
-    minmax(125px, 0.85fr)
-    minmax(100px, 0.65fr)
-    minmax(90px, 0.6fr)
-    minmax(115px, 0.7fr)
-    minmax(155px, 0.95fr)
-    minmax(115px, 0.75fr);
+    minmax(190px, 1.8fr)
+    minmax(100px, 0.85fr)
+    minmax(100px, 0.85fr)
+    minmax(75px, 0.6fr)
+    minmax(75px, 0.6fr)
+    minmax(130px, 1fr)
+    minmax(126px, 0.8fr);
 }
 
 .item-table tbody {
@@ -604,11 +606,9 @@
   .item-table thead th:nth-child(2),
   .item-table thead th:nth-child(3),
   .item-table thead th:nth-child(6),
-  .item-table thead th:nth-child(7),
   .item-table tbody .item-row > td:nth-child(2),
   .item-table tbody .item-row > td:nth-child(3),
-  .item-table tbody .item-row > td:nth-child(6),
-  .item-table tbody .item-row > td:nth-child(7) {
+  .item-table tbody .item-row > td:nth-child(6) {
     justify-content: flex-end;
     text-align: right;
   }
@@ -621,8 +621,8 @@
     text-align: center;
   }
 
-  .item-table thead th:nth-child(8),
-  .item-table tbody .item-row > td:nth-child(8) {
+  .item-table thead th:nth-child(7),
+  .item-table tbody .item-row > td:nth-child(7) {
     justify-content: flex-end;
     text-align: right;
   }
@@ -650,7 +650,8 @@
 }
 
 .item-identity {
-  min-width: 210px;
+  min-width: 0;
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -694,6 +695,13 @@
   margin-top: 4px;
   color: #929eb5;
   font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.item-meta-separator {
+  color: #c0c8d8;
 }
 
 .money-value {
@@ -704,6 +712,34 @@
 
 .selling-value {
   color: #16794b;
+}
+
+.stock-summary {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+
+.stock-quantity {
+  color: #2d3958;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.stock-value {
+  color: #7b88a8;
+  font-size: 12px;
+}
+
+.stock-not-applicable {
+  padding: 4px 8px;
+  border-radius: 7px;
+  background: #f0f3f8;
+  color: #8a96ae;
+  font-size: 11px;
+  font-weight: 700;
 }
 
 .code-pill,
@@ -842,6 +878,12 @@
 }
 
 @media (max-width: 1199px) {
+  .item-table thead th,
+  .item-table tbody td {
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
   .item-table thead th {
     white-space: normal;
     line-height: 1.25;
@@ -872,9 +914,7 @@
   }
 
   .summary-grid {
-    grid-template-columns: repeat(3, minmax(150px, 1fr));
-    overflow-x: auto;
-    padding-bottom: 4px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .catalog-toolbar {
@@ -963,9 +1003,7 @@
   }
 
   .summary-grid {
-    grid-template-columns: repeat(3, minmax(140px, 1fr));
-    overflow-x: auto;
-    padding-bottom: 3px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .summary-card {
@@ -1103,6 +1141,24 @@
   }
 }
 
+@media (max-width: 575px) {
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .summary-card-primary {
+    grid-column: 1 / -1;
+  }
+
+  .catalog-actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .search-input::placeholder {
+    color: transparent;
+  }
+}
+
 /* Match the readable typography used by the other list pages. */
 .summary-copy span,
 .catalog-heading p,
@@ -1148,4 +1204,8 @@
 
 .empty-state-panel p {
   font-size: 13px;
+}
+
+.stock-value {
+  font-size: 12px !important;
 }

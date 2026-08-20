@@ -174,8 +174,7 @@
                 <th>Selling rate</th>
                 <th>HSN/SAC</th>
                 <th>Tax</th>
-                <th>Stock Qty</th>
-                <th>Stock Value</th>
+                <th>Stock</th>
                 <th class="actions-heading">Actions</th>
               </tr>
             </thead>
@@ -193,7 +192,13 @@
                     </div>
                     <div class="item-copy">
                       <div class="item-name">{{ getItemName(item) }}</div>
-                      <div class="item-type">{{ getItemType(item) }}</div>
+                      <div class="item-type">
+                        <span>{{ getItemType(item) }}</span>
+                        <ng-container *ngIf="getUnit(item) !== '-'">
+                          <span class="item-meta-separator" aria-hidden="true">•</span>
+                          <span>{{ getUnit(item) }}</span>
+                        </ng-container>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -201,8 +206,15 @@
                 <td data-label="Selling rate"><span class="money-value selling-value">{{ formatCurrency(item?.selling_price) }}</span></td>
                 <td data-label="HSN/SAC"><span class="code-pill">{{ getHsnSac(item) }}</span></td>
                 <td data-label="Tax"><span class="tax-pill">{{ getTaxRate(item) }}</span></td>
-                <td data-label="Current Quantity"><span class="stock-quantity">{{ formatValue(item?.current_quantity) }}</span></td>
-                <td data-label="Current Stock Value"><span class="money-value stock-value">{{ formatCurrency(item?.current_stock_value) }}</span></td>
+                <td data-label="Stock">
+                  <div *ngIf="!isServiceItem(item); else serviceStock" class="stock-summary">
+                    <span class="stock-quantity">{{ formatValue(item?.current_quantity) }} {{ getUnit(item) !== '-' ? getUnit(item) : '' }}</span>
+                    <span class="money-value stock-value">{{ formatCurrency(item?.current_stock_value) }}</span>
+                  </div>
+                  <ng-template #serviceStock>
+                    <span class="stock-not-applicable">N/A</span>
+                  </ng-template>
+                </td>
                 <td data-label="Actions" class="actions-cell">
                   <div class="action-group">
                     <button *ngIf="canView" type="button" class="action-icon view-action" nbTooltip="View item" aria-label="View item"
@@ -222,7 +234,7 @@
               </tr>
 
               <tr *ngIf="!apiData || apiData.length === 0">
-                <td colspan="8" class="empty-state">
+                <td colspan="7" class="empty-state">
                   <div class="empty-state-panel">
                     <div class="empty-state-icon"><nb-icon icon="search-outline"></nb-icon></div>
                     <h3>{{ searchText ? 'No matching items' : 'Your catalogue is empty' }}</h3>
