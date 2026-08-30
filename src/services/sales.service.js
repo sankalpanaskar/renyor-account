@@ -4230,7 +4230,7 @@ exports.updatePurchaseInvoice = async (
 
 exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
   const conditions = ['i.tenant_id = ?'];
-  const params = [tenant_id];
+  const params = [tenant_id, tenant_id, tenant_id, tenant_id];
 
   if (item_id) {
     conditions.push('i.id = ?');
@@ -4249,6 +4249,12 @@ exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
           ORDER BY sb.id ASC
           LIMIT 1
         ) AS unit_cost,
+        COALESCE(opening_stock.total_quantity, 0) AS opening_stock_quantity,
+        COALESCE(opening_stock.total_value, 0) AS opening_stock_value,
+        COALESCE(purchase_totals.total_quantity, 0) AS total_purchase_quantity,
+        COALESCE(purchase_totals.total_value, 0) AS total_purchase_value,
+        COALESCE(sales_totals.total_quantity, 0) AS total_sales_quantity,
+        COALESCE(sales_totals.total_value, 0) AS total_sales_value,
         tr.tax_rate_name,
         tr.tax_rate_percentage,
         coa.account_name AS sales_chartofaccounts_name,
@@ -4262,6 +4268,44 @@ exports.fetchItems = async (tenant_id, item_id = null, module_id) => {
         ON coa.id = i.chartofaccounts_name_id_sales
       LEFT JOIN chartofaccounts_name cop
         ON cop.id = i.chartofaccounts_name_id_purchase
+      LEFT JOIN (
+        SELECT
+          item_id,
+          SUM(quantity) AS total_quantity,
+          SUM(total_cost) AS total_value
+        FROM stock_batches
+        WHERE tenant_id = ?
+          AND source_type = 'OPENING'
+        GROUP BY item_id
+      ) opening_stock
+        ON opening_stock.item_id = i.id
+      LEFT JOIN (
+        SELECT
+          pii.item_id,
+          SUM(pii.quantity) AS total_quantity,
+          SUM(pii.amount) AS total_value
+        FROM purchase_invoice_items pii
+        INNER JOIN purchase_invoice_master pim
+          ON pim.id = pii.purchase_invoice_master_id
+         AND pim.tenant_id = pii.tenant_id
+        WHERE pii.tenant_id = ?
+        GROUP BY pii.item_id
+      ) purchase_totals
+        ON purchase_totals.item_id = i.id
+      LEFT JOIN (
+        SELECT
+          ii.item_id,
+          SUM(ii.quantity) AS total_quantity,
+          SUM(ii.amount) AS total_value
+        FROM invoice_items ii
+        INNER JOIN invoice_master im
+          ON im.id = ii.invoice_master_id
+         AND im.tenant_id = ii.tenant_id
+        WHERE ii.tenant_id = ?
+          AND ii.item_id IS NOT NULL
+        GROUP BY ii.item_id
+      ) sales_totals
+        ON sales_totals.item_id = i.id
       WHERE ${conditions.join(' AND ')}
       ORDER BY i.id DESC`,
     params
