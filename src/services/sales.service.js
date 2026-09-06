@@ -4561,9 +4561,9 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
       ]
     );
 
-    if (duplicateRows.length) {
-      throw new Error('account_name and account_item already exists under this account head type');
-    }
+    // if (duplicateRows.length) {
+    //   throw new Error('account_name and account_item already exists under this account head type');
+    // }
 
     const [result] = await connection.query(
         `INSERT INTO chartofaccounts_name (
