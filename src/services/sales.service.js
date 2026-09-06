@@ -4681,65 +4681,60 @@ exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
   }
 };
 
-const buildChartOfAccountsGroupPath = (headTypes, headTypeId) => {
-  const headTypeMap = new Map(
-    headTypes.map((headType) => [Number(headType.id), headType])
-  );
-  const path = [];
-  const visited = new Set();
-  let currentId = headTypeId ? Number(headTypeId) : null;
-
-  while (currentId && !visited.has(currentId)) {
-    const current = headTypeMap.get(currentId);
-
-    if (!current) {
-      break;
-    }
-
-    visited.add(currentId);
-    path.unshift(current);
-
-    const parentId = current.parent_id ? Number(current.parent_id) : 0;
-    currentId = parentId > 0 ? parentId : null;
-  }
-
-  return path;
-};
-
-const buildChartOfAccountsItemTree = (groupPath, account) => {
-  const accountLeaf = {
-    id: account.id,
-    account_name: account.account_name,
-    account_item: account.account_item,
+const buildChartOfAccountsTree = (headTypes, accounts) => {
+  const root = {
+    id: null,
+    type: 'root',
+    group_name: 'Chart of Accounts',
+    parent_id: null,
+    children: [],
   };
 
-  if (!groupPath.length) {
-    return accountLeaf;
-  }
+  const groupMap = new Map();
 
-  let root = null;
-  let current = null;
-
-  groupPath.forEach((group) => {
-    const node = {
+  headTypes.forEach((group) => {
+    groupMap.set(Number(group.id), {
       id: group.id,
+      type: 'group',
       group_name: group.group_name,
       parent_id: group.parent_id,
       children: [],
-    };
-
-    if (!root) {
-      root = node;
-    }
-
-    if (current) {
-      current.children.push(node);
-    }
-
-    current = node;
+    });
   });
 
-  current.children.push(accountLeaf);
+  headTypes.forEach((group) => {
+    const node = groupMap.get(Number(group.id));
+    const parentId = group.parent_id ? Number(group.parent_id) : 0;
+    const parentNode = parentId > 0 ? groupMap.get(parentId) : null;
+
+    if (parentNode) {
+      parentNode.children.push(node);
+    } else {
+      root.children.push(node);
+    }
+  });
+
+  accounts.forEach((account) => {
+    const accountNode = {
+      id: account.id,
+      type: 'account',
+      account_name: account.account_name,
+      account_item: account.account_item,
+      chartofaccounts_head_type_id: account.chartofaccounts_head_type_id,
+    };
+
+    const groupId = account.chartofaccounts_head_type_id
+      ? Number(account.chartofaccounts_head_type_id)
+      : null;
+    const groupNode = groupId ? groupMap.get(groupId) : null;
+
+    if (groupNode) {
+      groupNode.children.push(accountNode);
+    } else {
+      root.children.push(accountNode);
+    }
+  });
+
   return root;
 };
 
@@ -4767,23 +4762,7 @@ exports.getchartofaccountsItem = async (tenant_id) => {
     ORDER BY coa.id
   `, [tenant_id]);
 
-  return rows.map((row) => {
-    const groupPath = buildChartOfAccountsGroupPath(
-      headTypes,
-      row.chartofaccounts_head_type_id
-    );
-
-    return {
-      ...row,
-      group_path: groupPath.map((group) => ({
-        id: group.id,
-        group_name: group.group_name,
-        parent_id: group.parent_id,
-      })),
-      group_path_names: groupPath.map((group) => group.group_name),
-      group_tree: buildChartOfAccountsItemTree(groupPath, row),
-    };
-  });
+  return buildChartOfAccountsTree(headTypes, rows);
 };
 
 exports.createTaxRate = async (data, tenant_id, user_id) => {
