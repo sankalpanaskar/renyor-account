@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, of } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import industriesData from '../rawData/industries.json';
@@ -19,6 +19,9 @@ export class GlobalService {
     public  userCode$       = this.userCodeSubject.asObservable();
     private menuPermissionsSubject = new BehaviorSubject<Record<string, any>>({});
     public menuPermissions$ = this.menuPermissionsSubject.asObservable();
+    private menuOrderChangedSubject = new Subject<void>();
+    public menuOrderChanged$ = this.menuOrderChangedSubject.asObservable();
+    private readonly menuOrderStorageKey = 'navigation_menu_order_v1';
     
   
     public currentUser: any;
@@ -198,6 +201,113 @@ export class GlobalService {
     
     public getMenuTree() {
       return this.http.get(`${this.systemUrl}/fetch-menu-structure`,);
+    }
+
+    public hasSavedMenuOrder(): boolean {
+      return this.getSavedMenuOrder() !== null;
+    }
+
+    public applySavedMenuOrder(menuItems: any[]): any[] {
+      const savedOrder = this.getSavedMenuOrder();
+      if (!savedOrder || !Array.isArray(menuItems)) {
+        return Array.isArray(menuItems) ? [...menuItems] : [];
+      }
+
+      return this.applyMenuOrderLevel(menuItems, savedOrder.parents, savedOrder.children);
+    }
+
+    public saveMenuOrder(menuItems: any[]): void {
+      const parents = (menuItems || []).map((menu: any) => this.getMenuOrderKey(menu));
+      const children = (menuItems || []).reduce((order: Record<string, string[]>, menu: any) => {
+        order[this.getMenuOrderKey(menu)] = this.getMenuChildren(menu)
+          .map((child: any) => this.getMenuOrderKey(child));
+        return order;
+      }, {});
+
+      localStorage.setItem(this.menuOrderStorageKey, JSON.stringify({ parents, children }));
+      this.menuOrderChangedSubject.next();
+    }
+
+    public clearSavedMenuOrder(): void {
+      localStorage.removeItem(this.menuOrderStorageKey);
+      this.menuOrderChangedSubject.next();
+    }
+
+    private getSavedMenuOrder(): { parents: string[]; children: Record<string, string[]> } | null {
+      try {
+        const storedOrder = JSON.parse(localStorage.getItem(this.menuOrderStorageKey) || 'null');
+        if (!storedOrder || !Array.isArray(storedOrder.parents) || !storedOrder.children) {
+          return null;
+        }
+
+        return storedOrder;
+      } catch {
+        return null;
+      }
+    }
+
+    private applyMenuOrderLevel(
+      menuItems: any[],
+      orderKeys: string[],
+      childOrders: Record<string, string[]>,
+    ): any[] {
+      const clonedItems = menuItems.map((menu: any) => {
+        const childrenField = this.getMenuChildrenField(menu);
+        if (!childrenField) {
+          return { ...menu };
+        }
+
+        const menuKey = this.getMenuOrderKey(menu);
+        const children = this.applyMenuOrderLevel(
+          menu[childrenField],
+          childOrders[menuKey] || [],
+          childOrders,
+        );
+
+        return { ...menu, [childrenField]: children };
+      });
+
+      const orderPositions = new Map(orderKeys.map((key: string, index: number) => [key, index]));
+      return clonedItems.sort((first: any, second: any) => {
+        const firstPosition = orderPositions.get(this.getMenuOrderKey(first));
+        const secondPosition = orderPositions.get(this.getMenuOrderKey(second));
+
+        if (firstPosition === undefined && secondPosition === undefined) {
+          return 0;
+        }
+        if (firstPosition === undefined) {
+          return 1;
+        }
+        if (secondPosition === undefined) {
+          return -1;
+        }
+        return firstPosition - secondPosition;
+      });
+    }
+
+    private getMenuChildren(menu: any): any[] {
+      const childrenField = this.getMenuChildrenField(menu);
+      return childrenField ? menu[childrenField] : [];
+    }
+
+    private getMenuChildrenField(menu: any): string | null {
+      const childrenFields = ['_children', 'children', 'submenus', 'submenu', 'sub_menu', 'items', 'modules'];
+      return childrenFields.find((field: string) => Array.isArray(menu?.[field])) || null;
+    }
+
+    private getMenuOrderKey(menu: any): string {
+      const id = menu?.id ?? menu?.menu_id ?? menu?.module_id ?? menu?.submenu_id;
+      if (id !== null && id !== undefined && `${id}`.trim() !== '') {
+        return `id:${id}`;
+      }
+
+      const link = `${menu?.link || menu?.url || menu?.route || menu?._link || ''}`.trim().toLowerCase();
+      if (link && link !== 'no route configured') {
+        return `link:${link.replace(/^\/+/, '')}`;
+      }
+
+      const title = `${menu?.title || menu?.menu_name || menu?.name || menu?._title || ''}`.trim().toLowerCase();
+      return `title:${title}`;
     }
 
     public getModuleByParentMenuID(parentMenuId:any): Observable<any> {

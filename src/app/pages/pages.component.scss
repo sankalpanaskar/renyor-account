@@ -14,10 +14,6 @@
       background: linear-gradient(180deg, rgba(237, 243, 255, 0.72) 0, rgba(255, 255, 255, 0) 150px);
     }
 
-    .menu-group {
-      color: nb-theme(color-primary-600);
-      letter-spacing: 0.08em;
-    }
   }
 
   ::ng-deep nb-menu.settings-navigation > .menu-items > .menu-item:first-child {

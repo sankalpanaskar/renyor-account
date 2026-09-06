@@ -14,6 +14,7 @@ import { AccountantRoutingModule } from './accountant-routing.module';
 import { AccountantComponent } from './accountant.component';
 import { ChartOfAccountComponent } from './chart-of-account/chart-of-account.component';
 import { ChartOfAccountTypeComponent } from './chart-of-account-type/chart-of-account-type.component';
+import { ThemeModule } from '../../@theme/theme.module';
 
 @NgModule({
   declarations: [AccountantComponent, ChartOfAccountComponent, ChartOfAccountTypeComponent],
@@ -27,6 +28,7 @@ import { ChartOfAccountTypeComponent } from './chart-of-account-type/chart-of-ac
     NbButtonModule,
     NbIconModule,
     NbSelectModule,
+    ThemeModule,
     Ng2SmartTableModule,
   ],
 })

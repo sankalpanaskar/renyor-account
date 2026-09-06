@@ -64,6 +64,7 @@
   .header-container {
     display: flex;
     align-items: center;
+    gap: 0.75rem;
     width: auto;
 
     .sidebar-toggle {
@@ -86,7 +87,101 @@
     }
   }
 
+  .financial-year-control {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .financial-year-action {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+
+  .financial-year-badge {
+    width: 28px;
+    height: 28px;
+    flex: 0 0 28px;
+    border-radius: 8px;
+    background: nb-theme(color-primary-100);
+    color: nb-theme(color-primary-600);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+  }
+
+  .financial-year-select {
+    width: 160px;
+  }
+
+  ::ng-deep .financial-year-select {
+    .searchable-select {
+      box-shadow: none;
+    }
+
+    .searchable-input {
+      height: 34px;
+      padding-right: 2rem;
+      padding-left: 0.75rem;
+      border-color: nb-theme(divider-color) !important;
+      border-radius: 8px;
+      background: nb-theme(background-basic-color-2);
+      color: nb-theme(text-basic-color);
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .toggle-icon {
+      right: 0.6rem;
+      font-size: 1rem;
+    }
+
+    .options-panel,
+    .search-box {
+      background: nb-theme(background-basic-color-1);
+    }
+
+    .dropdown-search-input,
+    .dropdown-search-input::placeholder {
+      font-size: 0.72rem !important;
+    }
+
+    .option-item {
+      color: nb-theme(text-basic-color);
+      padding: 0.58rem 0.65rem;
+      font-size: 0.72rem;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+
+    .option-item > span {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .selected-icon {
+      font-size: 0.9rem;
+    }
+
+    .no-results {
+      font-size: 0.72rem;
+    }
+  }
+
+  .theme-select {
+    min-width: 100px;
+  }
+
   @include media-breakpoint-down(sm) {
+    .financial-year-action {
+      display: none;
+    }
+
     .control-item {
       display: none;
     }
@@ -97,7 +192,7 @@
   }
 
   @include media-breakpoint-down(is) {
-    nb-select {
+    .theme-select {
       display: none;
     }
   }

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { NbToastrService } from '@nebular/theme';
 import { GlobalService } from '../../../services/global.service';
 
@@ -11,6 +12,7 @@ export class SetupMenuComponent implements OnInit {
   model: any = this.createEmptyMenuModel();
   isSubmitting = false;
   isLoadingTree = false;
+  isOrderDirty = false;
   showAddMenuPopup = false;
   parentMenuList: any[] = [this.getEmptyParentOption()];
   menuTreeList: any[] = [];
@@ -68,10 +70,12 @@ export class SetupMenuComponent implements OnInit {
     this.globalService.getMenuTree().subscribe({
       next: (res: any) => {
         const menuData = res?.data || res || [];
-        this.menuTreeList = Array.isArray(menuData)
+        const normalizedMenus = Array.isArray(menuData)
           ? menuData.map((menu: any) => this.normalizeMenu(menu))
           : [];
+        this.menuTreeList = this.globalService.applySavedMenuOrder(normalizedMenus);
         this.totalMenuCount = this.countMenus(this.menuTreeList);
+        this.isOrderDirty = false;
         this.isLoadingTree = false;
       },
       error: (err: any) => {
@@ -79,6 +83,40 @@ export class SetupMenuComponent implements OnInit {
         this.isLoadingTree = false;
       }
     });
+  }
+
+  dropParentMenu(event: CdkDragDrop<any[]>): void {
+    if (event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    moveItemInArray(this.menuTreeList, event.previousIndex, event.currentIndex);
+    this.isOrderDirty = true;
+  }
+
+  dropChildMenu(menu: any, event: CdkDragDrop<any[]>): void {
+    if (!Array.isArray(menu?._children) || event.previousIndex === event.currentIndex) {
+      return;
+    }
+
+    moveItemInArray(menu._children, event.previousIndex, event.currentIndex);
+    this.isOrderDirty = true;
+  }
+
+  saveMenuOrder(): void {
+    if (!this.isOrderDirty) {
+      return;
+    }
+
+    this.globalService.saveMenuOrder(this.menuTreeList);
+    this.isOrderDirty = false;
+    this.toastrService.success('Menu order saved for this browser.', 'Order Saved');
+  }
+
+  resetMenuOrder(): void {
+    this.globalService.clearSavedMenuOrder();
+    this.toastrService.info('Default menu order restored.', 'Order Reset');
+    this.getMenuTree();
   }
 
   openAddMenuPopup(): void {

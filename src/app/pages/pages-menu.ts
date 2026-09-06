@@ -17,12 +17,10 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       icon: 'home-outline',
       link: '/pages/custom-dashboard',
     },
-    // { title: 'FEATURES', group: true },
   ];
   
   if (isCompanySuperAdmin || isSystemSuperAdmin) {
     menu.push(
-    { title: 'Users & Roles', group: true },
     {
       title: 'Users',
       icon: { icon: 'people', pack: 'material-icons' },
@@ -33,7 +31,6 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
       icon: { icon: 'settings_b_roll', pack: 'material-icons' },
       link: '/pages/organization-setting/roles',
     },
-    { title: 'Settings', group: true },
     {
       title: 'Company Profile',
       icon: { icon: 'person', pack: 'material-icons' },
@@ -76,7 +73,6 @@ export function getMenuItems(roleId: number, userCode?: string): NbMenuItem[] {
   // Add admin-only menus if user is system super admin
   if (isSystemSuperAdmin) {
     menu.push(
-      // { title: 'Admin Settings', group: true },
       {
         title: 'Menu',
         icon: { icon: 'display_settings', pack: 'material-icons' },

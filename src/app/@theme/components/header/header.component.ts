@@ -15,6 +15,8 @@ import { Router } from '@angular/router';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
 
+  private readonly financialYearStorageKey = 'selected_financial_year';
+  private readonly menuOrderStorageKey = 'navigation_menu_order_v1';
   private destroy$: Subject<void> = new Subject<void>();
   userPictureOnly: boolean = false;
   user: any;
@@ -40,6 +42,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   currentTheme = 'default';
 
+  financialYears = this.getFinancialYears();
+  selectedFinancialYear = this.financialYears[0].value;
+
   userMenu = [ { title: 'Profile' }, { title: 'Log out' } ];
 
   constructor(private sidebarService: NbSidebarService,
@@ -56,6 +61,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.currentTheme = this.themeService.currentTheme;
+    this.restoreFinancialYear();
   
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
@@ -142,7 +148,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   logout() {
+    const selectedFinancialYear = localStorage.getItem(this.financialYearStorageKey);
+    const savedMenuOrder = localStorage.getItem(this.menuOrderStorageKey);
     localStorage.clear();
+    if (selectedFinancialYear) {
+      localStorage.setItem(this.financialYearStorageKey, selectedFinancialYear);
+    }
+    if (savedMenuOrder) {
+      localStorage.setItem(this.menuOrderStorageKey, savedMenuOrder);
+    }
     this.router.navigate(['/auth/login']); // change path if needed
   }
   
@@ -158,6 +172,46 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   changeTheme(themeName: string) {
     this.themeService.changeTheme(themeName);
+  }
+
+  changeFinancialYear(financialYear: string) {
+    if (!this.isAvailableFinancialYear(financialYear)) {
+      return;
+    }
+
+    this.selectedFinancialYear = financialYear;
+    localStorage.setItem(this.financialYearStorageKey, financialYear);
+  }
+
+  private restoreFinancialYear(): void {
+    const storedFinancialYear = localStorage.getItem(this.financialYearStorageKey);
+    this.selectedFinancialYear = this.isAvailableFinancialYear(storedFinancialYear)
+      ? storedFinancialYear as string
+      : this.financialYears[0].value;
+
+    localStorage.setItem(this.financialYearStorageKey, this.selectedFinancialYear);
+  }
+
+  private isAvailableFinancialYear(financialYear: string | null): boolean {
+    return !!financialYear && this.financialYears.some(({ value }) => value === financialYear);
+  }
+
+  private getFinancialYears(): Array<{ value: string; label: string }> {
+    const today = new Date();
+    const currentStartYear = today.getMonth() >= 3
+      ? today.getFullYear()
+      : today.getFullYear() - 1;
+
+    return [
+      {
+        value: `${currentStartYear}-${currentStartYear + 1}`,
+        label: `${currentStartYear}-${String(currentStartYear + 1).slice(-2)} (Current)`,
+      },
+      {
+        value: `${currentStartYear - 1}-${currentStartYear}`,
+        label: `${currentStartYear - 1}-${String(currentStartYear).slice(-2)} (Previous)`,
+      },
+    ];
   }
 
   toggleSidebar(): boolean {

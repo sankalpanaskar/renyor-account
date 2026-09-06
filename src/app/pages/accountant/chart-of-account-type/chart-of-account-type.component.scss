@@ -104,6 +104,7 @@
 
 .account-type-children {
   display: grid;
+  /* stylelint-disable-next-line unit-whitelist */
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 10px;
   border-top: 1px solid #edf1f7;
@@ -262,6 +263,202 @@
   overflow: visible;
 }
 
+.account-type-autocomplete {
+  position: relative;
+  z-index: 2;
+}
+
+.account-type-autocomplete.is-open {
+  z-index: 30;
+}
+
+.autocomplete-input {
+  min-height: 46px;
+  padding-left: 42px !important;
+  padding-right: 50px !important;
+  border-color: #dfe5ef !important;
+  border-radius: 11px !important;
+  background: #fbfcff !important;
+  color: #273452 !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+
+.autocomplete-input:focus {
+  border-color: #5984ff !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(51, 102, 255, 0.11) !important;
+}
+
+.autocomplete-search-icon {
+  position: absolute;
+  z-index: 1;
+  top: 23px;
+  left: 14px;
+  transform: translateY(-50%);
+  color: #7f8daa;
+  font-size: 18px;
+  pointer-events: none;
+}
+
+.autocomplete-key {
+  position: absolute;
+  top: 23px;
+  right: 12px;
+  transform: translateY(-50%);
+  border: 1px solid #dfe5ef;
+  border-radius: 5px;
+  background: #f5f7fb;
+  color: #8b96ad;
+  padding: 2px 5px;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1.25;
+  pointer-events: none;
+}
+
+.autocomplete-panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #dfe5ef;
+  border-radius: 13px;
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(31, 45, 79, 0.18);
+  animation: suggestions-in 140ms ease-out;
+}
+
+.autocomplete-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-bottom: 1px solid #edf0f6;
+  background: #f8faff;
+  color: #6c7895;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.autocomplete-panel-header small {
+  color: #9aa4b8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.autocomplete-options {
+  max-height: 222px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.autocomplete-option,
+.autocomplete-create {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 1px solid #f0f2f7;
+  background: #ffffff;
+  color: #2d3958;
+  text-align: left;
+  cursor: pointer;
+}
+
+.autocomplete-option:hover,
+.autocomplete-option.is-active,
+.autocomplete-create:hover {
+  background: #f1f5ff;
+}
+
+.option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  border-radius: 9px;
+  background: #f1edff;
+  color: #7657d6;
+}
+
+.option-icon nb-icon {
+  font-size: 16px;
+}
+
+.option-icon.create-icon {
+  background: #e8f7ee;
+  color: #168450;
+}
+
+.option-copy {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.option-copy strong {
+  overflow: hidden;
+  color: #273452;
+  font-size: 12px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option-copy small {
+  color: #8b96ad;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.option-arrow {
+  flex: 0 0 auto;
+  color: #9aa6bc;
+  font-size: 16px;
+}
+
+.autocomplete-create {
+  border-bottom: 0;
+  background: #fbfcff;
+}
+
+.autocomplete-create .option-copy strong {
+  color: #235ac6;
+}
+
+.autocomplete-empty {
+  padding: 16px;
+  color: #8b96ad;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+}
+
+@keyframes suggestions-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .row {
   padding: 0 20px;
 }
@@ -291,6 +488,7 @@
 
   .account-type-children {
     padding-left: 0;
+    /* stylelint-disable-next-line unit-whitelist */
     grid-template-columns: 1fr;
   }
 

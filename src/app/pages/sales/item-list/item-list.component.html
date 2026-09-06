@@ -170,10 +170,11 @@
             <thead>
               <tr>
                 <th>Item</th>
-                <th>Purchase rate</th>
-                <th>Selling rate</th>
                 <th>HSN/SAC</th>
                 <th>Tax</th>
+                <th>Opening stock</th>
+                <th>Purchase</th>
+                <th>Sales</th>
                 <th>Stock</th>
                 <th class="actions-heading">Actions</th>
               </tr>
@@ -202,10 +203,35 @@
                     </div>
                   </div>
                 </td>
-                <td data-label="Purchase rate"><span class="money-value cost-value">{{ formatCurrency(item?.cost_price) }}</span></td>
-                <td data-label="Selling rate"><span class="money-value selling-value">{{ formatCurrency(item?.selling_price) }}</span></td>
                 <td data-label="HSN/SAC"><span class="code-pill">{{ getHsnSac(item) }}</span></td>
                 <td data-label="Tax"><span class="tax-pill">{{ getTaxRate(item) }}</span></td>
+                <td data-label="Opening stock">
+                  <div *ngIf="!isServiceItem(item); else serviceOpeningStock" class="stock-summary">
+                    <span class="stock-quantity">{{ formatValue(item?.opening_stock_quantity) }} {{ getUnit(item) !== '-' ? getUnit(item) : '' }}</span>
+                    <span class="money-value stock-value">{{ formatCurrency(item?.opening_stock_value) }}</span>
+                  </div>
+                  <ng-template #serviceOpeningStock>
+                    <span class="stock-not-applicable">N/A</span>
+                  </ng-template>
+                </td>
+                <td data-label="Total purchase">
+                  <div *ngIf="!isServiceItem(item); else serviceTotalPurchase" class="stock-summary">
+                    <span class="stock-quantity">{{ formatValue(item?.total_purchase_quantity) }} {{ getUnit(item) !== '-' ? getUnit(item) : '' }}</span>
+                    <span class="money-value stock-value">{{ formatCurrency(item?.total_purchase_value) }}</span>
+                  </div>
+                  <ng-template #serviceTotalPurchase>
+                    <span class="stock-not-applicable">N/A</span>
+                  </ng-template>
+                </td>
+                <td data-label="Total sales">
+                  <div *ngIf="!isServiceItem(item); else serviceTotalSales" class="stock-summary">
+                    <span class="stock-quantity">{{ formatValue(item?.total_sales_quantity) }} {{ getUnit(item) !== '-' ? getUnit(item) : '' }}</span>
+                    <span class="money-value stock-value">{{ formatCurrency(item?.total_sales_value) }}</span>
+                  </div>
+                  <ng-template #serviceTotalSales>
+                    <span class="stock-not-applicable">N/A</span>
+                  </ng-template>
+                </td>
                 <td data-label="Stock">
                   <div *ngIf="!isServiceItem(item); else serviceStock" class="stock-summary">
                     <span class="stock-quantity">{{ formatValue(item?.current_quantity) }} {{ getUnit(item) !== '-' ? getUnit(item) : '' }}</span>
@@ -234,7 +260,7 @@
               </tr>
 
               <tr *ngIf="!apiData || apiData.length === 0">
-                <td colspan="7" class="empty-state">
+                <td colspan="8" class="empty-state">
                   <div class="empty-state-panel">
                     <div class="empty-state-icon"><nb-icon icon="search-outline"></nb-icon></div>
                     <h3>{{ searchText ? 'No matching items' : 'Your catalogue is empty' }}</h3>

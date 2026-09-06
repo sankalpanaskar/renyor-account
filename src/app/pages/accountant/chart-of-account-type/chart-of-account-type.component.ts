@@ -27,6 +27,8 @@ export class ChartOfAccountTypeComponent implements OnInit {
   accountGroups: AccountHeadType[] = [];
   accountHeads: AccountHeadType[] = [];
   accountTree: AccountHeadTypeNode[] = [];
+  isAccountTypeOpen = false;
+  activeAccountTypeIndex = -1;
 
   model: any = {
     account_head: '',
@@ -76,12 +78,122 @@ export class ChartOfAccountTypeComponent implements OnInit {
     return group.id;
   }
 
+  get trimmedAccountType(): string {
+    return `${this.model.account_type ?? ''}`.trim();
+  }
+
+  get availableAccountTypes(): AccountHeadType[] {
+    const selectedHead = this.accountHeads.find(
+      (head: AccountHeadType) => normalizeAccountHeadName(head.group_name)
+        === normalizeAccountHeadName(this.model.account_head),
+    );
+    if (!selectedHead) {
+      return [];
+    }
+
+    return this.accountGroups.filter((type: AccountHeadType) => type.parent_id === selectedHead.id);
+  }
+
+  get filteredAccountTypes(): AccountHeadType[] {
+    const searchTerm = this.trimmedAccountType.toLowerCase();
+    const matches = searchTerm
+      ? this.availableAccountTypes.filter(
+        (type: AccountHeadType) => type.group_name.toLowerCase().includes(searchTerm),
+      )
+      : this.availableAccountTypes;
+
+    return matches.slice(0, 6);
+  }
+
+  get canUseNewAccountType(): boolean {
+    const accountType = this.trimmedAccountType;
+    return !!accountType && !this.availableAccountTypes.some(
+      (type: AccountHeadType) => type.group_name.toLowerCase() === accountType.toLowerCase(),
+    );
+  }
+
+  onAccountHeadChange(): void {
+    this.model.account_type = '';
+    this.closeAccountTypeSuggestions();
+  }
+
+  openAccountTypeSuggestions(): void {
+    if (!this.model.account_head) {
+      return;
+    }
+
+    this.isAccountTypeOpen = true;
+    this.activeAccountTypeIndex = -1;
+  }
+
+  onAccountTypeInput(): void {
+    this.isAccountTypeOpen = true;
+    this.activeAccountTypeIndex = this.filteredAccountTypes.length > 0 ? 0 : -1;
+  }
+
+  closeAccountTypeSuggestions(): void {
+    this.isAccountTypeOpen = false;
+    this.activeAccountTypeIndex = -1;
+  }
+
+  selectAccountType(type: AccountHeadType, event?: Event): void {
+    event?.preventDefault();
+    this.model.account_type = type.group_name;
+    this.closeAccountTypeSuggestions();
+  }
+
+  useNewAccountType(event?: Event): void {
+    event?.preventDefault();
+    this.model.account_type = this.trimmedAccountType;
+    this.closeAccountTypeSuggestions();
+  }
+
+  onAccountTypeKeydown(event: KeyboardEvent): void {
+    const optionCount = this.filteredAccountTypes.length;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.isAccountTypeOpen = true;
+      this.activeAccountTypeIndex = optionCount > 0
+        ? (this.activeAccountTypeIndex + 1) % optionCount
+        : -1;
+      return;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.isAccountTypeOpen = true;
+      this.activeAccountTypeIndex = optionCount > 0
+        ? (this.activeAccountTypeIndex <= 0 ? optionCount - 1 : this.activeAccountTypeIndex - 1)
+        : -1;
+      return;
+    }
+
+    if (event.key === 'Enter' && this.isAccountTypeOpen) {
+      event.preventDefault();
+      const activeType = this.filteredAccountTypes[this.activeAccountTypeIndex];
+      if (activeType) {
+        this.selectAccountType(activeType);
+      } else {
+        this.useNewAccountType();
+      }
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.closeAccountTypeSuggestions();
+    }
+  }
+
   openAddPopup(): void {
     this.isEditMode = false;
     this.model = {
       account_head: '',
       account_type: '',
     };
+    this.closeAccountTypeSuggestions();
     this.showAddPopup = true;
   }
 
@@ -93,12 +205,14 @@ export class ChartOfAccountTypeComponent implements OnInit {
       account_head: parent?.group_name || '',
       account_type: type.group_name,
     };
+    this.closeAccountTypeSuggestions();
     this.showAddPopup = true;
   }
 
   closeAddPopup(form?: any): void {
     this.showAddPopup = false;
     this.isEditMode = false;
+    this.closeAccountTypeSuggestions();
     this.model = {
       account_head: '',
       account_type: '',

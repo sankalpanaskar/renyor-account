@@ -50,10 +50,13 @@ export class PagesComponent implements OnInit, OnDestroy {
   isSettingsMenuOpen = false;
   isSubmitting: boolean = false;
   private mainMenu: any[] = [];
+  private mainMenuBase: any[] = [];
+  private dynamicMenuItems: any[] = [];
   private settingsMenu: any[] = [];
   private subscription?: Subscription;
   private routerSubscription?: Subscription;
   private menuClickSubscription?: Subscription;
+  private menuOrderSubscription?: Subscription;
   private readonly menuRouteAliases: Array<{ menuRoute: string; pageRoutes: string[] }> = [
     {
       menuRoute: '/pages/sales/customer-list',
@@ -105,25 +108,21 @@ export class PagesComponent implements OnInit, OnDestroy {
     },
   ];
 
-  // Manual grouping for API-driven menus. Add more groups or parent menu titles here.
-  private dynamicMenuGroups: Array<{ groupTitle: string; parentTitles: string[]; linkPrefixes: string[] }> = [
+  // Fallback order for API-driven menus when no saved UI order exists.
+  private dynamicMenuOrderRules: Array<{ parentTitles: string[]; linkPrefixes: string[] }> = [
     {
-      groupTitle: 'Items',
       parentTitles: ['Items'],
       linkPrefixes: ['/pages/items/'],
     },
     {
-      groupTitle: 'Sales',
       parentTitles: ['Customers','Estimates','Sales Order','Invoices'] ,
       linkPrefixes: ['/pages/sales/'],
     },
     {
-      groupTitle: 'Purchases',
       parentTitles: ['Vendors'],
       linkPrefixes: ['/pages/purchase/'],
     },
     {
-      groupTitle: 'Accountant',
       parentTitles: ['Chart Of Account'],
       linkPrefixes: ['/pages/accountant/'],
     },
@@ -161,6 +160,10 @@ export class PagesComponent implements OnInit, OnDestroy {
         }
       });
 
+    this.menuOrderSubscription = this.globalService.menuOrderChanged$.subscribe(() => {
+      this.loadDynamicMenus();
+    });
+
     this.routerSubscription = this.router.events
       .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -172,6 +175,7 @@ export class PagesComponent implements OnInit, OnDestroy {
     this.subscription?.unsubscribe();
     this.routerSubscription?.unsubscribe();
     this.menuClickSubscription?.unsubscribe();
+    this.menuOrderSubscription?.unsubscribe();
   }
 
   openSettingsMenu(): void {
@@ -212,25 +216,17 @@ export class PagesComponent implements OnInit, OnDestroy {
         if (res.data && Array.isArray(res.data)) {
           console.log('📡 Dynamic menu structure from API:', res.data);
           this.globalService.setMenuPermissions(res.data);
-          
+
+          const orderedMenuData = this.globalService.applySavedMenuOrder(res.data);
+
           // Convert API menu structure to NbMenuItem format
-          const dynamicMenuItems = this.convertMenuStructure(res.data);
-          const groupedDynamicMenuItems = this.applyManualDynamicGroups(dynamicMenuItems);
-          
-          // Find FEATURES group and insert after it
-          const featuresIndex = this.mainMenu.findIndex(item => item.title === 'FEATURES' && item.group === true);
-          
-          if (featuresIndex !== -1) {
-            // Insert after FEATURES group
-            this.mainMenu.splice(featuresIndex + 1, 0, ...groupedDynamicMenuItems);
-          } else {
-            // If FEATURES group not found, insert after Dashboard (index 1)
-            this.mainMenu.splice(1, 0, ...groupedDynamicMenuItems);
-          }
-          
+          const convertedMenuItems = this.convertMenuStructure(orderedMenuData);
+          this.dynamicMenuItems = this.globalService.hasSavedMenuOrder()
+            ? convertedMenuItems
+            : this.applyDefaultDynamicOrder(convertedMenuItems);
+
+          this.rebuildMainMenu();
           console.log('📋 Final main menu with dynamic items:', this.mainMenu);
-          this.assignMenuParents(this.mainMenu);
-          this.refreshDisplayedMenu();
         }
       },
       error: (err: any) => {
@@ -291,27 +287,27 @@ export class PagesComponent implements OnInit, OnDestroy {
     return nbMenuItems;
   }
 
-  private applyManualDynamicGroups(dynamicItems: any[]): any[] {
+  private applyDefaultDynamicOrder(dynamicItems: any[]): any[] {
     const remainingItems = [...dynamicItems];
-    const groupedItems: any[] = [];
+    const orderedItems: any[] = [];
 
-    this.dynamicMenuGroups.forEach((groupConfig: { groupTitle: string; parentTitles: string[]; linkPrefixes: string[] }) => {
-      const groupMenus: any[] = [];
+    this.dynamicMenuOrderRules.forEach((orderRule: { parentTitles: string[]; linkPrefixes: string[] }) => {
+      const matchingMenus: any[] = [];
 
       for (let index = remainingItems.length - 1; index >= 0; index--) {
         const item = remainingItems[index];
-        if (this.matchesGroup(item, groupConfig)) {
-          groupMenus.unshift(item);
+        if (this.matchesOrderRule(item, orderRule)) {
+          matchingMenus.unshift(item);
           remainingItems.splice(index, 1);
         }
       }
 
-      if (groupMenus.length > 0) {
-        groupedItems.push({ title: groupConfig.groupTitle, group: true }, ...groupMenus);
+      if (matchingMenus.length > 0) {
+        orderedItems.push(...matchingMenus);
       }
     });
 
-    return [...groupedItems, ...remainingItems];
+    return [...orderedItems, ...remainingItems];
   }
 
   private normalizeTitle(value: any): string {
@@ -352,10 +348,10 @@ export class PagesComponent implements OnInit, OnDestroy {
     return { icon, pack };
   }
 
-  private matchesGroup(item: any, groupConfig: { parentTitles: string[]; linkPrefixes: string[] }): boolean {
+  private matchesOrderRule(item: any, orderRule: { parentTitles: string[]; linkPrefixes: string[] }): boolean {
     const itemTitle = this.normalizeTitle(item?.title);
 
-    const titleMatched = groupConfig.parentTitles.some((title: string) => {
+    const titleMatched = orderRule.parentTitles.some((title: string) => {
       const normalizedTitle = this.normalizeTitle(title);
       return itemTitle === normalizedTitle || itemTitle.includes(normalizedTitle) || normalizedTitle.includes(itemTitle);
     });
@@ -376,7 +372,7 @@ export class PagesComponent implements OnInit, OnDestroy {
       });
     }
 
-    return groupConfig.linkPrefixes.some((prefix: string) =>
+    return orderRule.linkPrefixes.some((prefix: string) =>
       links.some((link: string) => `${link}`.toLowerCase().startsWith(prefix.toLowerCase()))
     );
   }
@@ -449,7 +445,7 @@ export class PagesComponent implements OnInit, OnDestroy {
     const dashboardItem = staticMenu.find((item: any) => this.normalizeTitle(item?.title) === 'dashboard');
     const settingsItems = staticMenu.filter((item: any) => {
       const title = this.normalizeTitle(item?.title);
-      return title !== 'dashboard' && title !== 'setup';
+      return item?.group !== true && title !== 'dashboard' && title !== 'setup';
     });
 
     const setupLauncher = {
@@ -466,7 +462,8 @@ export class PagesComponent implements OnInit, OnDestroy {
       data: { navigationAction: 'close-settings' }
     };
 
-    this.mainMenu = [
+    this.dynamicMenuItems = [];
+    this.mainMenuBase = [
       ...(dashboardItem ? [dashboardItem] : []),
       ...(canAccessSetup ? [setupLauncher] : []),
     ];
@@ -476,8 +473,18 @@ export class PagesComponent implements OnInit, OnDestroy {
       this.isSettingsMenuOpen = false;
     }
 
-    this.assignMenuParents(this.mainMenu);
     this.assignMenuParents(this.settingsMenu);
+    this.rebuildMainMenu();
+  }
+
+  private rebuildMainMenu(): void {
+    this.mainMenu = [...this.mainMenuBase];
+    const dashboardIndex = this.mainMenu.findIndex(
+      (item: any) => this.normalizeTitle(item?.title) === 'dashboard'
+    );
+    const insertIndex = dashboardIndex >= 0 ? dashboardIndex + 1 : 0;
+    this.mainMenu.splice(insertIndex, 0, ...this.dynamicMenuItems);
+    this.assignMenuParents(this.mainMenu);
     this.refreshDisplayedMenu();
   }
 
@@ -561,15 +568,15 @@ export class PagesComponent implements OnInit, OnDestroy {
   }
 
   private selectByRoutePrefix(items: any[], currentUrl: string): boolean {
-    const matchingGroup = this.dynamicMenuGroups.find((groupConfig) =>
-      groupConfig.linkPrefixes.some((prefix) => currentUrl.startsWith(prefix))
+    const matchingRule = this.dynamicMenuOrderRules.find((orderRule) =>
+      orderRule.linkPrefixes.some((prefix) => currentUrl.startsWith(prefix))
     );
 
-    if (!matchingGroup) {
+    if (!matchingRule) {
       return false;
     }
 
-    const targetTitle = matchingGroup.parentTitles
+    const targetTitle = matchingRule.parentTitles
       .map((title) => this.normalizeTitle(title))
       .find(Boolean);
 

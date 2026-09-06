@@ -4,6 +4,7 @@ import { AdminSettingRoutingModule } from './admin-setting-routing.module';
 import { RouterModule } from '@angular/router';
 import { NbAccordionModule, NbAlertModule, NbButtonModule, NbCardModule, NbCheckboxComponent, NbCheckboxModule, NbDatepickerModule, NbFormFieldModule, NbIconModule, NbInputModule, NbLayoutModule, NbListModule, NbRadioModule, NbSelectModule, NbSpinnerModule, NbTabsetModule } from '@nebular/theme';
 import { FormsModule } from '@angular/forms';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { ThemeModule } from '../../@theme/theme.module';
 import { AdminSettingComponent } from './admin-setting.component';
@@ -51,6 +52,7 @@ import { CustomFieldListComponent } from './custom-field-list/custom-field-list.
     NbAccordionModule,
     NbTabsetModule,
     FormsModule,
+    DragDropModule,
     Ng2SmartTableModule,
     NbSpinnerModule,
     NbDatepickerModule,

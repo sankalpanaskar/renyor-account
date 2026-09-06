@@ -95,7 +95,8 @@
           <div class="col-lg-6 mb-10">
             <label class="small-label">Accounting Head <span class="required">*</span></label>
             <nb-select fullWidth shape="semi-round" placeholder="Select Accounting Head"
-              name="account_head" required #account_head="ngModel" [(ngModel)]="model.account_head">
+              name="account_head" required #account_head="ngModel" [(ngModel)]="model.account_head"
+              (ngModelChange)="onAccountHeadChange()">
               <nb-option *ngFor="let head of accountHeads; trackBy: trackByGroupId" [value]="head.group_name">
                 {{ head.group_name }}
               </nb-option>
@@ -107,8 +108,70 @@
 
           <div class="col-lg-6 mb-10">
             <label class="small-label">Account Type <span class="required">*</span></label>
-            <input type="text" nbInput fullWidth shape="semi-round" placeholder="Enter Account Type"
-              name="account_type" required #account_type="ngModel" [(ngModel)]="model.account_type">
+            <div class="account-type-autocomplete" [class.is-open]="isAccountTypeOpen">
+              <nb-icon class="autocomplete-search-icon" icon="search-outline" aria-hidden="true"></nb-icon>
+              <input type="text" nbInput fullWidth shape="semi-round" class="autocomplete-input"
+                [placeholder]="model.account_head ? 'Search or enter account type' : 'Select Accounting Head first'"
+                [disabled]="!model.account_head"
+                name="account_type" required #account_type="ngModel" [(ngModel)]="model.account_type"
+                [status]="fm.submitted && account_type.invalid ? 'danger' : 'basic'"
+                role="combobox"
+                aria-autocomplete="list"
+                aria-controls="account-type-page-options"
+                [attr.aria-expanded]="isAccountTypeOpen"
+                [attr.aria-activedescendant]="activeAccountTypeIndex >= 0 ? 'account-type-page-option-' + activeAccountTypeIndex : null"
+                (input)="onAccountTypeInput()"
+                (focus)="openAccountTypeSuggestions()"
+                (blur)="closeAccountTypeSuggestions()"
+                (keydown)="onAccountTypeKeydown($event)"
+                autocomplete="off">
+              <span class="autocomplete-key" *ngIf="isAccountTypeOpen" aria-hidden="true">Esc</span>
+
+              <div class="autocomplete-panel" id="account-type-page-options" role="listbox"
+                *ngIf="isAccountTypeOpen">
+                <div class="autocomplete-panel-header">
+                  <span>{{ model.account_type ? 'Matching account types' : 'Account types' }}</span>
+                  <small>{{ filteredAccountTypes.length }} found</small>
+                </div>
+
+                <div class="autocomplete-options" *ngIf="filteredAccountTypes.length > 0">
+                  <button type="button" class="autocomplete-option"
+                    *ngFor="let type of filteredAccountTypes; let index = index; trackBy: trackByGroupId"
+                    [id]="'account-type-page-option-' + index"
+                    [class.is-active]="index === activeAccountTypeIndex"
+                    [attr.aria-selected]="model.account_type === type.group_name"
+                    role="option"
+                    (mouseenter)="activeAccountTypeIndex = index"
+                    (mousedown)="selectAccountType(type, $event)">
+                    <span class="option-icon" aria-hidden="true">
+                      <nb-icon icon="layers-outline"></nb-icon>
+                    </span>
+                    <span class="option-copy">
+                      <strong>{{ type.group_name }}</strong>
+                      <small>Existing account type</small>
+                    </span>
+                    <nb-icon class="option-arrow" icon="arrow-forward-outline" aria-hidden="true"></nb-icon>
+                  </button>
+                </div>
+
+                <button type="button" class="autocomplete-create"
+                  *ngIf="canUseNewAccountType"
+                  (mousedown)="useNewAccountType($event)">
+                  <span class="option-icon create-icon" aria-hidden="true">
+                    <nb-icon icon="plus-outline"></nb-icon>
+                  </span>
+                  <span class="option-copy">
+                    <strong>Use “{{ trimmedAccountType }}”</strong>
+                    <small>Create as a new account type</small>
+                  </span>
+                </button>
+
+                <div class="autocomplete-empty"
+                  *ngIf="filteredAccountTypes.length === 0 && !canUseNewAccountType">
+                  No account types linked yet. Start typing to create one.
+                </div>
+              </div>
+            </div>
             <div *ngIf="fm.submitted && account_type.invalid" class="error-message">
               Account Type is required
             </div>
