@@ -4544,6 +4544,27 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
       module_id,
     } = data;
 
+    const [duplicateRows] = await connection.query(
+      `SELECT id
+       FROM chartofaccounts_name
+       WHERE tenant_id = ?
+         AND status = 1
+         AND chartofaccounts_head_type_id <=> ?
+         AND account_name = ?
+         AND account_item <=> ?
+       LIMIT 1`,
+      [
+        tenant_id,
+        chartofaccounts_head_type_id,
+        account_name,
+        account_item,
+      ]
+    );
+
+    if (duplicateRows.length) {
+      throw new Error('account_name and account_item already exists under this account head type');
+    }
+
     const [result] = await connection.query(
         `INSERT INTO chartofaccounts_name (
           account_name,
@@ -4561,7 +4582,7 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
         ]
       );
 
-      recordId = result.insertId;
+      const recordId = result.insertId;
 
     // Handle custom fields
     if (custom_field && module_id) {
