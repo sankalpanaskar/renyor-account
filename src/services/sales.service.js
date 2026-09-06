@@ -4681,23 +4681,109 @@ exports.createAccountsheadtype = async (data, tenant_id, user_id) => {
   }
 };
 
-exports.getchartofaccountsItem = async (tenant_id) => {
-  try {
+const buildChartOfAccountsGroupPath = (headTypes, headTypeId) => {
+  const headTypeMap = new Map(
+    headTypes.map((headType) => [Number(headType.id), headType])
+  );
+  const path = [];
+  const visited = new Set();
+  let currentId = headTypeId ? Number(headTypeId) : null;
 
-    const [rows] = await db.query(`
-    SELECT id, account_name, account_item
-    FROM chartofaccounts_name
-    WHERE status = 1 AND tenant_id = ?
-    ORDER BY id
-  `,[tenant_id]);
-    //const groups = await exports.fetchGroups();
-    //const tree = buildTree(rows, null); // root = NULL
+  while (currentId && !visited.has(currentId)) {
+    const current = headTypeMap.get(currentId);
 
-    return rows
+    if (!current) {
+      break;
+    }
 
-  } catch (error) {
-    
+    visited.add(currentId);
+    path.unshift(current);
+
+    const parentId = current.parent_id ? Number(current.parent_id) : 0;
+    currentId = parentId > 0 ? parentId : null;
   }
+
+  return path;
+};
+
+const buildChartOfAccountsItemTree = (groupPath, account) => {
+  const accountLeaf = {
+    id: account.id,
+    account_name: account.account_name,
+    account_item: account.account_item,
+  };
+
+  if (!groupPath.length) {
+    return accountLeaf;
+  }
+
+  let root = null;
+  let current = null;
+
+  groupPath.forEach((group) => {
+    const node = {
+      id: group.id,
+      group_name: group.group_name,
+      parent_id: group.parent_id,
+      children: [],
+    };
+
+    if (!root) {
+      root = node;
+    }
+
+    if (current) {
+      current.children.push(node);
+    }
+
+    current = node;
+  });
+
+  current.children.push(accountLeaf);
+  return root;
+};
+
+exports.getchartofaccountsItem = async (tenant_id) => {
+  const [headTypes] = await db.query(`
+    SELECT id, group_name, parent_id, status
+    FROM chartofaccounts_head_type
+    WHERE status = 1
+    ORDER BY id
+  `);
+
+  const [rows] = await db.query(`
+    SELECT
+      coa.id,
+      coa.account_name,
+      coa.account_item,
+      coa.chartofaccounts_head_type_id,
+      cht.group_name
+    FROM chartofaccounts_name coa
+    LEFT JOIN chartofaccounts_head_type cht
+      ON cht.id = coa.chartofaccounts_head_type_id
+      AND cht.status = 1
+    WHERE coa.status = 1
+      AND coa.tenant_id = ?
+    ORDER BY coa.id
+  `, [tenant_id]);
+
+  return rows.map((row) => {
+    const groupPath = buildChartOfAccountsGroupPath(
+      headTypes,
+      row.chartofaccounts_head_type_id
+    );
+
+    return {
+      ...row,
+      group_path: groupPath.map((group) => ({
+        id: group.id,
+        group_name: group.group_name,
+        parent_id: group.parent_id,
+      })),
+      group_path_names: groupPath.map((group) => group.group_name),
+      group_tree: buildChartOfAccountsItemTree(groupPath, row),
+    };
+  });
 };
 
 exports.createTaxRate = async (data, tenant_id, user_id) => {
