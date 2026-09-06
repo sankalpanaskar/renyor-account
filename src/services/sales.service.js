@@ -4714,24 +4714,54 @@ const buildChartOfAccountsTree = (headTypes, accounts) => {
     }
   });
 
-  accounts.forEach((account) => {
-    const accountNode = {
-      id: account.id,
-      type: 'account',
-      account_name: account.account_name,
-      account_item: account.account_item,
-      chartofaccounts_head_type_id: account.chartofaccounts_head_type_id,
-    };
+  const accountGroups = new Map();
 
+  accounts.forEach((account) => {
     const groupId = account.chartofaccounts_head_type_id
       ? Number(account.chartofaccounts_head_type_id)
       : null;
-    const groupNode = groupId ? groupMap.get(groupId) : null;
+    const accountName = account.account_name || '';
+    const key = `${groupId || 'root'}::${accountName}`;
 
-    if (groupNode) {
-      groupNode.children.push(accountNode);
+    if (!accountGroups.has(key)) {
+      accountGroups.set(key, {
+        groupId,
+        account_name: accountName,
+        accounts: [],
+      });
+    }
+
+    accountGroups.get(key).accounts.push(account);
+  });
+
+  accountGroups.forEach(({ groupId, account_name, accounts: groupedAccounts }) => {
+    const parentNode = groupId ? groupMap.get(groupId) : null;
+    const children = parentNode ? parentNode.children : root.children;
+
+    if (groupedAccounts.length > 1) {
+      children.push({
+        id: null,
+        type: 'account_name',
+        account_name,
+        chartofaccounts_head_type_id: groupId,
+        children: groupedAccounts.map((account) => ({
+          id: account.id,
+          type: 'account_item',
+          account_item: account.account_item,
+          account_name: account.account_name,
+          chartofaccounts_head_type_id: account.chartofaccounts_head_type_id,
+        })),
+      });
     } else {
-      root.children.push(accountNode);
+      const account = groupedAccounts[0];
+
+      children.push({
+        id: account.id,
+        type: 'account',
+        account_name: account.account_name,
+        account_item: account.account_item,
+        chartofaccounts_head_type_id: account.chartofaccounts_head_type_id,
+      });
     }
   });
 
