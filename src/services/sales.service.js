@@ -4561,9 +4561,11 @@ exports.createchartofaccounts = async (data, tenant_id, user_id) => {
       ]
     );
 
-    // if (duplicateRows.length) {
-    //   throw new Error('account_name and account_item already exists under this account head type');
-    // }
+    if (duplicateRows.length) {
+      const duplicateError = new Error('Duplicate chart of accounts');
+      duplicateError.code = 'ER_DUP_ENTRY';
+      throw duplicateError;
+    }
 
     const [result] = await connection.query(
         `INSERT INTO chartofaccounts_name (

@@ -476,10 +476,10 @@ exports.createchartofaccounts = async (req, res) => {
     );
   } catch (err) {
      if(err.code==='ER_DUP_ENTRY'){
-        return res.error(
-              409,
-              "this account name already exists under the same head type. Please use a different name."
-            );
+          return res.error(
+                409,
+                "this account name already exists under the same head type. Please use a different name."
+              );
     }else{
       return res.error(
       400,
